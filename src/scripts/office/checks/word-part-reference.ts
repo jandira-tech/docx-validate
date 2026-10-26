@@ -76,8 +76,14 @@
  * runs: the recovery offer for a referenced `word/header1.xml` with no
  * relationships part holding `c:chart r:id`, `o:OLEObject r:id` or
  * `dgm:relIds`, as for the same header whose relationships part lacks the
- * id, and a clean open for the same header with no `r:` reference). The
- * accepted Types are exact membership, byte for byte — the
+ * id, and a clean open for the same header with no `r:` reference).
+ * Session 57 (#775, two runs, all readings agree) confirms the absent
+ * sidecar's recovery offer for `c:chart r:id="rId1"` in used footnotes
+ * and comments (s57f `footnotes-nosidecar-chart`, `comments-nosidecar-chart`),
+ * a reached glossary and the main document (s57g `glossary-nosidecar-chart`,
+ * `main-nosidecar-chart`); their text-only calibrations open clean (s57g).
+ * Endnotes with no relationships part were not shown and keep the same
+ * rule. The accepted Types are exact membership, byte for byte — the
  * Transitional `…/officeDocument/2006/relationships/<segment>` URI or its
  * ISO Strict `purl.oclc.org` counterpart — like the hyperlink rule's two
  * (#614); session 52 refused every other Type shape tried under these

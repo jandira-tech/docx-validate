@@ -9,7 +9,7 @@ import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { validate } from "../src/scripts/office/validate";
-import { referencedChartSpecimenParts } from "./support/chart-specimens";
+import { CHART_DRAWING, referencedChartSpecimenParts } from "./support/chart-specimens";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 const CODE = "opc-relationships-target-mode";
@@ -17,10 +17,31 @@ const PACKAGE = "_rels/.rels";
 const MAIN = "word/document.xml";
 const SIDECAR = "word/_rels/document.xml.rels";
 const HEADER = "word/_rels/header1.xml.rels";
+const GLOSSARY = "word/glossary/document.xml";
+const GLOSSARY_SIDECAR = "word/glossary/_rels/document.xml.rels";
 const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const append = (xml: string, child: string) => xml.replace("</Relationships>", `${child}</Relationships>`);
 const hyperlink = (mode: string) => `<Relationship Id="rId99" Type="${R}/hyperlink" Target="https://example.com/" TargetMode="${mode}"/>`;
+
+/** Session 57 (s57f/s57g): a reached glossary with one docPart and an optional sidecar. */
+const glossaryParts = (body: string, mode?: string): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    [SIDECAR]: append(MINIMAL_PARTS[SIDECAR]!, `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/>`),
+    [GLOSSARY]:
+        `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+        '<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>' +
+        `<w:docPartBody>${body}</w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`,
+    ...(mode === undefined
+        ? {}
+        : {
+              [GLOSSARY_SIDECAR]: `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${hyperlink(mode)}</Relationships>`,
+          }),
+    "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+        "</Types>",
+        `<Override PartName="/${GLOSSARY}" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml"/></Types>`,
+    ),
+});
 
 /** Session 55 (s55b): a real chart the drawing names, with only TargetMode changed. */
 const chart = async (mode?: string) => {
@@ -185,7 +206,7 @@ describe("hyperlink TargetMode ownership (#773)", () => {
         });
     });
 
-    it.each(["header", "glossary"])("keeps the hyperlink finding in a reached %s's sidecar", async (story) => {
+    it.each(["header", "glossary"])("pins hyperlink finding ownership in a reached %s's sidecar (#775)", async (story) => {
         const specimen = { ...MINIMAL_PARTS };
         const part = story === "header" ? "word/header1.xml" : "word/glossary/document.xml";
         const sidecar = story === "header" ? HEADER : "word/glossary/_rels/document.xml.rels";
@@ -212,12 +233,90 @@ describe("hyperlink TargetMode ownership (#773)", () => {
             await writeFile(file, await buildDocx(specimen));
             for (const options of [{}, { checks: ["word-hyperlink-relationship"] }]) {
                 const result = await validate(file, { profile: "word-valid", ...options });
-                expect(result.valid).toBe(false);
-                expect(result.issues).toContainEqual(
-                    expect.objectContaining({ code: "word-hyperlink-relationship", severity: "error", path: part }),
+                const full = options.checks === undefined;
+                expect(result.valid).toBe(story === "glossary" && !full);
+                expect(result.issues.filter((issue) => issue.severity === "error")).toEqual(
+                    story === "header"
+                        ? [expect.objectContaining({ code: "word-hyperlink-relationship", path: part })]
+                        : full
+                          ? [expect.objectContaining({ code: CODE, path: sidecar })]
+                          : [],
                 );
-                expect(result.issues.some((issue) => issue.code === CODE)).toBe(false);
+                expect(result.issues.some((issue) => issue.code === "word-hyperlink-relationship")).toBe(story === "header");
             }
         });
     });
+});
+
+describe("session 57 TargetMode and absent sidecars (#775)", () => {
+    const text = "<w:p><w:r><w:t>x</w:t></w:r></w:p>";
+
+    it("refuses s57f's unreferenced glossary hyperlink with lowercase external", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            await writeFile(file, await buildDocx(glossaryParts(text, "external")));
+            for (const options of [{}, { checks: [CODE] }]) {
+                const result = await validate(file, { profile: "word-valid", ...options });
+                expect(result.valid).toBe(false);
+                expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([
+                    expect.objectContaining({ code: CODE, path: GLOSSARY_SIDECAR, severity: "error" }),
+                ]);
+            }
+        });
+    });
+
+    it.each([
+        { label: "s57f glossary External calibration", make: () => buildDocx(glossaryParts(text, "External")) },
+        { label: "s55e referenced header external", make: () => header("external") },
+    ])("keeps $label valid", async ({ make }) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            await writeFile(file, await make());
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid, result.issues.map((issue) => issue.message).join("\n")).toBe(true);
+            expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+        });
+    });
+
+    const drawing = CHART_DRAWING.replace(' w14:paraId="00000002" w14:textId="00000002"', "")
+        .replace('r:id="rId9"', 'r:id="rId1"')
+        .replace(
+            "<w:p>",
+            '<w:p xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart">',
+        );
+
+    for (const story of ["footnotes", "comments", "glossary", "main"] as const) {
+        it.each([true, false])(`pins ${story} with no sidecar, chart=%s (s57f/s57g)`, async (chart) => {
+            const body = chart ? drawing : text;
+            const part = story === "glossary" ? GLOSSARY : story === "main" ? MAIN : `word/${story}.xml`;
+            const parts = story === "glossary" ? glossaryParts(body) : { ...MINIMAL_PARTS };
+            if (story === "main") {
+                delete parts[SIDECAR];
+                parts[MAIN] = parts[MAIN]!.replace("<w:document ", `<w:document xmlns:r="${R}" `).replace(
+                    "<w:sectPr>",
+                    `${body}<w:sectPr>`,
+                );
+            } else if (story === "footnotes" || story === "comments") {
+                const note = story === "footnotes" ? "footnote" : "comment";
+                const id = story === "footnotes" ? "1" : "0";
+                parts[MAIN] = parts[MAIN]!.replace("</w:r></w:p>", `</w:r><w:r><w:${note}Reference w:id="${id}"/></w:r></w:p>`);
+                parts[SIDECAR] = append(parts[SIDECAR]!, `<Relationship Id="rIdN" Type="${R}/${story}" Target="${story}.xml"/>`);
+                parts[part] =
+                    `<w:${story} xmlns:w="${W}" xmlns:r="${R}"><w:${note} w:id="${id}"${story === "comments" ? ' w:author="a"' : ""}>${body}</w:${note}></w:${story}>`;
+                parts["[Content_Types].xml"] = parts["[Content_Types].xml"]!.replace(
+                    "</Types>",
+                    `<Override PartName="/${part}" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${story}+xml"/></Types>`,
+                );
+            }
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                await writeFile(file, await buildDocx(parts));
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.valid, result.issues.map((issue) => issue.message).join("\n")).toBe(!chart);
+                expect(result.issues.filter((issue) => issue.code === "word-part-reference-relationship")).toEqual(
+                    chart ? [expect.objectContaining({ path: part, severity: "error", message: expect.stringContaining("rId1") })] : [],
+                );
+            });
+        });
+    }
 });

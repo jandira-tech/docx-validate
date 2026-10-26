@@ -73,7 +73,7 @@ describe(CODE, () => {
         ]);
     });
 
-    it("does not treat a reached glossary as a main document", async () => {
+    it("judges a reached glossary's sidecar (#775, s57f)", async () => {
         const part = "word/glossary/_rels/document.xml.rels";
         expect(
             await diagnose({
@@ -85,7 +85,7 @@ describe(CODE, () => {
                 "word/glossary/document.xml": `<w:glossaryDocument xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docParts/></w:glossaryDocument>`,
                 [part]: `<Relationships xmlns="${PR}">${relationship("external")}</Relationships>`,
             }),
-        ).toEqual([]);
+        ).toEqual([expect.objectContaining({ code: CODE, path: part, severity: "error" })]);
     });
 
     it.each(["Internal", "External"])("accepts %s and absent TargetMode", async (mode) => {

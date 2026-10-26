@@ -17128,3 +17128,817 @@ print(len(rows), "rows,", len(raw), "raw records")
 `````
 
 </details>
+
+### Session 57: 17:08Z–17:33Z on 2026-10-26, validator columns at d93138a9
+
+The shapes the adversarial reviews of layers 168–179 found without a Word row ([#775](https://github.com/jandira-tech/docx-validate/issues/775)–[#779](https://github.com/jandira-tech/docx-validate/issues/779)). Seven chunks, each opening and closing with the minimal control. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 56 of 56 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen.
+
+- #779: each of the 13 mapped-type pairs no session had shown gets the recovery offer. These are the main document typed webSettings; `word/settings.xml` typed webSettings, glossary, footer, footnotes or endnotes; `word/numbering.xml` typed webSettings, glossary, theme or footer; and `word/styles.xml` typed webSettings, glossary or footnotes. Word-valid at d93138a9 already rejects all 13; these rows are the observation its recovery sentences lacked.
+- #778: a `word/footer1.xml` the body references gets the recovery offer typed with the styles, main document, numbering or settings content type; word-valid rejects the first three and accepts the settings row. A `word/header1.xml` the body references gets the recovery offer typed with the main document or styles content type; word-valid accepts both. A reached glossary's own styles part that a footer relationship the body references also reaches gets the recovery offer; word-valid rejects it. Three false negatives.
+- #777: the refused attached-toolbar fixture with `word/customizations.xml` renamed without an extension, or to `word/customizations.bin` (its Override keeping the keyMapCustomizations type), still gets the recovery offer; the same renames of the repaired fixture open clean. Word-valid accepts both refused rows. Two false negatives.
+- #776: `word/styles.xml` typed `…styles+xml; charset=utf-8` and also the target of a header, comments, footnotes or endnotes relationship the body reads gets the recovery offer, and word-valid rejects all four. The calibrations with the exact styles type get the recovery offer too, so the refusal does not need the inexact spelling; word-valid rejects only the footnotes calibration. Three false negatives. The comments, footnotes and endnotes specimens reference an id (`w:commentReference w:id="0"`, `w:footnoteReference w:id="1"`, `w:endnoteReference w:id="1"`) in a part rooted `w:styles`, so a dangling reference is a possible confound in those three; the header rows have no such reference.
+- #775: a reached glossary whose relationships part holds an unreferenced hyperlink relationship with `TargetMode="external"` gets the recovery offer; with `External` it opens clean. Word-valid accepts the lowercase row: a false negative. A used `word/footnotes.xml`, a used `word/comments.xml`, a reached glossary and the main document, each with no relationships part and holding `c:chart r:id="rId1"`, get the recovery offer, and word-valid rejects all four; their text-only calibrations open clean.
+
+| Run    | Observed             | Specimen                                                  | Shape                                                                                                                                                          | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at d93138a9                                                       | strict at d93138a9                                                                                                                                                                       |
+| ------ | -------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `s57a` | 17:08:33Z, 17:11:57Z | `s57a-control-minimal`                                    | control                                                                                                                                                        | `248994cb3ba586ab` | clean-open     | clean-open     | clean-open                 | valid                                                                        | valid                                                                                                                                                                                    |
+| `s57a` | 17:08:33Z, 17:11:57Z | `main-typed-websettings`                                  | #779: the main document typed by its Override with the webSettings content type                                                                                | `1dd63b0362a9e5ae` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`                                                                                                                                               |
+| `s57a` | 17:08:33Z, 17:11:57Z | `settings-typed-websettings`                              | #779: the related word/settings.xml typed by its Override with the webSettings content type                                                                    | `a07bccc4df50aec5` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`                                                                                                                                               |
+| `s57a` | 17:08:33Z, 17:11:57Z | `settings-typed-glossary`                                 | #779: the related word/settings.xml typed by its Override with the glossary content type                                                                       | `0c35b73b70acf725` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`                                                                                                                                               |
+| `s57a` | 17:08:33Z, 17:11:57Z | `settings-typed-footer`                                   | #779: the related word/settings.xml typed by its Override with the footer content type                                                                         | `300205b0c5d2f7ad` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`                                                                                                                                               |
+| `s57a` | 17:08:33Z, 17:11:57Z | `settings-typed-footnotes`                                | #779: the related word/settings.xml typed by its Override with the footnotes content type                                                                      | `287012fa6161653f` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`                                                                                                                                               |
+| `s57a` | 17:08:33Z, 17:11:57Z | `settings-typed-endnotes`                                 | #779: the related word/settings.xml typed by its Override with the endnotes content type                                                                       | `75d5b977aa0bb360` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`                                                                                                                                               |
+| `s57a` | 17:08:33Z, 17:11:57Z | `s57a-control-minimal-end`                                | control                                                                                                                                                        | `4c614976bbf43096` | clean-open     | clean-open     | clean-open                 | valid                                                                        | valid                                                                                                                                                                                    |
+| `s57b` | 17:15:45Z, 17:17:08Z | `s57b-control-minimal`                                    | control                                                                                                                                                        | `4c614976bbf43096` | clean-open     | clean-open     | clean-open                 | valid                                                                        | valid                                                                                                                                                                                    |
+| `s57b` | 17:15:45Z, 17:17:08Z | `numbering-typed-websettings`                             | #779: the related word/numbering.xml typed by its Override with the webSettings content type                                                                   | `9feccf6245e5729b` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`                                                                                                                                               |
+| `s57b` | 17:15:45Z, 17:17:08Z | `numbering-typed-glossary`                                | #779: the related word/numbering.xml typed by its Override with the glossary content type                                                                      | `1a37fb98665b32c3` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`                                                                                                                                               |
+| `s57b` | 17:15:45Z, 17:17:08Z | `numbering-typed-theme`                                   | #779: the related word/numbering.xml typed by its Override with the theme content type                                                                         | `878fa3963393bc00` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`                                                                                                                                               |
+| `s57b` | 17:15:45Z, 17:17:08Z | `numbering-typed-footer`                                  | #779: the related word/numbering.xml typed by its Override with the footer content type                                                                        | `5a0759077ea381c8` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`                                                                                                                                               |
+| `s57b` | 17:15:45Z, 17:17:08Z | `styles-typed-websettings`                                | #779: the word/styles.xml typed by its Override with the webSettings content type                                                                              | `e8219ecc3698979d` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`                                                                                                                                               |
+| `s57b` | 17:15:45Z, 17:17:08Z | `styles-typed-glossary`                                   | #779: the word/styles.xml typed by its Override with the glossary content type                                                                                 | `1b7a969bdf64d566` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`                                                                                                                                               |
+| `s57b` | 17:15:45Z, 17:17:08Z | `s57b-control-minimal-end`                                | control                                                                                                                                                        | `9b2df8d2561ad86a` | clean-open     | clean-open     | clean-open                 | valid                                                                        | valid                                                                                                                                                                                    |
+| `s57c` | 17:20:06Z, 17:23:25Z | `s57c-control-minimal`                                    | control                                                                                                                                                        | `609cbac70075969a` | clean-open     | clean-open     | clean-open                 | valid                                                                        | valid                                                                                                                                                                                    |
+| `s57c` | 17:20:06Z, 17:23:25Z | `styles-typed-footnotes`                                  | #779: the word/styles.xml typed by its Override with the footnotes content type                                                                                | `617637d2915468c7` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`                                                                                                                                               |
+| `s57c` | 17:20:06Z, 17:23:25Z | `footer1-referenced-typed-styles`                         | #778: a word/footer1.xml the body references, typed by its Override with the styles content type                                                               | `c1e11e67de461ed7` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`, `paraid-missing-element`                                                                                                                     |
+| `s57c` | 17:20:06Z, 17:23:25Z | `footer1-referenced-typed-main`                           | #778: the same footer typed with the main document content type                                                                                                | `a844faa237b4cf11` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`, `paraid-missing-element`                                                                                                                     |
+| `s57c` | 17:20:06Z, 17:23:25Z | `footer1-referenced-typed-numbering`                      | #778: the same footer typed with the numbering content type                                                                                                    | `0b5913f49e90938b` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`, `paraid-missing-element`                                                                                                                     |
+| `s57c` | 17:20:06Z, 17:23:25Z | `footer1-referenced-typed-settings`                       | #778: the same footer typed with the settings content type                                                                                                     | `b0d85ca51f8e5701` | repair-warning | repair-warning | unreadable-content-warning | valid                                                                        | invalid: `word-part-content-type-mismatch`, `paraid-missing-element`                                                                                                                     |
+| `s57c` | 17:20:06Z, 17:23:25Z | `header1-referenced-typed-main`                           | #778: a word/header1.xml the body references, typed with the main document content type                                                                        | `7e26835eb7150098` | repair-warning | repair-warning | unreadable-content-warning | valid                                                                        | invalid: `word-part-content-type-mismatch`, `paraid-missing-element`                                                                                                                     |
+| `s57c` | 17:20:06Z, 17:23:25Z | `s57c-control-minimal-end`                                | control                                                                                                                                                        | `0c73b5b2075522cb` | clean-open     | clean-open     | clean-open                 | valid                                                                        | valid                                                                                                                                                                                    |
+| `s57d` | 17:25:13Z, 17:27:17Z | `s57d-control-minimal`                                    | control                                                                                                                                                        | `0c73b5b2075522cb` | clean-open     | clean-open     | clean-open                 | valid                                                                        | valid                                                                                                                                                                                    |
+| `s57d` | 17:25:13Z, 17:27:17Z | `header1-referenced-typed-styles`                         | #778: the same header typed with the styles content type                                                                                                       | `158e1abfd05cea58` | repair-warning | repair-warning | unreadable-content-warning | valid                                                                        | invalid: `word-part-content-type-mismatch`, `paraid-missing-element`                                                                                                                     |
+| `s57d` | 17:25:13Z, 17:27:17Z | `glossary-styles-main-footer-coreach`                     | #778: a reached glossary's own word/glossary/styles.xml (styles type, related by its sidecar) that a footer relationship the main body references also targets | `3727640958988634` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`                                   | invalid: `word-part-content-type-mismatch`, `paraid-missing-element`                                                                                                                     |
+| `s57d` | 17:25:13Z, 17:27:17Z | `customizations-noext-refused`                            | #777: the refused toolbar fixture with word/customizations.xml renamed word/customizations (no extension), relationship, sidecar and Override renamed with it  | `1163f74dd346f646` | repair-warning | repair-warning | unreadable-content-warning | valid                                                                        | invalid: `rels-unreferenced`, `rels-unreferenced`, `paraid-missing-element`, `style-default-missing`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error` |
+| `s57d` | 17:25:13Z, 17:27:17Z | `customizations-noext-repaired-calibration`               | #777 calibration: the same rename of the repaired toolbar fixture                                                                                              | `d78e36f247b7e0b3` | clean-open     | clean-open     | clean-open                 | valid                                                                        | invalid: `rels-unreferenced`, `rels-unreferenced`, `paraid-missing-element`, `style-default-missing`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error` |
+| `s57d` | 17:25:13Z, 17:27:17Z | `customizations-bin-refused`                              | #777: the refused toolbar fixture with word/customizations.xml renamed word/customizations.bin (its Override keeps the keyMapCustomizations type)              | `2d6ad179d337d957` | repair-warning | repair-warning | unreadable-content-warning | valid                                                                        | invalid: `rels-unreferenced`, `rels-unreferenced`, `paraid-missing-element`, `style-default-missing`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error` |
+| `s57d` | 17:25:13Z, 17:27:17Z | `customizations-bin-repaired-calibration`                 | #777 calibration: the same .bin rename of the repaired toolbar fixture                                                                                         | `54425e5a751ebfd6` | clean-open     | clean-open     | clean-open                 | valid                                                                        | invalid: `rels-unreferenced`, `rels-unreferenced`, `paraid-missing-element`, `style-default-missing`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error` |
+| `s57d` | 17:25:13Z, 17:27:17Z | `s57d-control-minimal-end`                                | control                                                                                                                                                        | `4ebc5fc7a77793b4` | clean-open     | clean-open     | clean-open                 | valid                                                                        | valid                                                                                                                                                                                    |
+| `s57e` | 17:28:05Z, 17:28:33Z | `s57e-control-minimal`                                    | control                                                                                                                                                        | `0aa8dce5d97ed390` | clean-open     | clean-open     | clean-open                 | valid                                                                        | valid                                                                                                                                                                                    |
+| `s57e` | 17:28:05Z, 17:28:33Z | `styles-charset-read-header`                              | #776: word/styles.xml typed styles+xml; charset=utf-8, also the target of a header relationship the body references                                            | `35526b2da46eb9aa` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-inexact`                                    | invalid: `word-part-content-type-inexact`, `word-part-content-type-mismatch`                                                                                                             |
+| `s57e` | 17:28:05Z, 17:28:33Z | `styles-charset-read-comments`                            | #776: the same with a comments relationship and a w:commentReference w:id="0" in the body                                                                      | `242becce0a9acfd3` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-inexact`                                    | invalid: `word-part-content-type-inexact`, `word-part-content-type-mismatch`, `comment-marker-missing`, `comment-thread-count-mismatch`                                                  |
+| `s57e` | 17:28:05Z, 17:28:33Z | `styles-charset-read-footnotes`                           | #776: the same with a footnotes relationship and a w:footnoteReference w:id="1" in the body                                                                    | `830bef6fe25e6346` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-inexact`, `word-footnote-reference-missing` | invalid: `word-part-content-type-inexact`, `word-part-content-type-mismatch`, `word-footnote-reference-missing`                                                                          |
+| `s57e` | 17:28:05Z, 17:28:33Z | `styles-charset-read-endnotes`                            | #776: the same with an endnotes relationship and a w:endnoteReference w:id="1" in the body                                                                     | `f9f60f2fb8997592` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-inexact`                                    | invalid: `word-part-content-type-inexact`, `word-part-content-type-mismatch`                                                                                                             |
+| `s57e` | 17:28:05Z, 17:28:33Z | `styles-exact-read-header-calibration`                    | #776 calibration: the header co-reach with the exact styles content type                                                                                       | `7cd14ebc0aa7f84a` | repair-warning | repair-warning | unreadable-content-warning | valid                                                                        | invalid: `word-part-content-type-mismatch`                                                                                                                                               |
+| `s57e` | 17:28:05Z, 17:28:33Z | `styles-exact-read-comments-calibration`                  | #776 calibration: the comments co-reach with the exact styles content type                                                                                     | `21a2c19651d13d9a` | repair-warning | repair-warning | unreadable-content-warning | valid                                                                        | invalid: `word-part-content-type-mismatch`, `comment-marker-missing`, `comment-thread-count-mismatch`                                                                                    |
+| `s57e` | 17:28:05Z, 17:28:33Z | `s57e-control-minimal-end`                                | control                                                                                                                                                        | `da7e7c5a27003b23` | clean-open     | clean-open     | clean-open                 | valid                                                                        | valid                                                                                                                                                                                    |
+| `s57f` | 17:29:26Z, 17:31:55Z | `s57f-control-minimal`                                    | control                                                                                                                                                        | `da7e7c5a27003b23` | clean-open     | clean-open     | clean-open                 | valid                                                                        | valid                                                                                                                                                                                    |
+| `s57f` | 17:29:26Z, 17:31:55Z | `styles-exact-read-footnotes-calibration`                 | #776 calibration: the footnotes co-reach with the exact styles content type                                                                                    | `a0e211c406472b63` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-footnote-reference-missing`                                   | invalid: `word-part-content-type-mismatch`, `word-footnote-reference-missing`                                                                                                            |
+| `s57f` | 17:29:26Z, 17:31:55Z | `styles-exact-read-endnotes-calibration`                  | #776 calibration: the endnotes co-reach with the exact styles content type                                                                                     | `66ca502ed802554c` | repair-warning | repair-warning | unreadable-content-warning | valid                                                                        | invalid: `word-part-content-type-mismatch`                                                                                                                                               |
+| `s57f` | 17:29:26Z, 17:31:55Z | `glossary-rels-hyperlink-targetmode-lowercase-external`   | #775: a reached glossary whose relationships part holds an unreferenced hyperlink relationship with TargetMode="external"                                      | `1ac1e13540f1e6a8` | repair-warning | repair-warning | unreadable-content-warning | valid                                                                        | invalid: `paraid-missing-element`, `xsd-summary`, `xsd-error`                                                                                                                            |
+| `s57f` | 17:29:26Z, 17:31:55Z | `glossary-rels-hyperlink-targetmode-external-calibration` | #775 calibration: the same with TargetMode="External"                                                                                                          | `3078096a815ba072` | clean-open     | clean-open     | clean-open                 | valid                                                                        | invalid: `paraid-missing-element`                                                                                                                                                        |
+| `s57f` | 17:29:26Z, 17:31:55Z | `footnotes-nosidecar-chart`                               | #775: a used word/footnotes.xml with no relationships part, footnote 1 holding c:chart r:id="rId1"                                                             | `f5fe300bcbdc13e8` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-missing-sidecar`, `word-part-reference-relationship`          | invalid: `rels-missing-sidecar`, `paraid-missing-element`, `word-part-reference-relationship`                                                                                            |
+| `s57f` | 17:29:26Z, 17:31:55Z | `comments-nosidecar-chart`                                | #775: a used word/comments.xml with no relationships part, comment 0 holding c:chart r:id="rId1"                                                               | `48607444445ed090` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-missing-sidecar`, `word-part-reference-relationship`          | invalid: `rels-missing-sidecar`, `comment-thread-count-mismatch`, `paraid-missing-element`, `word-part-reference-relationship`                                                           |
+| `s57f` | 17:29:26Z, 17:31:55Z | `s57f-control-minimal-end`                                | control                                                                                                                                                        | `97d90bf4ec540dde` | clean-open     | clean-open     | clean-open                 | valid                                                                        | valid                                                                                                                                                                                    |
+| `s57g` | 17:32:36Z, 17:33:07Z | `s57g-control-minimal`                                    | control                                                                                                                                                        | `18228f0990d5c723` | clean-open     | clean-open     | clean-open                 | valid                                                                        | valid                                                                                                                                                                                    |
+| `s57g` | 17:32:36Z, 17:33:07Z | `glossary-nosidecar-chart`                                | #775: a reached glossary document with no relationships part holding c:chart r:id="rId1"                                                                       | `fab66d767d81f3a0` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-missing-sidecar`, `word-part-reference-relationship`          | invalid: `rels-missing-sidecar`, `paraid-missing-element`, `word-part-reference-relationship`                                                                                            |
+| `s57g` | 17:32:36Z, 17:33:07Z | `main-nosidecar-chart`                                    | #775: the main document with no relationships part holding c:chart r:id="rId1"                                                                                 | `87dced31c409fcd2` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-missing-sidecar`, `word-part-reference-relationship`          | invalid: `rels-unreferenced`, `rels-missing-sidecar`, `paraid-missing-element`, `word-part-reference-relationship`                                                                       |
+| `s57g` | 17:32:36Z, 17:33:07Z | `footnotes-nosidecar-text-calibration`                    | #775 calibration: the used footnotes part with no relationships part, footnote 1 holding text only                                                             | `da8dc994cfa8023f` | clean-open     | clean-open     | clean-open                 | valid                                                                        | invalid: `paraid-missing-element`                                                                                                                                                        |
+| `s57g` | 17:32:36Z, 17:33:07Z | `comments-nosidecar-text-calibration`                     | #775 calibration: the used comments part with no relationships part, comment 0 holding text only                                                               | `2fa3493ecd11ea2e` | clean-open     | clean-open     | clean-open                 | valid                                                                        | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`                                                                                                                       |
+| `s57g` | 17:32:36Z, 17:33:07Z | `glossary-nosidecar-text-calibration`                     | #775 calibration: the reached glossary with no relationships part, text only                                                                                   | `3fd0cd4bd5266aee` | clean-open     | clean-open     | clean-open                 | valid                                                                        | invalid: `paraid-missing-element`                                                                                                                                                        |
+| `s57g` | 17:32:36Z, 17:33:07Z | `main-nosidecar-text-calibration`                         | #775 calibration: the main document with no relationships part, text only                                                                                      | `bceea61fadc5f8c0` | clean-open     | clean-open     | clean-open                 | valid                                                                        | invalid: `rels-unreferenced`, `paraid-missing-element`                                                                                                                                   |
+| `s57g` | 17:32:36Z, 17:33:07Z | `s57g-control-minimal-end`                                | control                                                                                                                                                        | `758215b976d8e376` | clean-open     | clean-open     | clean-open                 | valid                                                                        | valid                                                                                                                                                                                    |
+
+<details><summary>Raw records, session 57</summary>
+
+```jsonl
+{"run": "s57a", "pass": 1, "name": "s57a-control-minimal", "sha256": "248994cb3ba586ab0a5f937cc8d49c1846ba177834e44e205d3c7a3116e0b15d", "observedAt": "2026-10-26T17:08:33+00:00", "staged": "00002__wfv__s57a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57a", "pass": 2, "name": "s57a-control-minimal", "sha256": "248994cb3ba586ab0a5f937cc8d49c1846ba177834e44e205d3c7a3116e0b15d", "observedAt": "2026-10-26T17:11:57+00:00", "staged": "00002__wfv__s57a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57a", "pass": 1, "name": "main-typed-websettings", "sha256": "1dd63b0362a9e5aee5b1621781958dd1cb0869fa85b80377b6893d0882c67531", "observedAt": "2026-10-26T17:08:33+00:00", "staged": "00000__wfv__main-typed-websettings.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:04:42.033 'Word found unreadable content in 00000__wfv__main-typed-websettings.docx. Do you want to recover th … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:04:42.642 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … y converter. (00000__wfv__main-typed-websettings.docx)\""]}
+{"run": "s57a", "pass": 2, "name": "main-typed-websettings", "sha256": "1dd63b0362a9e5aee5b1621781958dd1cb0869fa85b80377b6893d0882c67531", "observedAt": "2026-10-26T17:11:57+00:00", "staged": "00000__wfv__main-typed-websettings.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:09:34.127 'Word found unreadable content in 00000__wfv__main-typed-websettings.docx. Do you want to recover th … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:09:34.731 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … y converter. (00000__wfv__main-typed-websettings.docx)\""]}
+{"run": "s57a", "pass": 1, "name": "settings-typed-websettings", "sha256": "a07bccc4df50aec51433cb27a9d1caf4e2cc7ec8476f31d930af37c902095e51", "observedAt": "2026-10-26T17:08:33+00:00", "staged": "00007__wfv__settings-typed-websettings.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:08:32.611 'Word found unreadable content in 00007__wfv__settings-typed-websettings.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:08:33.395 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__settings-typed-websetting...)\""]}
+{"run": "s57a", "pass": 2, "name": "settings-typed-websettings", "sha256": "a07bccc4df50aec51433cb27a9d1caf4e2cc7ec8476f31d930af37c902095e51", "observedAt": "2026-10-26T17:11:57+00:00", "staged": "00007__wfv__settings-typed-websettings.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:11:57.468 Microsoft Word, Word found unreadable content in 00007__wfv__settings-typed-websettings.docx. Do you … t? If you trust the source of this document, click Yes.", "2026-10-26 13:11:57.623 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00007__wfv__settings-typed-websetting...)'"]}
+{"run": "s57a", "pass": 1, "name": "settings-typed-glossary", "sha256": "0c35b73b70acf725b800e5ef5b518689e8130472c9e20d72796e71b0c8f94f05", "observedAt": "2026-10-26T17:08:33+00:00", "staged": "00006__wfv__settings-typed-glossary.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:08:26.377 'Word found unreadable content in 00006__wfv__settings-typed-glossary.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:08:27.390 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__settings-typed-glossary.docx)\""]}
+{"run": "s57a", "pass": 2, "name": "settings-typed-glossary", "sha256": "0c35b73b70acf725b800e5ef5b518689e8130472c9e20d72796e71b0c8f94f05", "observedAt": "2026-10-26T17:11:57+00:00", "staged": "00006__wfv__settings-typed-glossary.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:11:14.031 \"Word found unreadable content in 00006__wfv__settings-typed-glossary.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.\"", "2026-10-26 13:11:14.032 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__settings-typed-glossary.docx)\""]}
+{"run": "s57a", "pass": 1, "name": "settings-typed-footer", "sha256": "300205b0c5d2f7ad5c8f66e13455c4b1b54d65751993da51fa5229dc7407992a", "observedAt": "2026-10-26T17:08:33+00:00", "staged": "00004__wfv__settings-typed-footer.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:08:09.811 'Word found unreadable content in 00004__wfv__settings-typed-footer.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s57a", "pass": 2, "name": "settings-typed-footer", "sha256": "300205b0c5d2f7ad5c8f66e13455c4b1b54d65751993da51fa5229dc7407992a", "observedAt": "2026-10-26T17:11:57+00:00", "staged": "00004__wfv__settings-typed-footer.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:10:35.415 Microsoft Word, Word found unreadable content in 00004__wfv__settings-typed-footer.docx. Do you want … t? If you trust the source of this document, click Yes.", "2026-10-26 13:10:35.543 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … y converter.\\n(00004__wfv__settings-typed-footer.docx)'"]}
+{"run": "s57a", "pass": 1, "name": "settings-typed-footnotes", "sha256": "287012fa6161653f0237327f36d1194fda343b4526a951783e95d8ebe3cb0633", "observedAt": "2026-10-26T17:08:33+00:00", "staged": "00005__wfv__settings-typed-footnotes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:08:18.762 \"Word found unreadable content in 00005__wfv__settings-typed-footnotes.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.\"", "2026-10-26 13:08:18.762 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__settings-typed-footnotes....)\""]}
+{"run": "s57a", "pass": 2, "name": "settings-typed-footnotes", "sha256": "287012fa6161653f0237327f36d1194fda343b4526a951783e95d8ebe3cb0633", "observedAt": "2026-10-26T17:11:57+00:00", "staged": "00005__wfv__settings-typed-footnotes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:11:11.078 'Word found unreadable content in 00005__wfv__settings-typed-footnotes.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s57a", "pass": 1, "name": "settings-typed-endnotes", "sha256": "75d5b977aa0bb360f1554dd686c31654ab9786edd36d4691df259b80f5dde9df", "observedAt": "2026-10-26T17:08:33+00:00", "staged": "00003__wfv__settings-typed-endnotes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:05:12.511 \"Word found unreadable content in 00003__wfv__settings-typed-endnotes.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s57a", "pass": 2, "name": "settings-typed-endnotes", "sha256": "75d5b977aa0bb360f1554dd686c31654ab9786edd36d4691df259b80f5dde9df", "observedAt": "2026-10-26T17:11:57+00:00", "staged": "00003__wfv__settings-typed-endnotes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:09:51.653 \"Word found unreadable content in 00003__wfv__settings-typed-endnotes.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s57a", "pass": 1, "name": "s57a-control-minimal-end", "sha256": "4c614976bbf43096fa3eec605cffc55e37c819d707da95359838e3e1606b28ea", "observedAt": "2026-10-26T17:08:33+00:00", "staged": "00001__wfv__s57a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57a", "pass": 2, "name": "s57a-control-minimal-end", "sha256": "4c614976bbf43096fa3eec605cffc55e37c819d707da95359838e3e1606b28ea", "observedAt": "2026-10-26T17:11:57+00:00", "staged": "00001__wfv__s57a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57b", "pass": 1, "name": "s57b-control-minimal", "sha256": "4c614976bbf43096fa3eec605cffc55e37c819d707da95359838e3e1606b28ea", "observedAt": "2026-10-26T17:15:45+00:00", "staged": "00005__wfv__s57b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57b", "pass": 2, "name": "s57b-control-minimal", "sha256": "4c614976bbf43096fa3eec605cffc55e37c819d707da95359838e3e1606b28ea", "observedAt": "2026-10-26T17:17:08+00:00", "staged": "00005__wfv__s57b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57b", "pass": 1, "name": "numbering-typed-websettings", "sha256": "9feccf6245e5729b40617aaa36bfc5a76e3ff2c6ba769be92eb55f4afe166736", "observedAt": "2026-10-26T17:15:45+00:00", "staged": "00003__wfv__numbering-typed-websettings.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:14:54.957 Microsoft Word, Word found unreadable content in 00003__wfv__numbering-typed-websettings.docx. Do yo … t? If you trust the source of this document, click Yes."]}
+{"run": "s57b", "pass": 2, "name": "numbering-typed-websettings", "sha256": "9feccf6245e5729b40617aaa36bfc5a76e3ff2c6ba769be92eb55f4afe166736", "observedAt": "2026-10-26T17:17:08+00:00", "staged": "00003__wfv__numbering-typed-websettings.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:16:58.665 'Word found unreadable content in 00003__wfv__numbering-typed-websettings.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:16:59.186 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__numbering-typed-websettin...)\""]}
+{"run": "s57b", "pass": 1, "name": "numbering-typed-glossary", "sha256": "1a37fb98665b32c38b4bd9e52c9d30c5094158cbd9bfbaea8c4441950e8f380e", "observedAt": "2026-10-26T17:15:45+00:00", "staged": "00001__wfv__numbering-typed-glossary.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:13:21.281 Microsoft Word, Word found unreadable content in 00001__wfv__numbering-typed-glossary.docx. Do you w … t? If you trust the source of this document, click Yes."]}
+{"run": "s57b", "pass": 2, "name": "numbering-typed-glossary", "sha256": "1a37fb98665b32c38b4bd9e52c9d30c5094158cbd9bfbaea8c4441950e8f380e", "observedAt": "2026-10-26T17:17:08+00:00", "staged": "00001__wfv__numbering-typed-glossary.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:16:50.244 Microsoft Word, Word found unreadable content in 00001__wfv__numbering-typed-glossary.docx. Do you w … t? If you trust the source of this document, click Yes."]}
+{"run": "s57b", "pass": 1, "name": "numbering-typed-theme", "sha256": "878fa3963393bc007b295810c9fd1f3a4f9b77cd9b41794bae7c610606f51af2", "observedAt": "2026-10-26T17:15:45+00:00", "staged": "00002__wfv__numbering-typed-theme.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:14:09.859 Microsoft Word, Word found unreadable content in 00002__wfv__numbering-typed-theme.docx. Do you want … t? If you trust the source of this document, click Yes.", "2026-10-26 13:14:10.552 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00002__wfv__numbering-typed-theme.docx)\""]}
+{"run": "s57b", "pass": 2, "name": "numbering-typed-theme", "sha256": "878fa3963393bc007b295810c9fd1f3a4f9b77cd9b41794bae7c610606f51af2", "observedAt": "2026-10-26T17:17:08+00:00", "staged": "00002__wfv__numbering-typed-theme.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:16:54.463 'Word found unreadable content in 00002__wfv__numbering-typed-theme.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:16:54.970 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00002__wfv__numbering-typed-theme.docx)\""]}
+{"run": "s57b", "pass": 1, "name": "numbering-typed-footer", "sha256": "5a0759077ea381c881c240af287e289259f29d90f481fda17dd498f1af5ebf59", "observedAt": "2026-10-26T17:15:45+00:00", "staged": "00000__wfv__numbering-typed-footer.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:12:28.530 'Word found unreadable content in 00000__wfv__numbering-typed-footer.docx. Do you want to recover th … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:12:29.070 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … y converter. (00000__wfv__numbering-typed-footer.docx)\""]}
+{"run": "s57b", "pass": 2, "name": "numbering-typed-footer", "sha256": "5a0759077ea381c881c240af287e289259f29d90f481fda17dd498f1af5ebf59", "observedAt": "2026-10-26T17:17:08+00:00", "staged": "00000__wfv__numbering-typed-footer.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:15:55.962 'Word found unreadable content in 00000__wfv__numbering-typed-footer.docx. Do you want to recover th … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:15:56.484 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … y converter. (00000__wfv__numbering-typed-footer.docx)\""]}
+{"run": "s57b", "pass": 1, "name": "styles-typed-websettings", "sha256": "e8219ecc3698979d23a0fdab2c65e4ebb6015fcbfe9d74bc75f4dbce0d972c99", "observedAt": "2026-10-26T17:15:45+00:00", "staged": "00007__wfv__styles-typed-websettings.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:15:45.068 Microsoft Word, Word found unreadable content in 00007__wfv__styles-typed-websettings.docx. Do you w … t? If you trust the source of this document, click Yes.", "2026-10-26 13:15:45.180 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00007__wfv__styles-typed-websettings....)'"]}
+{"run": "s57b", "pass": 2, "name": "styles-typed-websettings", "sha256": "e8219ecc3698979d23a0fdab2c65e4ebb6015fcbfe9d74bc75f4dbce0d972c99", "observedAt": "2026-10-26T17:17:08+00:00", "staged": "00007__wfv__styles-typed-websettings.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:17:07.430 'Word found unreadable content in 00007__wfv__styles-typed-websettings.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:17:08.231 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__styles-typed-websettings....)\""]}
+{"run": "s57b", "pass": 1, "name": "styles-typed-glossary", "sha256": "1b7a969bdf64d5666e74ebcf1d42d665cc0d4d04cdb66e176986e9c2619a26f6", "observedAt": "2026-10-26T17:15:45+00:00", "staged": "00006__wfv__styles-typed-glossary.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:15:01.375 \"Word found unreadable content in 00006__wfv__styles-typed-glossary.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.\"", "2026-10-26 13:15:01.376 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00006__wfv__styles-typed-glossary.docx)\""]}
+{"run": "s57b", "pass": 2, "name": "styles-typed-glossary", "sha256": "1b7a969bdf64d5666e74ebcf1d42d665cc0d4d04cdb66e176986e9c2619a26f6", "observedAt": "2026-10-26T17:17:08+00:00", "staged": "00006__wfv__styles-typed-glossary.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:17:03.246 'Word found unreadable content in 00006__wfv__styles-typed-glossary.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:17:04.158 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00006__wfv__styles-typed-glossary.docx)\""]}
+{"run": "s57b", "pass": 1, "name": "s57b-control-minimal-end", "sha256": "9b2df8d2561ad86a7df2f7bd0327d366e0aa347192b99a3349b9d37853fec2eb", "observedAt": "2026-10-26T17:15:45+00:00", "staged": "00004__wfv__s57b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57b", "pass": 2, "name": "s57b-control-minimal-end", "sha256": "9b2df8d2561ad86a7df2f7bd0327d366e0aa347192b99a3349b9d37853fec2eb", "observedAt": "2026-10-26T17:17:08+00:00", "staged": "00004__wfv__s57b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57c", "pass": 1, "name": "s57c-control-minimal", "sha256": "609cbac70075969af496dfc51ade53f165d219911c9f88733099e5f95b03fe21", "observedAt": "2026-10-26T17:20:06+00:00", "staged": "00006__wfv__s57c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57c", "pass": 2, "name": "s57c-control-minimal", "sha256": "609cbac70075969af496dfc51ade53f165d219911c9f88733099e5f95b03fe21", "observedAt": "2026-10-26T17:23:25+00:00", "staged": "00006__wfv__s57c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57c", "pass": 1, "name": "styles-typed-footnotes", "sha256": "617637d2915468c7427463b578f51b36fc6781bd14b6355a6006cceac8ab287c", "observedAt": "2026-10-26T17:20:06+00:00", "staged": "00007__wfv__styles-typed-footnotes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:20:06.463 \"Word found unreadable content in 00007__wfv__styles-typed-footnotes.docx. Do you want to recover th … ? If you trust the source of this document, click Yes.\"", "2026-10-26 13:20:06.464 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … y converter. (00007__wfv__styles-typed-footnotes.docx)\""]}
+{"run": "s57c", "pass": 2, "name": "styles-typed-footnotes", "sha256": "617637d2915468c7427463b578f51b36fc6781bd14b6355a6006cceac8ab287c", "observedAt": "2026-10-26T17:23:25+00:00", "staged": "00007__wfv__styles-typed-footnotes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:23:04.225 \"Word found unreadable content in 00007__wfv__styles-typed-footnotes.docx. Do you want to recover th … ? If you trust the source of this document, click Yes.\"", "2026-10-26 13:23:04.227 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … y converter. (00007__wfv__styles-typed-footnotes.docx)\""]}
+{"run": "s57c", "pass": 1, "name": "footer1-referenced-typed-styles", "sha256": "c1e11e67de461ed78a21cc84cc41c4c9dc9be248de41233e98a849fc0a4136f1", "observedAt": "2026-10-26T17:20:06+00:00", "staged": "00003__wfv__footer1-referenced-typed-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:19:27.248 'Word found unreadable content in 00003__wfv__footer1-referenced-typed-styles.docx. Do you want to r … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s57c", "pass": 2, "name": "footer1-referenced-typed-styles", "sha256": "c1e11e67de461ed78a21cc84cc41c4c9dc9be248de41233e98a849fc0a4136f1", "observedAt": "2026-10-26T17:23:25+00:00", "staged": "00003__wfv__footer1-referenced-typed-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:22:13.917 \"Word found unreadable content in 00003__wfv__footer1-referenced-typed-styles.docx. Do you want to r … ? If you trust the source of this document, click Yes.\"", "2026-10-26 13:22:13.917 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__footer1-referenced-typed-...)\""]}
+{"run": "s57c", "pass": 1, "name": "footer1-referenced-typed-main", "sha256": "a844faa237b4cf11d1035522fc7016725a21da63928798ab15214d7672f5fdae", "observedAt": "2026-10-26T17:20:06+00:00", "staged": "00000__wfv__footer1-referenced-typed-main.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:17:30.197 'Word found unreadable content in 00000__wfv__footer1-referenced-typed-main.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:17:30.735 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__footer1-referenced-typed-...)\""]}
+{"run": "s57c", "pass": 2, "name": "footer1-referenced-typed-main", "sha256": "a844faa237b4cf11d1035522fc7016725a21da63928798ab15214d7672f5fdae", "observedAt": "2026-10-26T17:23:25+00:00", "staged": "00000__wfv__footer1-referenced-typed-main.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:20:33.439 'Word found unreadable content in 00000__wfv__footer1-referenced-typed-main.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:20:34.196 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__footer1-referenced-typed-...)\""]}
+{"run": "s57c", "pass": 1, "name": "footer1-referenced-typed-numbering", "sha256": "0b5913f49e90938b394b705e671888bd69d733a5eec9abc367a5fd5519786d3f", "observedAt": "2026-10-26T17:20:06+00:00", "staged": "00001__wfv__footer1-referenced-typed-numbering.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:18:15.977 Microsoft Word, Word found unreadable content in 00001__wfv__footer1-referenced-typed-numbering.docx … t? If you trust the source of this document, click Yes.", "2026-10-26 13:18:16.047 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00001__wfv__footer1-referenced-typed-...)'"]}
+{"run": "s57c", "pass": 2, "name": "footer1-referenced-typed-numbering", "sha256": "0b5913f49e90938b394b705e671888bd69d733a5eec9abc367a5fd5519786d3f", "observedAt": "2026-10-26T17:23:25+00:00", "staged": "00001__wfv__footer1-referenced-typed-numbering.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:21:25.379 Microsoft Word, Word found unreadable content in 00001__wfv__footer1-referenced-typed-numbering.docx … t? If you trust the source of this document, click Yes.", "2026-10-26 13:21:26.087 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__footer1-referenced-typed-...)\""]}
+{"run": "s57c", "pass": 1, "name": "footer1-referenced-typed-settings", "sha256": "b0d85ca51f8e570124eefc871f1f13117761ea1134d7b00fbc2261cacb3cb165", "observedAt": "2026-10-26T17:20:06+00:00", "staged": "00002__wfv__footer1-referenced-typed-settings.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:18:51.632 'Word found unreadable content in 00002__wfv__footer1-referenced-typed-settings.docx. Do you want to … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s57c", "pass": 2, "name": "footer1-referenced-typed-settings", "sha256": "b0d85ca51f8e570124eefc871f1f13117761ea1134d7b00fbc2261cacb3cb165", "observedAt": "2026-10-26T17:23:25+00:00", "staged": "00002__wfv__footer1-referenced-typed-settings.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:22:09.507 Microsoft Word, Word found unreadable content in 00002__wfv__footer1-referenced-typed-settings.docx. … t? If you trust the source of this document, click Yes."]}
+{"run": "s57c", "pass": 1, "name": "header1-referenced-typed-main", "sha256": "7e26835eb7150098d5aba69b06362270a3ca8bddf3b16ffd3d7101fa5030b4fc", "observedAt": "2026-10-26T17:20:06+00:00", "staged": "00004__wfv__header1-referenced-typed-main.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:20:02.825 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00004__wfv__header1-referenced-typed-...)'", "2026-10-26 13:20:03.052 \"Word found unreadable content in 00004__wfv__header1-referenced-typed-main.docx. Do you want to rec … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s57c", "pass": 2, "name": "header1-referenced-typed-main", "sha256": "7e26835eb7150098d5aba69b06362270a3ca8bddf3b16ffd3d7101fa5030b4fc", "observedAt": "2026-10-26T17:23:25+00:00", "staged": "00004__wfv__header1-referenced-typed-main.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:22:57.666 Microsoft Word, Word found unreadable content in 00004__wfv__header1-referenced-typed-main.docx. Do  … t? If you trust the source of this document, click Yes."]}
+{"run": "s57c", "pass": 1, "name": "s57c-control-minimal-end", "sha256": "0c73b5b2075522cb5f2b86769f9171883f0f10de24e1d8705107f5bcd78e376d", "observedAt": "2026-10-26T17:20:06+00:00", "staged": "00005__wfv__s57c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57c", "pass": 2, "name": "s57c-control-minimal-end", "sha256": "0c73b5b2075522cb5f2b86769f9171883f0f10de24e1d8705107f5bcd78e376d", "observedAt": "2026-10-26T17:23:25+00:00", "staged": "00005__wfv__s57c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57d", "pass": 1, "name": "s57d-control-minimal", "sha256": "0c73b5b2075522cb5f2b86769f9171883f0f10de24e1d8705107f5bcd78e376d", "observedAt": "2026-10-26T17:25:13+00:00", "staged": "00007__wfv__s57d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57d", "pass": 2, "name": "s57d-control-minimal", "sha256": "0c73b5b2075522cb5f2b86769f9171883f0f10de24e1d8705107f5bcd78e376d", "observedAt": "2026-10-26T17:27:17+00:00", "staged": "00007__wfv__s57d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57d", "pass": 1, "name": "header1-referenced-typed-styles", "sha256": "158e1abfd05cea588210d4f3c8d32529a3d0ce75cd6fff345bd514613ee17c1d", "observedAt": "2026-10-26T17:25:13+00:00", "staged": "00005__wfv__header1-referenced-typed-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:25:11.773 Microsoft Word, Word found unreadable content in 00005__wfv__header1-referenced-typed-styles.docx. D … t? If you trust the source of this document, click Yes.", "2026-10-26 13:25:12.516 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__header1-referenced-typed-...)\""]}
+{"run": "s57d", "pass": 2, "name": "header1-referenced-typed-styles", "sha256": "158e1abfd05cea588210d4f3c8d32529a3d0ce75cd6fff345bd514613ee17c1d", "observedAt": "2026-10-26T17:27:17+00:00", "staged": "00005__wfv__header1-referenced-typed-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:27:16.118 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00005__wfv__header1-referenced-typed-...)'", "2026-10-26 13:27:16.229 \"Word found unreadable content in 00005__wfv__header1-referenced-typed-styles.docx. Do you want to r … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s57d", "pass": 1, "name": "glossary-styles-main-footer-coreach", "sha256": "3727640958988634ba037535bc87c7457a5a6378c63b1081d51f4816d0ac0e93", "observedAt": "2026-10-26T17:25:13+00:00", "staged": "00004__wfv__glossary-styles-main-footer-coreach.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:24:21.736 \"Word found unreadable content in 00004__wfv__glossary-styles-main-footer-coreach.docx. Do you want  … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s57d", "pass": 2, "name": "glossary-styles-main-footer-coreach", "sha256": "3727640958988634ba037535bc87c7457a5a6378c63b1081d51f4816d0ac0e93", "observedAt": "2026-10-26T17:27:17+00:00", "staged": "00004__wfv__glossary-styles-main-footer-coreach.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:26:14.439 \"Word found unreadable content in 00004__wfv__glossary-styles-main-footer-coreach.docx. Do you want  … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s57d", "pass": 1, "name": "customizations-noext-refused", "sha256": "1163f74dd346f646463d9de4dd637839f4ae4d74228f3b31c08fcc3401307986", "observedAt": "2026-10-26T17:25:13+00:00", "staged": "00002__wfv__customizations-noext-refused.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:24:04.813 \"Word found unreadable content in 00002__wfv__customizations-noext-refused.docx. Do you want to reco … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s57d", "pass": 2, "name": "customizations-noext-refused", "sha256": "1163f74dd346f646463d9de4dd637839f4ae4d74228f3b31c08fcc3401307986", "observedAt": "2026-10-26T17:27:17+00:00", "staged": "00002__wfv__customizations-noext-refused.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:26:01.397 \"Word found unreadable content in 00002__wfv__customizations-noext-refused.docx. Do you want to reco … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s57d", "pass": 1, "name": "customizations-noext-repaired-calibration", "sha256": "d78e36f247b7e0b3ad29a356a6c00ef65f230c65cee1a9ba7f8564215dba5b4b", "observedAt": "2026-10-26T17:25:13+00:00", "staged": "00003__wfv__customizations-noext-repaired-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customizations-noext-repaired-calibration_byword.pdf (434557 bytes), no dialog named the file"]}
+{"run": "s57d", "pass": 2, "name": "customizations-noext-repaired-calibration", "sha256": "d78e36f247b7e0b3ad29a356a6c00ef65f230c65cee1a9ba7f8564215dba5b4b", "observedAt": "2026-10-26T17:27:17+00:00", "staged": "00003__wfv__customizations-noext-repaired-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customizations-noext-repaired-calibration_byword.pdf (434557 bytes), no dialog named the file"]}
+{"run": "s57d", "pass": 1, "name": "customizations-bin-refused", "sha256": "2d6ad179d337d957f42d512558c364436ba76a9d78fa13273d74672c0dceab88", "observedAt": "2026-10-26T17:25:13+00:00", "staged": "00000__wfv__customizations-bin-refused.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:23:49.522 'Word found unreadable content in 00000__wfv__customizations-bin-refused.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:23:50.127 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__customizations-bin-refuse...)\""]}
+{"run": "s57d", "pass": 2, "name": "customizations-bin-refused", "sha256": "2d6ad179d337d957f42d512558c364436ba76a9d78fa13273d74672c0dceab88", "observedAt": "2026-10-26T17:27:17+00:00", "staged": "00000__wfv__customizations-bin-refused.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:25:44.681 'Word found unreadable content in 00000__wfv__customizations-bin-refused.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:25:45.295 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__customizations-bin-refuse...)\""]}
+{"run": "s57d", "pass": 1, "name": "customizations-bin-repaired-calibration", "sha256": "54425e5a751ebfd6b61add0559a8932aa774dabaef01abf05cca676d9127d416", "observedAt": "2026-10-26T17:25:13+00:00", "staged": "00001__wfv__customizations-bin-repaired-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customizations-bin-repaired-calibration_byword.pdf (434557 bytes), no dialog named the file"]}
+{"run": "s57d", "pass": 2, "name": "customizations-bin-repaired-calibration", "sha256": "54425e5a751ebfd6b61add0559a8932aa774dabaef01abf05cca676d9127d416", "observedAt": "2026-10-26T17:27:17+00:00", "staged": "00001__wfv__customizations-bin-repaired-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customizations-bin-repaired-calibration_byword.pdf (434557 bytes), no dialog named the file"]}
+{"run": "s57d", "pass": 1, "name": "s57d-control-minimal-end", "sha256": "4ebc5fc7a77793b4c282b2f71291b16319110212a72be9fbf34884fd3cd69bba", "observedAt": "2026-10-26T17:25:13+00:00", "staged": "00006__wfv__s57d-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57d-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57d", "pass": 2, "name": "s57d-control-minimal-end", "sha256": "4ebc5fc7a77793b4c282b2f71291b16319110212a72be9fbf34884fd3cd69bba", "observedAt": "2026-10-26T17:27:17+00:00", "staged": "00006__wfv__s57d-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57d-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57e", "pass": 1, "name": "s57e-control-minimal", "sha256": "0aa8dce5d97ed3905ad20ada6346d235dcbf9888a80e702cf85bde02f087a073", "observedAt": "2026-10-26T17:28:05+00:00", "staged": "00001__wfv__s57e-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57e-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57e", "pass": 2, "name": "s57e-control-minimal", "sha256": "0aa8dce5d97ed3905ad20ada6346d235dcbf9888a80e702cf85bde02f087a073", "observedAt": "2026-10-26T17:28:33+00:00", "staged": "00001__wfv__s57e-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57e-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57e", "pass": 1, "name": "styles-charset-read-header", "sha256": "35526b2da46eb9aae1ae05a393e0cedfb68f3e928d8ca432bdbc84523dd33f39", "observedAt": "2026-10-26T17:28:05+00:00", "staged": "00005__wfv__styles-charset-read-header.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:27:56.213 'Word found unreadable content in 00005__wfv__styles-charset-read-header.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:27:56.736 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__styles-charset-read-heade...)\""]}
+{"run": "s57e", "pass": 2, "name": "styles-charset-read-header", "sha256": "35526b2da46eb9aae1ae05a393e0cedfb68f3e928d8ca432bdbc84523dd33f39", "observedAt": "2026-10-26T17:28:33+00:00", "staged": "00005__wfv__styles-charset-read-header.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:28:24.212 'Word found unreadable content in 00005__wfv__styles-charset-read-header.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:28:24.749 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__styles-charset-read-heade...)\""]}
+{"run": "s57e", "pass": 1, "name": "styles-charset-read-comments", "sha256": "242becce0a9acfd3e4894cb5b0efd6b34d5d2d37a66cbb3f65924d1a95f65d6a", "observedAt": "2026-10-26T17:28:05+00:00", "staged": "00002__wfv__styles-charset-read-comments.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:27:43.697 'Word found unreadable content in 00002__wfv__styles-charset-read-comments.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:27:44.497 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__styles-charset-read-comme...)\""]}
+{"run": "s57e", "pass": 2, "name": "styles-charset-read-comments", "sha256": "242becce0a9acfd3e4894cb5b0efd6b34d5d2d37a66cbb3f65924d1a95f65d6a", "observedAt": "2026-10-26T17:28:33+00:00", "staged": "00002__wfv__styles-charset-read-comments.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:28:11.646 'Word found unreadable content in 00002__wfv__styles-charset-read-comments.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:28:12.171 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__styles-charset-read-comme...)\""]}
+{"run": "s57e", "pass": 1, "name": "styles-charset-read-footnotes", "sha256": "830bef6fe25e6346ed30afeb2b1cd7320178f13859afb5dd00ce5d55591d7399", "observedAt": "2026-10-26T17:28:05+00:00", "staged": "00004__wfv__styles-charset-read-footnotes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:27:52.046 'Word found unreadable content in 00004__wfv__styles-charset-read-footnotes.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:27:52.837 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__styles-charset-read-footn...)\""]}
+{"run": "s57e", "pass": 2, "name": "styles-charset-read-footnotes", "sha256": "830bef6fe25e6346ed30afeb2b1cd7320178f13859afb5dd00ce5d55591d7399", "observedAt": "2026-10-26T17:28:33+00:00", "staged": "00004__wfv__styles-charset-read-footnotes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:28:20.029 'Word found unreadable content in 00004__wfv__styles-charset-read-footnotes.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:28:20.570 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__styles-charset-read-footn...)\""]}
+{"run": "s57e", "pass": 1, "name": "styles-charset-read-endnotes", "sha256": "f9f60f2fb8997592b182a32b896efd7d81cf3972e2ed3427cc33ccad62024788", "observedAt": "2026-10-26T17:28:05+00:00", "staged": "00003__wfv__styles-charset-read-endnotes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:27:47.862 'Word found unreadable content in 00003__wfv__styles-charset-read-endnotes.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:27:48.353 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__styles-charset-read-endno...)\""]}
+{"run": "s57e", "pass": 2, "name": "styles-charset-read-endnotes", "sha256": "f9f60f2fb8997592b182a32b896efd7d81cf3972e2ed3427cc33ccad62024788", "observedAt": "2026-10-26T17:28:33+00:00", "staged": "00003__wfv__styles-charset-read-endnotes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:28:15.830 'Word found unreadable content in 00003__wfv__styles-charset-read-endnotes.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:28:16.382 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__styles-charset-read-endno...)\""]}
+{"run": "s57e", "pass": 1, "name": "styles-exact-read-header-calibration", "sha256": "7cd14ebc0aa7f84aaf205b50d3a8f4ed5870f5e636ad45f7e0e7291eb9352421", "observedAt": "2026-10-26T17:28:05+00:00", "staged": "00007__wfv__styles-exact-read-header-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:28:04.563 'Word found unreadable content in 00007__wfv__styles-exact-read-header-calibration.docx. Do you want … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:28:05.104 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__styles-exact-read-header-...)\""]}
+{"run": "s57e", "pass": 2, "name": "styles-exact-read-header-calibration", "sha256": "7cd14ebc0aa7f84aaf205b50d3a8f4ed5870f5e636ad45f7e0e7291eb9352421", "observedAt": "2026-10-26T17:28:33+00:00", "staged": "00007__wfv__styles-exact-read-header-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:28:32.562 'Word found unreadable content in 00007__wfv__styles-exact-read-header-calibration.docx. Do you want … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:28:33.364 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__styles-exact-read-header-...)\""]}
+{"run": "s57e", "pass": 1, "name": "styles-exact-read-comments-calibration", "sha256": "21a2c19651d13d9a24e2dcb4b1446e78f4d60ab6bb89a26b7619cdc62e687dd7", "observedAt": "2026-10-26T17:28:05+00:00", "staged": "00006__wfv__styles-exact-read-comments-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:28:00.379 'Word found unreadable content in 00006__wfv__styles-exact-read-comments-calibration.docx. Do you wa … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:28:00.886 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__styles-exact-read-comment...)\""]}
+{"run": "s57e", "pass": 2, "name": "styles-exact-read-comments-calibration", "sha256": "21a2c19651d13d9a24e2dcb4b1446e78f4d60ab6bb89a26b7619cdc62e687dd7", "observedAt": "2026-10-26T17:28:33+00:00", "staged": "00006__wfv__styles-exact-read-comments-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:28:28.380 'Word found unreadable content in 00006__wfv__styles-exact-read-comments-calibration.docx. Do you wa … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:28:28.886 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__styles-exact-read-comment...)\""]}
+{"run": "s57e", "pass": 1, "name": "s57e-control-minimal-end", "sha256": "da7e7c5a27003b236c846a37cee9c3f2206f057cc4e6eb542639d516edc912fa", "observedAt": "2026-10-26T17:28:05+00:00", "staged": "00000__wfv__s57e-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57e-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57e", "pass": 2, "name": "s57e-control-minimal-end", "sha256": "da7e7c5a27003b236c846a37cee9c3f2206f057cc4e6eb542639d516edc912fa", "observedAt": "2026-10-26T17:28:33+00:00", "staged": "00000__wfv__s57e-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57e-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57f", "pass": 1, "name": "s57f-control-minimal", "sha256": "da7e7c5a27003b236c846a37cee9c3f2206f057cc4e6eb542639d516edc912fa", "observedAt": "2026-10-26T17:29:26+00:00", "staged": "00005__wfv__s57f-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57f-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57f", "pass": 2, "name": "s57f-control-minimal", "sha256": "da7e7c5a27003b236c846a37cee9c3f2206f057cc4e6eb542639d516edc912fa", "observedAt": "2026-10-26T17:31:55+00:00", "staged": "00005__wfv__s57f-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57f-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57f", "pass": 1, "name": "styles-exact-read-footnotes-calibration", "sha256": "a0e211c406472b638d859ff7cbe4df029ad0771205269bdd7790f96f20730c43", "observedAt": "2026-10-26T17:29:26+00:00", "staged": "00007__wfv__styles-exact-read-footnotes-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:29:12.245 'Word found unreadable content in 00007__wfv__styles-exact-read-footnotes-calibration.docx. Do you w … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:29:12.769 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__styles-exact-read-footnot...)\""]}
+{"run": "s57f", "pass": 2, "name": "styles-exact-read-footnotes-calibration", "sha256": "a0e211c406472b638d859ff7cbe4df029ad0771205269bdd7790f96f20730c43", "observedAt": "2026-10-26T17:31:55+00:00", "staged": "00007__wfv__styles-exact-read-footnotes-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:31:41.665 Microsoft Word, Word found unreadable content in 00007__wfv__styles-exact-read-footnotes-calibration … t? If you trust the source of this document, click Yes."]}
+{"run": "s57f", "pass": 1, "name": "styles-exact-read-endnotes-calibration", "sha256": "66ca502ed802554c7bb21d6325b013c92fa056732c2cbc38a42eeb7ef64c98a0", "observedAt": "2026-10-26T17:29:26+00:00", "staged": "00006__wfv__styles-exact-read-endnotes-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:29:08.048 'Word found unreadable content in 00006__wfv__styles-exact-read-endnotes-calibration.docx. Do you wa … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:29:08.587 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__styles-exact-read-endnote...)\""]}
+{"run": "s57f", "pass": 2, "name": "styles-exact-read-endnotes-calibration", "sha256": "66ca502ed802554c7bb21d6325b013c92fa056732c2cbc38a42eeb7ef64c98a0", "observedAt": "2026-10-26T17:31:55+00:00", "staged": "00006__wfv__styles-exact-read-endnotes-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:30:57.901 \"Word found unreadable content in 00006__wfv__styles-exact-read-endnotes-calibration.docx. Do you wa … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s57f", "pass": 1, "name": "glossary-rels-hyperlink-targetmode-lowercase-external", "sha256": "1ac1e13540f1e6a86973f72605531f692d41d2b05d45b78859416a833115fa35", "observedAt": "2026-10-26T17:29:26+00:00", "staged": "00003__wfv__glossary-rels-hyperlink-targetmode-lowercase-external.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:29:03.630 'Word found unreadable content in 00003__wfv__glossary-rels-hyperlink-targetmode-lowercase-ext.... D … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:29:04.153 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__glossary-rels-hyperlink-t...)\""]}
+{"run": "s57f", "pass": 2, "name": "glossary-rels-hyperlink-targetmode-lowercase-external", "sha256": "1ac1e13540f1e6a86973f72605531f692d41d2b05d45b78859416a833115fa35", "observedAt": "2026-10-26T17:31:55+00:00", "staged": "00003__wfv__glossary-rels-hyperlink-targetmode-lowercase-external.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:30:41.183 \"Word found unreadable content in 00003__wfv__glossary-rels-hyperlink-targetmode-lowercase-ext.... D … ? If you trust the source of this document, click Yes.\"", "2026-10-26 13:31:55.943 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__glossary-rels-hyperlink-t...)\""]}
+{"run": "s57f", "pass": 1, "name": "glossary-rels-hyperlink-targetmode-external-calibration", "sha256": "3078096a815ba072798d840ddcc9bb85b4ec1c7b6a0e2cf0d7f868dddb267714", "observedAt": "2026-10-26T17:29:26+00:00", "staged": "00002__wfv__glossary-rels-hyperlink-targetmode-external-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF glossary-rels-hyperlink-targetmode-external-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57f", "pass": 2, "name": "glossary-rels-hyperlink-targetmode-external-calibration", "sha256": "3078096a815ba072798d840ddcc9bb85b4ec1c7b6a0e2cf0d7f868dddb267714", "observedAt": "2026-10-26T17:31:55+00:00", "staged": "00002__wfv__glossary-rels-hyperlink-targetmode-external-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF glossary-rels-hyperlink-targetmode-external-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57f", "pass": 1, "name": "footnotes-nosidecar-chart", "sha256": "f5fe300bcbdc13e8cdb0a9a44d3c6a2eee22046da23b5f0f2de0ee4484f1596f", "observedAt": "2026-10-26T17:29:26+00:00", "staged": "00001__wfv__footnotes-nosidecar-chart.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:28:59.535 'Word found unreadable content in 00001__wfv__footnotes-nosidecar-chart.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:29:00.406 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__footnotes-nosidecar-chart...)\""]}
+{"run": "s57f", "pass": 2, "name": "footnotes-nosidecar-chart", "sha256": "f5fe300bcbdc13e8cdb0a9a44d3c6a2eee22046da23b5f0f2de0ee4484f1596f", "observedAt": "2026-10-26T17:31:55+00:00", "staged": "00001__wfv__footnotes-nosidecar-chart.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:30:28.315 Microsoft Word, Word found unreadable content in 00001__wfv__footnotes-nosidecar-chart.docx. Do you  … t? If you trust the source of this document, click Yes."]}
+{"run": "s57f", "pass": 1, "name": "comments-nosidecar-chart", "sha256": "48607444445ed090bdc764bf074ed3d0af965fec0c24600541408a7d0ff3cdf3", "observedAt": "2026-10-26T17:29:26+00:00", "staged": "00000__wfv__comments-nosidecar-chart.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:28:55.311 'Word found unreadable content in 00000__wfv__comments-nosidecar-chart.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:28:56.154 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__comments-nosidecar-chart....)\""]}
+{"run": "s57f", "pass": 2, "name": "comments-nosidecar-chart", "sha256": "48607444445ed090bdc764bf074ed3d0af965fec0c24600541408a7d0ff3cdf3", "observedAt": "2026-10-26T17:31:55+00:00", "staged": "00000__wfv__comments-nosidecar-chart.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:29:35.562 'Word found unreadable content in 00000__wfv__comments-nosidecar-chart.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:29:36.101 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__comments-nosidecar-chart....)\""]}
+{"run": "s57f", "pass": 1, "name": "s57f-control-minimal-end", "sha256": "97d90bf4ec540dde2cb9fdf277e86378e1cf47ceeb7ae262e684e99e34ad8251", "observedAt": "2026-10-26T17:29:26+00:00", "staged": "00004__wfv__s57f-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57f-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57f", "pass": 2, "name": "s57f-control-minimal-end", "sha256": "97d90bf4ec540dde2cb9fdf277e86378e1cf47ceeb7ae262e684e99e34ad8251", "observedAt": "2026-10-26T17:31:55+00:00", "staged": "00004__wfv__s57f-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57f-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57g", "pass": 1, "name": "s57g-control-minimal", "sha256": "18228f0990d5c7230688e7f47a9dfb2fe40ba3faa9b2f1b12518b4a61b32ca7d", "observedAt": "2026-10-26T17:32:36+00:00", "staged": "00007__wfv__s57g-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57g-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57g", "pass": 2, "name": "s57g-control-minimal", "sha256": "18228f0990d5c7230688e7f47a9dfb2fe40ba3faa9b2f1b12518b4a61b32ca7d", "observedAt": "2026-10-26T17:33:07+00:00", "staged": "00007__wfv__s57g-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57g-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57g", "pass": 1, "name": "glossary-nosidecar-chart", "sha256": "fab66d767d81f3a04a49f1af766007727aa74568ce63905d79bd51b53177b4ed", "observedAt": "2026-10-26T17:32:36+00:00", "staged": "00002__wfv__glossary-nosidecar-chart.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:32:18.432 'Word found unreadable content in 00002__wfv__glossary-nosidecar-chart.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:32:19.272 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__glossary-nosidecar-chart....)\""]}
+{"run": "s57g", "pass": 2, "name": "glossary-nosidecar-chart", "sha256": "fab66d767d81f3a04a49f1af766007727aa74568ce63905d79bd51b53177b4ed", "observedAt": "2026-10-26T17:33:07+00:00", "staged": "00002__wfv__glossary-nosidecar-chart.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:32:48.547 'Word found unreadable content in 00002__wfv__glossary-nosidecar-chart.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:32:49.438 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__glossary-nosidecar-chart....)\""]}
+{"run": "s57g", "pass": 1, "name": "main-nosidecar-chart", "sha256": "87dced31c409fcd2cd65dc6aaf0df85119772ac5cd360972d8362176bee4204a", "observedAt": "2026-10-26T17:32:36+00:00", "staged": "00004__wfv__main-nosidecar-chart.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:32:35.835 \"Word found unreadable content in 00004__wfv__main-nosidecar-chart.docx. Do you want to recover the  … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s57g", "pass": 2, "name": "main-nosidecar-chart", "sha256": "87dced31c409fcd2cd65dc6aaf0df85119772ac5cd360972d8362176bee4204a", "observedAt": "2026-10-26T17:33:07+00:00", "staged": "00004__wfv__main-nosidecar-chart.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:33:05.985 \"Word found unreadable content in 00004__wfv__main-nosidecar-chart.docx. Do you want to recover the  … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s57g", "pass": 1, "name": "footnotes-nosidecar-text-calibration", "sha256": "da8dc994cfa8023fbccad5efd5fc133bf6ce6fa543993aba3bc240d1e667873d", "observedAt": "2026-10-26T17:32:36+00:00", "staged": "00001__wfv__footnotes-nosidecar-text-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-nosidecar-text-calibration_byword.pdf (14717 bytes), no dialog named the file"]}
+{"run": "s57g", "pass": 2, "name": "footnotes-nosidecar-text-calibration", "sha256": "da8dc994cfa8023fbccad5efd5fc133bf6ce6fa543993aba3bc240d1e667873d", "observedAt": "2026-10-26T17:33:07+00:00", "staged": "00001__wfv__footnotes-nosidecar-text-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-nosidecar-text-calibration_byword.pdf (14717 bytes), no dialog named the file"]}
+{"run": "s57g", "pass": 1, "name": "comments-nosidecar-text-calibration", "sha256": "2fa3493ecd11ea2e5f24f38f5a6124de38e81e923d4a2f6c3178675aa042cff1", "observedAt": "2026-10-26T17:32:36+00:00", "staged": "00000__wfv__comments-nosidecar-text-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-nosidecar-text-calibration_byword.pdf (32924 bytes), no dialog named the file"]}
+{"run": "s57g", "pass": 2, "name": "comments-nosidecar-text-calibration", "sha256": "2fa3493ecd11ea2e5f24f38f5a6124de38e81e923d4a2f6c3178675aa042cff1", "observedAt": "2026-10-26T17:33:07+00:00", "staged": "00000__wfv__comments-nosidecar-text-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-nosidecar-text-calibration_byword.pdf (32924 bytes), no dialog named the file"]}
+{"run": "s57g", "pass": 1, "name": "glossary-nosidecar-text-calibration", "sha256": "3fd0cd4bd5266aee59c46c0cdba120f3fef6283e6f868f064324c5af62906e55", "observedAt": "2026-10-26T17:32:36+00:00", "staged": "00003__wfv__glossary-nosidecar-text-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF glossary-nosidecar-text-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57g", "pass": 2, "name": "glossary-nosidecar-text-calibration", "sha256": "3fd0cd4bd5266aee59c46c0cdba120f3fef6283e6f868f064324c5af62906e55", "observedAt": "2026-10-26T17:33:07+00:00", "staged": "00003__wfv__glossary-nosidecar-text-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF glossary-nosidecar-text-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57g", "pass": 1, "name": "main-nosidecar-text-calibration", "sha256": "bceea61fadc5f8c030c10301a0fb0712f6d56a6cbdb8dd7650e50388ad3ff8d7", "observedAt": "2026-10-26T17:32:36+00:00", "staged": "00005__wfv__main-nosidecar-text-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-nosidecar-text-calibration_byword.pdf (8418 bytes), no dialog named the file"]}
+{"run": "s57g", "pass": 2, "name": "main-nosidecar-text-calibration", "sha256": "bceea61fadc5f8c030c10301a0fb0712f6d56a6cbdb8dd7650e50388ad3ff8d7", "observedAt": "2026-10-26T17:33:07+00:00", "staged": "00005__wfv__main-nosidecar-text-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-nosidecar-text-calibration_byword.pdf (8418 bytes), no dialog named the file"]}
+{"run": "s57g", "pass": 1, "name": "s57g-control-minimal-end", "sha256": "758215b976d8e37652697268969a5e78a7b88a4c133d9ed4f1985b234df2a973", "observedAt": "2026-10-26T17:32:36+00:00", "staged": "00006__wfv__s57g-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57g-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s57g", "pass": 2, "name": "s57g-control-minimal-end", "sha256": "758215b976d8e37652697268969a5e78a7b88a4c133d9ed4f1985b234df2a973", "observedAt": "2026-10-26T17:33:07+00:00", "staged": "00006__wfv__s57g-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s57g-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 57 builder, cross-check and section scripts</summary>
+
+Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s57builder.mts`:
+
+```ts
+// Session 57 (2026-10-26): the shapes the adversarial reviews of layers 168–179 found word-valid judging without a Word row.
+// - #779 (s57a, s57b, first row of s57c): thirteen mapped-type pairs no session showed — the main document, a related
+//   settings, numbering or styles part typed by its Override with another mapped Word type (webSettings on every reach;
+//   settings typed glossary, footer, footnotes or endnotes; numbering typed glossary, theme or footer; styles typed
+//   glossary or footnotes). word-valid blocks every one, citing sessions 49/50 and 53.
+// - #778 (rest of s57c, first two rows of s57d): a referenced word/footer1.xml typed styles, main, numbering or settings,
+//   a referenced word/header1.xml typed main or styles, and a reached glossary's own styles part a main footer reference
+//   also targets. Layer 174 blocks the first three footer rows and the glossary row as session 53's co-reach.
+// - #777 (rest of s57d): the attached-toolbar fixtures with their customizations part renamed to word/customizations (no
+//   extension) or word/customizations.bin, its relationship, sidecar and Override renamed with it.
+// - #776 (s57e, first two rows of s57f): word/styles.xml typed `…styles+xml; charset=utf-8` with a read header, comments,
+//   footnotes or endnotes relationship also targeting it, and each with the exact styles type (calibrations).
+// - #775 (rest of s57f, s57g): a misspelled TargetMode in a reached glossary's relationships part, and a used footnotes,
+//   used comments, reached glossary or main document with no relationships part holding a dangling c:chart r:id, each
+//   with a no-reference calibration.
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s57a pnpm exec node --import tsx s57builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import JSZip from "jszip";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const C = "http://schemas.openxmlformats.org/drawingml/2006/chart";
+const A = "http://schemas.openxmlformats.org/drawingml/2006/main";
+const WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const MAIN_TYPE = `${WML}.document.main+xml`;
+const STYLES_TYPE = `${WML}.styles+xml`;
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+const DRAWING_NS = `xmlns:wp="${WP}" xmlns:a="${A}" xmlns:c="${C}" xmlns:r="${R}"`;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string, mode?: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"${mode === undefined ? "" : ` TargetMode="${mode}"`}/>`;
+const relsPart = (body: string) =>
+    `${XML_DECL}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${body}</Relationships>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+const retype = (ct: string, part: string, own: string, type: string) =>
+    replaceOnce(ct, `<Override PartName="/${part}" ContentType="${own}"/>`, `<Override PartName="/${part}" ContentType="${type}"/>`);
+const control = () => buildDocx({ ...P });
+
+type Kind = "numbering" | "settings";
+const KINDS: Record<Kind, { root: string; ct: string }> = {
+    numbering: { root: `${XML_DECL}<w:numbering xmlns:w="${W}"/>`, ct: `${WML}.numbering+xml` },
+    settings: { root: `${XML_DECL}<w:settings xmlns:w="${W}"/>`, ct: `${WML}.settings+xml` },
+};
+const TYPES = {
+    main: MAIN_TYPE,
+    styles: STYLES_TYPE,
+    theme: "application/vnd.openxmlformats-officedocument.theme+xml",
+    glossary: `${WML}.document.glossary+xml`,
+    header: `${WML}.header+xml`,
+    footer: `${WML}.footer+xml`,
+    footnotes: `${WML}.footnotes+xml`,
+    endnotes: `${WML}.endnotes+xml`,
+    comments: `${WML}.comments+xml`,
+    settings: KINDS.settings.ct,
+    numbering: KINDS.numbering.ct,
+    webSettings: `${WML}.webSettings+xml`,
+};
+const STYLES_CHARSET = `${STYLES_TYPE}; charset=utf-8`;
+
+/** The minimal package plus `word/<kind>.xml` related from the main document's sidecar as rId2, typed `type` (sessions 50 and 53). */
+const relatedTyped = (kind: Kind, type: string) =>
+    buildDocx({
+        ...P,
+        [`word/${kind}.xml`]: KINDS[kind].root,
+        [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rId2", kind, `${kind}.xml`)),
+        [CT]: overrides(P[CT]!, [`word/${kind}.xml`, type]),
+    });
+const mainTyped = (type: string) => buildDocx({ ...P, [CT]: retype(P[CT]!, MAIN, MAIN_TYPE, type) });
+const stylesRetyped = (type: string): Record<string, string> => ({ ...P, [CT]: retype(P[CT]!, "word/styles.xml", STYLES_TYPE, type) });
+
+/**
+ * `parts` with the main document's `r:` prefix declared, `sect` first in its `w:sectPr` and `run` appended inside its
+ * only paragraph (story and note references live there, never directly in `w:body`).
+ */
+const mainWith = (parts: Record<string, string>, sect: string, run = ""): Record<string, string> => ({
+    ...parts,
+    [MAIN]: replaceOnce(
+        replaceOnce(replaceOnce(parts[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`), "<w:sectPr>", `<w:sectPr>${sect}`),
+        "</w:r></w:p>",
+        `</w:r>${run}</w:p>`,
+    ),
+});
+const STORY_ROOTS = {
+    header: `${XML_DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r></w:p></w:hdr>`,
+    footer: `${XML_DECL}<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Footer</w:t></w:r></w:p></w:ftr>`,
+};
+/** A `word/<story>1.xml` the body references through `w:<story>Reference r:id="rIdS"`, typed `type` by its Override (#778). */
+const referencedStoryTyped = (story: "header" | "footer", type: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [`word/${story}1.xml`]: STORY_ROOTS[story],
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdS", story, `${story}1.xml`)),
+                [CT]: overrides(P[CT]!, [`word/${story}1.xml`, type]),
+            },
+            `<w:${story}Reference w:type="default" r:id="rIdS"/>`,
+        ),
+    );
+
+/** Each reference that makes a lazy reach of `word/styles.xml` read: a section reference or a run in the body (#776). */
+const COREACH = {
+    header: { sect: `<w:headerReference w:type="default" r:id="rIdX"/>`, run: "" },
+    comments: { sect: "", run: `<w:r><w:commentReference w:id="0"/></w:r>` },
+    footnotes: { sect: "", run: `<w:r><w:footnoteReference w:id="1"/></w:r>` },
+    endnotes: { sect: "", run: `<w:r><w:endnoteReference w:id="1"/></w:r>` },
+};
+const stylesCoReach = (type: string, segment: keyof typeof COREACH) => {
+    const parts = stylesRetyped(type);
+    return buildDocx(
+        mainWith(
+            { ...parts, [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdX", segment, "styles.xml")) },
+            COREACH[segment].sect,
+            COREACH[segment].run,
+        ),
+    );
+};
+
+/** Session 52's chart drawing in its own paragraph; `ids` is the reference's id attribute(s), verbatim. */
+const chartDrawing = (ids: string) =>
+    '<w:p><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="5486400" cy="3200400"/>' +
+    `<wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="Chart 1"/><wp:cNvGraphicFramePr/><a:graphic><a:graphicData uri="${C}">` +
+    `<c:chart ${ids}/></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+const TEXT_P = "<w:p><w:r><w:t>x</w:t></w:r></w:p>";
+
+/** The minimal package with a reached glossary: the main document's glossaryDocument relationship, `body` in its one docPart. */
+const glossaryParts = (
+    body: string,
+    sidecar: string | undefined,
+    extra: Record<string, string> = {},
+    extraTypes: Array<[string, string]> = [],
+) => ({
+    ...P,
+    "word/glossary/document.xml":
+        `${XML_DECL}<w:glossaryDocument xmlns:w="${W}" ${DRAWING_NS}><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+        `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+        `<w:docPartBody>${body}</w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`,
+    ...(sidecar === undefined ? {} : { "word/glossary/_rels/document.xml.rels": sidecar }),
+    ...extra,
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdG", "glossaryDocument", "glossary/document.xml")),
+    [CT]: overrides(P[CT]!, ["word/glossary/document.xml", TYPES.glossary], ...extraTypes),
+});
+/** #778: the glossary's own styles part, related by its sidecar, also the target of a footer relationship the main body references. */
+const glossaryStylesFooterCoReach = () => {
+    const parts = glossaryParts(
+        TEXT_P,
+        relsPart(relationship("rId1", "styles", "styles.xml")),
+        { "word/glossary/styles.xml": P["word/styles.xml"]! },
+        [["word/glossary/styles.xml", STYLES_TYPE]],
+    );
+    return buildDocx(
+        mainWith(
+            { ...parts, [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdF", "footer", "glossary/styles.xml")) },
+            `<w:footerReference w:type="default" r:id="rIdF"/>`,
+        ),
+    );
+};
+/** #775: a reached glossary whose own sidecar holds an unreferenced hyperlink relationship with `mode` (s55e's shape there). */
+const glossaryHyperlink = (mode: string) =>
+    buildDocx(glossaryParts(TEXT_P, relsPart(relationship("rId99", "hyperlink", "https://example.com/", mode))));
+
+/** #775: a used notes or comments part with no relationships part, holding `body` (a dangling chart, or text). */
+const NOTE_PARTS = {
+    footnotes: {
+        root: (b: string) => `<w:footnotes xmlns:w="${W}" ${DRAWING_NS}><w:footnote w:id="1">${b}</w:footnote></w:footnotes>`,
+        ref: COREACH.footnotes.run,
+    },
+    comments: {
+        root: (b: string) => `<w:comments xmlns:w="${W}" ${DRAWING_NS}><w:comment w:id="0" w:author="a">${b}</w:comment></w:comments>`,
+        ref: COREACH.comments.run,
+    },
+};
+const usedNoSidecar = (segment: keyof typeof NOTE_PARTS, body: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [`word/${segment}.xml`]: `${XML_DECL}${NOTE_PARTS[segment].root(body)}`,
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", segment, `${segment}.xml`)),
+                [CT]: overrides(P[CT]!, [`word/${segment}.xml`, TYPES[segment]]),
+            },
+            "",
+            NOTE_PARTS[segment].ref,
+        ),
+    );
+const glossaryNoSidecar = (body: string) => buildDocx(glossaryParts(body, undefined));
+/** #775: the main document with no relationships part at all (so no styles relationship either), `body` before its w:sectPr. */
+const mainNoSidecar = (body: string) => {
+    const { [SIDECAR]: _dropped, ...parts } = P;
+    return buildDocx({
+        ...parts,
+        [MAIN]: replaceOnce(replaceOnce(P[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" ${DRAWING_NS}`), "<w:sectPr>", `${body}<w:sectPr>`),
+    });
+};
+
+/** #777: a toolbar fixture with word/customizations.xml renamed to `name`, its relationship, sidecar and Override renamed with it. */
+const FIXTURES = {
+    refused: "tests/fixtures/broken/package.word-attached-toolbar-utf8.docx",
+    repaired: "tests/fixtures/working/package.word-attached-toolbar-utf8-repaired.docx",
+};
+const customizationsRenamed = async (fixture: keyof typeof FIXTURES, name: string) => {
+    const zip = await JSZip.loadAsync(readFileSync(FIXTURES[fixture]));
+    const move = async (from: string, to: string) => {
+        const entry = zip.file(from);
+        if (!entry) throw new Error(`no ${from}`);
+        zip.file(to, await entry.async("uint8array"));
+        zip.remove(from);
+    };
+    const edit = async (part: string, from: string, to: string) =>
+        zip.file(part, replaceOnce(await zip.file(part)!.async("string"), from, to));
+    await move("word/customizations.xml", `word/${name}`);
+    await move("word/_rels/customizations.xml.rels", `word/_rels/${name}.rels`);
+    await edit(SIDECAR, 'Target="customizations.xml"', `Target="${name}"`);
+    await edit(CT, '<Override PartName="/word/customizations.xml"', `<Override PartName="/word/${name}"`);
+    return zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
+};
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+const pair = (reach: string, type: keyof typeof TYPES): string => `#779: the ${reach} typed by its Override with the ${type} content type`;
+
+const chunks: Record<string, Row[]> = {
+    s57a: withControls("s57a", [
+        ["main-typed-websettings", pair("main document", "webSettings"), () => mainTyped(TYPES.webSettings)],
+        ["settings-typed-websettings", pair("related word/settings.xml", "webSettings"), () => relatedTyped("settings", TYPES.webSettings)],
+        ["settings-typed-glossary", pair("related word/settings.xml", "glossary"), () => relatedTyped("settings", TYPES.glossary)],
+        ["settings-typed-footer", pair("related word/settings.xml", "footer"), () => relatedTyped("settings", TYPES.footer)],
+        ["settings-typed-footnotes", pair("related word/settings.xml", "footnotes"), () => relatedTyped("settings", TYPES.footnotes)],
+        ["settings-typed-endnotes", pair("related word/settings.xml", "endnotes"), () => relatedTyped("settings", TYPES.endnotes)],
+    ]),
+    s57b: withControls("s57b", [
+        [
+            "numbering-typed-websettings",
+            pair("related word/numbering.xml", "webSettings"),
+            () => relatedTyped("numbering", TYPES.webSettings),
+        ],
+        ["numbering-typed-glossary", pair("related word/numbering.xml", "glossary"), () => relatedTyped("numbering", TYPES.glossary)],
+        ["numbering-typed-theme", pair("related word/numbering.xml", "theme"), () => relatedTyped("numbering", TYPES.theme)],
+        ["numbering-typed-footer", pair("related word/numbering.xml", "footer"), () => relatedTyped("numbering", TYPES.footer)],
+        ["styles-typed-websettings", pair("word/styles.xml", "webSettings"), () => buildDocx(stylesRetyped(TYPES.webSettings))],
+        ["styles-typed-glossary", pair("word/styles.xml", "glossary"), () => buildDocx(stylesRetyped(TYPES.glossary))],
+    ]),
+    s57c: withControls("s57c", [
+        ["styles-typed-footnotes", pair("word/styles.xml", "footnotes"), () => buildDocx(stylesRetyped(TYPES.footnotes))],
+        [
+            "footer1-referenced-typed-styles",
+            "#778: a word/footer1.xml the body references, typed by its Override with the styles content type",
+            () => referencedStoryTyped("footer", TYPES.styles),
+        ],
+        [
+            "footer1-referenced-typed-main",
+            "#778: the same footer typed with the main document content type",
+            () => referencedStoryTyped("footer", TYPES.main),
+        ],
+        [
+            "footer1-referenced-typed-numbering",
+            "#778: the same footer typed with the numbering content type",
+            () => referencedStoryTyped("footer", TYPES.numbering),
+        ],
+        [
+            "footer1-referenced-typed-settings",
+            "#778: the same footer typed with the settings content type",
+            () => referencedStoryTyped("footer", TYPES.settings),
+        ],
+        [
+            "header1-referenced-typed-main",
+            "#778: a word/header1.xml the body references, typed with the main document content type",
+            () => referencedStoryTyped("header", TYPES.main),
+        ],
+    ]),
+    s57d: withControls("s57d", [
+        [
+            "header1-referenced-typed-styles",
+            "#778: the same header typed with the styles content type",
+            () => referencedStoryTyped("header", TYPES.styles),
+        ],
+        [
+            "glossary-styles-main-footer-coreach",
+            "#778: a reached glossary's own word/glossary/styles.xml (styles type, related by its sidecar) that a footer relationship the main body references also targets",
+            glossaryStylesFooterCoReach,
+        ],
+        [
+            "customizations-noext-refused",
+            "#777: the refused toolbar fixture with word/customizations.xml renamed word/customizations (no extension), relationship, sidecar and Override renamed with it",
+            () => customizationsRenamed("refused", "customizations"),
+        ],
+        [
+            "customizations-noext-repaired-calibration",
+            "#777 calibration: the same rename of the repaired toolbar fixture",
+            () => customizationsRenamed("repaired", "customizations"),
+        ],
+        [
+            "customizations-bin-refused",
+            "#777: the refused toolbar fixture with word/customizations.xml renamed word/customizations.bin (its Override keeps the keyMapCustomizations type)",
+            () => customizationsRenamed("refused", "customizations.bin"),
+        ],
+        [
+            "customizations-bin-repaired-calibration",
+            "#777 calibration: the same .bin rename of the repaired toolbar fixture",
+            () => customizationsRenamed("repaired", "customizations.bin"),
+        ],
+    ]),
+    s57e: withControls("s57e", [
+        [
+            "styles-charset-read-header",
+            "#776: word/styles.xml typed styles+xml; charset=utf-8, also the target of a header relationship the body references",
+            () => stylesCoReach(STYLES_CHARSET, "header"),
+        ],
+        [
+            "styles-charset-read-comments",
+            '#776: the same with a comments relationship and a w:commentReference w:id="0" in the body',
+            () => stylesCoReach(STYLES_CHARSET, "comments"),
+        ],
+        [
+            "styles-charset-read-footnotes",
+            '#776: the same with a footnotes relationship and a w:footnoteReference w:id="1" in the body',
+            () => stylesCoReach(STYLES_CHARSET, "footnotes"),
+        ],
+        [
+            "styles-charset-read-endnotes",
+            '#776: the same with an endnotes relationship and a w:endnoteReference w:id="1" in the body',
+            () => stylesCoReach(STYLES_CHARSET, "endnotes"),
+        ],
+        [
+            "styles-exact-read-header-calibration",
+            "#776 calibration: the header co-reach with the exact styles content type",
+            () => stylesCoReach(STYLES_TYPE, "header"),
+        ],
+        [
+            "styles-exact-read-comments-calibration",
+            "#776 calibration: the comments co-reach with the exact styles content type",
+            () => stylesCoReach(STYLES_TYPE, "comments"),
+        ],
+    ]),
+    s57f: withControls("s57f", [
+        [
+            "styles-exact-read-footnotes-calibration",
+            "#776 calibration: the footnotes co-reach with the exact styles content type",
+            () => stylesCoReach(STYLES_TYPE, "footnotes"),
+        ],
+        [
+            "styles-exact-read-endnotes-calibration",
+            "#776 calibration: the endnotes co-reach with the exact styles content type",
+            () => stylesCoReach(STYLES_TYPE, "endnotes"),
+        ],
+        [
+            "glossary-rels-hyperlink-targetmode-lowercase-external",
+            '#775: a reached glossary whose relationships part holds an unreferenced hyperlink relationship with TargetMode="external"',
+            () => glossaryHyperlink("external"),
+        ],
+        [
+            "glossary-rels-hyperlink-targetmode-external-calibration",
+            '#775 calibration: the same with TargetMode="External"',
+            () => glossaryHyperlink("External"),
+        ],
+        [
+            "footnotes-nosidecar-chart",
+            '#775: a used word/footnotes.xml with no relationships part, footnote 1 holding c:chart r:id="rId1"',
+            () => usedNoSidecar("footnotes", chartDrawing('r:id="rId1"')),
+        ],
+        [
+            "comments-nosidecar-chart",
+            '#775: a used word/comments.xml with no relationships part, comment 0 holding c:chart r:id="rId1"',
+            () => usedNoSidecar("comments", chartDrawing('r:id="rId1"')),
+        ],
+    ]),
+    s57g: withControls("s57g", [
+        [
+            "glossary-nosidecar-chart",
+            '#775: a reached glossary document with no relationships part holding c:chart r:id="rId1"',
+            () => glossaryNoSidecar(chartDrawing('r:id="rId1"')),
+        ],
+        [
+            "main-nosidecar-chart",
+            '#775: the main document with no relationships part holding c:chart r:id="rId1"',
+            () => mainNoSidecar(chartDrawing('r:id="rId1"')),
+        ],
+        [
+            "footnotes-nosidecar-text-calibration",
+            "#775 calibration: the used footnotes part with no relationships part, footnote 1 holding text only",
+            () => usedNoSidecar("footnotes", TEXT_P),
+        ],
+        [
+            "comments-nosidecar-text-calibration",
+            "#775 calibration: the used comments part with no relationships part, comment 0 holding text only",
+            () => usedNoSidecar("comments", TEXT_P),
+        ],
+        [
+            "glossary-nosidecar-text-calibration",
+            "#775 calibration: the reached glossary with no relationships part, text only",
+            () => glossaryNoSidecar(TEXT_P),
+        ],
+        [
+            "main-nosidecar-text-calibration",
+            "#775 calibration: the main document with no relationships part, text only",
+            () => mainNoSidecar(TEXT_P),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-57 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s57a", "s57b", "s57c", "s57d", "s57e", "s57f", "s57g")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s57/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-57 parts of docs/plans/evidence/word-probes-2026-10-24.md into s57/section.md.
+
+Reads each chunk's specimens.jsonl (validator columns at d93138a9, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s57/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s57a", "s57b", "s57c", "s57d", "s57e", "s57f", "s57g")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s57/results.json").read_text())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends = [], [], [], []
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    f"### Session 57: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at d93138a9",
+    "",
+    "The shapes the adversarial reviews of layers 168–179 found without a Word row "
+    "([#775](https://github.com/jandira-tech/docx-validate/issues/775)–"
+    "[#779](https://github.com/jandira-tech/docx-validate/issues/779)). Seven chunks, each opening and closing with the minimal "
+    "control. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from "
+    f"its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs "
+    f"and both readings agree, and `unknown` otherwise; {agreed} of {len(rows)} rows agree. The two times in Observed are the ends of "
+    "the first and second runs. Shape is the builder's description of the specimen.",
+    "",
+    "- #779: each of the 13 mapped-type pairs no session had shown gets the recovery offer. These are the main document typed "
+    "webSettings; `word/settings.xml` typed webSettings, glossary, footer, footnotes or endnotes; `word/numbering.xml` typed "
+    "webSettings, glossary, theme or footer; and `word/styles.xml` typed webSettings, glossary or footnotes. Word-valid at d93138a9 "
+    "already rejects all 13; these rows are the observation its recovery sentences lacked.",
+    "- #778: a `word/footer1.xml` the body references gets the recovery offer typed with the styles, main document, numbering or "
+    "settings content type; word-valid rejects the first three and accepts the settings row. A `word/header1.xml` the body "
+    "references gets the recovery offer typed with the main document or styles content type; word-valid accepts both. A reached "
+    "glossary's own styles part that a footer relationship the body references also reaches gets the recovery offer; word-valid "
+    "rejects it. Three false negatives.",
+    "- #777: the refused attached-toolbar fixture with `word/customizations.xml` renamed without an extension, or to "
+    "`word/customizations.bin` (its Override keeping the keyMapCustomizations type), still gets the recovery offer; the same renames "
+    "of the repaired fixture open clean. Word-valid accepts both refused rows. Two false negatives.",
+    "- #776: `word/styles.xml` typed `…styles+xml; charset=utf-8` and also the target of a header, comments, footnotes or endnotes "
+    "relationship the body reads gets the recovery offer, and word-valid rejects all four. The calibrations with the exact styles "
+    "type get the recovery offer too, so the refusal does not need the inexact spelling; word-valid rejects only the footnotes "
+    "calibration. Three false negatives. The comments, footnotes and endnotes specimens reference an id (`w:commentReference "
+    "w:id=\"0\"`, `w:footnoteReference w:id=\"1\"`, `w:endnoteReference w:id=\"1\"`) in a part rooted `w:styles`, so a dangling "
+    "reference is a possible confound in those three; the header rows have no such reference.",
+    "- #775: a reached glossary whose relationships part holds an unreferenced hyperlink relationship with `TargetMode=\"external\"` "
+    "gets the recovery offer; with `External` it opens clean. Word-valid accepts the lowercase row: a false negative. A used "
+    "`word/footnotes.xml`, a used `word/comments.xml`, a reached glossary and the main document, each with no relationships part "
+    "and holding `c:chart r:id=\"rId1\"`, get the recovery offer, and word-valid rejects all four; their text-only calibrations open "
+    "clean.",
+    "",
+    "| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at d93138a9 | strict at d93138a9 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 57</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 57 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s57builder.mts", ROOT / "s57builder.mts", "ts"), ("compare.py", ROOT / "s57/compare.py", "python"),
+                         ("section.py", ROOT / "s57/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s57/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>

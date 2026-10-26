@@ -14,7 +14,7 @@ import { getRelationshipChildren } from "../../../lib/xml-helpers";
 export const targetModeRelationshipParts = async (ctx: ValidationContext, profile?: Profile): Promise<ReadonlySet<string>> => {
     const parts = new Set(ctx.partNames.filter((part) => canonicalPartName(part) === "_rels/.rels"));
     for (const target of await wordReadTypedTargets(ctx, profile)) {
-        if (target.segment !== "officeDocument" || target.via !== undefined) continue;
+        if (target.segment !== "officeDocument") continue;
         const sidecar = sidecarOf(ctx.partNames, target.part);
         if (sidecar !== undefined) parts.add(sidecar);
     }
@@ -30,14 +30,16 @@ export const targetModeRelationshipParts = async (ctx: ValidationContext, profil
  * the main sidecar, and external on that hyperlink in the package part.
  * Internal on the chart and diagramData and External on the hyperlinks
  * open clean. The same hyperlink with external in a referenced header's
- * sidecar opens clean (s55e), so that part keeps its verdict. Other
- * relationships parts — glossary, footnotes, comments and so on — are
- * unshown and keep their verdict too. Main documents are found by
- * relationship, wherever stored; reached glossaries are not main documents.
+ * sidecar opens clean (s55e), so that part keeps its verdict. Session 57
+ * (s57f, #775) refused the same unreferenced hyperlink with external in a
+ * reached glossary's sidecar; its External calibration opens clean. Main
+ * documents and reached glossaries are found by relationship, wherever
+ * stored. Other relationships parts — footnotes, comments and so on —
+ * are unshown and keep their verdict.
  */
 export const opcRelationshipsTargetModeCheck: CheckDefinition = {
     id: "opc-relationships-target-mode",
-    description: "Package and main-document relationships use exactly Internal or External when TargetMode is present.",
+    description: "Package, main-document and reached-glossary relationships use exactly Internal or External when TargetMode is present.",
     groups: ["relationships"],
     formats: ["docx"],
     requires: ["xml-syntax"],
