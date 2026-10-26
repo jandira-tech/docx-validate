@@ -1888,6 +1888,24 @@ describe("wordUnobservedRelationshipTargets (#638)", () => {
         );
     });
 
+    it.each(["_%72els", "%5Frels", "_r%65ls"])(
+        "resolves targets against the source part's folder from a word/%s sidecar (#772)",
+        async (folder) => {
+            const parts: Parts = {
+                ...MINIMAL_PARTS,
+                [`word/${folder}/styles.xml.rels`]:
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                    `<Relationships xmlns="${RELS_NS}">` +
+                    `<Relationship Id="rId3" Type="http://schemas.microsoft.com/office/2011/relationships/people" Target="../xdocs/people1.xml"/>` +
+                    `</Relationships>`,
+                "xdocs/people1.xml": MALFORMED.customXml!,
+            };
+            expect(await wordUnobservedRelationshipTargets(ValidationContext.fromEntries(parts))).toEqual(
+                new Set([MAIN_NAMED, canonicalPartName("xdocs/people1.xml")]),
+            );
+        },
+    );
+
     it.each([
         ["an unknown type", "urn:x:unknown", "../xdocs/xtra.xml"],
         ["an observed type", `${R}/styles`, "../xdocs/xtra.xml"],
