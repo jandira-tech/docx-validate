@@ -746,7 +746,8 @@ reached glossary's own styles part a main footer relationship also reaches
 (s57d); and session 58 (s58b,
 [#785](https://github.com/jandira-tech/docx-validate/issues/785)) the
 other read stories: a used comments, endnotes or footnotes part the body
-references typed with the styles type, while the exact-typed styles part
+references holding its own root and typed with the styles type
+([#803](https://github.com/jandira-tech/docx-validate/issues/803)), while the exact-typed styles part
 a comments, endnotes or footnotes relationship nothing references also
 targets opens clean (s58a/s58b) — the observed shape is the read story
 typed styles, not the styles part co-reached. Word refused every co-reach

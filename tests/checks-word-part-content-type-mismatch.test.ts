@@ -375,6 +375,76 @@ it.each([
     }
 });
 
+// Session 58's s58b rows were own-root parts, so #785's pairs co-reach only
+// a part holding the story's own root (#803): a comments, endnotes or
+// footnotes part whose root is `w:styles` keeps the verdict it had before
+// #785 — silent under word-valid, the spec-path finding under strict —
+// with no session-58 citation.
+describe("session 58 pairs need the story's own root (#803)", () => {
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    /** The body's reference into each story. */
+    const REFS = {
+        comments: `<w:r><w:commentReference w:id="0"/></w:r>`,
+        endnotes: `<w:r><w:endnoteReference w:id="1"/></w:r>`,
+        footnotes: `<w:r><w:footnoteReference w:id="1"/></w:r>`,
+    } as const;
+    type Story = keyof typeof REFS;
+    /** A used `word/<story>.xml` holding a `w:styles` root, typed with the styles content type. */
+    const foreignRootStoryParts = (story: Story): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(`xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`).replace(
+            "</w:r></w:p>",
+            `</w:r>${REFS[story]}</w:p>`,
+        ),
+        [`word/${story}.xml`]: MINIMAL_PARTS["word/styles.xml"]!,
+        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdS" Type="${R}/${story}" Target="${story}.xml"/></Relationships>`,
+        ),
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="/word/${story}.xml" ContentType="${storyContentType("styles")}"/></Types>`,
+        ),
+    });
+
+    it.each(["comments", "endnotes", "footnotes"] as const)(
+        "reports no mismatch for a used %s part holding a w:styles root under word-valid",
+        async (story) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "foreign-root.docx");
+                writeFileSync(file, await buildDocx(foreignRootStoryParts(story)));
+                const partial = await validate(file, { checks: [ID] });
+                expect(partial.valid).toBe(true);
+                const result = await validate(file);
+                expect(result.valid, "the reference dangles, so the full word-valid run fails").toBe(false);
+                expect(result.issues.filter((issue) => issue.code === ID)).toEqual([]);
+            });
+        },
+        60_000,
+    );
+
+    it.each(["comments", "endnotes", "footnotes"] as const)(
+        "cites the spec, not session 58, for a strict %s part holding a w:styles root",
+        async (story) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "foreign-root.docx");
+                writeFileSync(file, await buildDocx(foreignRootStoryParts(story)));
+                const found = (await validate(file, { profile: "strict" })).issues.filter((issue) => issue.code === ID);
+                expect(found).toEqual([
+                    expect.objectContaining({
+                        severity: "error",
+                        path: `word/${story}.xml`,
+                        message: expect.stringContaining("ECMA-376 Part 1 (4th edition), clause 11.3"),
+                    }),
+                ]);
+                expect(found[0]?.message).not.toContain("session");
+            });
+        },
+        60_000,
+    );
+});
+
 // Sessions 49 and 50 (2026-10-26): Word 16.115 offered recovery for the main
 // styles part typed with the settings type (s49b), and for a related settings
 // part typed with the styles type, a related numbering part typed with the
