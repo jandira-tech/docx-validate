@@ -53,7 +53,12 @@
  * the finding — the types are pairwise distinct, so at most one can match.
  * A lazily parsed segment the story root does not read neither reports nor
  * hides a read segment of the same part, because the `wordReadParts` gate
- * decides per (part, segment) pair, not per part.
+ * decides per (part, segment) pair, not per part — and a read story
+ * segment hides no eager reach either: session 56 (s56a) observed Word
+ * 16.115 recover the styles part typed `…styles+xml; charset=utf-8` with
+ * a read footer relationship also targeting it (#760), so the spelling is
+ * judged over every reach the story roots read, as session 53 judged the
+ * mismatch over all of the part's entries (#739).
  *
  * Strict justifies the same defect by the spec — ECMA-376 Part 1 (4th
  * edition), clause 11.3, gives every WordprocessingML part its own content
@@ -306,9 +311,17 @@ export const wordPartContentTypeInexactFindings = async (
             );
         // A part read through another story-reference segment is a mismatch,
         // even when an unused relationship matches this inexact media type
-        // (#607). Eager relationships keep their existing spec scope.
+        // (#607), so the judgment covers the reaches the story roots read —
+        // a read lazy segment and every eager one — and an unused lazy
+        // relationship neither reports nor hides. A read story segment
+        // hides no eager reach either: session 56 (s56a) observed Word
+        // recover the styles part typed `…styles+xml; charset=utf-8` with a
+        // read footer relationship also targeting it (#760), as session 53
+        // ended the matching reach's exemption in the mismatch check
+        // (#739). Eager relationships keep their existing spec scope.
         const readEntries = entries.filter((entry) => LAZY_OBSERVED_SEGMENTS.has(entry.segment) && isRead(entry));
-        const judged = readEntries.length > 0 ? readEntries : entries;
+        const judged =
+            readEntries.length > 0 ? entries.filter((entry) => !LAZY_OBSERVED_SEGMENTS.has(entry.segment) || isRead(entry)) : entries;
         const matching = judged.filter(({ segment }) =>
             expectedContentTypesFor(segment).some((type) => mediaType === asciiLowercase(type)),
         );
