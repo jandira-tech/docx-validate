@@ -153,6 +153,11 @@ describe("isWordBlockingIssue", () => {
         // references an endnote; the same pair with no reference opens
         // clean (#807).
         "word-duplicate-endnotes-relationship",
+        // Word session 63 (s63d) offers recovery for two footnotes
+        // relationships in the main document's sidecar when the body
+        // references a footnote; the unreferenced pair opened clean
+        // (session 45 s45g, #827).
+        "word-duplicate-footnotes-relationship",
         "word-numbering-picture-bullet",
         "word-footnote-reference-missing",
         "documentbuilder-insert-unresolved",

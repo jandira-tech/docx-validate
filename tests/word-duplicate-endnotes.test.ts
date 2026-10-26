@@ -11,10 +11,11 @@
  * both), and whether the second part was typed endnotes+xml or
  * application/octet-stream. The same two relationships with no endnote
  * reference opened clean (s62e). A reached glossary's own pair is
- * unprobed, so the rule judges only the main document's sidecar, and two
- * unreferenced footnotes relationships opened clean (session 45 s45g),
- * so footnotes keeps no check of its own. Specimens are built from
- * MINIMAL_PARTS the way the session 62 builder built its rows.
+ * unprobed, so the rule judges only the main document's sidecar. Two
+ * unreferenced footnotes relationships opened clean (session 45 s45g);
+ * the referenced pair, which session 63 s63d showed Word refusing, has
+ * its own rule (#827). Specimens are built from MINIMAL_PARTS the way
+ * the session 62 builder built its rows.
  */
 
 import { writeFileSync } from "node:fs";
