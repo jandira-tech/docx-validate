@@ -969,6 +969,16 @@ reject references whose ids name no matching note. Session 58 (s58a, two runs,
 all four readings agree) showed recovery for the dangling comment and endnote
 references and clean opens for their matching-id calibrations
 ([#784](https://github.com/jandira-tech/docx-validate/issues/784)).
+`comment-markers` collects markers and comment ids in both the Transitional
+and the Strict WordprocessingML namespaces, the ids attributes in the
+marker's own namespace, so an ISO Strict package's comments are judged too:
+session 63 (s63a in `docs/plans/evidence/word-probes-2026-10-24.md`, two
+runs, all readings agree) offered recovery for a Strict `w:commentReference`
+naming no comment its comments part defines, and opened the unchanged
+Word-saved Strict calibration clean
+([#817](https://github.com/jandira-tech/docx-validate/issues/817)), so the
+Strict dangling reference blocks as its Transitional counterpart does. A
+Strict orphan range start or end, now paired too, is unprobed.
 Endnote references inside a footnotes part stay unjudged, matching session 16's
 clean open: Word does not follow those references. The defined notes are read
 only from the parts a `footnotes` / `endnotes` relationship of the main

@@ -3,9 +3,11 @@
  * Licensed under the Apache License, Version 2.0.
  */
 
+import { readFileSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import type { ValidationIssue } from "../src/lib/types";
@@ -249,6 +251,69 @@ describe("dangling comment references (#784, session 58 s58a)", { timeout: 30000
 
 /** The comments part of both #799 specimens, holding comment 5 outside any branch. */
 const COMMENTS_HOLDING_FIVE = commentsPart("5", "0000AAAA");
+
+describe("dangling comment references in an ISO Strict package (#817, session 63 s63a)", { timeout: 30000 }, () => {
+    // Session 63 (s63a, two runs, all readings agree) opened the Word-saved ISO
+    // Strict fixture `word-clean-strict01.docx` (pinned clean-open in session 46;
+    // comment 0 fully marked, the comments part defining only comment 0) clean
+    // unchanged, and offered recovery once one more run held
+    // `w:commentReference w:id="99"` right after comment 0's reference: the
+    // Strict twin of session 58's s58a refusal, so the reference blocks as its
+    // Transitional counterpart does.
+    const STRICT01 = path.join(path.dirname(fileURLToPath(import.meta.url)), "fixtures/working/word-clean-strict01.docx");
+
+    /** The fixture re-zipped, with `dangling` one more run holding `w:commentReference w:id="99"` after comment 0's reference. */
+    const strict01 = async (dangling = false): Promise<Buffer> => {
+        const zip = await JSZip.loadAsync(readFileSync(STRICT01));
+        const parts: Record<string, string | Uint8Array> = {};
+        for (const [name, entry] of Object.entries(zip.files)) {
+            if (entry.dir) continue;
+            parts[name] = await entry.async("uint8array");
+        }
+        if (dangling) {
+            parts["word/document.xml"] = Buffer.from(parts["word/document.xml"] as Uint8Array)
+                .toString("utf8")
+                .replace(
+                    '<w:commentReference w:id="0"/></w:r>',
+                    '<w:commentReference w:id="0"/></w:r><w:r><w:commentReference w:id="99"/></w:r>',
+                );
+        }
+        return buildDocx(parts);
+    };
+
+    it("the unchanged Strict calibration stays clean, as Word opened it in both runs", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "strict01.docx");
+            await writeFile(file, await strict01());
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(commentIssues(result.issues)).toEqual([]);
+        });
+    });
+
+    it("a Strict w:commentReference naming no defined comment blocks word-valid", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "strict01-dangling.docx");
+            await writeFile(file, await strict01(true));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([
+                expect.objectContaining({
+                    code: "comment-marker-missing",
+                    path: "word/document.xml",
+                    message: 'marker id="99" references non-existent comment',
+                }),
+            ]);
+            const selected = await validate(file, { profile: "word-valid", checks: ["comments"] });
+            expect(selected.valid).toBe(false);
+            expect(selected.issues).toEqual(commentIssues(result.issues));
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.issues).toContainEqual(
+                expect.objectContaining({ code: "comment-marker-missing", severity: "error", path: "word/document.xml" }),
+            );
+        });
+    });
+});
 
 /**
  * The minimal document's root with the unknown `Requires` prefix bound, so an

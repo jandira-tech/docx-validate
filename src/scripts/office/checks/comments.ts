@@ -19,7 +19,7 @@ import {
 } from "../../../lib/word-read-parts";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
 import { xmlPartNames } from "./xml";
-import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
+import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 
 const W14_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordml";
 const W15_NAMESPACE = "http://schemas.microsoft.com/office/word/2012/wordml";
@@ -165,14 +165,21 @@ export const commentMarkersCheck: CheckDefinition = {
             return issues;
         }
 
+        // Both conformance classes: a marker's id is an attribute in the
+        // marker's own WordprocessingML namespace, so a Strict document's
+        // markers are named by `purl.oclc.org` ids. Session 63 (s63a)
+        // offered recovery for a Strict `w:commentReference` naming no
+        // defined comment, so the check cannot read one namespace only.
         const collectIds = (localName: string): Set<string> => {
             const out = new Set<string>();
-            const list = getElementsByTagNameNSAll(docDom, WORD_2006_NAMESPACE, localName);
-            for (let i = 0; i < list.length; i += 1) {
-                const elem = list[i];
-                if (!elem) continue;
-                const id = elem.getAttributeNS(WORD_2006_NAMESPACE, "id");
-                out.add(id ?? "");
+            for (const wNs of WORD_PARAGRAPH_NAMESPACES) {
+                const list = getElementsByTagNameNSAll(docDom, wNs, localName);
+                for (let i = 0; i < list.length; i += 1) {
+                    const elem = list[i];
+                    if (!elem) continue;
+                    const id = elem.getAttributeNS(wNs, "id");
+                    out.add(id ?? "");
+                }
             }
             return out;
         };
@@ -214,13 +221,17 @@ export const commentMarkersCheck: CheckDefinition = {
                 });
                 return issues;
             }
+            // As the markers above: a Strict comments part defines its
+            // comments in the `purl.oclc.org` namespace, ids included.
             const commentIds = new Set<string>();
-            const list = getElementsByTagNameNSAll(commentsDom, WORD_2006_NAMESPACE, "comment");
-            for (let i = 0; i < list.length; i += 1) {
-                const elem = list[i];
-                if (!elem) continue;
-                const id = elem.getAttributeNS(WORD_2006_NAMESPACE, "id");
-                if (id) commentIds.add(id);
+            for (const wNs of WORD_PARAGRAPH_NAMESPACES) {
+                const list = getElementsByTagNameNSAll(commentsDom, wNs, "comment");
+                for (let i = 0; i < list.length; i += 1) {
+                    const elem = list[i];
+                    if (!elem) continue;
+                    const id = elem.getAttributeNS(wNs, "id");
+                    if (id) commentIds.add(id);
+                }
             }
 
             const markerIds = new Set<string>([...rangeStarts, ...rangeEnds, ...references]);
