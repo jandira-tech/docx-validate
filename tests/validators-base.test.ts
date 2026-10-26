@@ -21,9 +21,11 @@ import JSZip from "jszip";
 import { describe, expect, it, vi } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { validate } from "../src/scripts/office/validate";
+import { parseXml } from "../src/lib/xml-helpers";
 import {
     BaseSchemaValidator,
     containRelationshipTarget,
+    hasAnyElementChild,
     walkDirectory,
     withoutRestatedIgnorablePrefixes,
 } from "../src/scripts/office/validators/base";
@@ -50,6 +52,16 @@ class HarnessValidator extends BaseSchemaValidator {
 
 const RELS_HEADER = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`;
 const W_NS = `xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"`;
+const STYLES_RELATIONSHIP = `Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"`;
+// Relationships parts with element children but no OPC-namespace <Relationship> (#684).
+const WRONG_NAMESPACE_RELS: readonly (readonly [label: string, body: string])[] = [
+    ["no namespace", `<Relationships><Relationship ${STYLES_RELATIONSHIP}/></Relationships>`],
+    ["foreign namespace", `<Relationships xmlns="urn:example:relationships"><Relationship ${STYLES_RELATIONSHIP}/></Relationships>`],
+    [
+        "OPC root, foreign child",
+        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><x:Relationship xmlns:x="urn:example:x" ${STYLES_RELATIONSHIP}/></Relationships>`,
+    ],
+];
 
 async function writeFile(p: string, content: string): Promise<void> {
     await fs.mkdir(path.dirname(p), { recursive: true });
@@ -1191,6 +1203,19 @@ describe("BaseSchemaValidator", () => {
                 expect(result.issues).toEqual([]);
             });
         });
+
+        // #684: a Relationship outside the OPC namespace is not an empty part.
+        it.each(WRONG_NAMESPACE_RELS)(
+            "does not call a part empty when its children are in the wrong namespace (%s)",
+            async (_label, body) => {
+                await withTempDir(async (dir) => {
+                    await writeFile(path.join(dir, "word", "_rels", "document.xml.rels"), `${RELS_HEADER}\n${body}`);
+                    const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                    const result = await v.validateNoEmptyRelsParts();
+                    expect(result.issues.filter((i) => i.code === "rels-empty-part")).toEqual([]);
+                });
+            },
+        );
     });
 
     describe("repairEmptyRelsParts", () => {
@@ -1236,6 +1261,60 @@ describe("BaseSchemaValidator", () => {
                 expect(repairs).toBe(2);
                 expect(v.xmlFiles.filter((f) => f.endsWith(".rels"))).toHaveLength(0);
             });
+        });
+
+        // #684: the element-child guard is all that keeps repair from deleting these.
+        it.each(WRONG_NAMESPACE_RELS)("keeps a part whose children are in the wrong namespace (%s)", async (_label, body) => {
+            await withTempDir(async (dir) => {
+                const relsFile = path.join(dir, "word", "_rels", "document.xml.rels");
+                const content = `${RELS_HEADER}\n${body}`;
+                await writeFile(relsFile, content);
+                const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                expect(await v.repairEmptyRelsParts()).toBe(0);
+                expect(await fs.readFile(relsFile, "utf-8")).toBe(content);
+                expect(v.xmlFiles).toContain(relsFile);
+            });
+        });
+
+        it("repair() deletes the empty part and keeps the wrong-namespace one", async () => {
+            await withTempDir(async (dir) => {
+                const emptyFile = path.join(dir, "word", "_rels", "fontTable.xml.rels");
+                const foreignFile = path.join(dir, "word", "_rels", "document.xml.rels");
+                const foreign = `${RELS_HEADER}\n${WRONG_NAMESPACE_RELS[0]![1]}`;
+                await writeFile(emptyFile, `${RELS_HEADER}\n<Relationships ${PR_NS}/>`);
+                await writeFile(foreignFile, foreign);
+                const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                expect(await v.repair()).toBe(1);
+                await expect(fs.access(emptyFile)).rejects.toThrow();
+                expect(await fs.readFile(foreignFile, "utf-8")).toBe(foreign);
+            });
+        });
+    });
+
+    describe("hasAnyElementChild", () => {
+        const root = (xml: string): Element => {
+            const element = parseXml(xml).documentElement;
+            if (!element) throw new Error("no root");
+            return element;
+        };
+
+        it("is true for an element child in any namespace", () => {
+            expect(hasAnyElementChild(root(`<a><b/></a>`))).toBe(true);
+            expect(hasAnyElementChild(root(`<a xmlns="urn:x"><b xmlns="urn:y"/></a>`))).toBe(true);
+            expect(hasAnyElementChild(root(`<a>text<!-- c --><b/></a>`))).toBe(true);
+        });
+
+        it("is false for no children, or only text, whitespace, comments, CDATA and processing instructions", () => {
+            expect(hasAnyElementChild(root(`<a/>`))).toBe(false);
+            expect(hasAnyElementChild(root(`<a>\n  text\n</a>`))).toBe(false);
+            expect(hasAnyElementChild(root(`<a><!-- c --><![CDATA[<b/>]]><?pi data?></a>`))).toBe(false);
+        });
+
+        it("looks at children only, not deeper descendants", () => {
+            const outer = root(`<a><b><c/></b></a>`);
+            const inner = outer.firstChild as Element;
+            expect(hasAnyElementChild(inner)).toBe(true);
+            expect(hasAnyElementChild(inner.firstChild as Element)).toBe(false);
         });
     });
 
