@@ -67,6 +67,7 @@ import {
 import {
     hasWordRelationshipReference,
     isWordBlockingIssue,
+    nonPictureRelationshipAttributeValues,
     relationshipAttributeValues,
     wordRelationshipReferenceIds,
 } from "./word-blocking";
@@ -787,8 +788,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // #645, session 36 s36b/s36d: a part every reaching relationship names
         // through the chart type is loaded by Word only when a Word-read
         // part's effective XML references one of those relationship Ids;
-        // #647, session 44: an image reach never loads it, and diagramData,
-        // oleObject and hdphoto count any attribute naming the Id.
+        // #647, session 44: diagramData, oleObject and hdphoto count any
+        // attribute naming the Id, and an image every one but a picture's
+        // `a:blip r:embed`, the reference Word showed clean (#701).
         const referenceLoadedReach = new Map<string, "referenced" | "unreferenced">();
         for (const path of result.issues.flatMap((issue) => {
             const part = missingSidecarPart(issue);
@@ -798,14 +800,19 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             if (sources === undefined) {
                 continue;
             }
-            const referenced = sources.some(({ source, id, anyAttribute }) => {
+            const referenced = sources.some(({ source, id, reference }) => {
                 if (source === undefined || !read.has(canonicalPartName(source))) {
                     return false;
                 }
                 const xml = context.effectiveXml(source);
                 return (
                     xml?.ok === true &&
-                    (anyAttribute ? relationshipAttributeValues(xml.document) : wordRelationshipReferenceIds(xml.document)).has(id)
+                    (reference === "declared"
+                        ? wordRelationshipReferenceIds(xml.document)
+                        : reference === "any"
+                          ? relationshipAttributeValues(xml.document)
+                          : nonPictureRelationshipAttributeValues(xml.document)
+                    ).has(id)
                 );
             });
             referenceLoadedReach.set(path, referenced ? "referenced" : "unreferenced");

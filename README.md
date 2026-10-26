@@ -1124,11 +1124,15 @@ reaching relationship names through the chart type blocks only when a
 Word-read part's effective XML names one of those relationship Ids
 (`c:chart/@r:id` in a drawing, read in the processed view: a drawing only
 inside an unselected `mc:Choice` opened clean and one inside a selected
-Choice got the recovery offer, session 37 s37b). An image relationship
-never counts: session 44 opened clean every part an image relationship
-reaches, under `word/` and outside it, even when a picture's `a:blip r:embed`
-names it, so a part images and charts reach blocks only through a referenced
-chart relationship. Session 44 also opened clean an unreferenced
+Choice got the recovery offer, session 37 s37b). Session 44 opened clean
+every part an image relationship reaches, under `word/` and outside it,
+unreferenced or named by a picture's `a:blip r:embed`, so that picture
+reference does not count; any other attribute naming an image relationship's
+Id (`c:chart r:id`, `dgm:relIds`, `o:OLEObject r:id`, …) was never shown to
+Word and keeps the part blocking
+([#701](https://github.com/jandira-tech/docx-validate/issues/701)), so a part
+images and charts reach blocks through a referenced chart relationship or a
+non-picture reference to an image one. Session 44 also opened clean an unreferenced
 `diagramData`, `oleObject` or Microsoft `hdphoto` reach, so those types join
 the rule; Word was never shown their referenced shapes, so any attribute in a
 relationships namespace (or VML's `o:relid`) naming the relationship counts

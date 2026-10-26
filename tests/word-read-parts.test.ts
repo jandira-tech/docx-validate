@@ -1653,7 +1653,7 @@ describe("wordReferenceLoadedSources (#645, #647)", () => {
     ] as const)("names the source relationships of a chart reached %s", async (_label, part, target) => {
         const parts = withDocRel({ ...MINIMAL_PARTS, [part]: BARE_CHART_XML }, "rId9", `${R}/chart`, target);
         expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), part)).toEqual([
-            { source: "word/document.xml", id: "rId9", anyAttribute: false },
+            { source: "word/document.xml", id: "rId9", reference: "declared" },
         ]);
     });
 
@@ -1701,16 +1701,16 @@ describe("wordReferenceLoadedSources (#645, #647)", () => {
             `<Relationship Id="rId9" Type="${R}/chart" Target="../charts/chart1.xml"/></Relationships>`,
         );
         expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toEqual([
-            { source: undefined, id: "rId2", anyAttribute: false },
-            { source: "word/document.xml", id: "rId9", anyAttribute: false },
-            { source: "word/styles.xml", id: "rId3", anyAttribute: false },
+            { source: undefined, id: "rId2", reference: "declared" },
+            { source: "word/document.xml", id: "rId9", reference: "declared" },
+            { source: "word/styles.xml", id: "rId3", reference: "declared" },
         ]);
     });
 
     it("compares target names as OPC part names, and yields nothing without a package relationships part", async () => {
         const parts = withDocRel({ ...MINIMAL_PARTS, "charts/chart1.xml": BARE_CHART_XML }, "rId9", `${R}/chart`, "../CHARTS/chart1.xml");
         expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "CHARTS/chart1.xml")).toEqual([
-            { source: "word/document.xml", id: "rId9", anyAttribute: false },
+            { source: "word/document.xml", id: "rId9", reference: "declared" },
         ]);
         const { "_rels/.rels": _dropped, ...noMain } = parts;
         expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(noMain), "charts/chart1.xml")).toBe(undefined);
@@ -1720,14 +1720,16 @@ describe("wordReferenceLoadedSources (#645, #647)", () => {
     // target's relationships, so it is reached but never a source; an
     // unreferenced diagramData, oleObject or hdphoto reach opened clean, and
     // their unobserved referenced shapes are matched on any attribute.
-    it("reaches a part only images reach with no sources, Transitional or Strict", async () => {
+    it("names an image relationship whose picture reference does not count, Transitional or Strict (#701)", async () => {
         for (const type of [`${R}/image`, "http://purl.oclc.org/ooxml/officeDocument/relationships/image"]) {
             const parts = withDocRel({ ...MINIMAL_PARTS, "charts/chart1.xml": BARE_CHART_XML }, "rId8", type, "../charts/chart1.xml");
-            expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toEqual([]);
+            expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toEqual([
+                { source: "word/document.xml", id: "rId8", reference: "non-picture" },
+            ]);
         }
     });
 
-    it("drops the image relationship beside a chart one", async () => {
+    it("keeps the image relationship beside a chart one, each with its own reference rule", async () => {
         const parts = withDocRel(
             withDocRel({ ...MINIMAL_PARTS, "charts/chart1.xml": BARE_CHART_XML }, "rId9", `${R}/chart`, "../charts/chart1.xml"),
             "rId8",
@@ -1735,7 +1737,8 @@ describe("wordReferenceLoadedSources (#645, #647)", () => {
             "../charts/chart1.xml",
         );
         expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toEqual([
-            { source: "word/document.xml", id: "rId9", anyAttribute: false },
+            { source: "word/document.xml", id: "rId9", reference: "declared" },
+            { source: "word/document.xml", id: "rId8", reference: "non-picture" },
         ]);
     });
 
@@ -1744,7 +1747,7 @@ describe("wordReferenceLoadedSources (#645, #647)", () => {
         async (type) => {
             const parts = withDocRel({ ...MINIMAL_PARTS, "word/charts/chart1.xml": BARE_CHART_XML }, "rId8", type, "charts/chart1.xml");
             expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "word/charts/chart1.xml")).toEqual([
-                { source: "word/document.xml", id: "rId8", anyAttribute: true },
+                { source: "word/document.xml", id: "rId8", reference: "any" },
             ]);
         },
     );

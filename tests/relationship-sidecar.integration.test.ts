@@ -681,6 +681,8 @@ const DIAGRAM_DRAWING =
 const OLE_OBJECT =
     '<w:p w14:paraId="00000002" w14:textId="00000002"><w:r><w:object>' +
     `<o:OLEObject xmlns:o="${O}" Type="Embed" ProgID="Package" ShapeID="_x0000_i1025" DrawAspect="Icon" ObjectID="_1" r:id="rId8"/></w:object></w:r></w:p>`;
+// A drawing whose `c:chart r:id` names the image relationship `rId8`.
+const IMAGE_CHART_DRAWING = CHART_DRAWING.replace('r:id="rId9"', 'r:id="rId8"');
 const session44Specimens = [
     { name: "chart-outside-word-image-only-reach-no-sidecar", part: CHART_OUTSIDE, reach: [IMAGE], blocking: false },
     {
@@ -748,6 +750,31 @@ const session44Specimens = [
         blocking: true,
     },
     { name: "chart-word-image-and-audio-reach", part: CHART_INSIDE, reach: [IMAGE, reaching("rId7", "audio")], blocking: true },
+    // Unobserved (#701): an image relationship's Id named by anything but a
+    // picture's `a:blip r:embed` keeps the reach-based verdict.
+    { name: "chart-word-image-reach-chart-reference", part: CHART_INSIDE, reach: [IMAGE], drawing: IMAGE_CHART_DRAWING, blocking: true },
+    {
+        name: "chart-word-strict-image-reach-chart-reference",
+        part: CHART_INSIDE,
+        reach: [{ id: "rId8", type: `${RS}/image` }],
+        drawing: IMAGE_CHART_DRAWING,
+        blocking: true,
+    },
+    { name: "chart-word-image-reach-relids-reference", part: CHART_INSIDE, reach: [IMAGE], drawing: DIAGRAM_DRAWING, blocking: true },
+    {
+        name: "chart-outside-word-image-reach-oleobject-reference",
+        part: CHART_OUTSIDE,
+        reach: [IMAGE],
+        drawing: OLE_OBJECT,
+        blocking: true,
+    },
+    {
+        name: "chart-word-image-reach-blip-and-chart-reference",
+        part: CHART_INSIDE,
+        reach: [IMAGE],
+        drawing: `${PICTURE_DRAWING}${IMAGE_CHART_DRAWING}`,
+        blocking: true,
+    },
 ];
 
 describe("relationship types Word was shown in session 44 (#647)", { timeout: 120_000 }, () => {
