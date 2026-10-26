@@ -916,6 +916,91 @@ describe(`${CODE} (session 55a no-sidecar specimens, Word 16.115)`, { timeout: 2
     });
 });
 
+/**
+ * Session 55's s55b/s55d specimens (#756): the minimal package's main
+ * document declaring the ISO Strict relationships prefix `rs`, with a real
+ * bar chart `rId9` names and `drawing` before `w:sectPr`. Word 16.115
+ * cannot open a `c:chart` carrying an id attribute in both relationships
+ * namespaces — an open error, no recovery offer — whatever the values,
+ * while `rs:id` alone opens clean and draws the chart.
+ */
+const s55ChartIdsPackage = (drawing: string): Record<string, string | Uint8Array> => {
+    const parts = extended(
+        { [CHART_INSIDE]: barChart(false) },
+        [relationship("rId9", OFFICE("chart"), "charts/chart1.xml")],
+        [[CHART_INSIDE, CHART_CT]],
+    );
+    parts[MAIN] = replaceOnce(
+        replaceOnce(
+            MINIMAL_PARTS[MAIN]!,
+            "<w:document ",
+            `<w:document xmlns:wp="${WP}" xmlns:a="${A}" xmlns:c="${C}" xmlns:r="${R}" xmlns:rs="${RS}" `,
+        ),
+        "<w:sectPr>",
+        `${drawing}<w:sectPr>`,
+    );
+    return parts;
+};
+
+const REFUSED_756: Record<string, () => Promise<Buffer>> = {
+    // s55b `chart-empty-r-id-real-rs-id`: r:id="" rs:id="rId9".
+    "chart-empty-r-id-real-rs-id": async () => buildDocx(s55ChartIdsPackage(s55ChartDrawing('r:id="" rs:id="rId9"'))),
+    // s55b `chart-empty-rs-id-real-r-id`: rs:id="" r:id="rId9".
+    "chart-empty-rs-id-real-r-id": async () => buildDocx(s55ChartIdsPackage(s55ChartDrawing('rs:id="" r:id="rId9"'))),
+    // s55d `chart-both-ids-real`: r:id="rId9" rs:id="rId9" — both namespaces, both real.
+    "chart-both-ids-real": async () => buildDocx(s55ChartIdsPackage(s55ChartDrawing('r:id="rId9" rs:id="rId9"'))),
+};
+const CLEAN_756: Record<string, () => Promise<Buffer>> = {
+    // s55d `chart-rs-id-only`: rs:id="rId9" alone in the Transitional document opens clean, the chart draws.
+    "chart-rs-id-only": async () => buildDocx(s55ChartIdsPackage(s55ChartDrawing('rs:id="rId9"'))),
+    // s55b `chart-plain-calibration`: the plain r:id="rId9" names the real chart relationship (guard).
+    "chart-plain-calibration": async () => buildDocx(s55ChartIdsPackage(s55ChartDrawing('r:id="rId9"'))),
+};
+
+describe(`${CODE} (session 55b/55d dual-namespace specimens, Word 16.115)`, { timeout: 240_000 }, () => {
+    describe.each(Object.entries(REFUSED_756))("refused specimen %s", (name, make) => {
+        it("word-valid fails with exactly one Word-blocking error, full and partial runs alike (#381)", async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `${name}.docx`);
+                writeFileSync(file, await make());
+                const result = await validate(file, { profile: "word-valid" });
+                const found = result.issues.filter((issue) => issue.code === CODE);
+                expect(result.valid).toBe(false);
+                expect(found).toHaveLength(1);
+                expect(found[0]?.severity).toBe("error");
+                expect(found[0]?.path).toBe("word/document.xml");
+                const partial = await validate(file, { checks: [CODE] });
+                expect(partial.valid).toBe(false);
+                expect(partial.issues.filter((issue) => issue.code === CODE)).toHaveLength(1);
+            });
+        });
+
+        it("strict reports the code too (strict ⊇ word-valid)", async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `${name}.docx`);
+                writeFileSync(file, await make());
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.issues.some((issue) => issue.code === CODE && issue.path === "word/document.xml")).toBe(true);
+            });
+        });
+    });
+
+    describe.each(Object.entries(CLEAN_756))("clean specimen %s", (name, make) => {
+        it("word-valid draws no such finding, full and partial runs alike", async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `${name}.docx`);
+                writeFileSync(file, await make());
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.valid).toBe(true);
+                expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+                const partial = await validate(file, { checks: [CODE] });
+                expect(partial.valid).toBe(true);
+                expect(partial.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+            });
+        });
+    });
+});
+
 describe(`${CODE} (selectors and the rels-id-missing hand-off)`, { timeout: 240_000 }, () => {
     it.each(["relationships", "drawings"])("a selected %s named-check run reports it", async (group) => {
         await withTempDir(async (dir) => {
