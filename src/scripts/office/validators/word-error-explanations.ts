@@ -51,17 +51,17 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
     "word-part-reference-relationship":
         "A c:chart, a dgm:relIds r:dm or an o:OLEObject in a story part names a relationship whose Type is not the one the element reads, or an Id no relationship has — Word 16.115 offered recovery for an image, diagramData, package, chart and External chart relationship alike, whatever the target part, while the matching internal relationship opened clean. Word offers to recover the file. Point the reference at a Relationship of the Type it reads — chart for c:chart, diagramData for dgm:relIds r:dm, package or oleObject for o:OLEObject — adding one with that Id and Type when the part has none. Word tolerates dgm:relIds r:lo, r:qs and r:cs naming another type, so those stay unchecked.",
     "word-duplicate-theme-relationship":
-        "A relationships part lists more than one theme. Word offers to recover the file. Keep a single theme relationship.",
+        "The main document's or a reached glossary document's relationships part lists more than one theme. Word offers to recover the file; the same pair in _rels/.rels or a referenced header's relationships part opens clean. Keep a single theme relationship.",
     "word-duplicate-font-table-relationship":
-        "A relationships part lists more than one font table. Word offers to recover the file. Keep a single font table relationship.",
+        "The main document's or a reached glossary document's relationships part lists more than one font table. Word offers to recover the file; the same pair in _rels/.rels or a referenced header's relationships part opens clean. Keep a single font table relationship.",
     "word-duplicate-web-settings-relationship":
-        "A relationships part lists more than one web settings part. Word offers to recover the file. Keep a single web settings relationship.",
+        "The main document's or a reached glossary document's relationships part lists more than one web settings part. Word offers to recover the file; the same pair in _rels/.rels or a referenced header's relationships part opens clean. Keep a single web settings relationship.",
     "word-duplicate-settings-relationship":
-        "A relationships part lists more than one settings part. Word offers to recover the file. Keep a single settings relationship.",
+        "The main document's or a reached glossary document's relationships part lists more than one settings part. Word offers to recover the file; the same pair in _rels/.rels or a referenced header's relationships part opens clean. Keep a single settings relationship.",
     "word-duplicate-styles-relationship":
-        "A relationships part lists more than one styles part. Word offers to recover the file. Keep a single styles relationship.",
+        "The main document's or a reached glossary document's relationships part lists more than one styles part. Word offers to recover the file; the same pair in _rels/.rels or a referenced header's relationships part opens clean. Keep a single styles relationship.",
     "word-duplicate-numbering-relationship":
-        "A relationships part lists more than one numbering part. Word offers to recover the file. Keep a single numbering relationship.",
+        "The main document's or a reached glossary document's relationships part lists more than one numbering part. Word offers to recover the file; the same pair in _rels/.rels or a referenced header's relationships part opens clean. Keep a single numbering relationship.",
     "word-drawing-arc-radius":
         "An a:arcTo radius (wR or hR) is not an integer. Word cannot open the file. Replace the radius with an integer.",
     "word-empty-drawing":

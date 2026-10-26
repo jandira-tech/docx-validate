@@ -12712,3 +12712,1341 @@ print(len(rows), "rows,", len(raw), "raw records")
 `````
 
 </details>
+
+### Session 48: 10:42Z–10:46Z on 2026-10-26, validator columns at e762ffb5
+
+Does Word read a `wne:toolbarData r:id` whose relationship Type only ends in `attachedToolbars` ([#716](https://github.com/jandira-tech/docx-validate/issues/716))? The chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; all 8 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen.
+
+- Each specimen is one of the two pinned toolbar fixtures, `tests/fixtures/broken/package.word-attached-toolbar-utf8.docx` (refused bytes in `word/attachedToolbars.bin`) and its twin `tests/fixtures/working/package.word-attached-toolbar-utf8-repaired.docx` (clean bytes; the two differ only in that part), with the Type of `word/_rels/customizations.xml.rels`'s `rId1`, the relationship `wne:toolbarData r:id` names, replaced by `http://schemas.microsoft.com/office/2006/relationships/custom/attachedToolbars` or `http://example.com/attachedToolbars`. The unchanged fixtures are the calibrations: the broken one gets the recovery offer and the repaired one opens clean, as pinned.
+- Word gets the recovery offer for all four retyped specimens, with the clean bytes as with the refused ones: a `wne:toolbarData r:id` naming a relationship whose Type is not exactly the Microsoft `attachedToolbars` Type is refused whatever the target holds. Word-valid at e762ffb5 rejects the two refused-bytes rows through the suffix-matching `word-attached-toolbar-utf8` (the right verdict, for the bytes rather than the Type) and passes the two clean-bytes rows (#716, false negatives).
+
+| Run    | Observed             | Specimen                       | Shape                                                                                                    | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at e762ffb5                | strict at e762ffb5                                                                                                                                                                                                     |
+| ------ | -------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `s48a` | 10:42:48Z, 10:46:23Z | `s48a-control-minimal`         | control                                                                                                  | `7b643c2f4dc2a37e` | clean-open     | clean-open     | clean-open                 | valid                                 | valid                                                                                                                                                                                                                  |
+| `s48a` | 10:42:48Z, 10:46:23Z | `toolbar-refused-calibration`  | calibration: broken/package.word-attached-toolbar-utf8.docx unchanged (refused bytes, real Type)         | `b0cf666af937209d` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-attached-toolbar-utf8` | invalid: `rels-unreferenced`, `rels-unreferenced`, `paraid-missing-element`, `style-default-missing`, `word-attached-toolbar-utf8`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error` |
+| `s48a` | 10:42:48Z, 10:46:23Z | `toolbar-refused-custom-type`  | #716: refused bytes, rId1 Type …/2006/relationships/custom/attachedToolbars                              | `b9f56ddbe3546014` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-attached-toolbar-utf8` | invalid: `rels-unreferenced`, `rels-unreferenced`, `paraid-missing-element`, `style-default-missing`, `word-attached-toolbar-utf8`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error` |
+| `s48a` | 10:42:48Z, 10:46:23Z | `toolbar-refused-foreign-type` | #716: refused bytes, rId1 Type http://example.com/attachedToolbars                                       | `f5b2323f23f1d0d3` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-attached-toolbar-utf8` | invalid: `rels-unreferenced`, `rels-unreferenced`, `paraid-missing-element`, `style-default-missing`, `word-attached-toolbar-utf8`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error` |
+| `s48a` | 10:42:48Z, 10:46:23Z | `toolbar-clean-calibration`    | calibration: working/package.word-attached-toolbar-utf8-repaired.docx unchanged (clean bytes, real Type) | `864227204267541a` | clean-open     | clean-open     | clean-open                 | valid                                 | invalid: `rels-unreferenced`, `rels-unreferenced`, `paraid-missing-element`, `style-default-missing`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`                               |
+| `s48a` | 10:42:48Z, 10:46:23Z | `toolbar-clean-custom-type`    | #716: clean bytes, rId1 Type …/2006/relationships/custom/attachedToolbars                                | `a95c265262f851c4` | repair-warning | repair-warning | unreadable-content-warning | valid                                 | invalid: `rels-unreferenced`, `rels-unreferenced`, `paraid-missing-element`, `style-default-missing`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`                               |
+| `s48a` | 10:42:48Z, 10:46:23Z | `toolbar-clean-foreign-type`   | #716: clean bytes, rId1 Type http://example.com/attachedToolbars                                         | `5d8400b5158f05f4` | repair-warning | repair-warning | unreadable-content-warning | valid                                 | invalid: `rels-unreferenced`, `rels-unreferenced`, `paraid-missing-element`, `style-default-missing`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`                               |
+| `s48a` | 10:42:48Z, 10:46:23Z | `s48a-control-minimal-end`     | control                                                                                                  | `0fe06dd45585d12d` | clean-open     | clean-open     | clean-open                 | valid                                 | valid                                                                                                                                                                                                                  |
+
+<details><summary>Raw records, session 48</summary>
+
+```jsonl
+{"run": "s48a", "pass": 1, "name": "s48a-control-minimal", "sha256": "7b643c2f4dc2a37ed53fdc721325c376c87af73c2f11596f09cd7ce83504fa5c", "observedAt": "2026-10-26T10:42:48+00:00", "staged": "00001__wfv__s48a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s48a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s48a", "pass": 2, "name": "s48a-control-minimal", "sha256": "7b643c2f4dc2a37ed53fdc721325c376c87af73c2f11596f09cd7ce83504fa5c", "observedAt": "2026-10-26T10:46:23+00:00", "staged": "00001__wfv__s48a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s48a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s48a", "pass": 1, "name": "toolbar-refused-calibration", "sha256": "b0cf666af937209d4c91305e652eb5216412db6bf83b61aa7c390c59970dc7cb", "observedAt": "2026-10-26T10:42:48+00:00", "staged": "00005__wfv__toolbar-refused-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:39:59.775 'Word found unreadable content in 00005__wfv__toolbar-refused-calibration.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 06:40:00.427 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__toolbar-refused-calibrati...)\""]}
+{"run": "s48a", "pass": 2, "name": "toolbar-refused-calibration", "sha256": "b0cf666af937209d4c91305e652eb5216412db6bf83b61aa7c390c59970dc7cb", "observedAt": "2026-10-26T10:46:23+00:00", "staged": "00005__wfv__toolbar-refused-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:45:07.525 Microsoft Word, Word found unreadable content in 00005__wfv__toolbar-refused-calibration.docx. Do yo … t? If you trust the source of this document, click Yes.", "2026-10-26 06:45:08.261 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__toolbar-refused-calibrati...)\""]}
+{"run": "s48a", "pass": 1, "name": "toolbar-refused-custom-type", "sha256": "b9f56ddbe3546014832a806475582f0221c21aee20ef8c9d3da478b555d1b611", "observedAt": "2026-10-26T10:42:48+00:00", "staged": "00006__wfv__toolbar-refused-custom-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:40:08.698 'Word found unreadable content in 00006__wfv__toolbar-refused-custom-type.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 06:40:09.641 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__toolbar-refused-custom-ty...)\""]}
+{"run": "s48a", "pass": 2, "name": "toolbar-refused-custom-type", "sha256": "b9f56ddbe3546014832a806475582f0221c21aee20ef8c9d3da478b555d1b611", "observedAt": "2026-10-26T10:46:23+00:00", "staged": "00006__wfv__toolbar-refused-custom-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:46:07.950 Microsoft Word, Word found unreadable content in 00006__wfv__toolbar-refused-custom-type.docx. Do yo … t? If you trust the source of this document, click Yes.", "2026-10-26 06:46:14.512 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__toolbar-refused-custom-ty...)\""]}
+{"run": "s48a", "pass": 1, "name": "toolbar-refused-foreign-type", "sha256": "f5b2323f23f1d0d3c26e313c32d7f5ccdf79212da7ca6ef4889a392d9a868b8f", "observedAt": "2026-10-26T10:42:48+00:00", "staged": "00007__wfv__toolbar-refused-foreign-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:42:48.188 'Word found unreadable content in 00007__wfv__toolbar-refused-foreign-type.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 06:42:48.786 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__toolbar-refused-foreign-t...)\""]}
+{"run": "s48a", "pass": 2, "name": "toolbar-refused-foreign-type", "sha256": "f5b2323f23f1d0d3c26e313c32d7f5ccdf79212da7ca6ef4889a392d9a868b8f", "observedAt": "2026-10-26T10:46:23+00:00", "staged": "00007__wfv__toolbar-refused-foreign-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:46:22.848 'Word found unreadable content in 00007__wfv__toolbar-refused-foreign-type.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 06:46:23.485 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__toolbar-refused-foreign-t...)\""]}
+{"run": "s48a", "pass": 1, "name": "toolbar-clean-calibration", "sha256": "864227204267541a0ecabc3a72412ec3b19b38b9541d3fd84e6f7916e1dd1c68", "observedAt": "2026-10-26T10:42:48+00:00", "staged": "00002__wfv__toolbar-clean-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF toolbar-clean-calibration_byword.pdf (434557 bytes), no dialog named the file"]}
+{"run": "s48a", "pass": 2, "name": "toolbar-clean-calibration", "sha256": "864227204267541a0ecabc3a72412ec3b19b38b9541d3fd84e6f7916e1dd1c68", "observedAt": "2026-10-26T10:46:23+00:00", "staged": "00002__wfv__toolbar-clean-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF toolbar-clean-calibration_byword.pdf (434557 bytes), no dialog named the file"]}
+{"run": "s48a", "pass": 1, "name": "toolbar-clean-custom-type", "sha256": "a95c265262f851c427b94db781965452ebeda23780223d4681dbeabdb8c119da", "observedAt": "2026-10-26T10:42:48+00:00", "staged": "00003__wfv__toolbar-clean-custom-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:35:27.061 'Word found unreadable content in 00003__wfv__toolbar-clean-custom-type.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 06:35:33.170 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__toolbar-clean-custom-type...)\""]}
+{"run": "s48a", "pass": 2, "name": "toolbar-clean-custom-type", "sha256": "a95c265262f851c427b94db781965452ebeda23780223d4681dbeabdb8c119da", "observedAt": "2026-10-26T10:46:23+00:00", "staged": "00003__wfv__toolbar-clean-custom-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:43:20.444 'Word found unreadable content in 00003__wfv__toolbar-clean-custom-type.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 06:43:21.119 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__toolbar-clean-custom-type...)\""]}
+{"run": "s48a", "pass": 1, "name": "toolbar-clean-foreign-type", "sha256": "5d8400b5158f05f4abf02a5c993ad42cd0b80146781613ad35f2c76ca0286ead", "observedAt": "2026-10-26T10:42:48+00:00", "staged": "00004__wfv__toolbar-clean-foreign-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:36:29.951 Microsoft Word, Word found unreadable content in 00004__wfv__toolbar-clean-foreign-type.docx. Do you … t? If you trust the source of this document, click Yes."]}
+{"run": "s48a", "pass": 2, "name": "toolbar-clean-foreign-type", "sha256": "5d8400b5158f05f4abf02a5c993ad42cd0b80146781613ad35f2c76ca0286ead", "observedAt": "2026-10-26T10:46:23+00:00", "staged": "00004__wfv__toolbar-clean-foreign-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:44:13.156 Microsoft Word, Word found unreadable content in 00004__wfv__toolbar-clean-foreign-type.docx. Do you … t? If you trust the source of this document, click Yes."]}
+{"run": "s48a", "pass": 1, "name": "s48a-control-minimal-end", "sha256": "0fe06dd45585d12d12c838c07b884340b386c6956bf75ce9399b87eefe1bb221", "observedAt": "2026-10-26T10:42:48+00:00", "staged": "00000__wfv__s48a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s48a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s48a", "pass": 2, "name": "s48a-control-minimal-end", "sha256": "0fe06dd45585d12d12c838c07b884340b386c6956bf75ce9399b87eefe1bb221", "observedAt": "2026-10-26T10:46:23+00:00", "staged": "00000__wfv__s48a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s48a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 48 builder, cross-check and section scripts</summary>
+
+Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s48builder.mts`:
+
+```ts
+// Session 48 (2026-10-26): does Word read a `wne:toolbarData r:id` whose relationship Type only ENDS in
+// `attachedToolbars`? `word-attached-toolbar-utf8` accepts the toolbar relationship by `type.endsWith("/attachedToolbars")`
+// and blocks word-valid when the target's bytes hold the refused sequence (#716). Word reads relationship Types
+// exactly elsewhere (sessions 27 and 47). Each specimen is one of the pinned toolbar fixtures — the refused
+// `broken/package.word-attached-toolbar-utf8.docx` and its clean twin `working/…-repaired.docx`, which differ only in
+// `word/attachedToolbars.bin` — with the Type of `word/_rels/customizations.xml.rels`'s rId1 replaced; the two
+// fixtures themselves are the calibrations.
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s48a pnpm exec tsx s48builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import JSZip from "jszip";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const BROKEN = "tests/fixtures/broken/package.word-attached-toolbar-utf8.docx";
+const WORKING = "tests/fixtures/working/package.word-attached-toolbar-utf8-repaired.docx";
+const RELS = "word/_rels/customizations.xml.rels";
+const REAL = "http://schemas.microsoft.com/office/2006/relationships/attachedToolbars";
+const CUSTOM = "http://schemas.microsoft.com/office/2006/relationships/custom/attachedToolbars";
+const FOREIGN = "http://example.com/attachedToolbars";
+
+const control = () => buildDocx({ ...MINIMAL_PARTS });
+const fixture = async (file: string) => new Uint8Array(readFileSync(file));
+/** The fixture with rId1's Type in the customizations sidecar replaced by `type`; every other entry unchanged. */
+const retyped = async (file: string, type: string) => {
+    const zip = await JSZip.loadAsync(readFileSync(file));
+    const rels = await zip.file(RELS)!.async("string");
+    if (rels.split(`Type="${REAL}"`).length !== 2) throw new Error(`expected exactly one ${REAL} in ${RELS}`);
+    zip.file(RELS, rels.replace(`Type="${REAL}"`, `Type="${type}"`));
+    return zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
+};
+
+const chunks: Record<string, Array<[string, string, () => Promise<Uint8Array>]>> = {
+    s48a: [
+        ["s48a-control-minimal", "control", control],
+        [
+            "toolbar-refused-calibration",
+            "calibration: broken/package.word-attached-toolbar-utf8.docx unchanged (refused bytes, real Type)",
+            () => fixture(BROKEN),
+        ],
+        [
+            "toolbar-refused-custom-type",
+            "#716: refused bytes, rId1 Type …/2006/relationships/custom/attachedToolbars",
+            () => retyped(BROKEN, CUSTOM),
+        ],
+        [
+            "toolbar-refused-foreign-type",
+            "#716: refused bytes, rId1 Type http://example.com/attachedToolbars",
+            () => retyped(BROKEN, FOREIGN),
+        ],
+        [
+            "toolbar-clean-calibration",
+            "calibration: working/package.word-attached-toolbar-utf8-repaired.docx unchanged (clean bytes, real Type)",
+            () => fixture(WORKING),
+        ],
+        [
+            "toolbar-clean-custom-type",
+            "#716: clean bytes, rId1 Type …/2006/relationships/custom/attachedToolbars",
+            () => retyped(WORKING, CUSTOM),
+        ],
+        ["toolbar-clean-foreign-type", "#716: clean bytes, rId1 Type http://example.com/attachedToolbars", () => retyped(WORKING, FOREIGN)],
+        ["s48a-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-48 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s48a",)
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s48/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-48 parts of docs/plans/evidence/word-probes-2026-10-24.md into s48/section.md.
+
+Reads the chunk's specimens.jsonl (validator columns at e762ffb5, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s48/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s48a",)
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s48/results.json").read_text())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends = [], [], [], []
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    f"### Session 48: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at e762ffb5",
+    "",
+    "Does Word read a `wne:toolbarData r:id` whose relationship Type only ends in `attachedToolbars` "
+    "([#716](https://github.com/jandira-tech/docx-validate/issues/716))? The chunk ran twice, as two separate "
+    "driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's "
+    "`logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, "
+    "and `unknown` otherwise; all 8 rows agree. The two times in Observed are the ends of the first and second runs. "
+    "Shape is the builder's description of the specimen.",
+    "",
+    "- Each specimen is one of the two pinned toolbar fixtures, `tests/fixtures/broken/package.word-attached-toolbar-utf8.docx` "
+    "(refused bytes in `word/attachedToolbars.bin`) and its twin `tests/fixtures/working/package.word-attached-toolbar-utf8-repaired.docx` "
+    "(clean bytes; the two differ only in that part), with the Type of `word/_rels/customizations.xml.rels`'s `rId1`, the "
+    "relationship `wne:toolbarData r:id` names, replaced by `http://schemas.microsoft.com/office/2006/relationships/custom/attachedToolbars` "
+    "or `http://example.com/attachedToolbars`. The unchanged fixtures are the calibrations: the broken one gets the recovery "
+    "offer and the repaired one opens clean, as pinned.",
+    "- Word gets the recovery offer for all four retyped specimens, with the clean bytes as with the refused ones: a "
+    "`wne:toolbarData r:id` naming a relationship whose Type is not exactly the Microsoft `attachedToolbars` Type is "
+    "refused whatever the target holds. Word-valid at e762ffb5 rejects the two refused-bytes rows through the "
+    "suffix-matching `word-attached-toolbar-utf8` (the right verdict, for the bytes rather than the Type) and passes "
+    "the two clean-bytes rows (#716, false negatives).",
+    "",
+    "| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at e762ffb5 | strict at e762ffb5 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 48</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 48 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s48builder.mts", ROOT / "s48builder.mts", "ts"), ("compare.py", ROOT / "s48/compare.py", "python"),
+                         ("section.py", ROOT / "s48/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s48/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records")
+`````
+
+</details>
+
+### Session 49: 10:51Z–11:05Z on 2026-10-26, validator columns at e762ffb5
+
+The shapes the adversarial review of layers 145 ([#707](https://github.com/jandira-tech/docx-validate/issues/707)) and 146 ([#694](https://github.com/jandira-tech/docx-validate/issues/694)) said those layers judge without evidence. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; all 20 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen.
+
+- `s49a`, #707: the minimal package with `word/styles.xml` (styles XML) typed by its Override as `application/octet-stream` (session 46 showed only the Default spelling, on `word/styles.bin`), `APPLICATION/OCTET-STREAM`, `application/octet-stream; charset=utf-8`, `image/png` or `application/foo+xml`: Word gets the recovery offer for every one. Word-valid rejects all five through `word-part-content-type-unrecognized`.
+- `s49b`, #707: an empty `ContentType=""` on the styles Override, the main document's Override typed `application/octet-stream`, and the styles Override typed with the settings content type: Word gets the recovery offer for all three, and word-valid passes all three (false negatives).
+- `s49c`, #694: two more styles relationships in `_rels/.rels`, and two in the sidecar of a header the body references, open clean; word-valid rejects both through `word-duplicate-styles-relationship` (false positives). Two styles relationships in a reached glossary's sidecar get the recovery offer, as session 45's calibration in the main document's sidecar does again. The main document's real styles relationship beside one or two External styles relationships gets the recovery offer; word-valid rejects both.
+
+| Run    | Observed             | Specimen                        | Shape                                                                                                | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at e762ffb5                         | strict at e762ffb5                                                      |
+| ------ | -------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------- |
+| `s49a` | 10:51:16Z, 10:56:30Z | `s49a-control-minimal`          | control                                                                                              | `bc836a78db359af5` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                                                   |
+| `s49a` | 10:51:16Z, 10:56:30Z | `styles-override-octet`         | #707 F1: word/styles.xml (styles XML) Override typed application/octet-stream                        | `e8b2274afdd14cc5` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized`                          |
+| `s49a` | 10:51:16Z, 10:56:30Z | `styles-override-octet-upper`   | #707 F1: styles Override typed APPLICATION/OCTET-STREAM                                              | `d402d5539394305d` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized`                          |
+| `s49a` | 10:51:16Z, 10:56:30Z | `styles-override-octet-charset` | #707 F1: styles Override typed application/octet-stream; charset=utf-8                               | `b64d41a96560e7fb` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized`                          |
+| `s49a` | 10:51:16Z, 10:56:30Z | `styles-override-image-png`     | #707 F1: styles Override typed image/png                                                             | `e0426cec1d1b3231` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized`                          |
+| `s49a` | 10:51:16Z, 10:56:30Z | `styles-override-foo-xml`       | #707 F1: styles Override typed application/foo+xml                                                   | `979612c08fbbbebf` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized`                          |
+| `s49a` | 10:51:16Z, 10:56:30Z | `s49a-control-minimal-end`      | control                                                                                              | `53f175096f85436b` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                                                   |
+| `s49b` | 10:58:42Z, 11:00:18Z | `s49b-control-minimal`          | control                                                                                              | `54be6142d8cfa1a4` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                                                   |
+| `s49b` | 10:58:42Z, 11:00:18Z | `styles-override-empty`         | #707 F6: styles Override ContentType=""                                                              | `868b339eb3e2e5ef` | repair-warning | repair-warning | unreadable-content-warning | valid                                          | invalid: `xsd-summary`, `xsd-error`                                     |
+| `s49b` | 10:58:42Z, 11:00:18Z | `main-override-octet`           | #707 F7: main document Override typed application/octet-stream                                       | `facffeeae4356948` | repair-warning | repair-warning | unreadable-content-warning | valid                                          | invalid: `word-part-content-type-unrecognized`                          |
+| `s49b` | 10:58:42Z, 11:00:18Z | `styles-override-settings-type` | #707 F8: styles Override typed with the settings content type                                        | `c3319b7315c01185` | repair-warning | repair-warning | unreadable-content-warning | valid                                          | invalid: `word-part-content-type-mismatch`                              |
+| `s49b` | 10:58:42Z, 11:00:18Z | `s49b-control-minimal-end`      | control                                                                                              | `54be6142d8cfa1a4` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                                                   |
+| `s49c` | 11:02:17Z, 11:05:12Z | `s49c-control-minimal`          | control                                                                                              | `d5316e712ead77ab` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                                                   |
+| `s49c` | 11:02:17Z, 11:05:12Z | `dup-styles-main-calibration`   | calibration (s45's refused shape): two internal styles relationships in word/_rels/document.xml.rels | `7db93e23087578a7` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-duplicate-styles-relationship`  | invalid: `word-duplicate-styles-relationship`                           |
+| `s49c` | 11:02:17Z, 11:05:12Z | `dup-styles-package-rels`       | #694 F3: _rels/.rels adds two styles relationships (word/styles.xml, word/styles2.xml)               | `0cfdd623ac1524f8` | clean-open     | clean-open     | clean-open                 | invalid: `word-duplicate-styles-relationship`  | invalid: `word-duplicate-styles-relationship`                           |
+| `s49c` | 11:02:17Z, 11:05:12Z | `dup-styles-header-sidecar`     | #694 F3: a referenced header's sidecar holds two styles relationships                                | `4f83912998c7853a` | clean-open     | clean-open     | clean-open                 | invalid: `word-duplicate-styles-relationship`  | invalid: `paraid-missing-element`, `word-duplicate-styles-relationship` |
+| `s49c` | 11:02:17Z, 11:05:12Z | `dup-styles-glossary-sidecar`   | #694 F3: a reached glossary's sidecar holds two styles relationships to two parts                    | `3fbc96bb8e28909e` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-duplicate-styles-relationship`  | invalid: `paraid-missing-element`, `word-duplicate-styles-relationship` |
+| `s49c` | 11:02:17Z, 11:05:12Z | `styles-plus-one-external`      | #694 F4: the real styles relationship plus one External styles relationship                          | `59e452a93f1b2a70` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-duplicate-styles-relationship`  | invalid: `word-duplicate-styles-relationship`                           |
+| `s49c` | 11:02:17Z, 11:05:12Z | `styles-plus-two-external`      | #694 F4: the real styles relationship plus two External styles relationships                         | `5600dca9281d6709` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-duplicate-styles-relationship`  | invalid: `word-duplicate-styles-relationship`                           |
+| `s49c` | 11:02:17Z, 11:05:12Z | `s49c-control-minimal-end`      | control                                                                                              | `d5316e712ead77ab` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                                                   |
+
+<details><summary>Raw records, session 49</summary>
+
+```jsonl
+{"run": "s49a", "pass": 1, "name": "s49a-control-minimal", "sha256": "bc836a78db359af57775d751340ca466dd6d7d3a2281231fd849018d02ea0027", "observedAt": "2026-10-26T10:51:16+00:00", "staged": "00001__wfv__s49a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s49a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s49a", "pass": 2, "name": "s49a-control-minimal", "sha256": "bc836a78db359af57775d751340ca466dd6d7d3a2281231fd849018d02ea0027", "observedAt": "2026-10-26T10:56:30+00:00", "staged": "00001__wfv__s49a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s49a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s49a", "pass": 1, "name": "styles-override-octet", "sha256": "e8b2274afdd14cc548370acc2c5bd1b3d833b1aed6fb93fb3560b3f16e74fd1a", "observedAt": "2026-10-26T10:51:16+00:00", "staged": "00006__wfv__styles-override-octet.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:51:15.806 'Word found unreadable content in 00006__wfv__styles-override-octet.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.'", "2026-10-26 06:51:16.319 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00006__wfv__styles-override-octet.docx)\""]}
+{"run": "s49a", "pass": 2, "name": "styles-override-octet", "sha256": "e8b2274afdd14cc548370acc2c5bd1b3d833b1aed6fb93fb3560b3f16e74fd1a", "observedAt": "2026-10-26T10:56:30+00:00", "staged": "00006__wfv__styles-override-octet.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:56:30.232 'Word found unreadable content in 00006__wfv__styles-override-octet.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.'", "2026-10-26 06:56:30.721 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00006__wfv__styles-override-octet.docx)\""]}
+{"run": "s49a", "pass": 1, "name": "styles-override-octet-upper", "sha256": "d402d5539394305d8f5d6a7a43a01ace6c809e56ca72c644c567c03fe9bbc216", "observedAt": "2026-10-26T10:51:16+00:00", "staged": "00005__wfv__styles-override-octet-upper.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:51:11.630 'Word found unreadable content in 00005__wfv__styles-override-octet-upper.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 06:51:12.468 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__styles-override-octet-upp...)\""]}
+{"run": "s49a", "pass": 2, "name": "styles-override-octet-upper", "sha256": "d402d5539394305d8f5d6a7a43a01ace6c809e56ca72c644c567c03fe9bbc216", "observedAt": "2026-10-26T10:56:30+00:00", "staged": "00005__wfv__styles-override-octet-upper.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:55:38.727 Microsoft Word, Word found unreadable content in 00005__wfv__styles-override-octet-upper.docx. Do yo … t? If you trust the source of this document, click Yes.", "2026-10-26 06:55:39.415 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__styles-override-octet-upp...)\""]}
+{"run": "s49a", "pass": 1, "name": "styles-override-octet-charset", "sha256": "b64d41a96560e7fb205212e196ba6fedf9da8f3c73c79da41c1fd274991c7c2e", "observedAt": "2026-10-26T10:51:16+00:00", "staged": "00004__wfv__styles-override-octet-charset.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:51:07.493 'Word found unreadable content in 00004__wfv__styles-override-octet-charset.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'", "2026-10-26 06:51:08.020 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__styles-override-octet-cha...)\""]}
+{"run": "s49a", "pass": 2, "name": "styles-override-octet-charset", "sha256": "b64d41a96560e7fb205212e196ba6fedf9da8f3c73c79da41c1fd274991c7c2e", "observedAt": "2026-10-26T10:56:30+00:00", "staged": "00004__wfv__styles-override-octet-charset.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:54:50.384 \"Word found unreadable content in 00004__wfv__styles-override-octet-charset.docx. Do you want to rec … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s49a", "pass": 1, "name": "styles-override-image-png", "sha256": "e0426cec1d1b3231c821c3b850537d914316a59adec8302fdf14a60b07e1309a", "observedAt": "2026-10-26T10:51:16+00:00", "staged": "00003__wfv__styles-override-image-png.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:50:14.755 Microsoft Word, Word found unreadable content in 00003__wfv__styles-override-image-png.docx. Do you  … t? If you trust the source of this document, click Yes."]}
+{"run": "s49a", "pass": 2, "name": "styles-override-image-png", "sha256": "e0426cec1d1b3231c821c3b850537d914316a59adec8302fdf14a60b07e1309a", "observedAt": "2026-10-26T10:56:30+00:00", "staged": "00003__wfv__styles-override-image-png.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:52:40.223 Microsoft Word, Word found unreadable content in 00003__wfv__styles-override-image-png.docx. Do you  … t? If you trust the source of this document, click Yes."]}
+{"run": "s49a", "pass": 1, "name": "styles-override-foo-xml", "sha256": "979612c08fbbbebf31e49ce9b05a2af98250ec72c4df1679a3e547fe1cfe45d0", "observedAt": "2026-10-26T10:51:16+00:00", "staged": "00002__wfv__styles-override-foo-xml.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:49:20.665 'Word found unreadable content in 00002__wfv__styles-override-foo-xml.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.'", "2026-10-26 06:49:21.373 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__styles-override-foo-xml.docx)\""]}
+{"run": "s49a", "pass": 2, "name": "styles-override-foo-xml", "sha256": "979612c08fbbbebf31e49ce9b05a2af98250ec72c4df1679a3e547fe1cfe45d0", "observedAt": "2026-10-26T10:56:30+00:00", "staged": "00002__wfv__styles-override-foo-xml.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:51:47.215 'Word found unreadable content in 00002__wfv__styles-override-foo-xml.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.'", "2026-10-26 06:51:48.124 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__styles-override-foo-xml.docx)\""]}
+{"run": "s49a", "pass": 1, "name": "s49a-control-minimal-end", "sha256": "53f175096f85436b786fa0c25216e7359e5270cf0679e2d5c7edd265e7291109", "observedAt": "2026-10-26T10:51:16+00:00", "staged": "00000__wfv__s49a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s49a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s49a", "pass": 2, "name": "s49a-control-minimal-end", "sha256": "53f175096f85436b786fa0c25216e7359e5270cf0679e2d5c7edd265e7291109", "observedAt": "2026-10-26T10:56:30+00:00", "staged": "00000__wfv__s49a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s49a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s49b", "pass": 1, "name": "s49b-control-minimal", "sha256": "54be6142d8cfa1a4e489b08dab17ae2b0438135dc2359696218e163896bdc7a7", "observedAt": "2026-10-26T10:58:42+00:00", "staged": "00002__wfv__s49b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s49b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s49b", "pass": 2, "name": "s49b-control-minimal", "sha256": "54be6142d8cfa1a4e489b08dab17ae2b0438135dc2359696218e163896bdc7a7", "observedAt": "2026-10-26T11:00:18+00:00", "staged": "00002__wfv__s49b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s49b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s49b", "pass": 1, "name": "styles-override-empty", "sha256": "868b339eb3e2e5ef9a475c332bc70e17a75d9853f1195c4f8dcc14ad373c9b9b", "observedAt": "2026-10-26T10:58:42+00:00", "staged": "00003__wfv__styles-override-empty.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:57:11.634 \"Word found unreadable content in 00003__wfv__styles-override-empty.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s49b", "pass": 2, "name": "styles-override-empty", "sha256": "868b339eb3e2e5ef9a475c332bc70e17a75d9853f1195c4f8dcc14ad373c9b9b", "observedAt": "2026-10-26T11:00:18+00:00", "staged": "00003__wfv__styles-override-empty.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:59:18.832 \"Word found unreadable content in 00003__wfv__styles-override-empty.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s49b", "pass": 1, "name": "main-override-octet", "sha256": "facffeeae435694874be44c9c28eb19c2d3d771a9fcf0551e6180121c08ce896", "observedAt": "2026-10-26T10:58:42+00:00", "staged": "00000__wfv__main-override-octet.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:56:52.701 'Word found unreadable content in 00000__wfv__main-override-octet.docx. Do you want to recover the c … ? If you trust the source of this document, click Yes.'", "2026-10-26 06:56:53.268 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … very converter. (00000__wfv__main-override-octet.docx)\""]}
+{"run": "s49b", "pass": 2, "name": "main-override-octet", "sha256": "facffeeae435694874be44c9c28eb19c2d3d771a9fcf0551e6180121c08ce896", "observedAt": "2026-10-26T11:00:18+00:00", "staged": "00000__wfv__main-override-octet.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:59:01.465 'Word found unreadable content in 00000__wfv__main-override-octet.docx. Do you want to recover the c … ? If you trust the source of this document, click Yes.'", "2026-10-26 06:59:02.033 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … very converter. (00000__wfv__main-override-octet.docx)\""]}
+{"run": "s49b", "pass": 1, "name": "styles-override-settings-type", "sha256": "c3319b7315c01185d8d781cc6b1c2e189e2c994213d312bc70773204dc973517", "observedAt": "2026-10-26T10:58:42+00:00", "staged": "00004__wfv__styles-override-settings-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:58:41.734 'Word found unreadable content in 00004__wfv__styles-override-settings-type.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s49b", "pass": 2, "name": "styles-override-settings-type", "sha256": "c3319b7315c01185d8d781cc6b1c2e189e2c994213d312bc70773204dc973517", "observedAt": "2026-10-26T11:00:18+00:00", "staged": "00004__wfv__styles-override-settings-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:00:10.462 Microsoft Word, Word found unreadable content in 00004__wfv__styles-override-settings-type.docx. Do  … t? If you trust the source of this document, click Yes."]}
+{"run": "s49b", "pass": 1, "name": "s49b-control-minimal-end", "sha256": "54be6142d8cfa1a4e489b08dab17ae2b0438135dc2359696218e163896bdc7a7", "observedAt": "2026-10-26T10:58:42+00:00", "staged": "00001__wfv__s49b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s49b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s49b", "pass": 2, "name": "s49b-control-minimal-end", "sha256": "54be6142d8cfa1a4e489b08dab17ae2b0438135dc2359696218e163896bdc7a7", "observedAt": "2026-10-26T11:00:18+00:00", "staged": "00001__wfv__s49b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s49b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s49c", "pass": 1, "name": "s49c-control-minimal", "sha256": "d5316e712ead77abe5163bbda02d6207319e957d283cac33addc6ea4e963d1c5", "observedAt": "2026-10-26T11:02:17+00:00", "staged": "00005__wfv__s49c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s49c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s49c", "pass": 2, "name": "s49c-control-minimal", "sha256": "d5316e712ead77abe5163bbda02d6207319e957d283cac33addc6ea4e963d1c5", "observedAt": "2026-10-26T11:05:12+00:00", "staged": "00005__wfv__s49c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s49c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s49c", "pass": 1, "name": "dup-styles-main-calibration", "sha256": "7db93e23087578a7c0c879d17e76b5e412e268eaf302c570585871d3ed22c59e", "observedAt": "2026-10-26T11:02:17+00:00", "staged": "00002__wfv__dup-styles-main-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:00:58.432 \"Word found unreadable content in 00002__wfv__dup-styles-main-calibration.docx. Do you want to recov … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s49c", "pass": 2, "name": "dup-styles-main-calibration", "sha256": "7db93e23087578a7c0c879d17e76b5e412e268eaf302c570585871d3ed22c59e", "observedAt": "2026-10-26T11:05:12+00:00", "staged": "00002__wfv__dup-styles-main-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:02:54.771 \"Word found unreadable content in 00002__wfv__dup-styles-main-calibration.docx. Do you want to recov … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s49c", "pass": 1, "name": "dup-styles-package-rels", "sha256": "0cfdd623ac1524f8962fbf970e9f831d8c7d607ea6b8685db409863a8ccda018", "observedAt": "2026-10-26T11:02:17+00:00", "staged": "00003__wfv__dup-styles-package-rels.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-styles-package-rels_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s49c", "pass": 2, "name": "dup-styles-package-rels", "sha256": "0cfdd623ac1524f8962fbf970e9f831d8c7d607ea6b8685db409863a8ccda018", "observedAt": "2026-10-26T11:05:12+00:00", "staged": "00003__wfv__dup-styles-package-rels.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-styles-package-rels_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s49c", "pass": 1, "name": "dup-styles-header-sidecar", "sha256": "4f83912998c7853a67f925d6bedf13fb47cc1f5d42fd268dcd000fa53c016dc5", "observedAt": "2026-10-26T11:02:17+00:00", "staged": "00001__wfv__dup-styles-header-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-styles-header-sidecar_byword.pdf (15327 bytes), no dialog named the file"]}
+{"run": "s49c", "pass": 2, "name": "dup-styles-header-sidecar", "sha256": "4f83912998c7853a67f925d6bedf13fb47cc1f5d42fd268dcd000fa53c016dc5", "observedAt": "2026-10-26T11:05:12+00:00", "staged": "00001__wfv__dup-styles-header-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-styles-header-sidecar_byword.pdf (15327 bytes), no dialog named the file"]}
+{"run": "s49c", "pass": 1, "name": "dup-styles-glossary-sidecar", "sha256": "3fbc96bb8e28909e464ab22cf1a05317361b785cdc9089c6666c9a9abad54e93", "observedAt": "2026-10-26T11:02:17+00:00", "staged": "00000__wfv__dup-styles-glossary-sidecar.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:00:41.032 'Word found unreadable content in 00000__wfv__dup-styles-glossary-sidecar.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:00:41.616 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__dup-styles-glossary-sidec...)\""]}
+{"run": "s49c", "pass": 2, "name": "dup-styles-glossary-sidecar", "sha256": "3fbc96bb8e28909e464ab22cf1a05317361b785cdc9089c6666c9a9abad54e93", "observedAt": "2026-10-26T11:05:12+00:00", "staged": "00000__wfv__dup-styles-glossary-sidecar.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:02:38.884 'Word found unreadable content in 00000__wfv__dup-styles-glossary-sidecar.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:02:39.533 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__dup-styles-glossary-sidec...)\""]}
+{"run": "s49c", "pass": 1, "name": "styles-plus-one-external", "sha256": "59e452a93f1b2a70ed51baae841b1cef5b2386f1d9b59b3e17f1d428ac59efcf", "observedAt": "2026-10-26T11:02:17+00:00", "staged": "00006__wfv__styles-plus-one-external.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:01:14.166 \"Word found unreadable content in 00006__wfv__styles-plus-one-external.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s49c", "pass": 2, "name": "styles-plus-one-external", "sha256": "59e452a93f1b2a70ed51baae841b1cef5b2386f1d9b59b3e17f1d428ac59efcf", "observedAt": "2026-10-26T11:05:12+00:00", "staged": "00006__wfv__styles-plus-one-external.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:03:09.336 \"Word found unreadable content in 00006__wfv__styles-plus-one-external.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s49c", "pass": 1, "name": "styles-plus-two-external", "sha256": "5600dca9281d67098f2fa9af3c723a09dc5646a54c3d020bc8be5b091ddf9296", "observedAt": "2026-10-26T11:02:17+00:00", "staged": "00007__wfv__styles-plus-two-external.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:02:16.465 'Word found unreadable content in 00007__wfv__styles-plus-two-external.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:02:17.004 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__styles-plus-two-external....)\""]}
+{"run": "s49c", "pass": 2, "name": "styles-plus-two-external", "sha256": "5600dca9281d67098f2fa9af3c723a09dc5646a54c3d020bc8be5b091ddf9296", "observedAt": "2026-10-26T11:05:12+00:00", "staged": "00007__wfv__styles-plus-two-external.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:05:12.591 \"Word found unreadable content in 00007__wfv__styles-plus-two-external.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s49c", "pass": 1, "name": "s49c-control-minimal-end", "sha256": "d5316e712ead77abe5163bbda02d6207319e957d283cac33addc6ea4e963d1c5", "observedAt": "2026-10-26T11:02:17+00:00", "staged": "00004__wfv__s49c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s49c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s49c", "pass": 2, "name": "s49c-control-minimal-end", "sha256": "d5316e712ead77abe5163bbda02d6207319e957d283cac33addc6ea4e963d1c5", "observedAt": "2026-10-26T11:05:12+00:00", "staged": "00004__wfv__s49c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s49c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 49 builder, cross-check and section scripts</summary>
+
+Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s49builder.mts`:
+
+```ts
+// Session 49 (2026-10-26): the shapes review 145-146 says layers 145 (#707) and 146 (#694) judge without evidence.
+// - s49a: session 46 saw Word refuse a styles part typed `application/octet-stream` by a Default (`word/styles.bin`).
+//   `word-part-content-type-unrecognized` claims the recovery offer for any unrecognised type on the main styles reach
+//   (review finding 1). Here `word/styles.xml` keeps its XML and its Override carries the type: octet-stream itself (the
+//   Override spelling session 46 did not show), upper case, with a parameter, `image/png` and `application/foo+xml`.
+// - s49b: an empty `ContentType=""` on the styles Override (finding 6), the main document's Override typed
+//   `application/octet-stream` (finding 7) and the styles Override typed with the settings type (finding 8's hole).
+// - s49c: two styles relationships outside the main document's relationships part, in `_rels/.rels`, a reached header's
+//   sidecar and a reached glossary's sidecar (finding 3), and one real styles relationship beside an External one
+//   (finding 4). Session 45 refused two internal styles relationships in `word/_rels/document.xml.rels` only.
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s49a pnpm exec tsx s49builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const STYLES_TYPE = `${WML}.styles+xml`;
+const MAIN_TYPE = `${WML}.document.main+xml`;
+const P = MINIMAL_PARTS as Record<string, string>;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string, external = false) =>
+    `<Relationship Id="${id}" Type="${REL}/${segment}" Target="${target}"${external ? ' TargetMode="External"' : ""}/>`;
+const relsPart = (body: string) =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${body}</Relationships>`;
+const mainRels = (extra: string) => replaceOnce(P[SIDECAR]!, "</Relationships>", `${extra}</Relationships>`);
+const withOverrides = (...overrides: Array<[string, string]>) =>
+    replaceOnce(
+        P[CT]!,
+        "</Types>",
+        `${overrides.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+const control = () => buildDocx({ ...P });
+
+/** The minimal package with the Override of `part` carrying `type` instead of its own. */
+const retypedOverride = (part: string, own: string, type: string) =>
+    buildDocx({
+        ...P,
+        [CT]: replaceOnce(
+            P[CT]!,
+            `<Override PartName="/${part}" ContentType="${own}"/>`,
+            `<Override PartName="/${part}" ContentType="${type}"/>`,
+        ),
+    });
+const stylesTyped = (type: string) => retypedOverride("word/styles.xml", STYLES_TYPE, type);
+
+const STYLES2: Record<string, string> = { "word/styles2.xml": P["word/styles.xml"]! };
+/** Two more styles relationships in the package relationships part, beside the main document's own. */
+const dupInPackageRels = () =>
+    buildDocx({
+        ...P,
+        ...STYLES2,
+        "_rels/.rels": replaceOnce(
+            P["_rels/.rels"]!,
+            "</Relationships>",
+            `${relationship("rId8", "styles", "word/styles.xml")}${relationship("rId9", "styles", "word/styles2.xml")}</Relationships>`,
+        ),
+        [CT]: withOverrides(["word/styles2.xml", STYLES_TYPE]),
+    });
+const HEADER = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r></w:p></w:hdr>`;
+/** A header the body section references, its own sidecar holding two styles relationships. */
+const dupInHeaderRels = () =>
+    buildDocx({
+        ...P,
+        ...STYLES2,
+        "word/document.xml": replaceOnce(
+            replaceOnce(P["word/document.xml"]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${REL}"`),
+            "<w:sectPr>",
+            `<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>`,
+        ),
+        "word/header9.xml": HEADER,
+        "word/_rels/header9.xml.rels": relsPart(
+            `${relationship("rId1", "styles", "styles.xml")}${relationship("rId2", "styles", "styles2.xml")}`,
+        ),
+        [SIDECAR]: mainRels(relationship("rIdH", "header", "header9.xml")),
+        [CT]: withOverrides(["word/header9.xml", `${WML}.header+xml`], ["word/styles2.xml", STYLES_TYPE]),
+    });
+const GLOSSARY =
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:glossaryDocument xmlns:w="${W}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+    `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+    `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r></w:p></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`;
+/** A reached glossary whose own sidecar holds two styles relationships to two parts. */
+const dupInGlossaryRels = () =>
+    buildDocx({
+        ...P,
+        "word/glossary/document.xml": GLOSSARY,
+        "word/glossary/styles.xml": P["word/styles.xml"]!,
+        "word/glossary/styles2.xml": P["word/styles.xml"]!,
+        "word/glossary/_rels/document.xml.rels": relsPart(
+            `${relationship("rId1", "styles", "styles.xml")}${relationship("rId2", "styles", "styles2.xml")}`,
+        ),
+        [SIDECAR]: mainRels(relationship("rIdG", "glossaryDocument", "glossary/document.xml")),
+        [CT]: withOverrides(
+            ["word/glossary/document.xml", `${WML}.document.glossary+xml`],
+            ["word/glossary/styles.xml", STYLES_TYPE],
+            ["word/glossary/styles2.xml", STYLES_TYPE],
+        ),
+    });
+/** The main document's real styles relationship beside `count` External ones. */
+const withExternalStyles = (count: number) =>
+    buildDocx({
+        ...P,
+        [SIDECAR]: mainRels(
+            Array.from({ length: count }, (_, i) =>
+                relationship(`rIdX${i + 1}`, "styles", `http://example.com/styles${i + 1}.xml`, true),
+            ).join(""),
+        ),
+    });
+/** Session 45's refused shape again, as the chunk's calibration: two internal styles relationships to two parts. */
+const dupInMainRels = () =>
+    buildDocx({
+        ...P,
+        ...STYLES2,
+        [SIDECAR]: mainRels(relationship("rId9", "styles", "styles2.xml")),
+        [CT]: withOverrides(["word/styles2.xml", STYLES_TYPE]),
+    });
+
+const chunks: Record<string, Array<[string, string, () => Promise<Uint8Array>]>> = {
+    s49a: [
+        ["s49a-control-minimal", "control", control],
+        [
+            "styles-override-octet",
+            "#707 F1: word/styles.xml (styles XML) Override typed application/octet-stream",
+            () => stylesTyped("application/octet-stream"),
+        ],
+        [
+            "styles-override-octet-upper",
+            "#707 F1: styles Override typed APPLICATION/OCTET-STREAM",
+            () => stylesTyped("APPLICATION/OCTET-STREAM"),
+        ],
+        [
+            "styles-override-octet-charset",
+            "#707 F1: styles Override typed application/octet-stream; charset=utf-8",
+            () => stylesTyped("application/octet-stream; charset=utf-8"),
+        ],
+        ["styles-override-image-png", "#707 F1: styles Override typed image/png", () => stylesTyped("image/png")],
+        ["styles-override-foo-xml", "#707 F1: styles Override typed application/foo+xml", () => stylesTyped("application/foo+xml")],
+        ["s49a-control-minimal-end", "control", control],
+    ],
+    s49b: [
+        ["s49b-control-minimal", "control", control],
+        ["styles-override-empty", '#707 F6: styles Override ContentType=""', () => stylesTyped("")],
+        [
+            "main-override-octet",
+            "#707 F7: main document Override typed application/octet-stream",
+            () => retypedOverride("word/document.xml", MAIN_TYPE, "application/octet-stream"),
+        ],
+        [
+            "styles-override-settings-type",
+            "#707 F8: styles Override typed with the settings content type",
+            () => stylesTyped(`${WML}.settings+xml`),
+        ],
+        ["s49b-control-minimal-end", "control", control],
+    ],
+    s49c: [
+        ["s49c-control-minimal", "control", control],
+        [
+            "dup-styles-main-calibration",
+            "calibration (s45's refused shape): two internal styles relationships in word/_rels/document.xml.rels",
+            dupInMainRels,
+        ],
+        [
+            "dup-styles-package-rels",
+            "#694 F3: _rels/.rels adds two styles relationships (word/styles.xml, word/styles2.xml)",
+            dupInPackageRels,
+        ],
+        ["dup-styles-header-sidecar", "#694 F3: a referenced header's sidecar holds two styles relationships", dupInHeaderRels],
+        [
+            "dup-styles-glossary-sidecar",
+            "#694 F3: a reached glossary's sidecar holds two styles relationships to two parts",
+            dupInGlossaryRels,
+        ],
+        [
+            "styles-plus-one-external",
+            "#694 F4: the real styles relationship plus one External styles relationship",
+            () => withExternalStyles(1),
+        ],
+        [
+            "styles-plus-two-external",
+            "#694 F4: the real styles relationship plus two External styles relationships",
+            () => withExternalStyles(2),
+        ],
+        ["s49c-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-49 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s49a", "s49b", "s49c")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s49/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-49 parts of docs/plans/evidence/word-probes-2026-10-24.md into s49/section.md.
+
+Reads the chunk's specimens.jsonl (validator columns at e762ffb5, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s49/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s49a", "s49b", "s49c")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s49/results.json").read_text())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends = [], [], [], []
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    f"### Session 49: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at e762ffb5",
+    "",
+    "The shapes the adversarial review of layers 145 ([#707](https://github.com/jandira-tech/docx-validate/issues/707)) and "
+    "146 ([#694](https://github.com/jandira-tech/docx-validate/issues/694)) said those layers judge without evidence. Each chunk ran "
+    "twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log "
+    "(session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings "
+    "agree, and `unknown` otherwise; all 20 rows agree. The two times in Observed are the ends of the first and second runs. "
+    "Shape is the builder's description of the specimen.",
+    "",
+    "- `s49a`, #707: the minimal package with `word/styles.xml` (styles XML) typed by its Override as `application/octet-stream` "
+    "(session 46 showed only the Default spelling, on `word/styles.bin`), `APPLICATION/OCTET-STREAM`, "
+    "`application/octet-stream; charset=utf-8`, `image/png` or `application/foo+xml`: Word gets the recovery offer for every one. "
+    "Word-valid rejects all five through `word-part-content-type-unrecognized`.",
+    "- `s49b`, #707: an empty `ContentType=\"\"` on the styles Override, the main document's Override typed `application/octet-stream`, "
+    "and the styles Override typed with the settings content type: Word gets the recovery offer for all three, and word-valid "
+    "passes all three (false negatives).",
+    "- `s49c`, #694: two more styles relationships in `_rels/.rels`, and two in the sidecar of a header the body references, open "
+    "clean; word-valid rejects both through `word-duplicate-styles-relationship` (false positives). Two styles relationships in a "
+    "reached glossary's sidecar get the recovery offer, as session 45's calibration in the main document's sidecar does again. The "
+    "main document's real styles relationship beside one or two External styles relationships gets the recovery offer; word-valid "
+    "rejects both.",
+    "",
+    "| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at e762ffb5 | strict at e762ffb5 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 49</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 49 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s49builder.mts", ROOT / "s49builder.mts", "ts"), ("compare.py", ROOT / "s49/compare.py", "python"),
+                         ("section.py", ROOT / "s49/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s49/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records")
+`````
+
+</details>
+
+### Session 50: 11:26Z–11:40Z on 2026-10-26, validator columns at 01e4e684
+
+The scope the session 49 follow-ups need: where Word refuses duplicate relationships ([#717](https://github.com/jandira-tech/docx-validate/issues/717)), and which content types it refuses on the main document and the other parts it relates ([#720](https://github.com/jandira-tech/docx-validate/issues/720), [#721](https://github.com/jandira-tech/docx-validate/issues/721), [#722](https://github.com/jandira-tech/docx-validate/issues/722)). Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; all 32 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The part bodies are session 47's empty roots; the theme part is `word/theme/theme1.xml` of `tests/fixtures/working/package.drawing-arc-radius-integer.docx` (clean-open in the manifest).
+
+- `s50a` and `s50b`, #717: two relationships of one kind outside the main document's relationships part. In `_rels/.rels` (beside the main document's own relationship of the kind) two numbering, settings or theme relationships open clean, as styles did in session 49; in the sidecar of a header the body references, two numbering, settings, fontTable, webSettings or theme relationships open clean. In a reached glossary's sidecar, two numbering, settings or fontTable relationships to two parts get the recovery offer, as styles did; so does session 45's numbering calibration in `word/_rels/document.xml.rels`. Word-valid rejects every one of them, so the eight clean rows are false positives.
+- `s50c`, #721 and #720: the main document's Override typed `APPLICATION/OCTET-STREAM`, `application/octet-stream; charset=utf-8`, `image/png` or `application/foo+xml`, and an empty `ContentType=""` on the Override of a related settings or fontTable part, get the recovery offer; word-valid passes all six (false negatives).
+- `s50d`, #722 and review finding 1: a related settings, fontTable or numbering part typed `application/octet-stream`, settings typed with the styles content type, numbering with the settings content type, and the main document with the styles content type get the recovery offer; word-valid passes all six (false negatives).
+
+| Run    | Observed             | Specimen                           | Shape                                                                                                 | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at 01e4e684                              | strict at 01e4e684                                                            |
+| ------ | -------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `s50a` | 11:26:39Z, 11:27:33Z | `s50a-control-minimal`             | control                                                                                               | `5779d3799efc42fe` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                         |
+| `s50a` | 11:26:39Z, 11:27:33Z | `dup-numbering-main-calibration`   | calibration (s45's refused shape): two numbering relationships in word/_rels/document.xml.rels        | `4bc3981c4bf63229` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-duplicate-numbering-relationship`    | invalid: `word-duplicate-numbering-relationship`                              |
+| `s50a` | 11:26:39Z, 11:27:33Z | `dup-numbering-package-rels`       | #717: the main document's numbering relationship, and two more numbering relationships in _rels/.rels | `7a91d0641a3447e6` | clean-open     | clean-open     | clean-open                 | invalid: `word-duplicate-numbering-relationship`    | invalid: `word-duplicate-numbering-relationship`                              |
+| `s50a` | 11:26:39Z, 11:27:33Z | `dup-numbering-header-sidecar`     | #717: a referenced header's sidecar holds two numbering relationships                                 | `8a4caad7cdbae5b5` | clean-open     | clean-open     | clean-open                 | invalid: `word-duplicate-numbering-relationship`    | invalid: `paraid-missing-element`, `word-duplicate-numbering-relationship`    |
+| `s50a` | 11:26:39Z, 11:27:33Z | `dup-numbering-glossary-sidecar`   | #717: a reached glossary's sidecar holds two numbering relationships to two parts                     | `d89bd151c5cba2e3` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-duplicate-numbering-relationship`    | invalid: `paraid-missing-element`, `word-duplicate-numbering-relationship`    |
+| `s50a` | 11:26:39Z, 11:27:33Z | `dup-settings-package-rels`        | #717: the main document's settings relationship, and two more settings relationships in _rels/.rels   | `7f0606f9ec18883d` | clean-open     | clean-open     | clean-open                 | invalid: `word-duplicate-settings-relationship`     | invalid: `word-duplicate-settings-relationship`                               |
+| `s50a` | 11:26:39Z, 11:27:33Z | `dup-settings-header-sidecar`      | #717: a referenced header's sidecar holds two settings relationships                                  | `9f0933837e0009f6` | clean-open     | clean-open     | clean-open                 | invalid: `word-duplicate-settings-relationship`     | invalid: `paraid-missing-element`, `word-duplicate-settings-relationship`     |
+| `s50a` | 11:26:39Z, 11:27:33Z | `s50a-control-minimal-end`         | control                                                                                               | `a2c2d66bb26fa8db` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                         |
+| `s50b` | 11:28:12Z, 11:28:55Z | `s50b-control-minimal`             | control                                                                                               | `a2c2d66bb26fa8db` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                         |
+| `s50b` | 11:28:12Z, 11:28:55Z | `dup-settings-glossary-sidecar`    | #717: a reached glossary's sidecar holds two settings relationships to two parts                      | `145783ba2b139007` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-duplicate-settings-relationship`     | invalid: `paraid-missing-element`, `word-duplicate-settings-relationship`     |
+| `s50b` | 11:28:12Z, 11:28:55Z | `dup-fonttable-header-sidecar`     | #717: a referenced header's sidecar holds two fontTable relationships                                 | `f52469516806b93c` | clean-open     | clean-open     | clean-open                 | invalid: `word-duplicate-font-table-relationship`   | invalid: `paraid-missing-element`, `word-duplicate-font-table-relationship`   |
+| `s50b` | 11:28:12Z, 11:28:55Z | `dup-fonttable-glossary-sidecar`   | #717: a reached glossary's sidecar holds two fontTable relationships to two parts                     | `1b48db4de4716a31` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-duplicate-font-table-relationship`   | invalid: `paraid-missing-element`, `word-duplicate-font-table-relationship`   |
+| `s50b` | 11:28:12Z, 11:28:55Z | `dup-websettings-header-sidecar`   | #717: a referenced header's sidecar holds two webSettings relationships                               | `f7c36a2161e80d84` | clean-open     | clean-open     | clean-open                 | invalid: `word-duplicate-web-settings-relationship` | invalid: `paraid-missing-element`, `word-duplicate-web-settings-relationship` |
+| `s50b` | 11:28:12Z, 11:28:55Z | `dup-theme-package-rels`           | #717: the main document's theme relationship, and two more theme relationships in _rels/.rels         | `9fdd1040953b5006` | clean-open     | clean-open     | clean-open                 | invalid: `word-duplicate-theme-relationship`        | invalid: `word-duplicate-theme-relationship`                                  |
+| `s50b` | 11:28:12Z, 11:28:55Z | `dup-theme-header-sidecar`         | #717: a referenced header's sidecar holds two theme relationships                                     | `9ff901e258c6b513` | clean-open     | clean-open     | clean-open                 | invalid: `word-duplicate-theme-relationship`        | invalid: `paraid-missing-element`, `word-duplicate-theme-relationship`        |
+| `s50b` | 11:28:12Z, 11:28:55Z | `s50b-control-minimal-end`         | control                                                                                               | `d53f8c5e25d5343f` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                         |
+| `s50c` | 11:32:21Z, 11:35:33Z | `s50c-control-minimal`             | control                                                                                               | `e88faecd387ddb0f` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                         |
+| `s50c` | 11:32:21Z, 11:35:33Z | `main-override-octet-upper`        | #721: main document Override typed APPLICATION/OCTET-STREAM                                           | `f8566bd0501fa667` | repair-warning | repair-warning | unreadable-content-warning | valid                                               | invalid: `word-part-content-type-unrecognized`                                |
+| `s50c` | 11:32:21Z, 11:35:33Z | `main-override-octet-charset`      | #721: main document Override typed application/octet-stream; charset=utf-8                            | `abbd077220ed9ace` | repair-warning | repair-warning | unreadable-content-warning | valid                                               | invalid: `word-part-content-type-unrecognized`                                |
+| `s50c` | 11:32:21Z, 11:35:33Z | `main-override-image-png`          | #721: main document Override typed image/png                                                          | `913abbf3d76358a7` | repair-warning | repair-warning | unreadable-content-warning | valid                                               | invalid: `word-part-content-type-unrecognized`                                |
+| `s50c` | 11:32:21Z, 11:35:33Z | `main-override-foo-xml`            | #721: main document Override typed application/foo+xml                                                | `32f2a7089d4c140f` | repair-warning | repair-warning | unreadable-content-warning | valid                                               | invalid: `word-part-content-type-unrecognized`                                |
+| `s50c` | 11:32:21Z, 11:35:33Z | `settings-override-empty`          | #720: a related word/settings.xml whose Override has ContentType=""                                   | `e7c09efffd42aa52` | repair-warning | repair-warning | unreadable-content-warning | valid                                               | invalid: `xsd-summary`, `xsd-error`                                           |
+| `s50c` | 11:32:21Z, 11:35:33Z | `fonttable-override-empty`         | #720: a related word/fontTable.xml whose Override has ContentType=""                                  | `37e686b8e811c72c` | repair-warning | repair-warning | unreadable-content-warning | valid                                               | invalid: `xsd-summary`, `xsd-error`                                           |
+| `s50c` | 11:32:21Z, 11:35:33Z | `s50c-control-minimal-end`         | control                                                                                               | `5812c213248af928` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                         |
+| `s50d` | 11:39:05Z, 11:40:34Z | `s50d-control-minimal`             | control                                                                                               | `5812c213248af928` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                         |
+| `s50d` | 11:39:05Z, 11:40:34Z | `settings-override-octet`          | #722/F1: a related word/settings.xml typed application/octet-stream                                   | `0e293e78b8137d46` | repair-warning | repair-warning | unreadable-content-warning | valid                                               | invalid: `word-part-content-type-unrecognized`                                |
+| `s50d` | 11:39:05Z, 11:40:34Z | `fonttable-override-octet`         | #722/F1: a related word/fontTable.xml typed application/octet-stream                                  | `268025d1d5300770` | repair-warning | repair-warning | unreadable-content-warning | valid                                               | invalid: `word-part-content-type-unrecognized`                                |
+| `s50d` | 11:39:05Z, 11:40:34Z | `numbering-override-octet`         | #722/F1: a related word/numbering.xml typed application/octet-stream                                  | `74cf728a50d73b52` | repair-warning | repair-warning | unreadable-content-warning | valid                                               | invalid: `word-part-content-type-unrecognized`                                |
+| `s50d` | 11:39:05Z, 11:40:34Z | `settings-override-styles-type`    | #722: a related word/settings.xml typed with the styles content type                                  | `3f61cb7f51bcf81b` | repair-warning | repair-warning | unreadable-content-warning | valid                                               | invalid: `word-part-content-type-mismatch`                                    |
+| `s50d` | 11:39:05Z, 11:40:34Z | `numbering-override-settings-type` | #722: a related word/numbering.xml typed with the settings content type                               | `31f0d21de0126f86` | repair-warning | repair-warning | unreadable-content-warning | valid                                               | invalid: `word-part-content-type-mismatch`                                    |
+| `s50d` | 11:39:05Z, 11:40:34Z | `main-override-styles-type`        | #722: main document Override typed with the styles content type                                       | `b8564a079df49d24` | repair-warning | repair-warning | unreadable-content-warning | valid                                               | invalid: `word-part-content-type-mismatch`                                    |
+| `s50d` | 11:39:05Z, 11:40:34Z | `s50d-control-minimal-end`         | control                                                                                               | `7edaeba24f7d31e6` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                         |
+
+<details><summary>Raw records, session 50</summary>
+
+```jsonl
+{"run": "s50a", "pass": 1, "name": "s50a-control-minimal", "sha256": "5779d3799efc42fed050cf596f79a79f8a48ce12d9bb6299287e2f9a382ab0e1", "observedAt": "2026-10-26T11:26:39+00:00", "staged": "00007__wfv__s50a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s50a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50a", "pass": 2, "name": "s50a-control-minimal", "sha256": "5779d3799efc42fed050cf596f79a79f8a48ce12d9bb6299287e2f9a382ab0e1", "observedAt": "2026-10-26T11:27:33+00:00", "staged": "00007__wfv__s50a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s50a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50a", "pass": 1, "name": "dup-numbering-main-calibration", "sha256": "4bc3981c4bf632290dc3d5e09abb21d38c257607f2c5c39c87dc7eef2259d46f", "observedAt": "2026-10-26T11:26:39+00:00", "staged": "00002__wfv__dup-numbering-main-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:26:21.126 \"Word found unreadable content in 00002__wfv__dup-numbering-main-calibration.docx. Do you want to re … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s50a", "pass": 2, "name": "dup-numbering-main-calibration", "sha256": "4bc3981c4bf632290dc3d5e09abb21d38c257607f2c5c39c87dc7eef2259d46f", "observedAt": "2026-10-26T11:27:33+00:00", "staged": "00002__wfv__dup-numbering-main-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:27:30.761 \"Word found unreadable content in 00002__wfv__dup-numbering-main-calibration.docx. Do you want to re … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s50a", "pass": 1, "name": "dup-numbering-package-rels", "sha256": "7a91d0641a3447e6a0aba90d9d2765232f9117cd9ddb27bf9e58bf9ca8bf739e", "observedAt": "2026-10-26T11:26:39+00:00", "staged": "00003__wfv__dup-numbering-package-rels.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-numbering-package-rels_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50a", "pass": 2, "name": "dup-numbering-package-rels", "sha256": "7a91d0641a3447e6a0aba90d9d2765232f9117cd9ddb27bf9e58bf9ca8bf739e", "observedAt": "2026-10-26T11:27:33+00:00", "staged": "00003__wfv__dup-numbering-package-rels.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-numbering-package-rels_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50a", "pass": 1, "name": "dup-numbering-header-sidecar", "sha256": "8a4caad7cdbae5b51d30b52502d6a4e6359feec0e1b306634dd98f04fcb2e2fb", "observedAt": "2026-10-26T11:26:39+00:00", "staged": "00001__wfv__dup-numbering-header-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-numbering-header-sidecar_byword.pdf (15327 bytes), no dialog named the file"]}
+{"run": "s50a", "pass": 2, "name": "dup-numbering-header-sidecar", "sha256": "8a4caad7cdbae5b51d30b52502d6a4e6359feec0e1b306634dd98f04fcb2e2fb", "observedAt": "2026-10-26T11:27:33+00:00", "staged": "00001__wfv__dup-numbering-header-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-numbering-header-sidecar_byword.pdf (15327 bytes), no dialog named the file"]}
+{"run": "s50a", "pass": 1, "name": "dup-numbering-glossary-sidecar", "sha256": "d89bd151c5cba2e31806bd7dcafaba9ff124a6ea63bafed309336f7b8d3f644a", "observedAt": "2026-10-26T11:26:39+00:00", "staged": "00000__wfv__dup-numbering-glossary-sidecar.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:26:01.053 'Word found unreadable content in 00000__wfv__dup-numbering-glossary-sidecar.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:26:01.781 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__dup-numbering-glossary-si...)\""]}
+{"run": "s50a", "pass": 2, "name": "dup-numbering-glossary-sidecar", "sha256": "d89bd151c5cba2e31806bd7dcafaba9ff124a6ea63bafed309336f7b8d3f644a", "observedAt": "2026-10-26T11:27:33+00:00", "staged": "00000__wfv__dup-numbering-glossary-sidecar.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:27:02.975 'Word found unreadable content in 00000__wfv__dup-numbering-glossary-sidecar.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:27:03.779 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__dup-numbering-glossary-si...)\""]}
+{"run": "s50a", "pass": 1, "name": "dup-settings-package-rels", "sha256": "7f0606f9ec18883d4db23dfe030bfe6f0f8d801628dcbdffd1b25f9e9eeaf642", "observedAt": "2026-10-26T11:26:39+00:00", "staged": "00005__wfv__dup-settings-package-rels.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-settings-package-rels_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50a", "pass": 2, "name": "dup-settings-package-rels", "sha256": "7f0606f9ec18883d4db23dfe030bfe6f0f8d801628dcbdffd1b25f9e9eeaf642", "observedAt": "2026-10-26T11:27:33+00:00", "staged": "00005__wfv__dup-settings-package-rels.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-settings-package-rels_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50a", "pass": 1, "name": "dup-settings-header-sidecar", "sha256": "9f0933837e0009f603cd5ee1e8e1a836ba31188f2669a7dcbca562d021a46cdc", "observedAt": "2026-10-26T11:26:39+00:00", "staged": "00004__wfv__dup-settings-header-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-settings-header-sidecar_byword.pdf (15327 bytes), no dialog named the file"]}
+{"run": "s50a", "pass": 2, "name": "dup-settings-header-sidecar", "sha256": "9f0933837e0009f603cd5ee1e8e1a836ba31188f2669a7dcbca562d021a46cdc", "observedAt": "2026-10-26T11:27:33+00:00", "staged": "00004__wfv__dup-settings-header-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-settings-header-sidecar_byword.pdf (15327 bytes), no dialog named the file"]}
+{"run": "s50a", "pass": 1, "name": "s50a-control-minimal-end", "sha256": "a2c2d66bb26fa8db18750294de1e88544b5ed35a4db0675e9385bf8409131a33", "observedAt": "2026-10-26T11:26:39+00:00", "staged": "00006__wfv__s50a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s50a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50a", "pass": 2, "name": "s50a-control-minimal-end", "sha256": "a2c2d66bb26fa8db18750294de1e88544b5ed35a4db0675e9385bf8409131a33", "observedAt": "2026-10-26T11:27:33+00:00", "staged": "00006__wfv__s50a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s50a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50b", "pass": 1, "name": "s50b-control-minimal", "sha256": "a2c2d66bb26fa8db18750294de1e88544b5ed35a4db0675e9385bf8409131a33", "observedAt": "2026-10-26T11:28:12+00:00", "staged": "00007__wfv__s50b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s50b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50b", "pass": 2, "name": "s50b-control-minimal", "sha256": "a2c2d66bb26fa8db18750294de1e88544b5ed35a4db0675e9385bf8409131a33", "observedAt": "2026-10-26T11:28:55+00:00", "staged": "00007__wfv__s50b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s50b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50b", "pass": 1, "name": "dup-settings-glossary-sidecar", "sha256": "145783ba2b139007ce245c9b83e30906d2599049c0e22b761764ae29d5bc413f", "observedAt": "2026-10-26T11:28:12+00:00", "staged": "00002__wfv__dup-settings-glossary-sidecar.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:28:10.823 \"Word found unreadable content in 00002__wfv__dup-settings-glossary-sidecar.docx. Do you want to rec … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s50b", "pass": 2, "name": "dup-settings-glossary-sidecar", "sha256": "145783ba2b139007ce245c9b83e30906d2599049c0e22b761764ae29d5bc413f", "observedAt": "2026-10-26T11:28:55+00:00", "staged": "00002__wfv__dup-settings-glossary-sidecar.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:28:53.472 \"Word found unreadable content in 00002__wfv__dup-settings-glossary-sidecar.docx. Do you want to rec … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s50b", "pass": 1, "name": "dup-fonttable-header-sidecar", "sha256": "f52469516806b93ccbe1d95421e8df980e878352c62833ede8e8d4415ff17915", "observedAt": "2026-10-26T11:28:12+00:00", "staged": "00001__wfv__dup-fonttable-header-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-fonttable-header-sidecar_byword.pdf (15327 bytes), no dialog named the file"]}
+{"run": "s50b", "pass": 2, "name": "dup-fonttable-header-sidecar", "sha256": "f52469516806b93ccbe1d95421e8df980e878352c62833ede8e8d4415ff17915", "observedAt": "2026-10-26T11:28:55+00:00", "staged": "00001__wfv__dup-fonttable-header-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-fonttable-header-sidecar_byword.pdf (15327 bytes), no dialog named the file"]}
+{"run": "s50b", "pass": 1, "name": "dup-fonttable-glossary-sidecar", "sha256": "1b48db4de4716a3107666883380fabd2587634648f4b249add4deaa3bcba8f40", "observedAt": "2026-10-26T11:28:12+00:00", "staged": "00000__wfv__dup-fonttable-glossary-sidecar.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:27:51.929 'Word found unreadable content in 00000__wfv__dup-fonttable-glossary-sidecar.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:27:52.523 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__dup-fonttable-glossary-si...)\""]}
+{"run": "s50b", "pass": 2, "name": "dup-fonttable-glossary-sidecar", "sha256": "1b48db4de4716a3107666883380fabd2587634648f4b249add4deaa3bcba8f40", "observedAt": "2026-10-26T11:28:55+00:00", "staged": "00000__wfv__dup-fonttable-glossary-sidecar.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:28:34.558 'Word found unreadable content in 00000__wfv__dup-fonttable-glossary-sidecar.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:28:35.153 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__dup-fonttable-glossary-si...)\""]}
+{"run": "s50b", "pass": 1, "name": "dup-websettings-header-sidecar", "sha256": "f7c36a2161e80d8465bdb0ff24301bd9b4545404707762e45edfbd84590fc002", "observedAt": "2026-10-26T11:28:12+00:00", "staged": "00005__wfv__dup-websettings-header-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-websettings-header-sidecar_byword.pdf (15327 bytes), no dialog named the file"]}
+{"run": "s50b", "pass": 2, "name": "dup-websettings-header-sidecar", "sha256": "f7c36a2161e80d8465bdb0ff24301bd9b4545404707762e45edfbd84590fc002", "observedAt": "2026-10-26T11:28:55+00:00", "staged": "00005__wfv__dup-websettings-header-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-websettings-header-sidecar_byword.pdf (15327 bytes), no dialog named the file"]}
+{"run": "s50b", "pass": 1, "name": "dup-theme-package-rels", "sha256": "9fdd1040953b50068f510f93776d5981df0d4c600920cf2cec6d4a0a6ff16deb", "observedAt": "2026-10-26T11:28:12+00:00", "staged": "00004__wfv__dup-theme-package-rels.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-theme-package-rels_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50b", "pass": 2, "name": "dup-theme-package-rels", "sha256": "9fdd1040953b50068f510f93776d5981df0d4c600920cf2cec6d4a0a6ff16deb", "observedAt": "2026-10-26T11:28:55+00:00", "staged": "00004__wfv__dup-theme-package-rels.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-theme-package-rels_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50b", "pass": 1, "name": "dup-theme-header-sidecar", "sha256": "9ff901e258c6b5130671cee815c6e54fe35472a43d71a65707da6e47f59537ce", "observedAt": "2026-10-26T11:28:12+00:00", "staged": "00003__wfv__dup-theme-header-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-theme-header-sidecar_byword.pdf (15327 bytes), no dialog named the file"]}
+{"run": "s50b", "pass": 2, "name": "dup-theme-header-sidecar", "sha256": "9ff901e258c6b5130671cee815c6e54fe35472a43d71a65707da6e47f59537ce", "observedAt": "2026-10-26T11:28:55+00:00", "staged": "00003__wfv__dup-theme-header-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-theme-header-sidecar_byword.pdf (15327 bytes), no dialog named the file"]}
+{"run": "s50b", "pass": 1, "name": "s50b-control-minimal-end", "sha256": "d53f8c5e25d5343f400846b23def56cdeeac3cc8623124385c4f5ddfbf55a8ab", "observedAt": "2026-10-26T11:28:12+00:00", "staged": "00006__wfv__s50b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s50b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50b", "pass": 2, "name": "s50b-control-minimal-end", "sha256": "d53f8c5e25d5343f400846b23def56cdeeac3cc8623124385c4f5ddfbf55a8ab", "observedAt": "2026-10-26T11:28:55+00:00", "staged": "00006__wfv__s50b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s50b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50c", "pass": 1, "name": "s50c-control-minimal", "sha256": "e88faecd387ddb0f1b7a8437855e7065e6e35de06e7b54d08db3984e364114a6", "observedAt": "2026-10-26T11:32:21+00:00", "staged": "00006__wfv__s50c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s50c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50c", "pass": 2, "name": "s50c-control-minimal", "sha256": "e88faecd387ddb0f1b7a8437855e7065e6e35de06e7b54d08db3984e364114a6", "observedAt": "2026-10-26T11:35:33+00:00", "staged": "00006__wfv__s50c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s50c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50c", "pass": 1, "name": "main-override-octet-upper", "sha256": "f8566bd0501fa6673bbd87f15d93e82737fd5df32e1da1b807e5bc8cc4791fef", "observedAt": "2026-10-26T11:32:21+00:00", "staged": "00004__wfv__main-override-octet-upper.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:32:15.367 'Word found unreadable content in 00004__wfv__main-override-octet-upper.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s50c", "pass": 2, "name": "main-override-octet-upper", "sha256": "f8566bd0501fa6673bbd87f15d93e82737fd5df32e1da1b807e5bc8cc4791fef", "observedAt": "2026-10-26T11:35:33+00:00", "staged": "00004__wfv__main-override-octet-upper.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:35:27.473 'Word found unreadable content in 00004__wfv__main-override-octet-upper.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s50c", "pass": 1, "name": "main-override-octet-charset", "sha256": "abbd077220ed9acef340ebff46329176a272f11da6cd47c148c77ef0751fb1a1", "observedAt": "2026-10-26T11:32:21+00:00", "staged": "00003__wfv__main-override-octet-charset.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:31:39.870 Microsoft Word, Word found unreadable content in 00003__wfv__main-override-octet-charset.docx. Do yo … t? If you trust the source of this document, click Yes."]}
+{"run": "s50c", "pass": 2, "name": "main-override-octet-charset", "sha256": "abbd077220ed9acef340ebff46329176a272f11da6cd47c148c77ef0751fb1a1", "observedAt": "2026-10-26T11:35:33+00:00", "staged": "00003__wfv__main-override-octet-charset.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:34:52.151 'Word found unreadable content in 00003__wfv__main-override-octet-charset.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s50c", "pass": 1, "name": "main-override-image-png", "sha256": "913abbf3d76358a738357d4a6d7f791d10bc828f4a074e1b8aff9b8d8277be8f", "observedAt": "2026-10-26T11:32:21+00:00", "staged": "00002__wfv__main-override-image-png.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:30:54.940 Microsoft Word, Word found unreadable content in 00002__wfv__main-override-image-png.docx. Do you wa … t? If you trust the source of this document, click Yes.", "2026-10-26 07:30:55.639 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__main-override-image-png.docx)\""]}
+{"run": "s50c", "pass": 2, "name": "main-override-image-png", "sha256": "913abbf3d76358a738357d4a6d7f791d10bc828f4a074e1b8aff9b8d8277be8f", "observedAt": "2026-10-26T11:35:33+00:00", "staged": "00002__wfv__main-override-image-png.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:34:16.730 Microsoft Word, Word found unreadable content in 00002__wfv__main-override-image-png.docx. Do you wa … t? If you trust the source of this document, click Yes."]}
+{"run": "s50c", "pass": 1, "name": "main-override-foo-xml", "sha256": "32f2a7089d4c140fd6d8bb3d6239998bbcef48a19e11ee60ccc187f47fd97c52", "observedAt": "2026-10-26T11:32:21+00:00", "staged": "00001__wfv__main-override-foo-xml.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:30:06.331 Microsoft Word, Word found unreadable content in 00001__wfv__main-override-foo-xml.docx. Do you want … t? If you trust the source of this document, click Yes."]}
+{"run": "s50c", "pass": 2, "name": "main-override-foo-xml", "sha256": "32f2a7089d4c140fd6d8bb3d6239998bbcef48a19e11ee60ccc187f47fd97c52", "observedAt": "2026-10-26T11:35:33+00:00", "staged": "00001__wfv__main-override-foo-xml.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:33:32.613 Microsoft Word, Word found unreadable content in 00001__wfv__main-override-foo-xml.docx. Do you want … t? If you trust the source of this document, click Yes.", "2026-10-26 07:33:33.308 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00001__wfv__main-override-foo-xml.docx)\""]}
+{"run": "s50c", "pass": 1, "name": "settings-override-empty", "sha256": "e7c09efffd42aa522ac47ceb2103d5ec6d9a8eee9393d930b662b4e84bb57749", "observedAt": "2026-10-26T11:32:21+00:00", "staged": "00007__wfv__settings-override-empty.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:32:21.796 \"Word found unreadable content in 00007__wfv__settings-override-empty.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.\"", "2026-10-26 07:32:21.796 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__settings-override-empty.docx)\""]}
+{"run": "s50c", "pass": 2, "name": "settings-override-empty", "sha256": "e7c09efffd42aa522ac47ceb2103d5ec6d9a8eee9393d930b662b4e84bb57749", "observedAt": "2026-10-26T11:35:33+00:00", "staged": "00007__wfv__settings-override-empty.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:35:33.596 \"Word found unreadable content in 00007__wfv__settings-override-empty.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.\"", "2026-10-26 07:35:33.597 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__settings-override-empty.docx)\""]}
+{"run": "s50c", "pass": 1, "name": "fonttable-override-empty", "sha256": "37e686b8e811c72ce3a6f9a58a5c7f53eb667c41106709ed185c608f6d87f01d", "observedAt": "2026-10-26T11:32:21+00:00", "staged": "00000__wfv__fonttable-override-empty.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:29:13.610 'Word found unreadable content in 00000__wfv__fonttable-override-empty.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:29:14.217 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__fonttable-override-empty....)\""]}
+{"run": "s50c", "pass": 2, "name": "fonttable-override-empty", "sha256": "37e686b8e811c72ce3a6f9a58a5c7f53eb667c41106709ed185c608f6d87f01d", "observedAt": "2026-10-26T11:35:33+00:00", "staged": "00000__wfv__fonttable-override-empty.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:32:39.826 'Word found unreadable content in 00000__wfv__fonttable-override-empty.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:32:40.391 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__fonttable-override-empty....)\""]}
+{"run": "s50c", "pass": 1, "name": "s50c-control-minimal-end", "sha256": "5812c213248af928fc53ed11bb7a9169dbc44a4c01b068be2b0ab4748125c7d0", "observedAt": "2026-10-26T11:32:21+00:00", "staged": "00005__wfv__s50c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s50c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50c", "pass": 2, "name": "s50c-control-minimal-end", "sha256": "5812c213248af928fc53ed11bb7a9169dbc44a4c01b068be2b0ab4748125c7d0", "observedAt": "2026-10-26T11:35:33+00:00", "staged": "00005__wfv__s50c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s50c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50d", "pass": 1, "name": "s50d-control-minimal", "sha256": "5812c213248af928fc53ed11bb7a9169dbc44a4c01b068be2b0ab4748125c7d0", "observedAt": "2026-10-26T11:39:05+00:00", "staged": "00005__wfv__s50d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s50d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50d", "pass": 2, "name": "s50d-control-minimal", "sha256": "5812c213248af928fc53ed11bb7a9169dbc44a4c01b068be2b0ab4748125c7d0", "observedAt": "2026-10-26T11:40:34+00:00", "staged": "00005__wfv__s50d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s50d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50d", "pass": 1, "name": "settings-override-octet", "sha256": "0e293e78b8137d46996955ebbe4c745c9c68d264a37f3a8ef2bb49c20e312971", "observedAt": "2026-10-26T11:39:05+00:00", "staged": "00006__wfv__settings-override-octet.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:37:57.270 \"Word found unreadable content in 00006__wfv__settings-override-octet.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.\"", "2026-10-26 07:37:57.271 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__settings-override-octet.docx)\""]}
+{"run": "s50d", "pass": 2, "name": "settings-override-octet", "sha256": "0e293e78b8137d46996955ebbe4c745c9c68d264a37f3a8ef2bb49c20e312971", "observedAt": "2026-10-26T11:40:34+00:00", "staged": "00006__wfv__settings-override-octet.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:40:29.578 'Word found unreadable content in 00006__wfv__settings-override-octet.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:40:30.304 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__settings-override-octet.docx)\""]}
+{"run": "s50d", "pass": 1, "name": "fonttable-override-octet", "sha256": "268025d1d53007702495eaebcce17d72e7fb057e18a38bcc237b05b627cae33e", "observedAt": "2026-10-26T11:39:05+00:00", "staged": "00000__wfv__fonttable-override-octet.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:35:52.704 'Word found unreadable content in 00000__wfv__fonttable-override-octet.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:35:53.309 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__fonttable-override-octet....)\""]}
+{"run": "s50d", "pass": 2, "name": "fonttable-override-octet", "sha256": "268025d1d53007702495eaebcce17d72e7fb057e18a38bcc237b05b627cae33e", "observedAt": "2026-10-26T11:40:34+00:00", "staged": "00000__wfv__fonttable-override-octet.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:39:23.027 'Word found unreadable content in 00000__wfv__fonttable-override-octet.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:39:23.770 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__fonttable-override-octet....)\""]}
+{"run": "s50d", "pass": 1, "name": "numbering-override-octet", "sha256": "74cf728a50d73b52049b3ccf24e1a599413bd39c70f7e1d78009b73f08ae65d2", "observedAt": "2026-10-26T11:39:05+00:00", "staged": "00002__wfv__numbering-override-octet.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:37:19.111 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00002__wfv__numbering-override-octet....)'", "2026-10-26 07:37:19.261 \"Word found unreadable content in 00002__wfv__numbering-override-octet.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s50d", "pass": 2, "name": "numbering-override-octet", "sha256": "74cf728a50d73b52049b3ccf24e1a599413bd39c70f7e1d78009b73f08ae65d2", "observedAt": "2026-10-26T11:40:34+00:00", "staged": "00002__wfv__numbering-override-octet.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:40:20.731 'Word found unreadable content in 00002__wfv__numbering-override-octet.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:40:21.570 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__numbering-override-octet....)\""]}
+{"run": "s50d", "pass": 1, "name": "settings-override-styles-type", "sha256": "3f61cb7f51bcf81bfd6c1256dc5ab1f7c5c384877d4dfcaaafebc3a8190135f0", "observedAt": "2026-10-26T11:39:05+00:00", "staged": "00007__wfv__settings-override-styles-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:38:51.265 Microsoft Word, Word found unreadable content in 00007__wfv__settings-override-styles-type.docx. Do  … t? If you trust the source of this document, click Yes.", "2026-10-26 07:39:05.468 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__settings-override-styles-...)\""]}
+{"run": "s50d", "pass": 2, "name": "settings-override-styles-type", "sha256": "3f61cb7f51bcf81bfd6c1256dc5ab1f7c5c384877d4dfcaaafebc3a8190135f0", "observedAt": "2026-10-26T11:40:34+00:00", "staged": "00007__wfv__settings-override-styles-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:40:34.299 'Word found unreadable content in 00007__wfv__settings-override-styles-type.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:40:34.888 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__settings-override-styles-...)\""]}
+{"run": "s50d", "pass": 1, "name": "numbering-override-settings-type", "sha256": "31f0d21de0126f8630116a947965a72789e44d8e443c6a7c1689b5ad57f6d78a", "observedAt": "2026-10-26T11:39:05+00:00", "staged": "00003__wfv__numbering-override-settings-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:37:50.083 'Word found unreadable content in 00003__wfv__numbering-override-settings-type.docx. Do you want to  … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s50d", "pass": 2, "name": "numbering-override-settings-type", "sha256": "31f0d21de0126f8630116a947965a72789e44d8e443c6a7c1689b5ad57f6d78a", "observedAt": "2026-10-26T11:40:34+00:00", "staged": "00003__wfv__numbering-override-settings-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:40:24.977 'Word found unreadable content in 00003__wfv__numbering-override-settings-type.docx. Do you want to  … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:40:25.563 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__numbering-override-settin...)\""]}
+{"run": "s50d", "pass": 1, "name": "main-override-styles-type", "sha256": "b8564a079df49d2465726d1719581a4417d29ba8ab81a2afec7170400d53b23d", "observedAt": "2026-10-26T11:39:05+00:00", "staged": "00001__wfv__main-override-styles-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:36:41.630 'Word found unreadable content in 00001__wfv__main-override-styles-type.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s50d", "pass": 2, "name": "main-override-styles-type", "sha256": "b8564a079df49d2465726d1719581a4417d29ba8ab81a2afec7170400d53b23d", "observedAt": "2026-10-26T11:40:34+00:00", "staged": "00001__wfv__main-override-styles-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:40:16.455 Microsoft Word, Word found unreadable content in 00001__wfv__main-override-styles-type.docx. Do you  … t? If you trust the source of this document, click Yes."]}
+{"run": "s50d", "pass": 1, "name": "s50d-control-minimal-end", "sha256": "7edaeba24f7d31e6b1f1c0e4a133c6460619e04ad20c339a60f61f53a9cf8c34", "observedAt": "2026-10-26T11:39:05+00:00", "staged": "00004__wfv__s50d-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s50d-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s50d", "pass": 2, "name": "s50d-control-minimal-end", "sha256": "7edaeba24f7d31e6b1f1c0e4a133c6460619e04ad20c339a60f61f53a9cf8c34", "observedAt": "2026-10-26T11:40:34+00:00", "staged": "00004__wfv__s50d-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s50d-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 50 builder, cross-check and section scripts</summary>
+
+Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s50builder.mts`:
+
+```ts
+// Session 50 (2026-10-26): the scope the session 49 follow-ups (#717, #720, #721, #722) need before they are implemented.
+// - s50a/s50b: #717. Session 49 opened clean two extra styles relationships in `_rels/.rels` and in a referenced
+//   header's sidecar, and refused them in a reached glossary's sidecar. Here the same three reaches with two numbering,
+//   settings, fontTable, webSettings or theme relationships; session 45 refused two of each only in
+//   `word/_rels/document.xml.rels` (numbering re-run here as the calibration).
+// - s50c: #721 and #720. Session 49 refused the main document's Override typed `application/octet-stream` and the
+//   styles Override with `ContentType=""`. Here the main document typed with the other s49a spellings (upper case, a
+//   parameter, `image/png`, `application/foo+xml`), and an empty ContentType on a related settings and fontTable part.
+// - s50d: #722 and review finding 1's reach. Session 49 refused styles typed `application/octet-stream` and typed with
+//   the settings type. Here settings, fontTable and numbering typed `application/octet-stream`, settings typed with
+//   the styles type, numbering with the settings type, and the main document with the styles type.
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s50a pnpm exec tsx s50builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import JSZip from "jszip";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const MAIN_TYPE = `${WML}.document.main+xml`;
+const STYLES_TYPE = `${WML}.styles+xml`;
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+
+/** A Word-clean fixture's theme part (Word 16.115 clean-open in the manifest). */
+const THEME_XML = await (async () => {
+    const zip = await JSZip.loadAsync(readFileSync("tests/fixtures/working/package.drawing-arc-radius-integer.docx"));
+    const file = zip.file("word/theme/theme1.xml");
+    if (!file) throw new Error("theme fixture lost word/theme/theme1.xml");
+    return file.async("string");
+})();
+
+type Kind = "numbering" | "settings" | "fontTable" | "webSettings" | "theme";
+/** The relationship segment, the part body and the content type of each kind (the bodies session 47 used). */
+const KINDS: Record<Kind, { root: string; ct: string }> = {
+    numbering: { root: `${XML_DECL}<w:numbering xmlns:w="${W}"/>`, ct: `${WML}.numbering+xml` },
+    settings: { root: `${XML_DECL}<w:settings xmlns:w="${W}"/>`, ct: `${WML}.settings+xml` },
+    fontTable: { root: `${XML_DECL}<w:fonts xmlns:w="${W}"/>`, ct: `${WML}.fontTable+xml` },
+    webSettings: { root: `${XML_DECL}<w:webSettings xmlns:w="${W}"/>`, ct: `${WML}.webSettings+xml` },
+    theme: { root: THEME_XML, ct: "application/vnd.openxmlformats-officedocument.theme+xml" },
+};
+/** Where a kind's parts live: `theme/theme1.xml` for the theme, `<kind>.xml` otherwise. */
+const fileOf = (kind: Kind, n: 1 | 2) => (kind === "theme" ? `theme/theme${n}.xml` : `${kind}${n === 1 ? "" : "2"}.xml`);
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${REL}/${segment}" Target="${target}"/>`;
+const relsPart = (body: string) =>
+    `${XML_DECL}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${body}</Relationships>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+const control = () => buildDocx({ ...P });
+
+/** The minimal package plus `word/<file of kind>` related from the main document's sidecar as rId2. */
+const withRelated = (kind: Kind, type = KINDS[kind].ct): Record<string, string> => ({
+    ...P,
+    [`word/${fileOf(kind, 1)}`]: KINDS[kind].root,
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rId2", kind, fileOf(kind, 1))),
+    [CT]: overrides(P[CT]!, [`word/${fileOf(kind, 1)}`, type]),
+});
+/** {@link withRelated} with the Override of the related part (or of `part`) carrying `type`. */
+const relatedTyped = (kind: Kind, type: string) => buildDocx(withRelated(kind, type));
+const retyped = (part: string, own: string, type: string) =>
+    buildDocx({
+        ...P,
+        [CT]: replaceOnce(
+            P[CT]!,
+            `<Override PartName="/${part}" ContentType="${own}"/>`,
+            `<Override PartName="/${part}" ContentType="${type}"/>`,
+        ),
+    });
+const mainTyped = (type: string) => retyped("word/document.xml", MAIN_TYPE, type);
+
+/** Session 45's refused shape: two relationships of `kind` to two parts in the main document's sidecar. */
+const dupInMainRels = (kind: Kind) => {
+    const parts = withRelated(kind);
+    return buildDocx({
+        ...parts,
+        [`word/${fileOf(kind, 2)}`]: KINDS[kind].root,
+        [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rId3", kind, fileOf(kind, 2))),
+        [CT]: overrides(parts[CT]!, [`word/${fileOf(kind, 2)}`, KINDS[kind].ct]),
+    });
+};
+/** The main document's own `kind` relationship, and two more of `kind` in `_rels/.rels` (s49c's styles shape). */
+const dupInPackageRels = (kind: Kind) => {
+    const parts = withRelated(kind);
+    return buildDocx({
+        ...parts,
+        [`word/${fileOf(kind, 2)}`]: KINDS[kind].root,
+        "_rels/.rels": appendRels(
+            P["_rels/.rels"]!,
+            `${relationship("rId8", kind, `word/${fileOf(kind, 1)}`)}${relationship("rId9", kind, `word/${fileOf(kind, 2)}`)}`,
+        ),
+        [CT]: overrides(parts[CT]!, [`word/${fileOf(kind, 2)}`, KINDS[kind].ct]),
+    });
+};
+const HEADER = `${XML_DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r></w:p></w:hdr>`;
+/** The main document's own `kind` relationship, and a referenced header whose sidecar holds two of `kind`. */
+const dupInHeaderRels = (kind: Kind) => {
+    const parts = withRelated(kind);
+    return buildDocx({
+        ...parts,
+        [`word/${fileOf(kind, 2)}`]: KINDS[kind].root,
+        "word/document.xml": replaceOnce(
+            replaceOnce(P["word/document.xml"]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${REL}"`),
+            "<w:sectPr>",
+            `<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>`,
+        ),
+        "word/header9.xml": HEADER,
+        "word/_rels/header9.xml.rels": relsPart(
+            `${relationship("rId1", kind, fileOf(kind, 1))}${relationship("rId2", kind, fileOf(kind, 2))}`,
+        ),
+        [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdH", "header", "header9.xml")),
+        [CT]: overrides(parts[CT]!, ["word/header9.xml", `${WML}.header+xml`], [`word/${fileOf(kind, 2)}`, KINDS[kind].ct]),
+    });
+};
+const GLOSSARY =
+    `${XML_DECL}<w:glossaryDocument xmlns:w="${W}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+    `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+    `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r></w:p></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`;
+/** A reached glossary whose own sidecar holds two relationships of `kind` to two parts in its folder (s49c's shape). */
+const dupInGlossaryRels = (kind: Kind) =>
+    buildDocx({
+        ...P,
+        "word/glossary/document.xml": GLOSSARY,
+        [`word/glossary/${fileOf(kind, 1)}`]: KINDS[kind].root,
+        [`word/glossary/${fileOf(kind, 2)}`]: KINDS[kind].root,
+        "word/glossary/_rels/document.xml.rels": relsPart(
+            `${relationship("rId1", kind, fileOf(kind, 1))}${relationship("rId2", kind, fileOf(kind, 2))}`,
+        ),
+        [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdG", "glossaryDocument", "glossary/document.xml")),
+        [CT]: overrides(
+            P[CT]!,
+            ["word/glossary/document.xml", `${WML}.document.glossary+xml`],
+            [`word/glossary/${fileOf(kind, 1)}`, KINDS[kind].ct],
+            [`word/glossary/${fileOf(kind, 2)}`, KINDS[kind].ct],
+        ),
+    });
+
+const chunks: Record<string, Array<[string, string, () => Promise<Uint8Array>]>> = {
+    s50a: [
+        ["s50a-control-minimal", "control", control],
+        [
+            "dup-numbering-main-calibration",
+            "calibration (s45's refused shape): two numbering relationships in word/_rels/document.xml.rels",
+            () => dupInMainRels("numbering"),
+        ],
+        [
+            "dup-numbering-package-rels",
+            "#717: the main document's numbering relationship, and two more numbering relationships in _rels/.rels",
+            () => dupInPackageRels("numbering"),
+        ],
+        [
+            "dup-numbering-header-sidecar",
+            "#717: a referenced header's sidecar holds two numbering relationships",
+            () => dupInHeaderRels("numbering"),
+        ],
+        [
+            "dup-numbering-glossary-sidecar",
+            "#717: a reached glossary's sidecar holds two numbering relationships to two parts",
+            () => dupInGlossaryRels("numbering"),
+        ],
+        [
+            "dup-settings-package-rels",
+            "#717: the main document's settings relationship, and two more settings relationships in _rels/.rels",
+            () => dupInPackageRels("settings"),
+        ],
+        [
+            "dup-settings-header-sidecar",
+            "#717: a referenced header's sidecar holds two settings relationships",
+            () => dupInHeaderRels("settings"),
+        ],
+        ["s50a-control-minimal-end", "control", control],
+    ],
+    s50b: [
+        ["s50b-control-minimal", "control", control],
+        [
+            "dup-settings-glossary-sidecar",
+            "#717: a reached glossary's sidecar holds two settings relationships to two parts",
+            () => dupInGlossaryRels("settings"),
+        ],
+        [
+            "dup-fonttable-header-sidecar",
+            "#717: a referenced header's sidecar holds two fontTable relationships",
+            () => dupInHeaderRels("fontTable"),
+        ],
+        [
+            "dup-fonttable-glossary-sidecar",
+            "#717: a reached glossary's sidecar holds two fontTable relationships to two parts",
+            () => dupInGlossaryRels("fontTable"),
+        ],
+        [
+            "dup-websettings-header-sidecar",
+            "#717: a referenced header's sidecar holds two webSettings relationships",
+            () => dupInHeaderRels("webSettings"),
+        ],
+        [
+            "dup-theme-package-rels",
+            "#717: the main document's theme relationship, and two more theme relationships in _rels/.rels",
+            () => dupInPackageRels("theme"),
+        ],
+        ["dup-theme-header-sidecar", "#717: a referenced header's sidecar holds two theme relationships", () => dupInHeaderRels("theme")],
+        ["s50b-control-minimal-end", "control", control],
+    ],
+    s50c: [
+        ["s50c-control-minimal", "control", control],
+        [
+            "main-override-octet-upper",
+            "#721: main document Override typed APPLICATION/OCTET-STREAM",
+            () => mainTyped("APPLICATION/OCTET-STREAM"),
+        ],
+        [
+            "main-override-octet-charset",
+            "#721: main document Override typed application/octet-stream; charset=utf-8",
+            () => mainTyped("application/octet-stream; charset=utf-8"),
+        ],
+        ["main-override-image-png", "#721: main document Override typed image/png", () => mainTyped("image/png")],
+        ["main-override-foo-xml", "#721: main document Override typed application/foo+xml", () => mainTyped("application/foo+xml")],
+        [
+            "settings-override-empty",
+            '#720: a related word/settings.xml whose Override has ContentType=""',
+            () => relatedTyped("settings", ""),
+        ],
+        [
+            "fonttable-override-empty",
+            '#720: a related word/fontTable.xml whose Override has ContentType=""',
+            () => relatedTyped("fontTable", ""),
+        ],
+        ["s50c-control-minimal-end", "control", control],
+    ],
+    s50d: [
+        ["s50d-control-minimal", "control", control],
+        [
+            "settings-override-octet",
+            "#722/F1: a related word/settings.xml typed application/octet-stream",
+            () => relatedTyped("settings", "application/octet-stream"),
+        ],
+        [
+            "fonttable-override-octet",
+            "#722/F1: a related word/fontTable.xml typed application/octet-stream",
+            () => relatedTyped("fontTable", "application/octet-stream"),
+        ],
+        [
+            "numbering-override-octet",
+            "#722/F1: a related word/numbering.xml typed application/octet-stream",
+            () => relatedTyped("numbering", "application/octet-stream"),
+        ],
+        [
+            "settings-override-styles-type",
+            "#722: a related word/settings.xml typed with the styles content type",
+            () => relatedTyped("settings", STYLES_TYPE),
+        ],
+        [
+            "numbering-override-settings-type",
+            "#722: a related word/numbering.xml typed with the settings content type",
+            () => relatedTyped("numbering", KINDS.settings.ct),
+        ],
+        ["main-override-styles-type", "#722: main document Override typed with the styles content type", () => mainTyped(STYLES_TYPE)],
+        ["s50d-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-50 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s50a", "s50b", "s50c", "s50d")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s50/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-50 parts of docs/plans/evidence/word-probes-2026-10-24.md into s50/section.md.
+
+Reads the chunk's specimens.jsonl (validator columns at 01e4e684, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s50/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s50a", "s50b", "s50c", "s50d")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s50/results.json").read_text())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends = [], [], [], []
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    f"### Session 50: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at 01e4e684",
+    "",
+    "The scope the session 49 follow-ups need: where Word refuses duplicate relationships "
+    "([#717](https://github.com/jandira-tech/docx-validate/issues/717)), and which content types it refuses on the main document "
+    "and the other parts it relates ([#720](https://github.com/jandira-tech/docx-validate/issues/720), "
+    "[#721](https://github.com/jandira-tech/docx-validate/issues/721), [#722](https://github.com/jandira-tech/docx-validate/issues/722)). "
+    "Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own "
+    "Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both "
+    "readings agree, and `unknown` otherwise; all 32 rows agree. The two times in Observed are the ends of the first and second runs. "
+    "Shape is the builder's description of the specimen. The part bodies are session 47's empty roots; the theme part is "
+    "`word/theme/theme1.xml` of `tests/fixtures/working/package.drawing-arc-radius-integer.docx` (clean-open in the manifest).",
+    "",
+    "- `s50a` and `s50b`, #717: two relationships of one kind outside the main document's relationships part. In `_rels/.rels` "
+    "(beside the main document's own relationship of the kind) two numbering, settings or theme relationships open clean, as styles "
+    "did in session 49; in the sidecar of a header the body references, two numbering, settings, fontTable, webSettings or theme "
+    "relationships open clean. In a reached glossary's sidecar, two numbering, settings or fontTable relationships to two parts get "
+    "the recovery offer, as styles did; so does session 45's numbering calibration in `word/_rels/document.xml.rels`. Word-valid "
+    "rejects every one of them, so the eight clean rows are false positives.",
+    "- `s50c`, #721 and #720: the main document's Override typed `APPLICATION/OCTET-STREAM`, `application/octet-stream; charset=utf-8`, "
+    "`image/png` or `application/foo+xml`, and an empty `ContentType=\"\"` on the Override of a related settings or fontTable part, "
+    "get the recovery offer; word-valid passes all six (false negatives).",
+    "- `s50d`, #722 and review finding 1: a related settings, fontTable or numbering part typed `application/octet-stream`, settings "
+    "typed with the styles content type, numbering with the settings content type, and the main document with the styles content "
+    "type get the recovery offer; word-valid passes all six (false negatives).",
+    "",
+    "| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at 01e4e684 | strict at 01e4e684 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 50</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 50 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s50builder.mts", ROOT / "s50builder.mts", "ts"), ("compare.py", ROOT / "s50/compare.py", "python"),
+                         ("section.py", ROOT / "s50/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s50/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records")
+`````
+
+</details>
