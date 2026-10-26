@@ -105,7 +105,7 @@ import { explainWordError } from "./validators/word-error-explanations";
 import { archiveWithoutEntries, loadCentralNamedArchive } from "../../lib/zip-central-names";
 import { WORD_PART_CONTENT_TYPE_MISMATCH } from "./checks/word-part-content-type-mismatch";
 import { WORD_PART_CONTENT_TYPE_INEXACT } from "./checks/word-part-content-type-inexact";
-import { WORD_PART_CONTENT_TYPE_UNRECOGNIZED } from "./checks/word-part-content-type-unrecognized";
+import { WORD_PART_CONTENT_TYPE_UNRECOGNIZED, wordObservedContentTypeParts } from "./checks/word-part-content-type-unrecognized";
 
 const SUPPORTED_SUFFIXES = new Set([".docm", ".docx", ".pptx", ".xlsx"]);
 
@@ -846,6 +846,7 @@ function findingsUnderProfile(
     wordRead: ReadonlySet<string> = new Set(),
     context?: ValidationContext,
     storyRootParts: ReadonlySet<string> = new Set(),
+    observedContentTypeParts: ReadonlySet<string> = new Set(),
 ): ValidationIssue[] {
     // Full DOCX validation diagnoses root Ignorable prefixes before dropping
     // their MC restatements. Apply those same two steps only when the selected
@@ -881,7 +882,8 @@ function findingsUnderProfile(
             registry.get(outcome.id)?.archiveOnly === true
                 ? outcome.issues
                 : outcome.issues.map((issue): ValidationIssue =>
-                      issue.severity === "error" && !isWordBlockingIssue(issue, properties, wordRead, storyRootParts)
+                      issue.severity === "error" &&
+                      !isWordBlockingIssue(issue, properties, wordRead, storyRootParts, observedContentTypeParts)
                           ? { ...issue, severity: "warning" }
                           : issue,
                   ),
@@ -940,15 +942,17 @@ async function archiveFindings(
                 : outcome,
         );
         // The full run's reachability sets, so an XML error keeps the
-        // severity the full run gives it (#437, #488).
-        const [properties, read, storyRoots] =
+        // severity the full run gives it (#437, #488), and the observed
+        // content-type reach keeps its verdict structural (#718).
+        const [properties, read, storyRoots, observedContentTypes] =
             profile === "word-valid" && format === "docx"
                 ? [
                       await propertiesParts(opened.context, profile),
                       await wordReadParts(opened.context, profile),
                       await wordStoryRootParts(opened.context, profile),
+                      await wordObservedContentTypeParts(opened.context, profile),
                   ]
-                : [new Set<string>(), new Set<string>(), new Set<string>()];
+                : [new Set<string>(), new Set<string>(), new Set<string>(), new Set<string>()];
         const issues = findingsUnderProfile(
             { ...run, outcomes, issues: outcomes.flatMap((outcome) => outcome.issues) },
             registry,
@@ -958,6 +962,7 @@ async function archiveFindings(
             read,
             opened.context,
             storyRoots,
+            observedContentTypes,
         );
         return { issues, executed: [...run.executed] };
     } catch {
@@ -1126,15 +1131,18 @@ async function runSelectedChecks(
             : outcome,
     );
     // #437: the word-valid reachability sets are computed once per partial
-    // run, as the full DOCX run computes them, so both agree.
-    const [properties, read, storyRoots] =
+    // run, as the full DOCX run computes them, so both agree; the observed
+    // content-type reach keeps the unrecognized finding's verdict structural
+    // (#718).
+    const [properties, read, storyRoots, observedContentTypes] =
         mode.profile === "word-valid" && format === "docx"
             ? [
                   await propertiesParts(opened.context, mode.profile),
                   await wordReadParts(opened.context, mode.profile),
                   await wordStoryRootParts(opened.context, mode.profile),
+                  await wordObservedContentTypeParts(opened.context, mode.profile),
               ]
-            : [new Set<string>(), new Set<string>(), new Set<string>()];
+            : [new Set<string>(), new Set<string>(), new Set<string>(), new Set<string>()];
     const issues = findingsUnderProfile(
         { ...run, outcomes, issues: outcomes.flatMap((outcome) => outcome.issues) },
         registry,
@@ -1144,6 +1152,7 @@ async function runSelectedChecks(
         read,
         opened.context,
         storyRoots,
+        observedContentTypes,
     );
     return {
         valid: issues.every((issue) => issue.severity !== "error"),

@@ -115,6 +115,7 @@ const STORY_TEXT_SEGMENTS: ReadonlySet<string> = new Set(["comments", "endnotes"
 
 import {
     WORD_PART_CONTENT_TYPE_UNRECOGNIZED,
+    wordObservedContentTypeParts,
     wordPartContentTypeUnrecognizedFindings,
 } from "../checks/word-part-content-type-unrecognized";
 
@@ -819,11 +820,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     private async applyWordValidProfile(result: ValidationResult): Promise<ValidationResult> {
         const context = this.context();
         // Resolve each part set once per run and share the blocking predicate
-        // with partial validation (#381, #615, #617).
-        const [properties, read, storyRoots] = await Promise.all([
+        // with partial validation (#381, #615, #617, #718).
+        const [properties, read, storyRoots, observedContentTypes] = await Promise.all([
             propertiesParts(context, this.profile),
             wordReadParts(context, this.profile),
             wordStoryRootParts(context, this.profile),
+            wordObservedContentTypeParts(context, this.profile),
         ]);
         const missingSidecarPart = (issue: ValidationIssue): string | undefined =>
             issue.severity === "error" && issue.code === "rels-missing-sidecar" ? issue.path : undefined;
@@ -874,7 +876,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 reachedByUnobservedRelationship: part !== undefined && unobserved.has(canonicalPartName(part.replace(/\\/g, "/"))),
                 referenceLoadedReach: part === undefined ? undefined : referenceLoadedReach.get(part),
             };
-            if (isWordBlockingIssue(issue, properties, read, storyRoots, facts)) return issue;
+            if (isWordBlockingIssue(issue, properties, read, storyRoots, observedContentTypes, facts)) return issue;
             return { ...issue, severity: "warning" };
         });
         return finalize(issues);

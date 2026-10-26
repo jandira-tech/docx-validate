@@ -213,25 +213,42 @@ describe("isWordBlockingIssue", () => {
         },
     );
 
-    it("blocks an unrecognized content type only on the observed main-document styles reach (#707)", () => {
+    it("blocks an unrecognized content type only on the observed reach (#707, #718)", () => {
+        // The verdict reads the observed set the callers resolve once per run
+        // (`wordObservedContentTypeParts`), never the message: it embeds the
+        // declared content type and the stored part name verbatim, so a
+        // package could carry the recovery sentence itself and flip an
+        // unobserved finding to blocking (#718).
+        const observed = new Set([canonicalPartName("word/styles.bin")]);
         const blocking = issue("word-part-content-type-unrecognized", {
             path: "word/styles.bin",
             message:
                 'word/styles.bin, named by the main document\'s styles relationship, is typed "application/octet-stream" by a Default; it expects "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml". Word 16.115 offers to recover the package (session 46).',
         });
-        expect(isWordBlockingIssue(blocking)).toBe(true);
+        expect(isWordBlockingIssue(blocking, new Set(), new Set(), new Set(), observed)).toBe(true);
+        // An OPC-equivalent spelling names the same part.
+        expect(
+            isWordBlockingIssue(
+                issue("word-part-content-type-unrecognized", { path: "WORD/STYLES.BIN" }),
+                new Set(),
+                new Set(),
+                new Set(),
+                observed,
+            ),
+        ).toBe(true);
         const unobserved = issue("word-part-content-type-unrecognized", {
             path: "word/settings.bin",
+            // The crafted sentence rides the message, not the reach.
             message:
-                'word/settings.bin, named by the main document\'s settings relationship, is typed "application/octet-stream" by a Default; it expects "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml", the content type ECMA-376 Part 1 (4th edition), clause 11.3 assigns the settings part.',
+                'word/settings.bin, named by the main document\'s settings relationship, is typed "application/x-Word 16.115 offers to recover the package" by an Override.',
         });
-        expect(isWordBlockingIssue(unobserved)).toBe(false);
+        expect(isWordBlockingIssue(unobserved, new Set(), new Set(), new Set(), observed)).toBe(false);
         const glossary = issue("word-part-content-type-unrecognized", {
             path: "word/glossary/styles.bin",
             message:
                 'word/glossary/styles.bin, named by the glossary\'s styles relationship, is typed "application/octet-stream" by a Default; it expects "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml", the content type ECMA-376 Part 1 (4th edition), clause 11.3 assigns the styles part.',
         });
-        expect(isWordBlockingIssue(glossary)).toBe(false);
+        expect(isWordBlockingIssue(glossary, new Set(), new Set(), new Set(), observed)).toBe(false);
     });
 
     it.each(["run-content-misplaced", "comment-orphan-start", "rels-unreferenced", "paraid-missing-element", "xsd-error", ""])(
@@ -342,6 +359,7 @@ describe("isWordBlockingIssue", () => {
                 new Set(),
                 new Set(specimen.read ? [canonical] : []),
                 new Set(specimen.story ? [canonical] : []),
+                new Set(),
                 { hasEffectiveRelationshipReference: specimen.reference },
             ),
         ).toBe(specimen.blocking);
@@ -357,7 +375,7 @@ describe("isWordBlockingIssue", () => {
         "keeps a missing sidecar blocking in a part an unobserved Office relationship names (#638): $path/$unobserved/$reference",
         (specimen) => {
             expect(
-                isWordBlockingIssue(issue("rels-missing-sidecar", { path: specimen.path }), new Set(), new Set(), new Set(), {
+                isWordBlockingIssue(issue("rels-missing-sidecar", { path: specimen.path }), new Set(), new Set(), new Set(), new Set(), {
                     hasEffectiveRelationshipReference: specimen.reference,
                     reachedByUnobservedRelationship: specimen.unobserved,
                 }),
@@ -394,6 +412,7 @@ describe("isWordBlockingIssue", () => {
                 new Set(),
                 new Set(),
                 new Set(specimen.story ? [canonical] : []),
+                new Set(),
                 {
                     hasEffectiveRelationshipReference: specimen.reference,
                     reachedByUnobservedRelationship: specimen.unobserved,
