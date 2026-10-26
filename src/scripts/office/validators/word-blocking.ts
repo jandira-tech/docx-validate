@@ -288,6 +288,10 @@ export const isWordBlockingIssue = (
         // opens clean (#705; sessions 45 and 46 in
         // docs/plans/evidence/word-probes-2026-10-24.md).
         case "word-part-reference-relationship":
+        // Word refuses a TargetMode outside Internal | External in the package
+        // or main-document relationships part (#753; session 55 s55b–s55e).
+        // The check emits nothing in the clean header sidecar or unshown parts.
+        case "opc-relationships-target-mode":
         case "word-duplicate-theme-relationship":
         case "word-duplicate-font-table-relationship":
         case "word-duplicate-web-settings-relationship":
