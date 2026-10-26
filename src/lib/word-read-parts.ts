@@ -374,6 +374,36 @@ export const wordTypedRelationshipTargets = async (
 };
 
 /**
+ * The parts a main-document relationship of exactly `type` names, in
+ * traversal order, once each (#690). The Microsoft comment-thread types
+ * (`commentsIds`, `commentsExtensible`) carry no Office relationship-type
+ * segment, so `wordTypedRelationshipTargets` cannot reach them; this walk
+ * reads the same relationships parts the same way (External targets
+ * skipped, each target resolved against its main document's folder and
+ * taken as the OPC-equivalent stored entry) and compares the Type
+ * verbatim. A glossary's relationships are never read.
+ */
+export const wordExactTypeTargets = async (context: ValidationContext, type: string, profile?: Profile): Promise<readonly string[]> => {
+    const reach = await packageReach(context, profile);
+    if (reach === undefined) {
+        return [];
+    }
+    const targets = new Set<string>();
+    for (const mainPart of reach.mainParts) {
+        for (const relationship of relationshipsOf(context, sidecarOf(reach.names, mainPart), profile)) {
+            if (relationship.getAttribute("TargetMode") === "External" || relationship.getAttribute("Type") !== type) {
+                continue;
+            }
+            const target = resolveTarget(reach.lookup, path.posix.dirname(mainPart), relationship.getAttribute("Target") ?? "");
+            if (target !== undefined) {
+                targets.add(target);
+            }
+        }
+    }
+    return [...targets];
+};
+
+/**
  * The parts a reached glossary document's own relationships part names
  * (#579): every glossary a main-document `glossaryDocument` relationship
  * reaches is a second story root (#549, session 17), and each of its

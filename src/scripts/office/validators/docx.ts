@@ -57,6 +57,7 @@ import { mergeResults, NS } from "../../../lib/types";
 import { promoteFullCheckIssue } from "../../../lib/mode-policy";
 import { propertiesParts } from "../../../lib/properties-parts";
 import {
+    wordExactTypeTargets,
     wordReferenceLoadedSources,
     wordReadParts,
     wordStoryRootParts,
@@ -215,8 +216,14 @@ const KNOWN_OOXML_PREFIX_URIS: Readonly<Record<string, string>> = {
     oel: "http://schemas.microsoft.com/office/2019/extlst",
 };
 
-/** The relationship type segment that names the main document's styles part (#688). */
-const MAIN_STYLES_SEGMENT: ReadonlySet<string> = new Set(["styles"]);
+/**
+ * The Microsoft relationship types that pair a `comments.xml` part with its
+ * id and extension parts (#690). They live under `schemas.microsoft.com`,
+ * so `wordTypedRelationshipTargets` never reaches their targets and
+ * `wordExactTypeTargets` reads them by exact Type.
+ */
+const COMMENTS_IDS_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2016/09/relationships/commentsIds";
+const COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible";
 
 /**
  * Canonical `<w:style>` definitions for well-known styleIds that writers
@@ -433,16 +440,16 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     }
 
     /**
-     * The styles part the style checks and `repairMissingStyleDefinitions`
-     * read: the one the main document's `styles` relationship names,
-     * Transitional or Strict, so a reached glossary's own styles part is
-     * never judged for the main document, wherever it is stored (#688).
-     * When that relationship names no stored part, or the package view
-     * cannot be read, the last `styles.xml` by name, as before.
+     * The main document's part reached by the relationship segment
+     * `segment` — Transitional or Strict — so a reached glossary's own
+     * part is never judged for the main document, wherever it is stored
+     * (#688, #690). When that relationship names no stored part, or the
+     * package view cannot be read, the last file named `fallbackName`, as
+     * before. `mainStylesPath` keeps the style checks' behaviour.
      */
-    private async mainStylesPath(): Promise<string | null> {
+    private async mainRelatedPath(segment: string, fallbackName: string): Promise<string | null> {
         try {
-            const targets = await wordTypedRelationshipTargets(this.context(), MAIN_STYLES_SEGMENT, this.profile);
+            const targets = await wordTypedRelationshipTargets(this.context(), new Set([segment]), this.profile);
             for (const target of targets) {
                 if (target.via !== undefined) continue;
                 const file = this.xmlFiles.find((xmlFile) => this.entryName(xmlFile) === target.part);
@@ -453,7 +460,45 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
         let byName: string | null = null;
         for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "styles.xml") byName = xmlFile;
+            if (baseName(xmlFile) === fallbackName) byName = xmlFile;
+        }
+        return byName;
+    }
+
+    private async mainStylesPath(): Promise<string | null> {
+        return this.mainRelatedPath("styles", "styles.xml");
+    }
+
+    /**
+     * The part the main document's relationship of exactly `type` names
+     * (#690), as `wordExactTypeTargets` reads it: the Microsoft
+     * commentsIds/commentsExtensible types carry no Office relationship-type
+     * segment, so `mainRelatedPath` cannot reach them. `null` when no main
+     * relationship of that type names a stored part.
+     */
+    private async mainExactTypePath(type: string): Promise<string | null> {
+        try {
+            for (const part of await wordExactTypeTargets(this.context(), type, this.profile)) {
+                const file = this.xmlFiles.find((xmlFile) => this.entryName(xmlFile) === part);
+                if (file !== undefined) return file;
+            }
+        } catch {
+            // An unreadable package view is reported by its own checks.
+        }
+        return null;
+    }
+
+    /**
+     * The last file named `name` stored in the same folder as `partPath`:
+     * the by-name fallback of `repairCommentThreading`, which never pairs a
+     * commentsIds/commentsExtensible part with comments from another story
+     * root (#690). `null` when that folder holds none.
+     */
+    private sameFolderByName(partPath: string, name: string): string | null {
+        const folder = path.posix.dirname(this.entryName(partPath));
+        let byName: string | null = null;
+        for (const xmlFile of this.xmlFiles) {
+            if (baseName(xmlFile) === name && path.posix.dirname(this.entryName(xmlFile)) === folder) byName = xmlFile;
         }
         return byName;
     }
@@ -1672,10 +1717,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      */
     async validateFontTable(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        let fontTablePath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "fontTable.xml") fontTablePath = xmlFile;
-        }
+        const fontTablePath = await this.mainRelatedPath("fontTable", "fontTable.xml");
         if (!fontTablePath) return { valid: true, issues: [] };
 
         let dom: Document;
@@ -2271,16 +2313,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     }
 
     async repairCommentThreading(): Promise<number> {
-        let commentsXml: string | null = null;
-        let commentsIdsXml: string | null = null;
-        let commentsExtensibleXml: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            const base = baseName(xmlFile);
-            if (base === "comments.xml") commentsXml = xmlFile;
-            else if (base === "commentsIds.xml") commentsIdsXml = xmlFile;
-            else if (base === "commentsExtensible.xml") commentsExtensibleXml = xmlFile;
-        }
-        if (!commentsXml || !commentsIdsXml) return 0;
+        const commentsXml = await this.mainRelatedPath("comments", "comments.xml");
+        if (!commentsXml) return 0;
+        const commentsIdsXml =
+            (await this.mainExactTypePath(COMMENTS_IDS_RELATIONSHIP_TYPE)) ?? this.sameFolderByName(commentsXml, "commentsIds.xml");
+        const commentsExtensibleXml =
+            (await this.mainExactTypePath(COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE)) ??
+            this.sameFolderByName(commentsXml, "commentsExtensible.xml");
+        if (!commentsIdsXml) return 0;
 
         let commentsDom: Document;
         let idsDom: Document;
