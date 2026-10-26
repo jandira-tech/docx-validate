@@ -47,8 +47,9 @@
  * strict, and the mismatch check the spec set. So an unobserved segment
  * warns under word-valid rather than staying silent, errors under strict
  * (ECMA-376 Part 1, 4th edition, clause 11.3 gives every WordprocessingML
- * part its own content type, clause 14.2.7 the theme's, and clause 11.3.10
- * the Main Document's), and warns under lenient. Word-valid blocks only the
+ * part its own content type, clause 14.2.7 the theme's; the main document is
+ * an observed reach since #721, so its findings always cite a session and
+ * never a clause), and warns under lenient. Word-valid blocks only the
  * observed reach: the main document and the parts its own relationships
  * part relates by `styles`, `settings`, `fontTable` and `numbering`. That
  * verdict is structural — `wordObservedContentTypeParts` resolves the reach
@@ -78,40 +79,37 @@ import { MAPPED_MEDIA_TYPES } from "./word-part-content-type-mismatch";
 export const WORD_PART_CONTENT_TYPE_UNRECOGNIZED = "word-part-content-type-unrecognized";
 
 /**
- * The reach the sessions observed: the main document (`officeDocument`,
- * sessions 49 and 50) and the parts the main document's own relationships
- * part relates by `styles` (46 and 49), `settings`, `fontTable` and
- * `numbering` (50). One source for the check's own `isObserved` and for
- * `wordObservedContentTypeParts`, which carries the fact to
- * `isWordBlockingIssue` (#718).
- */
-export const UNRECOGNIZED_OBSERVED_SEGMENTS: ReadonlySet<string> = new Set([
-    "officeDocument",
-    "styles",
-    "settings",
-    "fontTable",
-    "numbering",
-]);
-
-/** The reach {@link UNRECOGNIZED_OBSERVED_SEGMENTS} names; a glossary's own relationship never reaches it (#579). */
-const isObserved = (target: WordTypedTarget): boolean => target.via !== "glossary" && UNRECOGNIZED_OBSERVED_SEGMENTS.has(target.segment);
-
-/**
  * The sessions that observed each observed reach refuse an unrecognised
  * type, cited by the one recovery-sentence shape: styles was refused typed
  * `application/octet-stream` by a Default (46, s46e) and by an Override with
  * every s49a spelling (49), the main document by Override (49 s49b, 50
  * s50c), and settings, fontTable and numbering typed `application/octet-stream`
  * by their Override (50, s50d) and typed the four other s49a/s50c spellings
- * (53, s53b–s53d).
+ * (53, s53b–s53d). Exported because {@link UNRECOGNIZED_OBSERVED_SEGMENTS}
+ * is derived from its keys (#741).
  */
-const RECOVERY_SESSIONS: ReadonlyMap<string, string> = new Map([
+export const RECOVERY_SESSIONS: ReadonlyMap<string, string> = new Map([
     ["officeDocument", "sessions 49 and 50"],
     ["styles", "sessions 46 and 49"],
     ["settings", "sessions 50 and 53"],
     ["fontTable", "sessions 50 and 53"],
     ["numbering", "sessions 50 and 53"],
 ]);
+
+/**
+ * The reach the sessions observed: the main document (`officeDocument`,
+ * sessions 49 and 50) and the parts the main document's own relationships
+ * part relates by `styles` (46 and 49), `settings`, `fontTable` and
+ * `numbering` (50, and 53 for the four other spellings). Derived from
+ * {@link RECOVERY_SESSIONS}'s keys, so a segment without a session citation
+ * cannot be added (#741); one source for the check's own `isObserved` and
+ * for `wordObservedContentTypeParts`, which carries the fact to
+ * `isWordBlockingIssue` (#718).
+ */
+export const UNRECOGNIZED_OBSERVED_SEGMENTS: ReadonlySet<string> = new Set(RECOVERY_SESSIONS.keys());
+
+/** The reach {@link UNRECOGNIZED_OBSERVED_SEGMENTS} names; a glossary's own relationship never reaches it (#579). */
+const isObserved = (target: WordTypedTarget): boolean => target.via !== "glossary" && UNRECOGNIZED_OBSERVED_SEGMENTS.has(target.segment);
 
 /**
  * Canonical names of the parts the observed reach names, computed once per
@@ -197,12 +195,14 @@ export const wordPartContentTypeUnrecognizedFindings = async (
         const expected = expectedContentTypesFor(segment)
             .map((type) => `"${type}"`)
             .join(" or ");
-        const partTitle = segment === "officeDocument" ? "Main Document" : segment;
-        const clauseNumber = segment === "officeDocument" ? "11.3.10" : segment === "theme" ? "14.2.7" : "11.3";
+        const clauseNumber = segment === "theme" ? "14.2.7" : "11.3";
         const clause =
             observed === undefined
-                ? `, the content type ECMA-376 Part 1 (4th edition), clause ${clauseNumber} assigns the ${partTitle} part`
+                ? `, the content type ECMA-376 Part 1 (4th edition), clause ${clauseNumber} assigns the ${segment} part`
                 : "";
+        // `isObserved` guarantees the segment is one of RECOVERY_SESSIONS's
+        // keys — the observed set is derived from them (#741) — so the
+        // citation is defined.
         const recovery =
             observed === undefined ? "" : ` Word 16.115 offers to recover the package (${RECOVERY_SESSIONS.get(observed.segment)!}).`;
         findings.push({

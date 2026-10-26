@@ -11,7 +11,11 @@ import { describe, expect, it } from "vitest";
 import { ValidationContext } from "../src/lib/validation-context";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
 import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
-import { wordObservedContentTypeParts } from "../src/scripts/office/checks/word-part-content-type-unrecognized";
+import {
+    wordObservedContentTypeParts,
+    RECOVERY_SESSIONS,
+    UNRECOGNIZED_OBSERVED_SEGMENTS,
+} from "../src/scripts/office/checks/word-part-content-type-unrecognized";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 const ID = "word-part-content-type-unrecognized";
@@ -543,4 +547,18 @@ describe("unrecognized blocking verdict is structural (#718)", () => {
         },
         60_000,
     );
+});
+
+// #741: `UNRECOGNIZED_OBSERVED_SEGMENTS` and `RECOVERY_SESSIONS` were two
+// independent literals, so a segment added to the first without an entry in
+// the second would print "(undefined)" in the recovery sentence. The set is
+// derived from the map's keys now; this guard fails if the two ever drift.
+describe("every observed segment cites a session (#741)", () => {
+    it("gives each observed reach its recovery-session citation", () => {
+        expect(UNRECOGNIZED_OBSERVED_SEGMENTS.size).toBeGreaterThan(0);
+        for (const segment of UNRECOGNIZED_OBSERVED_SEGMENTS) {
+            expect(RECOVERY_SESSIONS.get(segment), segment).toBeDefined();
+            expect(RECOVERY_SESSIONS.get(segment), segment).toMatch(/^sessions? \d+/);
+        }
+    });
 });
