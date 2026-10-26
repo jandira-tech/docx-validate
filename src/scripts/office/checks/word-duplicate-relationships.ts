@@ -44,8 +44,20 @@
  * fontTable too, so every duplicate rule here counts exact
  * Types. Two `numbering` relationships make Word offer to
  * recover the file the same way; one opens clean.
- * Two `footnotes` relationships open clean, so footnotes keeps
- * no check of its own.
+ * Two unreferenced `footnotes` relationships open clean
+ * (session 45 s45g); a referenced pair is unprobed.
+ *
+ * Two `endnotes` relationships in the main document's relationships
+ * part make Word offer to recover the file when the body references
+ * an endnote (#807; session 62, s62c and s62e, two runs, all readings
+ * agree): Word offered recovery whichever part held the note — the
+ * first, the second, or both — and whether the second part was typed
+ * endnotes+xml or `application/octet-stream`, while the same two
+ * relationships with no endnote reference opened clean. A glossary's
+ * own pair is unprobed, so the endnotes rule judges only the main
+ * document's sidecar, and the gate reads the main document's own
+ * effective content: a reference only in a header, a footnote or a
+ * comment is unprobed and does not count.
  *
  * Scope (#717; sessions 49, 50 and 54, Word 16.115): two of one kind in
  * a reached glossary's own relationships part — to two parts in its
@@ -58,15 +70,20 @@
  * part of each story root — the main document and every glossary
  * document a main-document `glossaryDocument` relationship reaches,
  * found by relationship as `wordStoryRootParts` finds them — and a
- * relationships part no story root owns is not judged. Lenient output
+ * relationships part no story root owns is not judged. The endnotes
+ * rule is narrower still (#807): it judges only the main document's
+ * sidecar — a reached glossary's own pair is unprobed — and only when
+ * that main document's own effective content holds a
+ * `w:endnoteReference`. Lenient output
  * is unchanged.
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { Profile, ValidationIssue } from "../../../lib/types";
-import { officeRelationshipTypeSegment, sidecarOf, wordStoryRootParts } from "../../../lib/word-read-parts";
-import { getRelationshipChildren } from "../../../lib/xml-helpers";
+import { officeRelationshipTypeSegment, sidecarOf, wordReadTypedTargets, wordStoryRootParts } from "../../../lib/word-read-parts";
+import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
+import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 
 /**
  * The stored spellings of the relationships parts these rules judge: the
@@ -88,13 +105,17 @@ const storyRootRelsParts = async (ctx: ValidationContext, profile?: Profile): Pr
     return parts;
 };
 
-/** One finding per judged relationships part holding two or more `segment` relationships of exact Type. */
+/**
+ * One finding per judged relationships part holding two or more `segment`
+ * relationships of exact Type; `context` follows the ids in the message.
+ */
 const duplicateFindings = (
     ctx: ValidationContext,
     relsParts: readonly string[],
     segment: string,
     label: string,
     code: string,
+    context = "",
 ): ValidationIssue[] => {
     const issues: ValidationIssue[] = [];
     for (const relsFile of relsParts) {
@@ -118,7 +139,7 @@ const duplicateFindings = (
             severity: "error",
             message:
                 `${relsFile} contains ${ids.length} ${label} relationships ` +
-                `(${ids.join(", ")}). Microsoft Word offers to recover the file. Keep one ${label} relationship.`,
+                `(${ids.join(", ")})${context}. Microsoft Word offers to recover the file. Keep one ${label} relationship.`,
             path: relsFile,
             code,
         });
@@ -190,4 +211,57 @@ export const wordDuplicateNumberingRelationshipCheck: CheckDefinition = {
     requires: ["xml-syntax"],
     run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> =>
         duplicateFindings(ctx, await storyRootRelsParts(ctx, profile), "numbering", "numbering", "word-duplicate-numbering-relationship"),
+};
+
+/**
+ * The main documents with their own relationships parts: the
+ * `officeDocument` story roots that are not glossaries — a reached
+ * glossary's entries carry `via: "glossary"` (#593) — so a glossary's
+ * own endnotes pair stays unjudged (#807).
+ */
+const mainDocumentRelsParts = async (
+    ctx: ValidationContext,
+    profile?: Profile,
+): Promise<readonly { readonly main: string; readonly rels: string }[]> => {
+    const pairs: { main: string; rels: string }[] = [];
+    const seen = new Set<string>();
+    for (const target of await wordReadTypedTargets(ctx, profile)) {
+        if (target.segment !== "officeDocument" || target.via === "glossary") {
+            continue;
+        }
+        const rels = sidecarOf(ctx.partNames, target.part);
+        if (rels === undefined || seen.has(rels)) {
+            continue;
+        }
+        seen.add(rels);
+        pairs.push({ main: target.part, rels });
+    }
+    return pairs;
+};
+
+/** Whether the main document's own effective content holds a `w:endnoteReference`, in either WordprocessingML namespace. */
+const referencesEndnote = (ctx: ValidationContext, main: string): boolean => {
+    const parsed = ctx.effectiveXml(main);
+    return (
+        parsed?.ok === true &&
+        WORD_PARAGRAPH_NAMESPACES.some((ns) => getElementsByTagNameNSAll(parsed.document, ns, "endnoteReference").length > 0)
+    );
+};
+
+export const wordDuplicateEndnotesRelationshipCheck: CheckDefinition = {
+    id: "word-duplicate-endnotes-relationship",
+    description:
+        "The main document's relationships part contains at most one endnotes relationship when the document references an endnote.",
+    groups: ["relationships"],
+    formats: ["docx"],
+    requires: ["xml-syntax"],
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> =>
+        duplicateFindings(
+            ctx,
+            (await mainDocumentRelsParts(ctx, profile)).filter(({ main }) => referencesEndnote(ctx, main)).map(({ rels }) => rels),
+            "endnotes",
+            "endnotes",
+            "word-duplicate-endnotes-relationship",
+            " and the main document references an endnote",
+        ),
 };

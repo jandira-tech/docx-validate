@@ -304,6 +304,11 @@ export const isWordBlockingIssue = (
         // session 45 in docs/plans/evidence/word-probes-2026-10-24.md).
         case "word-duplicate-styles-relationship":
         case "word-duplicate-numbering-relationship":
+        // Word session 62 (s62c, s62e) offers recovery for two endnotes
+        // relationships in the main document's sidecar when the body
+        // references an endnote; the same pair with no reference opens
+        // clean (#807).
+        case "word-duplicate-endnotes-relationship":
         case "word-numbering-picture-bullet":
         case "word-footnote-reference-missing":
         // Word session 58 (s58a) offers recovery for a dangling endnote
