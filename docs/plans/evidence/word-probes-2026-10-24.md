@@ -18332,3 +18332,288 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
 `````
 
 </details>
+
+### Session 59: 18:37Z–18:37Z on 2026-10-26, validator columns at bfb8eb75
+
+The three eager mapped-type pairs no session had shown ([#779](https://github.com/jandira-tech/docx-validate/issues/779)). Keying each mismatch recovery sentence by its pair left `word/styles.xml` typed endnotes, and a related `word/numbering.xml` typed footnotes or endnotes, with no Word row in sessions 49, 50, 53, 56 or 57. One chunk, opening and closing with the minimal control. It ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 5 of 5 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen.
+
+- All three pairs get the recovery offer, as every other eager pair did. Word-valid at bfb8eb75 already rejects all three, so no verdict changes; these rows are the observation their findings' recovery sentences lacked.
+
+| Run    | Observed             | Specimen                    | Shape                                                                                              | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at bfb8eb75                     | strict at bfb8eb75                         |
+| ------ | -------------------- | --------------------------- | -------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ------------------------------------------ | ------------------------------------------ |
+| `s59a` | 18:37:01Z, 18:37:26Z | `s59a-control-minimal`      | control                                                                                            | `4a1ff3c351b0a83c` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                      |
+| `s59a` | 18:37:01Z, 18:37:26Z | `styles-typed-endnotes`     | #779 residue: the word/styles.xml typed by its Override with the endnotes content type             | `6d498bd40c567687` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch` | invalid: `word-part-content-type-mismatch` |
+| `s59a` | 18:37:01Z, 18:37:26Z | `numbering-typed-footnotes` | #779 residue: the related word/numbering.xml typed by its Override with the footnotes content type | `ef3014c3f6965070` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch` | invalid: `word-part-content-type-mismatch` |
+| `s59a` | 18:37:01Z, 18:37:26Z | `numbering-typed-endnotes`  | #779 residue: the related word/numbering.xml typed by its Override with the endnotes content type  | `6ef55472e769e130` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch` | invalid: `word-part-content-type-mismatch` |
+| `s59a` | 18:37:01Z, 18:37:26Z | `s59a-control-minimal-end`  | control                                                                                            | `4a1ff3c351b0a83c` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                      |
+
+<details><summary>Raw records, session 59</summary>
+
+```jsonl
+{"run": "s59a", "pass": 1, "name": "s59a-control-minimal", "sha256": "4a1ff3c351b0a83cb04cd74be12baf1a81cf5fb2e039369b51de6747e0afcc08", "observedAt": "2026-10-26T18:37:01+00:00", "staged": "00003__wfv__s59a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s59a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s59a", "pass": 2, "name": "s59a-control-minimal", "sha256": "4a1ff3c351b0a83cb04cd74be12baf1a81cf5fb2e039369b51de6747e0afcc08", "observedAt": "2026-10-26T18:37:26+00:00", "staged": "00003__wfv__s59a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s59a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s59a", "pass": 1, "name": "styles-typed-endnotes", "sha256": "6d498bd40c567687854fc08323959a02b2d0e9fc5cd6eaa0d02211095842df36", "observedAt": "2026-10-26T18:37:01+00:00", "staged": "00004__wfv__styles-typed-endnotes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 14:37:00.821 'Word found unreadable content in 00004__wfv__styles-typed-endnotes.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.'", "2026-10-26 14:37:01.654 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00004__wfv__styles-typed-endnotes.docx)\""]}
+{"run": "s59a", "pass": 2, "name": "styles-typed-endnotes", "sha256": "6d498bd40c567687854fc08323959a02b2d0e9fc5cd6eaa0d02211095842df36", "observedAt": "2026-10-26T18:37:26+00:00", "staged": "00004__wfv__styles-typed-endnotes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 14:37:25.650 'Word found unreadable content in 00004__wfv__styles-typed-endnotes.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.'", "2026-10-26 14:37:26.154 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00004__wfv__styles-typed-endnotes.docx)\""]}
+{"run": "s59a", "pass": 1, "name": "numbering-typed-footnotes", "sha256": "ef3014c3f6965070c5d826fc17c32679b62322563348d7e969875a6d7ba48dbb", "observedAt": "2026-10-26T18:37:01+00:00", "staged": "00001__wfv__numbering-typed-footnotes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 14:36:56.475 Microsoft Word, Word found unreadable content in 00001__wfv__numbering-typed-footnotes.docx. Do you  … t? If you trust the source of this document, click Yes."]}
+{"run": "s59a", "pass": 2, "name": "numbering-typed-footnotes", "sha256": "ef3014c3f6965070c5d826fc17c32679b62322563348d7e969875a6d7ba48dbb", "observedAt": "2026-10-26T18:37:26+00:00", "staged": "00001__wfv__numbering-typed-footnotes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 14:37:21.299 'Word found unreadable content in 00001__wfv__numbering-typed-footnotes.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 14:37:22.087 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__numbering-typed-footnotes...)\""]}
+{"run": "s59a", "pass": 1, "name": "numbering-typed-endnotes", "sha256": "6ef55472e769e130355256bbba58dfc04a7027531553752677cb97516d0f0fb2", "observedAt": "2026-10-26T18:37:01+00:00", "staged": "00000__wfv__numbering-typed-endnotes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 14:36:04.021 \"Word found unreadable content in 00000__wfv__numbering-typed-endnotes.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s59a", "pass": 2, "name": "numbering-typed-endnotes", "sha256": "6ef55472e769e130355256bbba58dfc04a7027531553752677cb97516d0f0fb2", "observedAt": "2026-10-26T18:37:26+00:00", "staged": "00000__wfv__numbering-typed-endnotes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 14:37:17.104 'Word found unreadable content in 00000__wfv__numbering-typed-endnotes.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 14:37:17.867 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__numbering-typed-endnotes....)\""]}
+{"run": "s59a", "pass": 1, "name": "s59a-control-minimal-end", "sha256": "4a1ff3c351b0a83cb04cd74be12baf1a81cf5fb2e039369b51de6747e0afcc08", "observedAt": "2026-10-26T18:37:01+00:00", "staged": "00002__wfv__s59a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s59a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s59a", "pass": 2, "name": "s59a-control-minimal-end", "sha256": "4a1ff3c351b0a83cb04cd74be12baf1a81cf5fb2e039369b51de6747e0afcc08", "observedAt": "2026-10-26T18:37:26+00:00", "staged": "00002__wfv__s59a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s59a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 59 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s59builder.mts`:
+
+```ts
+// Session 59 (2026-10-26): the three eager mapped-type pairs no session has shown (#779's residue). Lane 778 keyed every
+// mismatch recovery sentence by (reach, declared type) and found three pairs with no Word row in sessions 49, 50, 53, 56
+// or 57: word/styles.xml typed by its Override with the endnotes type, and a related word/numbering.xml typed with the
+// footnotes or endnotes type. word-valid blocks all three with no recovery sentence; this session asks Word.
+// Helpers are copied verbatim from s57builder.mts (relatedTyped, stylesRetyped).
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s59a pnpm exec node --import tsx s59builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const STYLES_TYPE = `${WML}.styles+xml`;
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+const retype = (ct: string, part: string, own: string, type: string) =>
+    replaceOnce(ct, `<Override PartName="/${part}" ContentType="${own}"/>`, `<Override PartName="/${part}" ContentType="${type}"/>`);
+const control = () => buildDocx({ ...P });
+
+const NUMBERING_ROOT = `${XML_DECL}<w:numbering xmlns:w="${W}"/>`;
+const TYPES = {
+    footnotes: `${WML}.footnotes+xml`,
+    endnotes: `${WML}.endnotes+xml`,
+};
+
+/** The minimal package plus `word/numbering.xml` related from the main document's sidecar as rId2, typed `type` (sessions 50, 53, 57). */
+const numberingTyped = (type: string) =>
+    buildDocx({
+        ...P,
+        "word/numbering.xml": NUMBERING_ROOT,
+        [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rId2", "numbering", "numbering.xml")),
+        [CT]: overrides(P[CT]!, ["word/numbering.xml", type]),
+    });
+const stylesRetyped = (type: string) => buildDocx({ ...P, [CT]: retype(P[CT]!, "word/styles.xml", STYLES_TYPE, type) });
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+const pair = (reach: string, type: keyof typeof TYPES): string =>
+    `#779 residue: the ${reach} typed by its Override with the ${type} content type`;
+
+const chunks: Record<string, Row[]> = {
+    s59a: withControls("s59a", [
+        ["styles-typed-endnotes", pair("word/styles.xml", "endnotes"), () => stylesRetyped(TYPES.endnotes)],
+        ["numbering-typed-footnotes", pair("related word/numbering.xml", "footnotes"), () => numberingTyped(TYPES.footnotes)],
+        ["numbering-typed-endnotes", pair("related word/numbering.xml", "endnotes"), () => numberingTyped(TYPES.endnotes)],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-59 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s59a",)
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s59/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-59 parts of docs/plans/evidence/word-probes-2026-10-24.md into s59/section.md.
+
+Reads the chunk's specimens.jsonl (validator columns at bfb8eb75, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s59/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s59a",)
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s59/results.json").read_text())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends = [], [], [], []
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    f"### Session 59: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at bfb8eb75",
+    "",
+    "The three eager mapped-type pairs no session had shown "
+    "([#779](https://github.com/jandira-tech/docx-validate/issues/779)). Keying each mismatch recovery sentence by its pair left "
+    "`word/styles.xml` typed endnotes, and a related `word/numbering.xml` typed footnotes or endnotes, with no Word row in "
+    "sessions 49, 50, 53, 56 or 57. One chunk, opening and closing with the minimal control. It ran twice, as two separate driver "
+    "runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by "
+    f"`wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; "
+    f"{agreed} of {len(rows)} rows agree. The two times in Observed are the ends of the first and second runs. Shape is the "
+    "builder's description of the specimen.",
+    "",
+    "- All three pairs get the recovery offer, as every other eager pair did. Word-valid at bfb8eb75 already rejects all three, "
+    "so no verdict changes; these rows are the observation their findings' recovery sentences lacked.",
+    "",
+    "| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at bfb8eb75 | strict at bfb8eb75 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 59</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 59 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s59builder.mts", ROOT / "s59builder.mts", "ts"), ("compare.py", ROOT / "s59/compare.py", "python"),
+                         ("section.py", ROOT / "s59/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s59/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>

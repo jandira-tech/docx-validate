@@ -759,14 +759,17 @@ styles type on the main document and the settings reach and the settings
 type on the numbering reach (s50d), session 53 the other mapped types it
 ran on the main document (s53d–s53f) and on the settings, numbering and
 styles reaches (s53f–s53h), session 56 the footer type on the styles reach
-(s56a), and session 57 the thirteen pairs no earlier session had shown:
+(s56a), session 57 the thirteen pairs no earlier session had shown:
 the main document typed webSettings, the settings reach typed webSettings,
 glossary, footer, footnotes or endnotes, the numbering reach typed
 webSettings, glossary, theme or footer, and the styles reach typed
 webSettings, glossary or footnotes
-([#779](https://github.com/jandira-tech/docx-validate/issues/779)). The
-styles reach typed endnotes and the numbering reach typed footnotes or
-endnotes were shown to no session and carry no recovery sentence; the
+([#779](https://github.com/jandira-tech/docx-validate/issues/779)), and
+session 59 the remaining three pairs: the styles reach typed endnotes and
+the numbering reach typed footnotes or endnotes (s59a)
+([#789](https://github.com/jandira-tech/docx-validate/issues/789)) — all
+48 eager pairs are observed, and every recovery sentence names the session
+that showed its pair; the
 footer co-reach pairs cite sessions 53 and 57, the header co-reach session
 57 (#739, #778). The finding names
 the relationship, declared
@@ -784,7 +787,7 @@ order does not change the reported segment or clause (#608). Only an
 observed finding — a read header/footer swap or header/footer co-reach,
 the main document, or a related styles, settings or numbering part whose
 pair a session showed — carries the Word recovery sentence; unobserved
-shapes, an eager pair no session showed, and a header or footer typed with
+shapes and a header or footer typed with
 a type no session showed keep spec wording. Full, quick and named
 selections agree
 (#381).

@@ -20,9 +20,9 @@
  * the main document typed webSettings, the settings part typed webSettings,
  * glossary, footer, footnotes or endnotes, the numbering part typed
  * webSettings, glossary, theme or footer, and the styles part typed
- * webSettings, glossary or footnotes. The styles part typed endnotes and
- * the numbering part typed footnotes or endnotes were shown to no session
- * and keep their verdict without a recovery sentence. Session 53
+ * webSettings, glossary or footnotes; and session 59 (s59a) the remaining
+ * three pairs — the styles part typed endnotes and the numbering part
+ * typed footnotes or endnotes — so all 48 eager pairs are observed. Session 53
  * (s53a/s53b) also observed the co-reach: an eagerly read part — the main
  * document, a related numbering part or the styles part — that a read
  * footer or a second eager relationship of another kind also reaches,
@@ -65,17 +65,17 @@ import {
 } from "./word-part-content-type-inexact";
 
 export const WORD_PART_CONTENT_TYPE_MISMATCH = "word-part-content-type-mismatch";
-// Evidence: word-probes-2026-10-24.md, sessions 24, 26, 49, 50, 53, 56 and
-// 57. The header/footer keys are the swaps Word was shown, judged read.
-// The three-part keys name the eager pairs — the reach plus the declared
-// mapped type's own segment — and the session that showed it: sessions 49
-// and 50 one pair per reach (s49b, s50d), session 53 the other mapped
-// types it ran on the main document and the settings, numbering and styles
-// reaches (s53d–s53h), session 56 the footer type on the styles reach
-// (s56a), and session 57 the thirteen pairs no earlier session had shown
-// (s57a–s57c). The styles reach typed endnotes and the numbering reach
-// typed footnotes or endnotes have no entry: they keep their verdict with
-// no recovery sentence.
+// Evidence: word-probes-2026-10-24.md, sessions 24, 26, 49, 50, 53, 56, 57
+// and 59. The header/footer keys are the swaps Word was shown, judged
+// read. The three-part keys name the eager pairs — the reach plus the
+// declared mapped type's own segment — and the session that showed it:
+// sessions 49 and 50 one pair per reach (s49b, s50d), session 53 the other
+// mapped types it ran on the main document and the settings, numbering and
+// styles reaches (s53d–s53h), session 56 the footer type on the styles
+// reach (s56a), session 57 the thirteen pairs no earlier session had shown
+// (s57a–s57c), and session 59 the remaining three (s59a). All 48 eager
+// pairs have an entry; the lookup stays, so a pair without one would keep
+// its verdict with no recovery sentence.
 const OBSERVED_SESSIONS: ReadonlyMap<string, string> = new Map([
     ["main\nfooter", "session 24"],
     ["main\nheader", "session 24"],
@@ -102,6 +102,7 @@ const OBSERVED_SESSIONS: ReadonlyMap<string, string> = new Map([
     ["main\nstyles\nheader", "session 53"],
     ["main\nstyles\nfooter", "session 56"],
     ["main\nstyles\nfootnotes", "session 57"],
+    ["main\nstyles\nendnotes", "session 59"],
     ["main\nstyles\ncomments", "session 53"],
     ["main\nstyles\nglossaryDocument", "session 57"],
     ["main\nsettings\nofficeDocument", "session 53"],
@@ -124,14 +125,17 @@ const OBSERVED_SESSIONS: ReadonlyMap<string, string> = new Map([
     ["main\nnumbering\ntheme", "session 57"],
     ["main\nnumbering\nheader", "session 53"],
     ["main\nnumbering\nfooter", "session 57"],
+    ["main\nnumbering\nfootnotes", "session 59"],
+    ["main\nnumbering\nendnotes", "session 59"],
     ["main\nnumbering\ncomments", "session 53"],
     ["main\nnumbering\nglossaryDocument", "session 57"],
 ]);
 /**
  * The eagerly parsed reaches Word was shown refusing another mapped type
  * (#722): the main document and the main document's own styles, settings
- * and numbering relationships. A pair with no `OBSERVED_SESSIONS` entry on
- * one of these reaches keeps its verdict without the recovery sentence.
+ * and numbering relationships. Session 59 (s59a) observed the last three
+ * pairs, so every pair on these reaches has an `OBSERVED_SESSIONS` entry;
+ * a pair without one would keep its verdict without the recovery sentence.
  */
 const OBSERVED_REACHES: ReadonlySet<string> = new Set(["main\nofficeDocument", "main\nstyles", "main\nsettings", "main\nnumbering"]);
 /** The relationship segment a mapped media type belongs to, e.g. "styles" for the styles type. */

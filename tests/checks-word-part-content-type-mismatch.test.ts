@@ -379,9 +379,9 @@ it.each([
 // styles part typed with the settings type (s49b), and for a related settings
 // part typed with the styles type, a related numbering part typed with the
 // settings type and the main document typed with the styles type (s50d);
-// session 53 (s53d–s53h), session 56 (s56a) and session 57 (s57a–s57c)
-// showed the other pairs on those reaches, each citation naming its own
-// session (#779).
+// session 53 (s53d–s53h), session 56 (s56a), session 57 (s57a–s57c) and
+// session 59 (s59a) showed the other pairs on those reaches, each citation
+// naming its own session (#779, #789).
 describe("observed eager mismatches (#722, sessions 49 and 50)", () => {
     const retypedParts = (part: string, own: string, type: string): Record<string, string> => ({
         ...MINIMAL_PARTS,
@@ -644,13 +644,16 @@ describe("observed co-reach (#739, session 53)", () => {
 });
 
 // Session 57 (2026-10-26; Word 16.115, two runs, all readings agree) showed
-// the thirteen mapped-type pairs no earlier session had, so every recovery
-// sentence names the session that showed its pair — the reach plus the
-// declared type — instead of its reach's sessions: 49 the settings type on
-// the styles part (s49b), 50 the styles type on the main document and a
+// the thirteen mapped-type pairs no earlier session had, and session 59
+// (2026-10-26, s59a) the remaining three — the styles part typed endnotes
+// and a related numbering part typed footnotes or endnotes — so every
+// recovery sentence names the session that showed its pair — the reach plus
+// the declared type — instead of its reach's sessions: 49 the settings type
+// on the styles part (s49b), 50 the styles type on the main document and a
 // related settings part and the settings type on a related numbering part
 // (s50d), 53 the other mapped types it ran (s53d–s53h), 56 the footer type
-// on the styles part (s56a) and 57 the thirteen pairs of s57a–s57c.
+// on the styles part (s56a), 57 the thirteen pairs of s57a–s57c and 59 the
+// remaining three (s59a).
 describe("per-pair recovery citations (#779)", () => {
     const THEME_TYPE = "application/vnd.openxmlformats-officedocument.theme+xml";
     const retypedParts = (part: string, own: string, type: string): Record<string, string> => ({
@@ -815,6 +818,27 @@ describe("per-pair recovery citations (#779)", () => {
             by: "the main document's styles relationship",
             session: "session 53",
         },
+        {
+            label: "the styles part typed endnotes (s59a)",
+            parts: retypedParts("word/styles.xml", storyContentType("styles"), storyContentType("endnotes")),
+            path: "word/styles.xml",
+            by: "the main document's styles relationship",
+            session: "session 59",
+        },
+        {
+            label: "a related numbering part typed footnotes (s59a)",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("footnotes")),
+            path: "word/numbering.xml",
+            by: "the main document's numbering relationship",
+            session: "session 59",
+        },
+        {
+            label: "a related numbering part typed endnotes (s59a)",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("endnotes")),
+            path: "word/numbering.xml",
+            by: "the main document's numbering relationship",
+            session: "session 59",
+        },
     ] as const;
 
     it.each(CASES)("cites $session for $label", async ({ parts, path, by, session }) => {
@@ -837,33 +861,6 @@ describe("per-pair recovery citations (#779)", () => {
             }
         });
     }, 120_000);
-
-    // No session showed the styles part typed endnotes or the numbering part
-    // typed footnotes or endnotes; they keep their rejection, but a pair
-    // with no row carries no recovery sentence.
-    it.each([
-        {
-            label: "the styles part typed endnotes",
-            parts: retypedParts("word/styles.xml", storyContentType("styles"), storyContentType("endnotes")),
-            path: "word/styles.xml",
-        },
-        {
-            label: "a related numbering part typed footnotes",
-            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("footnotes")),
-            path: "word/numbering.xml",
-        },
-        {
-            label: "a related numbering part typed endnotes",
-            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("endnotes")),
-            path: "word/numbering.xml",
-        },
-    ] as const)("keeps $label rejected with no recovery sentence", async ({ parts, path }) => {
-        const found = await diagnose(parts);
-        expect(found).toHaveLength(1);
-        expect(found[0]).toMatchObject({ code: ID, severity: "error", path });
-        expect(found[0]?.message).not.toContain("Word 16.115");
-        expect(isWordBlockingIssue(found[0]!)).toBe(true);
-    });
 });
 
 // Session 57 (2026-10-26, chunks s57c–s57e; Word 16.115, two runs, all
