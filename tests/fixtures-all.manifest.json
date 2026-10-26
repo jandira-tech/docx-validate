@@ -1,6 +1,6 @@
 {
     "generatedAt": "2026-10-23T09:03:55.628Z",
-    "totalFixtures": 621,
+    "totalFixtures": 650,
     "entries": [
         {
             "relativePath": "broken/comments.unmatched-comment-marker.docx",
@@ -83,6 +83,526 @@
             "word": {
                 "outcome": "open-error",
                 "sha256": "b24252f32b7f15ff556d0fd7afe4e1ae0ed68e95a8f2573d174ee5d3ed77ad40"
+            }
+        },
+        {
+            "relativePath": "broken/package.drawing-arc-radius.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing", "word-drawing-arc-radius"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "8515c035158cbdade8cef3276a4240d7f605e41cf444bd5ebe5d4171ab725be2"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-anchor-open.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "style-default-missing",
+                    "word-anchor-missing-attribute",
+                    "word-position-offset-and-align",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "9c0b13c74c82a6fdcb44028fead5c72b7532d257e25e8a7473a2598aa59bafda"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-attached-toolbar-utf8.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "style-default-missing",
+                    "word-attached-toolbar-utf8",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "b0cf666af937209d4c91305e652eb5216412db6bf83b61aa7c390c59970dc7cb"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-cell-ends-with-table.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "word-cell-ends-with-table", "xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "c63ee16523e32bfaa8d12d5abfc5a33fcfafa0667c203419099633a259261f21"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-choice-requires-on-descendant.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["mce-malformed", "word-choice-requires-undeclared", "xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["mce-malformed", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "a8e728c4107c1487b8c204836e4418d9aad241c452673c6737c3bdfd0ac68920"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-choice-requires-undeclared.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["mce-malformed", "word-choice-requires-undeclared", "xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["mce-malformed", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "f2bdb740a3021200d616c3bd3171226386442ccc81c34830825addea5d0133a7"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-drawing-extent-negative-cx.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "style-default-missing",
+                    "word-drawing-extent-negative",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "de461e33bc71af0bc5a5770b844292b1704ce25467ae498813894c6af61ac39f"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-drawing-extent-negative-cy.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "style-default-missing",
+                    "word-drawing-extent-negative",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "2c44584a5038057a43161b881959a28560ce6da7ad0903d982d3974112ce74fa"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-drawing-extent-negative.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "style-default-missing",
+                    "word-drawing-extent-negative",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "4de3548ff70a39aedd5ef6af9c6938c0bea162e1787da0c5c54c2ad4a927fad0"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-duplicate-font-table.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "word-duplicate-font-table-relationship"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "bfd789dc181637f8bd8007bbab6115d2b949c788cf54f2839c9eb12a80a03324"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-duplicate-settings.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-id-missing",
+                    "rels-unreferenced",
+                    "style-default-missing",
+                    "word-duplicate-settings-relationship"
+                ]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-id-missing", "rels-unreferenced"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "f9ee736e620997bc774eee52ef8efbe28fa0ff8c0fd6234121e1caa941357038"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-duplicate-theme.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "word-duplicate-theme-relationship", "xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "52b18dea69dafe56f1242778155d03e1dc419395f21dac99436ff06fc3305758"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-duplicate-web-settings.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "word-duplicate-web-settings-relationship",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "7677b35b052b3b020ed90054122e7f4caefa95c8d747cda2ec33d7c4d7f9d576"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-empty-drawing.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "word-empty-drawing"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "f6a4a0e2791d944d857f697900a974faa3efb73ddc4bd7df75d21a43e106598b"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-footnote-reference-missing.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing", "word-footnote-reference-missing"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "14a04529bcd71e097591a7b068b4e93ce20dcf6a87bd4a3b08bc7a388f332921"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-hyperlink-relationship.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-id-missing",
+                    "rels-unreferenced",
+                    "style-default-missing",
+                    "style-reference-undefined",
+                    "word-hyperlink-relationship",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-id-missing", "rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "e22002e4f186a710d0d10084950d7333a892541dffbfca651ae3425dbc299ec3"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-move-from-deleted-text.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["word-move-from-deleted-text"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "18d72b31b7f3c6cea734ff5c4f49622a08c7fe04a65c9b0b85ec616297a2d330"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-numbering-picture-bullet.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing", "word-numbering-picture-bullet"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "4158815657718767242e2a2d7d7dc4aa6043fccbeddf679de2fd76887bbd062a"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-row-without-cell.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "word-row-without-cell", "xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "27e6f7ace511f4b753863f20b315ea35625be34e03f14e5e66813f7cbd7a79d7"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-sdt-id-empty.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "style-default-missing",
+                    "style-reference-undefined",
+                    "textid-missing-element",
+                    "word-sdt-id-empty",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "6db54e9f4fb3653525c00db038dbefe8c08f4376babb6398ca57c6f6dddf7c5f"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-text-contains-paragraph.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "style-default-missing",
+                    "word-text-contains-paragraph",
+                    "ws-missing-preserve",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["ws-missing-preserve", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "f494c423cca2db7e65028c7614b875c36ea82b021327d689ecf43e071a1d0f6e"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-textbox-choice-deleted-text.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing", "word-textbox-deleted-text"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "4b0a74cbc918f39b944254ffb360b063bf1a26d77586cd748943cbd0dc5c0918"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-textbox-deleted-instruction.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing", "word-textbox-deleted-text"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "9e517b0313071113182173ecee2e0004a15b6dc970d74fdfd3b2efa2bf2ff26f"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-textbox-deleted-text-shape.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": [
+                    "comment-thread-count-mismatch",
+                    "paraid-missing-element",
+                    "style-reference-undefined",
+                    "word-textbox-deleted-text"
+                ]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["comment-thread-count-mismatch"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "25d4f44a585a61edf22dd820af9bc274888becb159b5edc473d6e283333f878f"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-textbox-deleted-text.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing", "word-textbox-deleted-text"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "b71ae90db9278fc469d2f30bd3be74951566aee1f16dc57ebd1422b22b603bb7"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-undeclared-part.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": [
+                    "ct-uncovered-part",
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "style-default-missing",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["ct-uncovered-part", "rels-broken", "rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "cafddc356260ee3c0be45d73252e833f8f2d052189fa1b6051857df10f926730"
+            }
+        },
+        {
+            "relativePath": "broken/package.zip-bytes-after-eocd.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing", "zip-bytes-after-eocd"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "3242542fbdde12549e54e4e721104a297d0293e7a79faf6c2948dfe910ae61d8"
+            }
+        },
+        {
+            "relativePath": "broken/package.zip-concatenated-copy.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing", "zip-bytes-before-archive"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "8ab8b602264794246110ec52c2d37e6789e1c9d002f870fbad8eeccd08fa1645"
+            }
+        },
+        {
+            "relativePath": "broken/package.zip-eocd-comment-overrun.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["package-open-failed", "zip-eocd-comment-overrun"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["package-open-failed"]
+            },
+            "word": {
+                "outcome": "unknown",
+                "sha256": "51f7d2c2f525146656070173e327fb37aad5b534b3096f4d25dc72e6b22aa692"
             }
         },
         {
