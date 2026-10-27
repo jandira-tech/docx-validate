@@ -92,6 +92,8 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "A w:footnoteReference id does not match a w:footnote in the footnotes part. Word offers to recover the file. Remove the reference, or add the footnote it names.",
     "word-endnote-reference-missing":
         "A w:endnoteReference id does not match a w:endnote in the endnotes part. Word offers to recover the file (session 58, s58a; #784). Remove the reference, or add the endnote it names.",
+    "word-shared-story-part":
+        "A comments, footnotes or endnotes part is read through a relationship of its own segment of both the main document and a reached glossary document. Word offers to recover the file (session 66, s66a, for comments; session 67, s67a, for footnotes and endnotes); the same part used by one root alone, or related by both roots but used by one or by neither, opens clean. Shared header and footer parts, a part two glossaries share, and a part one root reads under one of these segments and the other under another are unprobed. Give each story root its own part.",
     "word-textbox-deleted-text":
         "A text box contains w:delText or w:delInstrText that is not inside a w:del in that text box. Word offers to recover the file. Remove that deleted text from the text box. Deleted text inside an mc:Fallback text box, or inside a w:del in the text box, is not this defect. A w:del outside the text box does not cover it.",
     "word-move-from-deleted-text":
