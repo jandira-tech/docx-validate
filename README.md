@@ -1933,18 +1933,24 @@ other repair renames a value across parts.
 
 For a document's first comment, `addComment` relates the four comments parts
 from the relationships part of the main document `_rels/.rels` names
-([#906](https://github.com/jandira-tech/docx-validate/issues/906)). That is
+([#906](https://github.com/jandira-tech/docx-validate/issues/906)). The named
+main document is found as the read model finds it — `\` read as `/`, the query
+and fragment dropped, the stored part matched under OPC equivalence — and the
+comments are wired through the stored part's own name:
 `word/_rels/document.xml.rels` when there is no `_rels/.rels` or it names
 `word/document.xml` under any OPC-equivalent spelling (`Word/Document.xml`),
 `word/_rels/main.xml.rels` for a main document stored as `word/main.xml`, and
-`main/_rels/doc.xml.rels` for one stored as `main/doc.xml`. Each target is
-relative to the main document's folder (`../word/comments.xml` from `main/`). An
-internal `comments` relationship, of the Transitional or the Strict type, whose
-target resolves to `word/comments.xml` under OPC part-name equivalence, relative
-or from the package root, counts as already there; an External relationship, or
-one of another type, does not, and the four relationships are added beside it;
-before, it stopped them being added, so the comment's markers named a comment
-Word does not read
+`main/_rels/doc.xml.rels` for one stored as `main/doc.xml`; before, a target
+with a query or fragment was refused, and so was an escaped spelling of any main
+document but `word/document.xml`
+([#919](https://github.com/jandira-tech/docx-validate/issues/919)). Each target
+is relative to the main document's folder (`../word/comments.xml` from `main/`).
+An internal `comments` relationship, of the Transitional or the Strict type,
+whose target resolves to `word/comments.xml` under OPC part-name equivalence,
+relative or from the package root, counts as already there; an External
+relationship, or one of another type, does not, and the four relationships are
+added beside it; before, it stopped them being added, so the comment's markers
+named a comment Word does not read
 ([#917](https://github.com/jandira-tech/docx-validate/issues/917)). The
 relationships parts are read and written in the package-relationships namespace,
 whatever prefix they bind it to: a prefixed `_rels/.rels` names its main
@@ -1971,12 +1977,15 @@ namespace, which left the comments parts typed `application/xml` and the created
 relationships part mistyped
 ([#923](https://github.com/jandira-tech/docx-validate/issues/923)).
 
-A first comment is refused with an error naming the part, changing nothing,
-when the tree has no `[Content_Types].xml`, or when `_rels/.rels` cannot be
-decoded or parsed, names no `officeDocument` relationship that is not
-External, names a target outside the package, or names a main document that is
-not stored. A later comment reads no `_rels/.rels`. A first or later comment
-is refused the same way when a part it would edit is not well-formed XML
+A first comment is refused with an error naming the part, changing nothing, when
+the tree has no `[Content_Types].xml`, or when `_rels/.rels` cannot be decoded
+or parsed, names no `officeDocument` relationship that is not External, names a
+target outside the package, or names a main document that is not stored — the
+conventional `word/document.xml` included; before, a missing `word/document.xml`
+was written to
+([#919](https://github.com/jandira-tech/docx-validate/issues/919)). A later
+comment reads no `_rels/.rels`. A first or later comment is refused the same way
+when a part it would edit is not well-formed XML
 ([#905](https://github.com/jandira-tech/docx-validate/issues/905)); before, the
 call wrote some parts and then threw, which could leave relationships naming
 comment parts that do not exist.

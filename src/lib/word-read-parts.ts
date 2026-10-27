@@ -100,6 +100,7 @@ import {
     findEquivalentPart,
     isRelationshipsFolderName,
     isRelationshipsPartName,
+    resolveTarget,
 } from "./content-types";
 import type { Profile } from "./types";
 import type { ValidationContext, XmlPart } from "./validation-context";
@@ -180,9 +181,6 @@ export const officeRelationshipTypeSegment = (type: string): string | undefined 
     const segment = type.slice(prefix.length);
     return segment.length > 0 && !segment.includes("/") ? segment : undefined;
 };
-/** An absolute URI names no package part, whatever its TargetMode says. */
-const hasUriScheme = (target: string): boolean => /^[a-z][a-z\d+.-]*:/i.test(target);
-
 /**
  * The folder a relationships part's targets resolve against: its source
  * part's folder, the `_rels` segment compared canonically — the same
@@ -192,33 +190,6 @@ const hasUriScheme = (target: string): boolean => /^[a-z][a-z\d+.-]*:/i.test(tar
 const relationshipsBaseDir = (relsPart: string): string => {
     const dir = path.posix.dirname(relsPart);
     return isRelationshipsFolderName(path.posix.basename(dir)) ? path.posix.dirname(dir) : dir;
-};
-
-/**
- * Resolve one relationship target against the folder of its source part, as
- * the rest of the codebase does (`\` reads as `/`, a query or fragment is
- * dropped, dot segments resolve), then take the OPC-equivalent stored entry
- * (`canonicalPartName` comparison); `undefined` when it names no stored part.
- * `clampAtPackageRoot` stops the target's `..` segments at the package root
- * instead of dropping the whole target when they climb past it — RFC 3986's
- * remove_dot_segments, the way Word resolved `word/`'s `../../footnotes.xml`
- * to `/footnotes.xml` (session 64 s64a, #830).
- */
-const resolveTarget = (
-    lookup: (partName: string) => string | undefined,
-    baseDir: string,
-    target: string,
-    clampAtPackageRoot = false,
-): string | undefined => {
-    if (hasUriScheme(target)) {
-        return undefined;
-    }
-    const [reference = ""] = target.replace(/\\/g, "/").split(/[?#]/, 1);
-    if (reference === "") {
-        return undefined;
-    }
-    const joined = reference.startsWith("/") ? reference : path.posix.join(baseDir, reference);
-    return lookup(clampAtPackageRoot ? joined.replace(/^(?:\.\.\/)+/, "") : joined);
 };
 
 /** The relationships part of a source part, found by OPC part-name equivalence. */
