@@ -157,7 +157,8 @@ describe("an officeDocument target naming a folder (#962, Word session 70 s70a/s
     };
 
     // Word offered recovery for each, in both runs: a final `.` or `..`
-    // segment leaves a folder, which names no main document.
+    // segment leaves a folder, which names no main document. The
+    // file-reference walk reads the folder target as broken too (#975).
     it.each(["word/main.xml/.", "/word/main.xml/.", "word/main.xml/x/..", "word/main.xml/"])(
         "rejects the main document the target %s names no part for",
         async (target) => {
@@ -167,6 +168,11 @@ describe("an officeDocument target naming a folder (#962, Word session 70 s70a/s
                 const result = await validate(file, { profile: "word-valid" });
                 expect(result.valid).toBe(false);
                 expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([
+                    expect.objectContaining({
+                        code: "rels-broken",
+                        path: "_rels/.rels",
+                        message: `Broken reference to ${target}: it names a folder, not a part`,
+                    }),
                     expect.objectContaining({ code: CODE, path: "_rels/.rels" }),
                 ]);
             });

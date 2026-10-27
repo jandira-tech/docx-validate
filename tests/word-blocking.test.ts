@@ -463,6 +463,16 @@ describe("isWordBlockingIssue", () => {
         ["word/notes.rels", false],
         ["word/customXml/x.png", false],
         ["media/image1.png", false],
+        // A target naming a folder, registered with its final `/` (the package
+        // root as `/`): Word refused each one it was shown, whatever the
+        // relationship type and whether anything used it (sessions 70, 71 and
+        // 72, #975).
+        ["word/styles.xml/", true],
+        ["word/media/image1.png/", true],
+        ["word/header1.xml/", true],
+        ["word/", true],
+        ["docProps/core.xml/", true],
+        ["/", true],
     ])("judges rels-broken resolving to %j as blocking: %s", (part, blocking) => {
         const found = issue("rels-broken", { message: `Broken reference to ${part}` });
         registerRelsBrokenTarget(found, part);

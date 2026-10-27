@@ -48,7 +48,13 @@
 
 import { constants as fsConstants, promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
-import { canonicalPartName, isRelationshipsFolderName, isRelationshipsPartName, resolvePartName } from "../../../lib/content-types";
+import {
+    canonicalPartName,
+    isRelationshipsFolderName,
+    isRelationshipsPartName,
+    relationshipTargetFolder,
+    resolvePartName,
+} from "../../../lib/content-types";
 import { opcNameIssueSeverity } from "../../../lib/mode-policy";
 import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { PackageFormat, ValidationIssue, ValidationResult } from "../../../lib/types";
@@ -1737,7 +1743,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * target resolves to an existing file in the unpacked directory.
      * External (http/https) targets are skipped.
      *
-     * Reports `rels-target-missing` (error) when a target file is absent.
+     * Reports `rels-target-missing` (error) when a target file is absent,
+     * or when the target names a folder (#975).
      */
     async validateOrphanedRelationships(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
@@ -1758,6 +1765,23 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 const target = elem.getAttribute("Target");
                 if (!target) continue;
                 if (isExternalRelationship(elem, target)) continue;
+                // A final `.` or `..` segment, or a trailing `/`, names a
+                // folder, never the part its path spells, which the
+                // file-system resolution below would find (sessions 70, 71
+                // and 72, #975).
+                const relsFolder = path.posix.dirname(name);
+                const sourceFolder = isRelationshipsFolderName(path.posix.basename(relsFolder))
+                    ? path.posix.dirname(relsFolder)
+                    : relsFolder;
+                if (relationshipTargetFolder(sourceFolder, target) !== undefined) {
+                    issues.push({
+                        severity: "error",
+                        message: `Relationship target '${target}' names a folder, not a part`,
+                        path: this.relPath(xmlFile),
+                        code: "rels-target-missing",
+                    });
+                    continue;
+                }
                 const resolved = resolveRelationshipTargetPath(this.unpackedDir, path.join(this.unpackedDir, name), target);
                 if (!resolved) {
                     issues.push({

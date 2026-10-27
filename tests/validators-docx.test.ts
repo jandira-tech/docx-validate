@@ -3105,6 +3105,29 @@ describe("DOCXSchemaValidator", () => {
             });
         });
 
+        // #975: a final `.` or `..` segment, or a trailing `/`, names a folder,
+        // never the part the path spells, which Word refused whatever the
+        // relationship type (sessions 70, 71 and 72).
+        it.each(["styles.xml/.", "styles.xml/x/..", "styles.xml/", "/word/styles.xml/.", ".", "../.."])(
+            "flags %s as naming a folder although word/styles.xml is stored",
+            async (target) => {
+                await withTempDir(async (dir) => {
+                    await writeFile(
+                        path.join(dir, "word", "_rels", "document.xml.rels"),
+                        `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                            `<Relationship Id="rId1" Type="http://..." Target="${target}"/>` +
+                            `</Relationships>`,
+                    );
+                    await writeFile(path.join(dir, "word", "styles.xml"), `<?xml version="1.0"?><w:styles ${W_NS}/>`);
+                    const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                    const result = await v.validateOrphanedRelationships();
+                    expect(result.issues.filter((i) => i.code === "rels-target-missing").map((i) => i.message)).toEqual([
+                        `Relationship target '${target}' names a folder, not a part`,
+                    ]);
+                });
+            },
+        );
+
         it("skips external targets and resolves absolute package paths", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(path.join(dir, "word", "media", "image1.png"), "not really a png");

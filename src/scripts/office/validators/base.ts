@@ -54,6 +54,7 @@ import {
     isRelationshipsPartName,
     parseContentTypes,
     partExtension,
+    relationshipTargetFolder,
     resolveContentType,
     resolvePartName,
 } from "../../../lib/content-types";
@@ -1005,7 +1006,10 @@ export class BaseSchemaValidator {
 
             const relsPath = path.join(this.unpackedDir, relsPart);
             const relsDir = path.dirname(relsPath);
-            const broken: Array<{ target: string; part: string }> = [];
+            // The source part's folder, package-relative, as the targets
+            // below resolve against it.
+            const sourceFolder = path.basename(relsPath) === ".rels" ? "." : path.posix.dirname(path.posix.dirname(relsPart));
+            const broken: Array<{ target: string; part: string; folder?: true }> = [];
 
             const rels = this.relationshipElements(dom, relsPart);
             for (let i = 0; i < rels.length; i += 1) {
@@ -1018,6 +1022,17 @@ export class BaseSchemaValidator {
                 // a part (ECMA-376 Part 2 §9.3), so it is not resolved as one.
                 // Lenient keeps its historical scan, pinned byte for byte (#665).
                 if (this.profile !== "lenient" && rel.getAttribute("TargetMode") === "External") continue;
+
+                // A final `.` or `..` segment, or a trailing `/`, names a
+                // folder, never the part its path spells, which the
+                // file-system join below would find: Word refused every such
+                // target, whatever the relationship type and whether anything
+                // used it (sessions 70, 71 and 72, #975).
+                const folder = relationshipTargetFolder(sourceFolder, target);
+                if (folder !== undefined) {
+                    broken.push({ target, part: folder, folder: true });
+                    continue;
+                }
 
                 let targetPath: string;
                 if (target.startsWith("/")) {
@@ -1053,10 +1068,10 @@ export class BaseSchemaValidator {
                 }
             }
 
-            for (const { target, part } of broken) {
+            for (const { target, part, folder } of broken) {
                 const issue: ValidationIssue = {
                     severity: "error",
-                    message: `Broken reference to ${target}`,
+                    message: folder ? `Broken reference to ${target}: it names a folder, not a part` : `Broken reference to ${target}`,
                     path: this.relPath(relsFile),
                     code: "rels-broken",
                 };

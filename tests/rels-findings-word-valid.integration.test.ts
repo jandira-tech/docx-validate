@@ -75,7 +75,7 @@ const withRelationship = (relationship: string): Record<string, string> => ({
     [SIDECAR]: MINIMAL_PARTS[SIDECAR]!.replace("</Relationships>", `${relationship}</Relationships>`),
 });
 
-const run = async (parts: Record<string, string>, profile: Profile) =>
+const run = async (parts: Record<string, string | Uint8Array>, profile: Profile) =>
     withTempDir(async (dir) => {
         const file = path.join(dir, "specimen.docx");
         await fs.writeFile(file, await buildDocx(parts));
@@ -186,6 +186,90 @@ describe("the rels-empty-element word-valid verdict reads the registered shape (
             withRelationship(`<Relationship Id="rId9" Type="${IMAGE}" Target="media/missing.png">body</Relationship>`),
         );
         expect(empty).toEqual(["warning"]);
+        expect(valid).toBe(true);
+    });
+});
+
+// Sessions 71 and 72 (docs/plans/evidence/word-probes-2026-10-24.md, s71a/s71b/s72a/s72b; two runs each, all four
+// readings agree): Word offered recovery for every internal relationship target naming a folder — a final `.` or `..`
+// segment, a trailing `/`, or `.` — beside the stored part its path spells, whatever the relationship type and whether
+// anything used it, and opened each plain target clean. The file-reference walk resolved a file-system path, which
+// drops the final `/`, so it found the part and word-valid accepted every refused row.
+describe("a relationship target naming a folder blocks word-valid (#975, sessions 71 and 72)", () => {
+    const PNG = Uint8Array.from(
+        Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64"),
+    );
+    const CT = "[Content_Types].xml";
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const HEADER = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Head</w:t></w:r></w:p></w:hdr>`;
+    const override = (part: string, type: string) =>
+        MINIMAL_PARTS[CT]!.replace("</Types>", `<Override PartName="/${part}" ContentType="${type}"/></Types>`);
+
+    const customXmlAt = (target: string) => ({
+        ...withRelationship(`<Relationship Id="rIdX" Type="${CUSTOM_XML}" Target="${target}"/>`),
+        "customXml/item1.xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<root xmlns="urn:s71"/>`,
+    });
+    const stylesAt = (target: string) => ({
+        ...MINIMAL_PARTS,
+        [SIDECAR]: MINIMAL_PARTS[SIDECAR]!.replace('Target="styles.xml"', `Target="${target}"`),
+    });
+    const headerAt = (target: string, used: boolean) => ({
+        ...withRelationship(`<Relationship Id="rIdH" Type="${RELATIONSHIPS}/header" Target="${target}"/>`),
+        ...(used
+            ? {
+                  "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+                      `xmlns:w="${W}"`,
+                      `xmlns:w="${W}" xmlns:r="${RELATIONSHIPS}"`,
+                  ).replace("<w:sectPr>", '<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>'),
+              }
+            : {}),
+        "word/header1.xml": HEADER,
+        [CT]: override("word/header1.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"),
+    });
+    const imageAt = (target: string) => ({
+        ...withRelationship(`<Relationship Id="rIdI" Type="${IMAGE}" Target="${target}"/>`),
+        "word/media/image1.png": PNG,
+        [CT]: MINIMAL_PARTS[CT]!.replace("</Types>", '<Default Extension="png" ContentType="image/png"/></Types>'),
+    });
+    const coreAt = (target: string) => ({
+        ...MINIMAL_PARTS,
+        "_rels/.rels": MINIMAL_PARTS["_rels/.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdC" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="${target}"/></Relationships>`,
+        ),
+        "docProps/core.xml":
+            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+            `<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" ` +
+            `xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>S72</dc:title></cp:coreProperties>`,
+        [CT]: override("docProps/core.xml", "application/vnd.openxmlformats-package.core-properties+xml"),
+    });
+
+    it.each([
+        ["s71a customXml", SIDECAR, customXmlAt("../customXml/item1.xml/.")],
+        ["s71a customXml", SIDECAR, customXmlAt("../customXml/item1.xml/x/..")],
+        ["s71b styles", SIDECAR, stylesAt("styles.xml/.")],
+        ["s71b used header", SIDECAR, headerAt("header1.xml/.", true)],
+        ["s72a unused image", SIDECAR, imageAt("media/image1.png/.")],
+        ["s72a unused image", SIDECAR, imageAt(".")],
+        ["s72a unused header", SIDECAR, headerAt("header1.xml/.", false)],
+        ["s72b core properties", "_rels/.rels", coreAt("docProps/core.xml/.")],
+        ["s72b styles", SIDECAR, stylesAt("styles.xml/")],
+    ])("blocks the %s row's folder target, as Word refused it", async (_row, relsPart, parts) => {
+        const { valid, broken } = await run(parts, "word-valid");
+        expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([[relsPart, "error"]]);
+        expect(valid).toBe(false);
+    });
+
+    it.each([
+        ["s71a customXml", customXmlAt("../customXml/item1.xml")],
+        ["s71b styles", stylesAt("styles.xml")],
+        ["s71b used header", headerAt("header1.xml", true)],
+        ["s72a unused image", imageAt("media/image1.png")],
+        ["s72a unused header", headerAt("header1.xml", false)],
+        ["s72b core properties", coreAt("docProps/core.xml")],
+    ])("accepts the %s calibration, which Word opened clean", async (_row, parts) => {
+        const { valid, broken } = await run(parts, "word-valid");
+        expect(broken).toEqual([]);
         expect(valid).toBe(true);
     });
 });

@@ -308,6 +308,29 @@ export const relationshipTargetPartName = (baseDir: string, target: string, clam
 };
 
 /**
+ * The folder one relationship target names, resolved against `baseDir` as
+ * {@link relationshipTargetPartName} resolves it with its `..` segments
+ * stopped at the package root: the package-relative folder with its final
+ * `/` (`word/styles.xml/` for `styles.xml/.`, `styles.xml/x/..` or
+ * `styles.xml/`, `word/` for `.`), or `/` for the package root; `undefined`
+ * when the target names a part, or nothing at all (a URI scheme, an empty
+ * reference). Word refused every such target it was shown, beside the
+ * stored part its path spells, whatever the relationship type and whether
+ * anything used it (sessions 70, 71 and 72; #962, #975).
+ */
+export const relationshipTargetFolder = (baseDir: string, target: string): string | undefined => {
+    const reference = relationshipTargetPartName(baseDir, target, true);
+    if (reference === undefined) {
+        return undefined;
+    }
+    const belowRoot = reference.replace(/^\//, "");
+    if (belowRoot === "" || belowRoot === ".") {
+        return "/";
+    }
+    return belowRoot.endsWith("/") ? belowRoot : undefined;
+};
+
+/**
  * Resolve one relationship target against the folder of its source part, as
  * the rest of the codebase does (`\` reads as `/`, a query or fragment is
  * dropped, dot segments resolve, a package-absolute target's below its

@@ -299,6 +299,18 @@ the package root), and opened clean an absent image spelled `media/_rels/x.png`,
 `notes.rels` or `word/../customXml/x.png` and a reached glossary's absent
 `../customXml/item1.xml` (Word probes session 54, `s54a`/`s54b`;
 [#734](https://github.com/jandira-tech/docx-validate/issues/734)).
+An internal target naming a folder is broken under every profile, and blocks
+Word-valid whatever the relationship type: a final `.` or `..` segment or a
+trailing `/` leaves a folder, as RFC 3986 resolves it (`styles.xml/.`,
+`styles.xml/x/..` and `styles.xml/` name `word/styles.xml/`, `.` names `word/`),
+and so does a target reaching the package root. The walks behind `rels-broken`
+and `rels-target-missing` resolved a file-system path, which drops the final `/`,
+so they found the stored part the path spells. Word 16.115 offered recovery for
+such a target beside that stored part for every relationship type it was shown,
+`officeDocument`, `footnotes`, `customXml`, `styles`, a used and an unused
+`header`, an unused `image` and the core properties, and opened each plain target
+clean (Word probes sessions 70, 71 and 72;
+[#975](https://github.com/jandira-tech/docx-validate/issues/975)).
 
 The processed view is DOCX/DOCM-only: every observation behind it is Word
 opening `.docx` files, and PowerPoint was never shown markup compatibility in a
