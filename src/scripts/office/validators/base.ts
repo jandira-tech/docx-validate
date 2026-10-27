@@ -1726,7 +1726,7 @@ export class BaseSchemaValidator {
             }
             if (!(await countEligible(xmlFile))) continue;
 
-            const outcome = await this.validateFileAgainstXsd(xmlFile);
+            const outcome = await this._validateFileAgainstXsdInWalk(xmlFile);
             issues.push(...(outcome.issues ?? []));
             const rel = this.relPath(xmlFile);
             this.xsdWalk.parts.push(rel);
@@ -1785,10 +1785,11 @@ export class BaseSchemaValidator {
 
     /**
      * The root element's identity of `xmlFile`, read once per file in each
-     * schema walk (#902): `null` when the part cannot be read or parsed, or
-     * its root is not namespaced,
-     * exactly as the Strict sniffing read it before #887 shared the answer
-     * with the `ppt/` root route.
+     * schema walk (#902) and re-read by every direct
+     * `validateFileAgainstXsd` call, which drops the file's memo entry
+     * first (#910): `null` when the part cannot be read or parsed, or its
+     * root is not namespaced, exactly as the Strict sniffing read it before
+     * #887 shared the answer with the `ppt/` root route.
      */
     private rootQName(xmlFile: string): RootQName | null {
         const cached = this.rootQNames.get(xmlFile);
@@ -1805,7 +1806,26 @@ export class BaseSchemaValidator {
         return root;
     }
 
+    /**
+     * Validate one part against the schema the routing picks for it. The
+     * walk sends its parts through {@link _validateFileAgainstXsdInWalk},
+     * which shares the walk's root memo; this public entry drops
+     * `xmlFile`'s memo entry first, so a part rewritten between two direct
+     * calls is routed by the root it holds at this call, as a reused walk
+     * routes it by its new root (#910).
+     */
     async validateFileAgainstXsd(xmlFile: string): Promise<XsdValidationOutcome> {
+        this.rootQNames.delete(xmlFile);
+        return this._validateFileAgainstXsdInWalk(xmlFile);
+    }
+
+    /**
+     * The walk's own route through the single-file pipeline: it keeps the
+     * walk's root memo, so each part's root is still read once per walk
+     * (#902). Direct callers reach it through `validateFileAgainstXsd`,
+     * which re-reads the root (#910).
+     */
+    protected async _validateFileAgainstXsdInWalk(xmlFile: string): Promise<XsdValidationOutcome> {
         const single = await this._validateSingleFileXsd(xmlFile);
         if (single.valid === null) {
             return { valid: null, errors: new Set() };
@@ -2311,7 +2331,8 @@ export class BaseSchemaValidator {
      * Per-file memo of the root element's namespace and local name — root
      * sniffing would otherwise re-read each part for eligibility, schema
      * dispatch, preprocessing, and the `ppt/` root route (#887). Cleared at
-     * the start of every XSD walk (#902).
+     * the start of every XSD walk (#902); a direct `validateFileAgainstXsd`
+     * call drops one file's entry so that call reads its root again (#910).
      */
     private readonly rootQNames = new Map<string, RootQName | null>();
     /** See {@link isMainDocumentPart}; reset at the start of every XSD walk (#657) and when a repair deletes files. */

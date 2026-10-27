@@ -40,11 +40,12 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
 import { RunDeadline } from "../src/lib/run-deadline";
 import type { Profile } from "../src/lib/types";
+import * as xmlHelpers from "../src/lib/xml-helpers";
 import { schemaGlobals } from "../src/scripts/office/schema-globals";
 import { validate } from "../src/scripts/office/validate";
 import { BaseSchemaValidator, defaultSchemasDir } from "../src/scripts/office/validators/base";
@@ -865,6 +866,90 @@ describe("schema routing of the parts directly in ppt/ by their root (#887)", { 
                 ),
             ).toBe(true);
             expect(validator.xsdWalk.parts).toContain("ppt/extra.xml");
+        });
+    });
+
+    // A reused validator routes each direct validateFileAgainstXsd call by
+    // the root the part holds at that call too: the public method drops the
+    // file's root memo entry before it validates, as a walk clears the memo
+    // wholesale, so a part rewritten between two direct calls is not routed
+    // by the root the first call read (#910).
+    it("routes a part rewritten between two direct validateFileAgainstXsd calls by its new root (#910)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PPTX_PARTS,
+                "ppt/extra.xml": `${HEAD}<p:unknown xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>`,
+            };
+            for (const [part, xml] of Object.entries(parts)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const validator = new PPTXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+            const extra = path.join(dir, "ppt/extra.xml");
+            expect((await validator.validateFileAgainstXsd(extra)).valid).toBe(null);
+
+            await fs.writeFile(extra, withBogusDefect(MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!), "utf-8");
+            const second = await validator.validateFileAgainstXsd(extra);
+            expect(second.valid).toBe(false);
+            expect([...second.errors].some((error) => error.includes("bogusDefect"))).toBe(true);
+        });
+    });
+
+    it("routes a part rewritten from a slide to an unknown root between two direct calls by its new root (#910)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PPTX_PARTS,
+                "ppt/extra.xml": withBogusDefect(MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!),
+            };
+            for (const [part, xml] of Object.entries(parts)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const validator = new PPTXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+            const extra = path.join(dir, "ppt/extra.xml");
+            const first = await validator.validateFileAgainstXsd(extra);
+            expect(first.valid).toBe(false);
+            expect([...first.errors].some((error) => error.includes("bogusDefect"))).toBe(true);
+
+            await fs.writeFile(extra, `${HEAD}<p:unknown xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>`, "utf-8");
+            expect((await validator.validateFileAgainstXsd(extra)).valid).toBe(null);
+        });
+    });
+
+    // The walk still reads each part's root once: its route through the
+    // shared memo must not become the public method, whose per-call drop
+    // would re-read every part's root mid-walk. The `node:fs` namespace
+    // cannot be spied on, so count the parses of one marked part's bytes
+    // instead: a mapped part is parsed once for its root (`rootQName`) and
+    // once for XSD preprocessing, so two parses over one walk pin the root
+    // read at one, and two more for a direct call after the walk show the
+    // call read the root again instead of taking the walk's (#910).
+    it("reads a walked part's root once per walk while direct calls re-read it (#910)", async () => {
+        await withTempDir(async (dir) => {
+            const marker = "read-once-marker";
+            const parts = {
+                ...MINIMAL_PPTX_PARTS,
+                "ppt/extra.xml": MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!.replace('name=""', `name="${marker}"`),
+            };
+            for (const [part, xml] of Object.entries(parts)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const spy = vi.spyOn(xmlHelpers, "parseXml");
+            const markedParses = () => spy.mock.calls.filter((call) => String(call[0]).includes(marker)).length;
+            try {
+                const validator = new PPTXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+                const result = await validator.validateAgainstXsd();
+                expect(result.valid).toBe(true);
+                expect(validator.xsdWalk.parts).toContain("ppt/extra.xml");
+                expect(markedParses()).toBe(2);
+
+                const direct = await validator.validateFileAgainstXsd(path.join(dir, "ppt/extra.xml"));
+                expect(direct.valid).toBe(true);
+                expect(markedParses()).toBe(4);
+            } finally {
+                spy.mockRestore();
+            }
         });
     });
 });
