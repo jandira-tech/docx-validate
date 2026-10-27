@@ -558,3 +558,178 @@ describe("markup compatibility judging of OPC-equivalent word/*.xml part names (
         });
     }
 });
+
+/**
+ * #851: Word 16.115 offered recovery for character data directly inside an
+ * `mc:AlternateContent` — before the Choice, between the Choice and the
+ * Fallback (session 65, s65c, two runs, all four readings agreeing), after
+ * the Fallback, after a Choice with no Fallback, and between two Choices
+ * (session 67, s67b, likewise) — in a used `word/comments.xml` typed
+ * comments whose stored root is the AlternateContent, and in a run-level
+ * body AlternateContent (session 67, s67b). The same roots open clean with
+ * the text inside the Choice or the Fallback (session 65, s65b), with
+ * whitespace only between the branches, and without the text (session 67,
+ * s67b), so the rule is non-whitespace character data anywhere directly
+ * inside the element: whitespace is note 8's `[ \t\n\r]`, which
+ * pretty-printed parts carry. `mce/mc.xsd` declares none of
+ * AlternateContent, Choice and Fallback mixed, so the schema view forbids
+ * all three positions alike and cannot draw Word's line. AlternateContent
+ * in parts other than the main document and comments, and in relationships
+ * parts, is unprobed.
+ */
+describe("character data directly inside AlternateContent (#851, sessions 65 and 67)", () => {
+    const COMMENTS_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml";
+    const COMMENT = `<w:comment w:id="0" w:author="a"><w:p><w:r><w:t>Text</w:t></w:r></w:p></w:comment>`;
+    const CHOICE = `<mc:Choice Requires="w14"><w:comments xmlns:w="${NS.W}">${COMMENT}</w:comments></mc:Choice>`;
+    const UNKNOWN_CHOICE = `<mc:Choice Requires="u"><w:comments xmlns:w="${NS.W}">${COMMENT}</w:comments></mc:Choice>`;
+    const FALLBACK = "<mc:Fallback/>";
+    const COMMENT_REF = `<w:r><w:commentReference w:id="0"/></w:r>`;
+    /** A used `word/comments.xml` typed comments whose stored root is an AlternateContent holding `inner`; the body references comment 0. */
+    const commentsAlternate = (inner: string): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+            `xmlns:w="${NS.W}"`,
+            `xmlns:w="${NS.W}" xmlns:r="${NS.R}"`,
+        ).replace("</w:r></w:p>", `</w:r>${COMMENT_REF}</w:p>`),
+        "word/comments.xml":
+            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+            `<mc:AlternateContent xmlns:mc="${NS.MC}" xmlns:w14="${NS.W14}" xmlns:u="urn:example:unknown">${inner}</mc:AlternateContent>`,
+        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdC" Type="${NS.R}/comments" Target="comments.xml"/></Relationships>`,
+        ),
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"].replace(
+            "</Types>",
+            `<Override PartName="/word/comments.xml" ContentType="${COMMENTS_TYPE}"/></Types>`,
+        ),
+    });
+    /** The main document's paragraph holding a run-level AlternateContent with `between` between its Choice run and its Fallback run. */
+    const bodyAlternate = (between: string): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+            "</w:r></w:p>",
+            `</w:r><mc:AlternateContent><mc:Choice Requires="w14"><w:r><w:t>Chosen</w:t></w:r></mc:Choice>${between}` +
+                `<mc:Fallback><w:r><w:t>Fallback</w:t></w:r></mc:Fallback></mc:AlternateContent></w:p>`,
+        ),
+    });
+    // Every position the sessions showed Word refusing, in the comments
+    // part's stored root: sessions 65 (s65c) and 67 (s67b).
+    const refused = [
+        ["text before the Choice", `Stray${CHOICE}${FALLBACK}`],
+        ["text between the Choice and the Fallback", `${CHOICE}Stray${FALLBACK}`],
+        ["text after the Fallback", `${CHOICE}${FALLBACK}Stray`],
+        ["text after a Choice with no Fallback", `${CHOICE}Stray`],
+        ["text between two Choices", `${CHOICE}Stray${UNKNOWN_CHOICE}${FALLBACK}`],
+    ] as const;
+    // The calibrations the same sessions opened clean: the text inside a
+    // branch (session 65, s65b), whitespace only between the branches, and
+    // the same roots without any text (session 67, s67b).
+    const calibrations = [
+        ["text inside the Choice before the root", CHOICE.replace("<w:comments", "Stray<w:comments") + FALLBACK],
+        ["text inside the Fallback", `${CHOICE}<mc:Fallback>Stray</mc:Fallback>`],
+        ["whitespace only between the branches", `${CHOICE}\n  ${FALLBACK}`],
+        ["a Choice with no Fallback and no text", CHOICE],
+        ["two Choices and no text", `${CHOICE}${UNKNOWN_CHOICE}${FALLBACK}`],
+    ] as const;
+
+    it.each(refused)(
+        "rejects a used comments part whose root AlternateContent holds %s",
+        async (_shape, inner) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                const bytes = await buildDocx(commentsAlternate(inner));
+                await writeFile(file, bytes);
+
+                const wordValid = await validate(file, { profile: "word-valid" });
+                expect(wordValid.issues.filter((issue) => issue.code === "mce-malformed")).toEqual([
+                    expect.objectContaining({ code: "mce-malformed", severity: "error", path: "word/comments.xml" }),
+                ]);
+                expect(wordValid.valid).toBe(false);
+
+                // Quick and named runs report the full run's finding (#381).
+                for (const selection of [{ quick: true }, { checks: [CODE] }]) {
+                    const partial = await validate(file, { profile: "word-valid", ...selection });
+                    expect.soft(partial.valid, JSON.stringify(selection)).toBe(false);
+                    expect.soft(mce(partial.issues), JSON.stringify(selection)).toEqual(mce(wordValid.issues));
+                    expect
+                        .soft(
+                            [...errors(partial.issues)].filter((pair) => !errors(wordValid.issues).has(pair)),
+                            JSON.stringify(selection),
+                        )
+                        .toEqual([]);
+                }
+
+                // Strict keeps its schema-view findings beside the new one: its
+                // compatibility view does not understand w14, so the empty or
+                // absent Fallback leaves the root unwrapping to no element.
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.valid).toBe(false);
+                expect(strict.issues.filter((issue) => issue.code === "mce-malformed")).toContainEqual(
+                    expect.objectContaining({ severity: "error", path: "word/comments.xml" }),
+                );
+                expect(await readFile(file)).toEqual(bytes);
+            });
+        },
+        60_000,
+    );
+
+    it.each(calibrations)(
+        "keeps the used comments part clean with %s",
+        async (_shape, inner) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                await writeFile(file, await buildDocx(commentsAlternate(inner)));
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.issues.filter((issue) => issue.code === "mce-malformed")).toEqual([]);
+                expect(result.valid).toBe(true);
+            });
+        },
+        60_000,
+    );
+
+    it("rejects a body run-level AlternateContent holding text between its Choice and its Fallback (session 67 s67b)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            const bytes = await buildDocx(bodyAlternate("Stray"));
+            await writeFile(file, bytes);
+
+            const wordValid = await validate(file, { profile: "word-valid" });
+            expect(wordValid.issues.filter((issue) => issue.code === "mce-malformed")).toEqual([
+                expect.objectContaining({ code: "mce-malformed", severity: "error", path: "word/document.xml" }),
+            ]);
+            expect(wordValid.valid).toBe(false);
+
+            for (const selection of [{ quick: true }, { checks: [CODE] }]) {
+                const partial = await validate(file, { profile: "word-valid", ...selection });
+                expect.soft(partial.valid, JSON.stringify(selection)).toBe(false);
+                expect.soft(mce(partial.issues), JSON.stringify(selection)).toEqual(mce(wordValid.issues));
+                expect
+                    .soft(
+                        [...errors(partial.issues)].filter((pair) => !errors(wordValid.issues).has(pair)),
+                        JSON.stringify(selection),
+                    )
+                    .toEqual([]);
+            }
+
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.issues.filter((issue) => issue.code === "mce-malformed")).toEqual([
+                expect.objectContaining({ severity: "error", path: "word/document.xml" }),
+            ]);
+            expect(strict.valid).toBe(false);
+            expect(await readFile(file)).toEqual(bytes);
+        });
+    }, 60_000);
+
+    it("keeps the body calibration without the text clean (session 67 s67b)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            await writeFile(file, await buildDocx(bodyAlternate("")));
+            const wordValid = await validate(file, { profile: "word-valid" });
+            expect(wordValid.issues.filter((issue) => issue.code === "mce-malformed")).toEqual([]);
+            expect(wordValid.valid).toBe(true);
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.issues.filter((issue) => issue.code === "mce-malformed")).toEqual([]);
+            expect(strict.valid).toBe(true);
+        });
+    }, 60_000);
+});
