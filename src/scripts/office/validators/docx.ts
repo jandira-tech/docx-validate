@@ -2883,6 +2883,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      *          orphaned — surfaced by `validateCommentThreading`'s
      *          `comment-thread-durableid-orphan` check.
      *
+     * The map is keyed by the upper-cased value: both attributes are
+     * `xsd:hexBinary`, whose value ignores the case of its hex letters, so
+     * `ffffffff` in one part and `FFFFFFFF` in the other name one id and get
+     * one new value (#904).
+     *
      * `numbering.xml` is unchanged by the remap: its decimal durableIds
      * are self-contained (no part references them), so each keeps its own
      * per-element renumbering, independent of the preflight below.
@@ -2910,7 +2915,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         if (durableId) {
                             usedDurableIds.add(durableId.toUpperCase());
                             const v = parseIdValue(durableId, 16);
-                            if (Number.isNaN(v) || v >= MAX_DURABLE_ID) overCapIds.add(durableId);
+                            if (Number.isNaN(v) || v >= MAX_DURABLE_ID) overCapIds.add(durableId.toUpperCase());
                         }
                     }
                     if (base === "commentsExtensible.xml") {
@@ -2953,9 +2958,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     const elem = all[i];
                     if (!elem) continue;
                     const w16cid = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
-                    if (w16cid && base !== "numbering.xml" && remap.has(w16cid)) wouldWrite = true;
+                    if (w16cid && base !== "numbering.xml" && remap.has(w16cid.toUpperCase())) wouldWrite = true;
                     const w16cex = elem.getAttributeNS(W16CEX_NAMESPACE, "durableId");
-                    if (w16cex && remap.has(w16cex)) wouldWrite = true;
+                    if (w16cex && remap.has(w16cex.toUpperCase())) wouldWrite = true;
                     if (wouldWrite) break;
                 }
                 if (!wouldWrite) continue;
@@ -2988,16 +2993,16 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                             partRepairs += 1;
                             modified = true;
                         }
-                    } else if (cidDurableId && !hexRefused && remap.has(cidDurableId)) {
+                    } else if (cidDurableId && !hexRefused && remap.has(cidDurableId.toUpperCase())) {
                         // setAttributeNS keeps the prefix binding intact.
-                        elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", remap.get(cidDurableId)!);
+                        elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", remap.get(cidDurableId.toUpperCase())!);
                         partRepairs += 1;
                         modified = true;
                     }
                     const cexDurableId = elem.getAttributeNS(W16CEX_NAMESPACE, "durableId");
-                    if (cexDurableId && !hexRefused && remap.has(cexDurableId)) {
+                    if (cexDurableId && !hexRefused && remap.has(cexDurableId.toUpperCase())) {
                         // setAttributeNS keeps the prefix binding intact.
-                        elem.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", remap.get(cexDurableId)!);
+                        elem.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", remap.get(cexDurableId.toUpperCase())!);
                         partRepairs += 1;
                         modified = true;
                     }

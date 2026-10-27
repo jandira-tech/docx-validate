@@ -888,6 +888,109 @@ describe("DOCXSchemaValidator", () => {
             });
         });
 
+        // xsd:hexBinary values ignore the case of their hex letters, so the
+        // remap pairs the two parts' spellings of one value (#904).
+        it.each([
+            ["repairDurableId", "lower", "upper"],
+            ["repairDurableId", "upper", "lower"],
+            ["repair", "lower", "upper"],
+            ["repair", "upper", "lower"],
+        ] as const)(
+            "pairs over-cap durableIds the two parts spell in different case, through %s() (commentsIds %s case, commentsExtensible %s; #904)",
+            async (method, idsCase, cexCase) => {
+                const spell = (value: string, letters: "lower" | "upper") => (letters === "lower" ? value.toLowerCase() : value);
+                await withTempDir(async (dir) => {
+                    const idsPath = path.join(dir, "word", "commentsIds.xml");
+                    const cexPath = path.join(dir, "word", "commentsExtensible.xml");
+                    await writeFile(
+                        path.join(dir, "word", "document.xml"),
+                        wrapDocument(
+                            `<w:p><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/>` +
+                                `<w:r><w:commentReference w:id="0"/></w:r></w:p>` +
+                                `<w:p><w:commentRangeStart w:id="1"/>x<w:commentRangeEnd w:id="1"/>` +
+                                `<w:r><w:commentReference w:id="1"/></w:r></w:p>`,
+                        ),
+                    );
+                    await writeFile(
+                        path.join(dir, "word", "comments.xml"),
+                        `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                            `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                            `<w:p w14:paraId="10000000"/></w:comment>` +
+                            `<w:comment w:id="1" w:author="B" w:date="2026-01-01T00:00:00Z" w:initials="B">` +
+                            `<w:p w14:paraId="10000001"/></w:comment></w:comments>`,
+                    );
+                    await writeFile(
+                        idsPath,
+                        `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                            `<w16cid:commentId w16cid:paraId="10000000" w16cid:durableId="${spell("FFFFFFFF", idsCase)}"/>` +
+                            `<w16cid:commentId w16cid:paraId="10000001" w16cid:durableId="${spell("FFFFFFFE", idsCase)}"/>` +
+                            `</w16cid:commentsIds>`,
+                    );
+                    await writeFile(
+                        cexPath,
+                        `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                            `<w16cex:commentExtensible w16cex:durableId="${spell("FFFFFFFF", cexCase)}" w16cex:dateUtc="2026-01-01T00:00:00Z"/>` +
+                            `<w16cex:commentExtensible w16cex:durableId="${spell("FFFFFFFE", cexCase)}" w16cex:dateUtc="2026-01-01T00:00:00Z"/>` +
+                            `</w16cex:commentsExtensible>`,
+                    );
+                    const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                    if (method === "repairDurableId") {
+                        expect(await v.repairDurableId()).toBe(4);
+                    } else {
+                        await v.repair();
+                    }
+
+                    const newIds = [...(await fs.readFile(idsPath, "utf-8")).matchAll(/w16cid:durableId="([^"]+)"/g)].map((m) => m[1]);
+                    const newCex = [...(await fs.readFile(cexPath, "utf-8")).matchAll(/w16cex:durableId="([^"]+)"/g)].map((m) => m[1]);
+                    expect(newIds).toHaveLength(2);
+                    expect(new Set(newIds).size).toBe(2);
+                    for (const id of newIds) {
+                        expect(parseInt(id!, 16)).toBeLessThan(0x7fffffff);
+                    }
+                    expect(newCex).toEqual(newIds);
+                    const threadCheck = await v.validateCommentThreading();
+                    expect(threadCheck.issues.filter((i) => i.code === "comment-thread-durableid-orphan")).toEqual([]);
+                });
+            },
+        );
+
+        it.each(["commentsIds.xml", "commentsExtensible.xml"] as const)(
+            "refuses the remap when %s, spelling the ids in lower case, cannot be decoded (#889, #904)",
+            async (undecodable) => {
+                await withTempDir(async (dir) => {
+                    const lower = (part: string, xml: string) =>
+                        part === undecodable ? declaring(xml.replace('durableId="FFFFFFFF"', 'durableId="ffffffff"'), "macintosh") : xml;
+                    const idsPath = path.join(dir, "word", "commentsIds.xml");
+                    const cexPath = path.join(dir, "word", "commentsExtensible.xml");
+                    await writeFile(
+                        idsPath,
+                        lower(
+                            "commentsIds.xml",
+                            `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                                `<w16cid:commentId w16cid:paraId="10000000" w16cid:durableId="FFFFFFFF"/>` +
+                                `</w16cid:commentsIds>`,
+                        ),
+                    );
+                    await writeFile(
+                        cexPath,
+                        lower(
+                            "commentsExtensible.xml",
+                            `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                                `<w16cex:commentExtensible w16cex:durableId="FFFFFFFF" w16cex:dateUtc="2026-01-01T00:00:00Z"/>` +
+                                `</w16cex:commentsExtensible>`,
+                        ),
+                    );
+                    const idsBefore = await fs.readFile(idsPath, "utf-8");
+                    const cexBefore = await fs.readFile(cexPath, "utf-8");
+                    expect(idsBefore + cexBefore).toContain('durableId="ffffffff"');
+                    const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                    expect(await v.repairDurableId()).toBe(0);
+                    expect(await fs.readFile(idsPath, "utf-8")).toBe(idsBefore);
+                    expect(await fs.readFile(cexPath, "utf-8")).toBe(cexBefore);
+                });
+            },
+        );
+
         it("writes no part of the durableId remap when commentsExtensible.xml's encoding writeXmlPart refuses (#889)", async () => {
             await withTempDir(async (dir) => {
                 const idsPath = path.join(dir, "word", "commentsIds.xml");
