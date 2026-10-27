@@ -24022,3 +24022,481 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
 `````
 
 </details>
+
+### Session 70: 21:41Z–21:47Z on 2026-10-27, validator columns at f2fe8fe3
+
+The open question of [#962](https://github.com/jandira-tech/docx-validate/issues/962): how Word resolves a relationship target with an empty segment or a final dot segment. At this revision `relationshipTargetPartName` resolved a target as `path.posix.join` does, which collapses an empty segment and drops the final `/` that RFC 3986's remove_dot_segments leaves after a final `.` or `..` segment, so `word/main.xml/.` and `word/main.xml/x/..` named `word/main.xml`. Three chunks: s70a asks with the `officeDocument` target of a main document stored as `word/main.xml`, s70b with a `footnotes` target whose note 1 the body references (a note no part defines dangles, and Word offers recovery for it, session 61), and s70c, added after the first two ran, with the other spellings whose RFC 3986 path ends in `/`. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 18 of 18 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d`).
+
+The driver opens files in name order, and the control names sort last, so in every run both minimal controls opened after every specimen, and clean. Each run also opened a row clean after its refused rows: s70a's calibration opened 5th, after the refused 2nd and 4th; s70b's opened 3rd, after the refused 2nd; and s70c's inner-dot calibration opened 2nd, between the refused 1st and 3rd. Every clean row's PDF holds the text the specimen stores: `Hello` for the main document, and `Hello1 Note` (footnote 1) for the notes rows (`pdftotext`, both runs).
+
+- **An empty segment collapses.** `word//main.xml`, the package-absolute `/word//main.xml`, and the footnotes target `notes//footnotes.xml` open clean, with the main document and the note rendered, as the plain calibrations do: Word reads the part through the target, as `path.posix.join` collapses it, where RFC 3986 would keep the empty segment.
+- **An inner `.` resolves.** `word/./main.xml` opens clean with the main document rendered.
+- **A final `.` or `..` segment leaves a folder.** `word/main.xml/.`, `/word/main.xml/.`, `word/main.xml/x/..`, and the footnotes targets `notes/footnotes.xml/.` and `notes/footnotes.xml/x/..` get the recovery offer, as `word/main.xml/` with its trailing `/` does: the RFC 3986 path names a folder, and Word reads no part through it. Word-valid at f2fe8fe3 accepts the five final-segment rows, five false negatives from the dropped `/`, and rejects `word/main.xml/` with `word-main-document-part`.
+
+Word resolves a target's dot segments as RFC 3986 does, but collapses an empty segment. Word-valid at f2fe8fe3 matches Word on 13 of 18 rows.
+
+| Run    | Observed             | Specimen                      | Shape                                                                                                                                                                                                                          | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at f2fe8fe3             | strict at f2fe8fe3                 |
+| ------ | -------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ | -------------- | -------------- | -------------------------- | ---------------------------------- | ---------------------------------- |
+| `s70a` | 21:41:38Z, 21:42:18Z | `s70a-control-minimal`        | control                                                                                                                                                                                                                        | `4ed2cced72e9be03` | clean-open     | clean-open     | clean-open                 | valid                              | valid                              |
+| `s70a` | 21:41:38Z, 21:42:18Z | `main-plain-calibration`      | calibration: the main document stored as word/main.xml, named by the officeDocument target word/main.xml                                                                                                                       | `a20a583eaf725368` | clean-open     | clean-open     | clean-open                 | valid                              | valid                              |
+| `s70a` | 21:41:38Z, 21:42:18Z | `main-empty-segment`          | #962: the same, named by word//main.xml (path.posix.join: word/main.xml; RFC 3986: word//main.xml, no part)                                                                                                                    | `fe92e6c3c1634645` | clean-open     | clean-open     | clean-open                 | valid                              | valid                              |
+| `s70a` | 21:41:38Z, 21:42:18Z | `main-absolute-empty-segment` | #962: the same, named by /word//main.xml                                                                                                                                                                                       | `5d37437c0f5a4b98` | clean-open     | clean-open     | clean-open                 | valid                              | valid                              |
+| `s70a` | 21:41:38Z, 21:42:18Z | `main-final-dot`              | #962: the same, named by word/main.xml/. (path.posix.join: word/main.xml; RFC 3986: word/main.xml/, no part)                                                                                                                   | `ec57d5b793fed074` | repair-warning | repair-warning | unreadable-content-warning | valid                              | valid                              |
+| `s70a` | 21:41:38Z, 21:42:18Z | `main-absolute-final-dot`     | #962: the same, named by /word/main.xml/.                                                                                                                                                                                      | `1f7f7310d0cec797` | repair-warning | repair-warning | unreadable-content-warning | valid                              | valid                              |
+| `s70a` | 21:41:38Z, 21:42:18Z | `s70a-control-minimal-end`    | control                                                                                                                                                                                                                        | `d976a5fd7d21ed45` | clean-open     | clean-open     | clean-open                 | valid                              | valid                              |
+| `s70b` | 21:42:42Z, 21:43:12Z | `s70b-control-minimal`        | control                                                                                                                                                                                                                        | `11d2c4d88cb95839` | clean-open     | clean-open     | clean-open                 | valid                              | valid                              |
+| `s70b` | 21:42:42Z, 21:43:12Z | `notes-plain-calibration`     | calibration: footnote 1 in word/notes/footnotes.xml, named by the footnotes target notes/footnotes.xml; the body references footnote 1                                                                                         | `0c91ac1aeb311d88` | clean-open     | clean-open     | clean-open                 | valid                              | invalid: `paraid-missing-element`  |
+| `s70b` | 21:42:42Z, 21:43:12Z | `notes-empty-segment`         | #962: the same, named by notes//footnotes.xml (path.posix.join: word/notes/footnotes.xml; RFC 3986: word/notes//footnotes.xml, no part)                                                                                        | `3fd4940badb95206` | clean-open     | clean-open     | clean-open                 | valid                              | invalid: `paraid-missing-element`  |
+| `s70b` | 21:42:42Z, 21:43:12Z | `notes-final-dot`             | #962: the same, named by notes/footnotes.xml/. (path.posix.join: word/notes/footnotes.xml; RFC 3986: word/notes/footnotes.xml/, no part)                                                                                       | `def0f7037758ef92` | repair-warning | repair-warning | unreadable-content-warning | valid                              | invalid: `paraid-missing-element`  |
+| `s70b` | 21:42:42Z, 21:43:12Z | `s70b-control-minimal-end`    | control                                                                                                                                                                                                                        | `6f04caac7c88ea17` | clean-open     | clean-open     | clean-open                 | valid                              | valid                              |
+| `s70c` | 21:46:21Z, 21:47:55Z | `s70c-control-minimal`        | control                                                                                                                                                                                                                        | `e4177e9d37d0ca03` | clean-open     | clean-open     | clean-open                 | valid                              | valid                              |
+| `s70c` | 21:46:21Z, 21:47:55Z | `main-inner-dot-calibration`  | calibration: the main document stored as word/main.xml, named by word/./main.xml (path.posix.join and RFC 3986 alike: word/main.xml)                                                                                           | `77d3ecbc531009be` | clean-open     | clean-open     | clean-open                 | valid                              | valid                              |
+| `s70c` | 21:46:21Z, 21:47:55Z | `main-final-dotdot`           | #962: the same, named by word/main.xml/x/.. (path.posix.join: word/main.xml; RFC 3986: word/main.xml/, no part)                                                                                                                | `ba127588479f2d4f` | repair-warning | repair-warning | unreadable-content-warning | valid                              | valid                              |
+| `s70c` | 21:46:21Z, 21:47:55Z | `main-trailing-slash`         | #962: the same, named by word/main.xml/ (path.posix.join and RFC 3986 alike: word/main.xml/, no part)                                                                                                                          | `920fe68cfdca70a1` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-main-document-part` | invalid: `word-main-document-part` |
+| `s70c` | 21:46:21Z, 21:47:55Z | `notes-final-dotdot`          | #962: footnote 1 in word/notes/footnotes.xml, named by the footnotes target notes/footnotes.xml/x/.. (path.posix.join: word/notes/footnotes.xml; RFC 3986: word/notes/footnotes.xml/, no part); the body references footnote 1 | `c06ffe3cfb2f4c98` | repair-warning | repair-warning | unreadable-content-warning | valid                              | invalid: `paraid-missing-element`  |
+| `s70c` | 21:46:21Z, 21:47:55Z | `s70c-control-minimal-end`    | control                                                                                                                                                                                                                        | `e4177e9d37d0ca03` | clean-open     | clean-open     | clean-open                 | valid                              | valid                              |
+
+<details><summary>Raw records, session 70</summary>
+
+```jsonl
+{"run": "s70a", "pass": 1, "name": "s70a-control-minimal", "sha256": "4ed2cced72e9be03c4a8e5694e7c5c797a809322effde444ffc75b48c1a3ab31", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:41:38+00:00", "staged": "00006__wfv__s70a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s70a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70a", "pass": 2, "name": "s70a-control-minimal", "sha256": "4ed2cced72e9be03c4a8e5694e7c5c797a809322effde444ffc75b48c1a3ab31", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:42:18+00:00", "staged": "00006__wfv__s70a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s70a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70a", "pass": 1, "name": "main-plain-calibration", "sha256": "a20a583eaf725368b7d5fd0bdfd4c4658499a6023a7231b907877e3b66588f7d", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:41:38+00:00", "staged": "00004__wfv__main-plain-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-plain-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70a", "pass": 2, "name": "main-plain-calibration", "sha256": "a20a583eaf725368b7d5fd0bdfd4c4658499a6023a7231b907877e3b66588f7d", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:42:18+00:00", "staged": "00004__wfv__main-plain-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-plain-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70a", "pass": 1, "name": "main-empty-segment", "sha256": "fe92e6c3c1634645c74adb369584af00db1c51d6e61fe716c8033120d1e686d7", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:41:38+00:00", "staged": "00002__wfv__main-empty-segment.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-empty-segment_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70a", "pass": 2, "name": "main-empty-segment", "sha256": "fe92e6c3c1634645c74adb369584af00db1c51d6e61fe716c8033120d1e686d7", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:42:18+00:00", "staged": "00002__wfv__main-empty-segment.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-empty-segment_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70a", "pass": 1, "name": "main-absolute-empty-segment", "sha256": "5d37437c0f5a4b980093bfa4c76316a53d1d6c7e4d9e17a70976c84faed1f719", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:41:38+00:00", "staged": "00000__wfv__main-absolute-empty-segment.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-absolute-empty-segment_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70a", "pass": 2, "name": "main-absolute-empty-segment", "sha256": "5d37437c0f5a4b980093bfa4c76316a53d1d6c7e4d9e17a70976c84faed1f719", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:42:18+00:00", "staged": "00000__wfv__main-absolute-empty-segment.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-absolute-empty-segment_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70a", "pass": 1, "name": "main-final-dot", "sha256": "ec57d5b793fed074899dfbbfa612a106c0fcb4991e8546f4bb6843d3c0e66a1f", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:41:38+00:00", "staged": "00003__wfv__main-final-dot.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 17:41:36.402 'Word found unreadable content in 00003__wfv__main-final-dot.docx. Do you want to recover the conten … ? If you trust the source of this document, click Yes.'", "2026-10-27 17:41:36.940 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  Recovery converter. (00003__wfv__main-final-dot.docx)\""]}
+{"run": "s70a", "pass": 2, "name": "main-final-dot", "sha256": "ec57d5b793fed074899dfbbfa612a106c0fcb4991e8546f4bb6843d3c0e66a1f", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:42:18+00:00", "staged": "00003__wfv__main-final-dot.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 17:42:16.654 \"Word found unreadable content in 00003__wfv__main-final-dot.docx. Do you want to recover the conten … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s70a", "pass": 1, "name": "main-absolute-final-dot", "sha256": "1f7f7310d0cec797caa3e7da524c1aeedaeb285f6cf9eca05c367a95d8917f2a", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:41:38+00:00", "staged": "00001__wfv__main-absolute-final-dot.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 17:41:01.425 \"Word found unreadable content in 00001__wfv__main-absolute-final-dot.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s70a", "pass": 2, "name": "main-absolute-final-dot", "sha256": "1f7f7310d0cec797caa3e7da524c1aeedaeb285f6cf9eca05c367a95d8917f2a", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:42:18+00:00", "staged": "00001__wfv__main-absolute-final-dot.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 17:42:04.056 \"Word found unreadable content in 00001__wfv__main-absolute-final-dot.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s70a", "pass": 1, "name": "s70a-control-minimal-end", "sha256": "d976a5fd7d21ed458297e58fa8452e50b55d975b46c68ba51dc6575555ae8052", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:41:38+00:00", "staged": "00005__wfv__s70a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s70a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70a", "pass": 2, "name": "s70a-control-minimal-end", "sha256": "d976a5fd7d21ed458297e58fa8452e50b55d975b46c68ba51dc6575555ae8052", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:42:18+00:00", "staged": "00005__wfv__s70a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s70a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70b", "pass": 1, "name": "s70b-control-minimal", "sha256": "11d2c4d88cb95839ff38650816d33bb5e9ad14484ff834a65aa4c22153b6fc8f", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:42:42+00:00", "staged": "00004__wfv__s70b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s70b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70b", "pass": 2, "name": "s70b-control-minimal", "sha256": "11d2c4d88cb95839ff38650816d33bb5e9ad14484ff834a65aa4c22153b6fc8f", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:43:12+00:00", "staged": "00004__wfv__s70b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s70b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70b", "pass": 1, "name": "notes-plain-calibration", "sha256": "0c91ac1aeb311d88c269da9d039eab759e93019f9e7c9e104b86faeb0c117a2b", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:42:42+00:00", "staged": "00002__wfv__notes-plain-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF notes-plain-calibration_byword.pdf (14684 bytes), no dialog named the file"]}
+{"run": "s70b", "pass": 2, "name": "notes-plain-calibration", "sha256": "0c91ac1aeb311d88c269da9d039eab759e93019f9e7c9e104b86faeb0c117a2b", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:43:12+00:00", "staged": "00002__wfv__notes-plain-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF notes-plain-calibration_byword.pdf (14684 bytes), no dialog named the file"]}
+{"run": "s70b", "pass": 1, "name": "notes-empty-segment", "sha256": "3fd4940badb95206d7ea93e50a0f93bb77644ed0ac681290b0464775781aa0f5", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:42:42+00:00", "staged": "00000__wfv__notes-empty-segment.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF notes-empty-segment_byword.pdf (14684 bytes), no dialog named the file"]}
+{"run": "s70b", "pass": 2, "name": "notes-empty-segment", "sha256": "3fd4940badb95206d7ea93e50a0f93bb77644ed0ac681290b0464775781aa0f5", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:43:12+00:00", "staged": "00000__wfv__notes-empty-segment.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF notes-empty-segment_byword.pdf (14684 bytes), no dialog named the file"]}
+{"run": "s70b", "pass": 1, "name": "notes-final-dot", "sha256": "def0f7037758ef92f3f73dcceea145b06dd961b7ac5900881f5679d27652da05", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:42:42+00:00", "staged": "00001__wfv__notes-final-dot.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 17:42:41.092 \"Word found unreadable content in 00001__wfv__notes-final-dot.docx. Do you want to recover the conte … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s70b", "pass": 2, "name": "notes-final-dot", "sha256": "def0f7037758ef92f3f73dcceea145b06dd961b7ac5900881f5679d27652da05", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:43:12+00:00", "staged": "00001__wfv__notes-final-dot.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 17:43:10.794 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … ecovery converter.\\n(00001__wfv__notes-final-dot.docx)'", "2026-10-27 17:43:10.918 \"Word found unreadable content in 00001__wfv__notes-final-dot.docx. Do you want to recover the conte … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s70b", "pass": 1, "name": "s70b-control-minimal-end", "sha256": "6f04caac7c88ea17b6d75e403fac9932f9f157480bc0f22365f345a49444a5f7", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:42:42+00:00", "staged": "00003__wfv__s70b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s70b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70b", "pass": 2, "name": "s70b-control-minimal-end", "sha256": "6f04caac7c88ea17b6d75e403fac9932f9f157480bc0f22365f345a49444a5f7", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:43:12+00:00", "staged": "00003__wfv__s70b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s70b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70c", "pass": 1, "name": "s70c-control-minimal", "sha256": "e4177e9d37d0ca03cec2c19144c6e16ad2ac59606564892807a601ad6664970e", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:46:21+00:00", "staged": "00005__wfv__s70c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s70c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70c", "pass": 2, "name": "s70c-control-minimal", "sha256": "e4177e9d37d0ca03cec2c19144c6e16ad2ac59606564892807a601ad6664970e", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:47:55+00:00", "staged": "00005__wfv__s70c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s70c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70c", "pass": 1, "name": "main-inner-dot-calibration", "sha256": "77d3ecbc531009bed53ebd98430f474afaac57a5f837b108fb139b8bacb058da", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:46:21+00:00", "staged": "00001__wfv__main-inner-dot-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-inner-dot-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70c", "pass": 2, "name": "main-inner-dot-calibration", "sha256": "77d3ecbc531009bed53ebd98430f474afaac57a5f837b108fb139b8bacb058da", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:47:55+00:00", "staged": "00001__wfv__main-inner-dot-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-inner-dot-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70c", "pass": 1, "name": "main-final-dotdot", "sha256": "ba127588479f2d4fa5f2b296935d80d6c9342cd291c4e29cc1fbe29251dc4da7", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:46:21+00:00", "staged": "00000__wfv__main-final-dotdot.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 17:45:12.907 \"Word found unreadable content in 00000__wfv__main-final-dotdot.docx. Do you want to recover the con … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s70c", "pass": 2, "name": "main-final-dotdot", "sha256": "ba127588479f2d4fa5f2b296935d80d6c9342cd291c4e29cc1fbe29251dc4da7", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:47:55+00:00", "staged": "00000__wfv__main-final-dotdot.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 17:46:43.940 \"Word found unreadable content in 00000__wfv__main-final-dotdot.docx. Do you want to recover the con … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s70c", "pass": 1, "name": "main-trailing-slash", "sha256": "920fe68cfdca70a194aab2de4be0390004fb3b6b1cb441cb1b7a3b6c5dd4b83e", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:46:21+00:00", "staged": "00002__wfv__main-trailing-slash.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 17:45:29.643 \"Word found unreadable content in 00002__wfv__main-trailing-slash.docx. Do you want to recover the c … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s70c", "pass": 2, "name": "main-trailing-slash", "sha256": "920fe68cfdca70a194aab2de4be0390004fb3b6b1cb441cb1b7a3b6c5dd4b83e", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:47:55+00:00", "staged": "00002__wfv__main-trailing-slash.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 17:46:58.624 \"Word found unreadable content in 00002__wfv__main-trailing-slash.docx. Do you want to recover the c … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s70c", "pass": 1, "name": "notes-final-dotdot", "sha256": "c06ffe3cfb2f4c980f397f060905cf8e6316336786de9dc4dc87d95fce8bd47b", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:46:21+00:00", "staged": "00003__wfv__notes-final-dotdot.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 17:46:19.580 Microsoft Word, Word found unreadable content in 00003__wfv__notes-final-dotdot.docx. Do you want to … t? If you trust the source of this document, click Yes.", "2026-10-27 17:46:20.257 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … overy converter. (00003__wfv__notes-final-dotdot.docx)\""]}
+{"run": "s70c", "pass": 2, "name": "notes-final-dotdot", "sha256": "c06ffe3cfb2f4c980f397f060905cf8e6316336786de9dc4dc87d95fce8bd47b", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:47:55+00:00", "staged": "00003__wfv__notes-final-dotdot.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 17:47:54.225 'Word found unreadable content in 00003__wfv__notes-final-dotdot.docx. Do you want to recover the co … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s70c", "pass": 1, "name": "s70c-control-minimal-end", "sha256": "e4177e9d37d0ca03cec2c19144c6e16ad2ac59606564892807a601ad6664970e", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:46:21+00:00", "staged": "00004__wfv__s70c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s70c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s70c", "pass": 2, "name": "s70c-control-minimal-end", "sha256": "e4177e9d37d0ca03cec2c19144c6e16ad2ac59606564892807a601ad6664970e", "validatorRevision": "f2fe8fe3c7495bdbccb69cb6c722dc55fd4de90d", "observedAt": "2026-10-27T21:47:55+00:00", "staged": "00004__wfv__s70c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s70c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 70 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s70builder.mts`:
+
+```ts
+// Session 70 (2026-10-27): does Word collapse an empty segment and a final `/.` in a relationship target (#962)?
+// relationshipTargetPartName resolves a target with path.posix.join, which collapses `word//main.xml` to `word/main.xml`
+// and drops a final `/.`, so `word/main.xml/.` names `word/main.xml` too; RFC 3986's remove_dot_segments keeps the empty
+// segment and leaves `word/main.xml/`, which names no part. s70a asks Word with the officeDocument target of a main
+// document stored as word/main.xml (relative and package-absolute spellings), s70b with a footnotes target whose note
+// the body references: if Word reads no notes part through the target, the reference dangles and Word offers recovery
+// (session 61), so a clean open shows the target named the part.
+// Every row records the validator revision it was judged at (`validatorRevision`); the verdict helper is s67builder.mts's.
+// The builder empties the chunk's specimens.jsonl once before its row loop (promised on #825).
+// Run from a worktree root: CHUNK=s70a pnpm exec node --import tsx <this file>
+// (the imports are absolute, so the file needs no copy into the worktree; `git rev-parse` reads the cwd's worktree).
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const WT = process.cwd();
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const { MINIMAL_PARTS, buildDocx } = await import(path.join(WT, "tests/support/minimal-docx.ts"));
+const REVISION = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+
+/** The minimal parts with the main document stored as word/main.xml (its sidecar renamed, its Override moved) and named by the officeDocument target `target`. */
+const mainAt = (target: string): Record<string, string> => {
+    const next: Record<string, string> = { ...P, "word/main.xml": P[MAIN]!, "word/_rels/main.xml.rels": P[SIDECAR]! };
+    delete next[MAIN];
+    delete next[SIDECAR];
+    next["_rels/.rels"] = replaceOnce(P["_rels/.rels"]!, 'Target="word/document.xml"', `Target="${target}"`);
+    next[CT] = replaceOnce(P[CT]!, 'PartName="/word/document.xml"', 'PartName="/word/main.xml"');
+    return next;
+};
+
+/** The minimal parts with footnote 1 stored in word/notes/footnotes.xml (typed footnotes), named by the main document's footnotes target `target`; the body references footnote 1. */
+const notesAt = (target: string): Record<string, string> => ({
+    ...P,
+    [MAIN]: replaceOnce(P[MAIN]!, "</w:r></w:p>", `</w:r><w:r><w:footnoteReference w:id="1"/></w:r></w:p>`),
+    "word/notes/footnotes.xml": `${XML_DECL}<w:footnotes xmlns:w="${W}"><w:footnote w:id="1"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:footnote></w:footnotes>`,
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", "footnotes", target)),
+    [CT]: overrides(P[CT]!, ["word/notes/footnotes.xml", `${WML}.footnotes+xml`]),
+});
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const control = () => buildDocx({ ...P });
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+
+const chunks: Record<string, Row[]> = {
+    s70a: withControls("s70a", [
+        [
+            "main-plain-calibration",
+            "calibration: the main document stored as word/main.xml, named by the officeDocument target word/main.xml",
+            () => buildDocx(mainAt("word/main.xml")),
+        ],
+        [
+            "main-empty-segment",
+            "#962: the same, named by word//main.xml (path.posix.join: word/main.xml; RFC 3986: word//main.xml, no part)",
+            () => buildDocx(mainAt("word//main.xml")),
+        ],
+        ["main-absolute-empty-segment", "#962: the same, named by /word//main.xml", () => buildDocx(mainAt("/word//main.xml"))],
+        [
+            "main-final-dot",
+            "#962: the same, named by word/main.xml/. (path.posix.join: word/main.xml; RFC 3986: word/main.xml/, no part)",
+            () => buildDocx(mainAt("word/main.xml/.")),
+        ],
+        ["main-absolute-final-dot", "#962: the same, named by /word/main.xml/.", () => buildDocx(mainAt("/word/main.xml/."))],
+    ]),
+    s70b: withControls("s70b", [
+        [
+            "notes-plain-calibration",
+            "calibration: footnote 1 in word/notes/footnotes.xml, named by the footnotes target notes/footnotes.xml; the body references footnote 1",
+            () => buildDocx(notesAt("notes/footnotes.xml")),
+        ],
+        [
+            "notes-empty-segment",
+            "#962: the same, named by notes//footnotes.xml (path.posix.join: word/notes/footnotes.xml; RFC 3986: word/notes//footnotes.xml, no part)",
+            () => buildDocx(notesAt("notes//footnotes.xml")),
+        ],
+        [
+            "notes-final-dot",
+            "#962: the same, named by notes/footnotes.xml/. (path.posix.join: word/notes/footnotes.xml; RFC 3986: word/notes/footnotes.xml/, no part)",
+            () => buildDocx(notesAt("notes/footnotes.xml/.")),
+        ],
+    ]),
+    // Added after s70a/s70b showed Word refusing a final `/.`: the other spellings whose RFC 3986 path ends in `/`.
+    s70c: withControls("s70c", [
+        [
+            "main-inner-dot-calibration",
+            "calibration: the main document stored as word/main.xml, named by word/./main.xml (path.posix.join and RFC 3986 alike: word/main.xml)",
+            () => buildDocx(mainAt("word/./main.xml")),
+        ],
+        [
+            "main-final-dotdot",
+            "#962: the same, named by word/main.xml/x/.. (path.posix.join: word/main.xml; RFC 3986: word/main.xml/, no part)",
+            () => buildDocx(mainAt("word/main.xml/x/..")),
+        ],
+        [
+            "main-trailing-slash",
+            "#962: the same, named by word/main.xml/ (path.posix.join and RFC 3986 alike: word/main.xml/, no part)",
+            () => buildDocx(mainAt("word/main.xml/")),
+        ],
+        [
+            "notes-final-dotdot",
+            "#962: footnote 1 in word/notes/footnotes.xml, named by the footnotes target notes/footnotes.xml/x/.. (path.posix.join: word/notes/footnotes.xml; RFC 3986: word/notes/footnotes.xml/, no part); the body references footnote 1",
+            () => buildDocx(notesAt("notes/footnotes.xml/x/..")),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+    }
+};
+
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-70 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s70a", "s70b", "s70c")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0], "unknown") if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s70/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-70 parts of docs/plans/evidence/word-probes-2026-10-24.md into s70/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796). The text Word rendered is read from its own
+PDFs with pdftotext, so the narrative's "rendered" claims are checked here.
+"""
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s70a", "s70b", "s70c")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s70/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+def rendered(run, file):
+    pdf = run / "pdf" / (Path(file).stem + "_byword.pdf")
+    return " ".join(subprocess.run(["pdftotext", str(pdf), "-"], check=True, capture_output=True, text=True).stdout.split())
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                                   "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                                   "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+
+REFUSED = {"main-final-dot.docx", "main-absolute-final-dot.docx", "notes-final-dot.docx", "main-final-dotdot.docx",
+           "main-trailing-slash.docx", "notes-final-dotdot.docx"}
+ACCEPTED_BY_VALIDATOR = REFUSED - {"main-trailing-slash.docx"}
+# The narrative's claims about outcomes, checked against results.json.
+for (label, file), r in results.items():
+    if file in REFUSED:
+        assert r["outcome"] == "unreadable-content-warning", (file, r)
+        assert r["wordValid"] is (file in ACCEPTED_BY_VALIDATOR), (file, r)
+        assert r["validatorMatchesWord"] is (file not in ACCEPTED_BY_VALIDATOR), (file, r)
+    else:
+        assert r["outcome"] == "clean-open" and r["validatorMatchesWord"], (file, r)
+assert agreed == len(rows) == 18, (agreed, len(rows))
+# Where each run opened each row, from the driver's manifests (in open order, #671): the control names sort last, so both
+# controls opened after every specimen in every run, and each run opened a row clean after its refused rows.
+ORDER = {
+    "s70a": ["main-absolute-empty-segment.docx", "main-absolute-final-dot.docx", "main-empty-segment.docx", "main-final-dot.docx",
+             "main-plain-calibration.docx", "s70a-control-minimal-end.docx", "s70a-control-minimal.docx"],
+    "s70b": ["notes-empty-segment.docx", "notes-final-dot.docx", "notes-plain-calibration.docx", "s70b-control-minimal-end.docx",
+             "s70b-control-minimal.docx"],
+    "s70c": ["main-final-dotdot.docx", "main-inner-dot-calibration.docx", "main-trailing-slash.docx", "notes-final-dotdot.docx",
+             "s70c-control-minimal-end.docx", "s70c-control-minimal.docx"],
+}
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        opened = [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()]
+        assert opened == ORDER[label], (run, opened)
+# The text Word rendered in each clean row, both runs: the main document's "Hello", and footnote 1 ("1 Note") after it.
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for file in ORDER[label]:
+            if file in REFUSED:
+                continue
+            text = rendered(run, file)
+            expected = "Hello1 Note" if file.startswith("notes-") else "Hello"
+            assert text == expected, (run, file, text)
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}", (min(starts), max(ends))
+out = [
+    f"### Session 70: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {at}",
+    "",
+    "The open question of [#962](https://github.com/jandira-tech/docx-validate/issues/962): how Word resolves a "
+    "relationship target with an empty segment or a final dot segment. At this revision `relationshipTargetPartName` "
+    "resolved a target as `path.posix.join` does, which collapses an empty segment and drops the final `/` that RFC 3986's "
+    "remove_dot_segments leaves after a final `.` or `..` segment, so `word/main.xml/.` and `word/main.xml/x/..` named "
+    "`word/main.xml`. Three chunks: s70a asks with the `officeDocument` target of a main document stored as `word/main.xml`, "
+    "s70b with a `footnotes` target whose note 1 the body references (a note no part defines dangles, and Word offers "
+    "recovery for it, session 61), and s70c, added after the first two ran, with the other spellings whose RFC 3986 path ends "
+    "in `/`. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: "
+    "from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when "
+    f"both runs and both readings agree, and `unknown` otherwise; {agreed} of {len(rows)} rows agree. The two times in "
+    "Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder "
+    f"recorded the validator revision in every row (`{rev}`).",
+    "",
+    "The driver opens files in name order, and the control names sort last, so in every run both minimal controls opened "
+    "after every specimen, and clean. Each run also opened a row clean after its refused rows: s70a's calibration opened 5th, "
+    "after the refused 2nd and 4th; s70b's opened 3rd, after the refused 2nd; and s70c's inner-dot calibration opened 2nd, "
+    "between the refused 1st and 3rd. Every clean row's PDF holds the text the specimen stores: `Hello` for the main "
+    "document, and `Hello1 Note` (footnote 1) for the notes rows (`pdftotext`, both runs).",
+    "",
+    "- **An empty segment collapses.** `word//main.xml`, the package-absolute `/word//main.xml`, and the footnotes target "
+    "`notes//footnotes.xml` open clean, with the main document and the note rendered, as the plain calibrations do: Word "
+    "reads the part through the target, as `path.posix.join` collapses it, where RFC 3986 would keep the empty segment.",
+    "- **An inner `.` resolves.** `word/./main.xml` opens clean with the main document rendered.",
+    "- **A final `.` or `..` segment leaves a folder.** `word/main.xml/.`, `/word/main.xml/.`, `word/main.xml/x/..`, and "
+    "the footnotes targets `notes/footnotes.xml/.` and `notes/footnotes.xml/x/..` get the recovery offer, as "
+    "`word/main.xml/` with its trailing `/` does: the RFC 3986 path names a folder, and Word reads no part through it. "
+    f"Word-valid at {at} accepts the five final-segment rows, five false negatives from the dropped `/`, and rejects "
+    "`word/main.xml/` with `word-main-document-part`.",
+    "",
+    f"Word resolves a target's dot segments as RFC 3986 does, but collapses an empty segment. Word-valid at {at} matches "
+    f"Word on {sum(r['validatorMatchesWord'] for r in results.values())} of {len(rows)} rows.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 70</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 70 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s70builder.mts", ROOT / "s70builder.mts", "ts"), ("compare.py", ROOT / "s70/compare.py", "python"),
+                         ("section.py", ROOT / "s70/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s70/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>

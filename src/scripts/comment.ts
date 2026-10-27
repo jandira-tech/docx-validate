@@ -509,6 +509,11 @@ async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring>
     if (reference === undefined || climbsPastPackageRoot(reference)) {
         return { kind: "refused", message: `Error: ${packageRelsPath} names a main document outside the package` };
     }
+    // A reference ending in `/` names a folder, which Word refuses as the
+    // main document (session 70, #962).
+    if (reference.endsWith("/")) {
+        return { kind: "refused", message: `Error: ${packageRelsPath} names a folder, not a main document` };
+    }
     // The reference names the stored part the read model would find, under
     // OPC equivalence, and the wiring goes through that part's own name; a
     // named part that is not stored is refused before any write, the

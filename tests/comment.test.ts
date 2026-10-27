@@ -2240,6 +2240,19 @@ describe("addComment", () => {
             "word/main.xml",
             (dir: string) => `${path.join(dir, "_rels", ".rels")} names a main document outside the package`,
         ],
+        // Word refuses these targets (session 70, #962).
+        [
+            "word/main.xml/., which names a folder",
+            officeDocumentRels("word/main.xml/."),
+            "word/main.xml",
+            (dir: string) => `${path.join(dir, "_rels", ".rels")} names a folder, not a main document`,
+        ],
+        [
+            "word/main.xml/x/.., which names a folder",
+            officeDocumentRels("word/main.xml/x/.."),
+            "word/main.xml",
+            (dir: string) => `${path.join(dir, "_rels", ".rels")} names a folder, not a main document`,
+        ],
     ])(
         "refuses a first comment when the package relationships name %s, naming no stored part, changing nothing (#919)",
         async (_label, relsXml, mainPart, expected) => {
