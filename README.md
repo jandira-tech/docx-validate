@@ -1877,7 +1877,7 @@ of a part declared plain UTF-16 (#878). A UTF-8 part is written without a byte
 order mark, as before. A part whose declaration
 names an encoding this package cannot decode (`windows-1252`, `macintosh`, …)
 is left byte-for-byte untouched, and `addComment` returns an error naming it
-instead of editing it.
+instead of editing it, changing nothing in the tree.
 
 ### Drive the CLIs programmatically
 

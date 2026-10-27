@@ -55,6 +55,32 @@ function utf16Part(text: string): Buffer {
     return Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(text, "utf16le")]);
 }
 
+/** Every file under `dir`, keyed by its relative path, with its bytes. */
+async function readTree(dir: string): Promise<Map<string, Buffer>> {
+    const files = new Map<string, Buffer>();
+    const walk = async (current: string): Promise<void> => {
+        for (const entry of await fs.readdir(current, { withFileTypes: true })) {
+            const full = path.join(current, entry.name);
+            if (entry.isDirectory()) {
+                await walk(full);
+            } else {
+                files.set(path.relative(dir, full), await fs.readFile(full));
+            }
+        }
+    };
+    await walk(dir);
+    return files;
+}
+
+/** Rewrite a part's XML declaration to name an encoding this package cannot decode (#866). */
+async function declareUndecodable(file: string): Promise<void> {
+    const text = await fs.readFile(file, "utf-8");
+    const undecodable = text.includes('encoding="UTF-8"')
+        ? text.replace('encoding="UTF-8"', 'encoding="ISO-8859-1"')
+        : text.replace("?>", ' encoding="ISO-8859-1"?>');
+    await fs.writeFile(file, undecodable, "utf-8");
+}
+
 describe("generateHexId", () => {
     afterEach(() => {
         vi.mocked(crypto.randomInt).mockReset();
@@ -243,4 +269,72 @@ describe("addComment", () => {
             expect(reply.message).toBe("Error: Parent comment 99 not found");
         });
     });
+
+    it.each(["word/_rels/document.xml.rels", "[Content_Types].xml"])(
+        "refuses the first comment when %s declares an encoding it cannot decode, changing nothing (#879)",
+        async (part) => {
+            await withTempDir(async (dir) => {
+                await makeFixture(dir);
+                await declareUndecodable(path.join(dir, part));
+
+                const before = await readTree(dir);
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "x",
+                    author: "Test",
+                    initials: "T",
+                });
+
+                expect(result.paraId).toBe("");
+                expect(result.message).toBe(`Error: ${path.join(dir, part)} is stored in an encoding this tool cannot decode`);
+                expect(await readTree(dir)).toEqual(before);
+            });
+        },
+    );
+
+    it.each(["comments.xml", "commentsExtended.xml", "commentsIds.xml", "commentsExtensible.xml"])(
+        "refuses a later comment when word/%s declares an encoding it cannot decode, changing nothing (#879)",
+        async (name) => {
+            await withTempDir(async (dir) => {
+                await makeFixture(dir);
+                await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "first",
+                    author: "Test",
+                    initials: "T",
+                });
+
+                const part = path.join(dir, "word", name);
+                await declareUndecodable(part);
+                const before = await readTree(dir);
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 1,
+                    text: "second",
+                    author: "Test",
+                    initials: "T",
+                });
+
+                expect(result.paraId).toBe("");
+                expect(result.message).toBe(`Error: ${part} is stored in an encoding this tool cannot decode`);
+                expect(await readTree(dir)).toEqual(before);
+
+                // The comment id was not consumed: write the same text back
+                // with a decodable UTF-8 declaration and comment 1 lands.
+                await fs.writeFile(part, (await fs.readFile(part, "utf-8")).replace('encoding="ISO-8859-1"', 'encoding="UTF-8"'), "utf-8");
+                const retry = await addComment({
+                    unpackedDir: dir,
+                    commentId: 1,
+                    text: "second",
+                    author: "Test",
+                    initials: "T",
+                });
+                expect(retry.message).toMatch(/^Added comment 1 \(para_id=[0-9A-F]{8}\)$/);
+                const commentsXml = await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8");
+                expect(commentsXml).toContain('w:id="1"');
+            });
+        },
+    );
 });
