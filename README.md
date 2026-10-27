@@ -1952,11 +1952,15 @@ entries. It leaves the refused central-directory records out, so an entry a refu
 `..` name hid in the package view is judged by its own bytes. A full run stages those
 entries and validates them as it would a clean package, the format validator's own
 rules and the schema walk included, then adds the `package-extract-failed` error;
-`xsdWalk` and `metadata.schemaCompleted` describe that walk. A partial run judges them
+`xsdWalk` and `metadata.schemaCompleted` describe that walk. When the host cannot
+stage those entries either, because its file system folds two of their names into
+one (APFS folds `Å` and `å`), the run reports one `package-extract-failed`, naming
+the refused name, beside what the archive's own checks find in them (#874). A partial run judges them
 with its selected checks only. A ZIP64 archive is judged the same way when its end
 records can move with the shrunk directory. Neither judges anything more when the
 remaining names still collide (#413), when a ZIP64 end record cannot move (it holds
-extensible data, or is not adjacent to its locator), or when bytes sit between a
+extensible data or declares less than its fixed 44 bytes, or is not adjacent to its
+locator; #875), or when bytes sit between a
 non-ZIP64 central directory and its end record, and a directory input judges only its names
 ([#629](https://github.com/jandira-tech/docx-validate/issues/629)). Directory inputs apply the same stored-name refusal before either full or partial validation: literal backslash names with empty or dot-only segments are refused with the same code and message (#424).
 Direct `DOCXSchemaValidator.validate()` and `PPTXSchemaValidator.validate()` calls also return an error-severity

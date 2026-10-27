@@ -649,14 +649,21 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                 }
                 if (subset !== undefined) {
                     if (deadline?.reached("staging the package and every later step")) return finish(stopped(named));
-                    // The packed-repair disclosure rule of the clean packed
-                    // path (#649, #666): a repair ran only when the staging
-                    // reached it.
-                    let repairRan = autoRepair && format !== "xlsx";
-                    const run = await runStaged(subset, named, undefined, () => {
-                        repairRan = false;
-                        return archiveFindings(rest, format, profile, registry, deadline);
+                    // What the subset still offers when its own extraction
+                    // fails: the host can fold two kept names that
+                    // `assertPlaceableNames` does not (APFS folds `Å` and `å`).
+                    const subsetUnstaged: { findings?: { issues: readonly ValidationIssue[]; executed: readonly string[] } } = {};
+                    const run = await runStaged(subset, named, undefined, async () => {
+                        subsetUnstaged.findings = await archiveFindings(rest, format, profile, registry, deadline);
+                        return subsetUnstaged.findings;
                     });
+                    if (subsetUnstaged.findings !== undefined) {
+                        // The failure the package had before #629: one
+                        // `package-extract-failed`, naming the first refused
+                        // name, beside what the subset offers, and no repair
+                        // disclosure, since no repair ran (#874).
+                        return finish(stagingFailed(named, err, subsetUnstaged.findings));
+                    }
                     // The subset is the deepest view the package offers, but the
                     // input still is not staged: the same failure `stagingFailed`
                     // reports, naming the first refused name (#629), and the run
@@ -666,7 +673,13 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                         valid: false,
                         issues: [...run.issues, packageExtractFailedIssue(target, err instanceof Error ? err.message : String(err))],
                     };
-                    staged = repairRan ? { ...unstaged, issues: [...unstaged.issues, PACKED_REPAIR_DISCLOSURE] } : unstaged;
+                    // The packed-repair disclosure rule of the clean packed
+                    // path (#649, #666): the subset was staged, so the repair
+                    // ran.
+                    staged =
+                        autoRepair && format !== "xlsx"
+                            ? { ...unstaged, issues: [...unstaged.issues, PACKED_REPAIR_DISCLOSURE] }
+                            : unstaged;
                 }
             }
             if (staged !== undefined) return finish(staged);
