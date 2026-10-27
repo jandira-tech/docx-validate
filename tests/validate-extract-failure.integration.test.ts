@@ -379,6 +379,11 @@ describe("portable extraction failures (#475, #476)", { timeout: 120_000 }, () =
                 "<w:r><w:t>Hello</w:t></w:r>",
                 '<w:commentRangeStart w:id="0"/><w:r><w:t>Hello</w:t></w:r><w:commentRangeEnd w:id="0"/><w:r><w:commentReference w:id="0"/></w:r>',
             ),
+            // Related, so the part defines its comment (#896).
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                '<Relationship Id="rIdC" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" Target="comments.xml"/></Relationships>',
+            ),
             "word/comments.xml":
                 '<w:comments xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ' +
                 'xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" ' +

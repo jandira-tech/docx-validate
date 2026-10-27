@@ -1009,7 +1009,8 @@ and reports a malformed part once, through `xml-syntax`, as the full run does
 full lenient run stops at a malformed part, so the comment checks then do not run
 ([#391](https://github.com/jandira-tech/docx-validate/issues/391)). Full validation runs them once and records their ids in
 `executedChecks`; `--quick` does not select them. Like every other check, they
-find a comment part under an OPC-equivalent name (`word/comments.XML`).
+find the comments part a relationship names under an OPC-equivalent stored
+name (`word/comments.XML`).
 
 A dangling `w:commentReference` is a Word-valid error; a range start or end
 naming a missing comment without that reference stays a warning. The
@@ -1033,6 +1034,25 @@ Strict orphan range start or end, now paired too, is unprobed. The ids are
 pooled across the two namespaces, so a reference in one namespace satisfied
 only by a comment in the other passes; mixed-namespace satisfaction, in
 either direction, is unprobed.
+The comments are read only from the part a `comments` relationship of the
+main document names: session 69 (s69a in
+`docs/plans/evidence/word-probes-2026-10-24.md`, two runs, all four readings
+agree) offered recovery for a body `w:commentReference` whose comment only a
+`word/comments.xml` no relationship names defines, with and without a
+main-document relationships part, and opened clean the calibration relating
+that part and the same unrelated part with range markers only
+([#896](https://github.com/jandira-tech/docx-validate/issues/896)). So a main
+document a relationship names, whose relationships name no stored comments
+part, reads none: every marker names a missing comment, the reference
+blocking and the range markers warning, and the Microsoft thread parts are not
+judged. A reference with no comments part stored at all reads the same way;
+that shape is unprobed. When the package view cannot be read, or no
+relationship names a stored main document, the checks still fall back to the
+`comments.xml` in the main document's folder
+([#711](https://github.com/jandira-tech/docx-validate/issues/711),
+[#816](https://github.com/jandira-tech/docx-validate/issues/816)). Beside a
+related comments part, the thread parts still fall back by name in its folder
+when no relationship of their type names one; that reading is unprobed.
 No reference inside a notes part is judged, matching session 16's clean
 open, and none inside a comments part either
 ([#852](https://github.com/jandira-tech/docx-validate/issues/852), below):

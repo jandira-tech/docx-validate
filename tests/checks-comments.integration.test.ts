@@ -128,7 +128,7 @@ const RENAMED_COMMENTS_IDS: Record<string, string> = {
     "word/commentsIds.xml": commentsIdsPart("0000AAAA", "0000AAAA"),
 };
 
-/** No comments relationship at all: the by-name parts in `word/` are judged, as before. */
+/** No comments relationship at all: the parts in `word/` named for comments define nothing (#896, session 69 s69a). */
 const UNRELATED_COMMENT_PARTS: Record<string, string> = {
     ...MINIMAL_PARTS,
     "[Content_Types].xml": withOverrides(override("word/comments.xml", COMMENTS_CT), override("word/commentsIds.xml", COMMENTS_IDS_CT)),
@@ -717,6 +717,8 @@ describe("named comment validation (#384)", { timeout: 120_000 }, () => {
                 file,
                 await buildDocx({
                     ...MINIMAL_PARTS,
+                    // Related, so the part defines its comment (#896).
+                    "word/_rels/document.xml.rels": relsPart(rel("rId1", "styles", "styles.xml"), rel("rId2", "comments", "comments.xml")),
                     "word/comments.xml":
                         '<w:comments xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"><w:comment w:id="0"><w:p w14:paraId="11111111"/></w:comment></w:comments>',
                     "word/commentsExtended.xml": '<w15:commentsEx xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"/>',
@@ -741,10 +743,17 @@ describe("named comment validation (#384)", { timeout: 120_000 }, () => {
             );
             const comments =
                 '<w:comments xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:comment w:id="0"><w:p/></w:comment></w:comments>';
+            // The relationship names `comments.xml`, which resolves to the stored spelling (#896).
+            const relationships = relsPart(rel("rId1", "styles", "styles.xml"), rel("rId2", "comments", "comments.xml"));
             const build = async (part: string, file: string) => {
                 await writeFile(
                     path.join(dir, file),
-                    await buildDocx({ ...MINIMAL_PARTS, "word/document.xml": document, [part]: comments }),
+                    await buildDocx({
+                        ...MINIMAL_PARTS,
+                        "word/_rels/document.xml.rels": relationships,
+                        "word/document.xml": document,
+                        [part]: comments,
+                    }),
                 );
                 return path.join(dir, file);
             };
@@ -753,8 +762,13 @@ describe("named comment validation (#384)", { timeout: 120_000 }, () => {
             const findings = (issues: readonly ValidationIssue[]) =>
                 commentIssues(issues).map(({ code, severity }) => ({ code, severity }));
             for (const profile of ["lenient", "word-valid", "strict"] as const) {
-                const expected = findings((await validate(literal, { profile })).issues);
-                expect(expected, profile).toContainEqual(expect.objectContaining({ code: "comment-marker-missing" }));
+                const literalIssues = (await validate(literal, { profile })).issues;
+                const expected = findings(literalIssues);
+                // Only reference 7 is missing: the related part defines comment 0.
+                expect(
+                    literalIssues.filter((issue) => issue.code === "comment-marker-missing").map((issue) => issue.message),
+                    profile,
+                ).toEqual(['marker id="7" references non-existent comment']);
                 expect(findings((await validate(equivalent, { profile })).issues), profile).toEqual(expected);
             }
         });
@@ -841,15 +855,16 @@ describe("the comment checks read the parts the main document relates (#696)", {
         });
     });
 
-    it.each(PROFILES)("without a comments relationship, the by-name parts are still judged (%s)", async (profile) => {
+    it.each(PROFILES)("without a comments relationship, the parts named for comments define nothing (#896, %s)", async (profile) => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "unrelated.docx");
             await writeFile(file, await buildDocx(UNRELATED_COMMENT_PARTS));
+            // Comment 0, which only the unrelated word/comments.xml defines, is missing as comment 1 is,
+            // and the unrelated commentsIds part has no comments part to be paired with.
             expect(commentFindings((await validate(file, { profile })).issues)).toEqual([
                 { code: "comment-orphan-start", path: "word/document.xml" },
                 { code: "comment-marker-missing", path: "word/document.xml" },
-                { code: "comment-thread-count-mismatch", path: "word/document.xml" },
-                { code: "comment-thread-commentid-paraid-orphan", path: "word/commentsIds.xml" },
+                { code: "comment-marker-missing", path: "word/document.xml" },
             ]);
         });
     });
@@ -926,5 +941,105 @@ describe("the comment checks read the parts the main document relates (#696)", {
             await writeFile(file, await buildDocx(NON_XML_COMMENTS));
             expect(commentFindings((await validate(file, { profile })).issues)).toEqual([]);
         });
+    });
+});
+
+// #896: Word session 69 (s69a, two runs, all four readings agree) offered recovery for a body
+// w:commentReference whose comment only a word/comments.xml no relationship names defines, with and
+// without a main-document relationships part, and opened clean the related calibration and the same
+// unrelated part with range markers only: a comments part no relationship names defines nothing.
+describe("only a comments relationship makes a part define comments (#896, session 69 s69a)", { timeout: 120_000 }, () => {
+    const STYLES_OVERRIDE = `<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>`;
+    const REFERENCE_RUN = '<w:r><w:commentReference w:id="0"/></w:r>';
+
+    /** The minimal parts with no main-document relationships part; styles.xml and its Override go too, as in s69a. */
+    const noSidecar = (): Record<string, string> => {
+        const parts: Record<string, string> = {
+            ...MINIMAL_PARTS,
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(STYLES_OVERRIDE, ""),
+        };
+        delete parts["word/_rels/document.xml.rels"];
+        delete parts["word/styles.xml"];
+        return parts;
+    };
+
+    /** `parts` with the body marking comment 0's range, and referencing it when `reference`, and, when `comments`, word/comments.xml defining it (typed comments), related when `related`. */
+    const marked = (
+        parts: Record<string, string>,
+        options: { readonly comments: boolean; readonly related?: boolean; readonly reference: boolean },
+    ): Record<string, string> => ({
+        ...parts,
+        "word/document.xml": options.reference ? markedDocument() : markedDocument().replace(REFERENCE_RUN, ""),
+        ...(options.comments
+            ? {
+                  "[Content_Types].xml": parts["[Content_Types].xml"]!.replace(
+                      "</Types>",
+                      `${override("word/comments.xml", COMMENTS_CT)}</Types>`,
+                  ),
+                  "word/comments.xml": commentsPart("0", "0000AAAA"),
+              }
+            : {}),
+        ...(options.related === true
+            ? { "word/_rels/document.xml.rels": relsPart(rel("rId1", "styles", "styles.xml"), rel("rId2", "comments", "comments.xml")) }
+            : {}),
+    });
+
+    const judged = async (parts: Record<string, string>, profile: (typeof PROFILES)[number]) =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "comments.docx");
+            await writeFile(file, await buildDocx(parts));
+            return validate(file, { profile });
+        });
+
+    /** The body's comment-marker-missing finding for comment 0, of `severity` when given. */
+    const missingZero = (severity?: "error" | "warning") =>
+        expect.objectContaining({
+            code: "comment-marker-missing",
+            path: "word/document.xml",
+            message: expect.stringContaining('id="0"'),
+            ...(severity === undefined ? {} : { severity }),
+        });
+
+    for (const [row, parts] of [
+        ["(a) with no main-document relationships part", () => marked(noSidecar(), { comments: true, reference: true })],
+        ["(b) beside a relationships part relating only styles", () => marked({ ...MINIMAL_PARTS }, { comments: true, reference: true })],
+    ] as const) {
+        it(`${row}, a reference to a comment only an unrelated word/comments.xml defines blocks word-valid`, async () => {
+            const result = await judged(parts(), "word-valid");
+            expect(result.valid).toBe(false);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([missingZero()]);
+        });
+
+        it.each(["lenient", "strict"] as const)(`${row}, the unrelated part's comment satisfies no marker (%s)`, async (profile) => {
+            expect(commentIssues((await judged(parts(), profile)).issues)).toEqual([missingZero("error")]);
+        });
+    }
+
+    it.each(PROFILES)("(c) the calibration relating word/comments.xml stays clean (%s)", async (profile) => {
+        const result = await judged(marked({ ...MINIMAL_PARTS }, { comments: true, related: true, reference: true }), profile);
+        expect(commentIssues(result.issues)).toEqual([]);
+        expect(result.valid).toBe(true);
+    });
+
+    it("(d) range markers only, against the unrelated part, stay a word-valid advisory", async () => {
+        const result = await judged(marked({ ...MINIMAL_PARTS }, { comments: true, reference: false }), "word-valid");
+        expect(result.valid).toBe(true);
+        expect(commentIssues(result.issues)).toEqual([missingZero("warning")]);
+    });
+
+    it("a reference with no comments part stored at all blocks word-valid as row (a) does (unprobed)", async () => {
+        const result = await judged(marked({ ...MINIMAL_PARTS }, { comments: false, reference: true }), "word-valid");
+        expect(result.valid).toBe(false);
+        expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([missingZero()]);
+    });
+
+    it("an unrelated commentsIds part beside the unrelated comments part is not judged either", async () => {
+        const parts = marked({ ...MINIMAL_PARTS }, { comments: true, reference: true });
+        parts["[Content_Types].xml"] = parts["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `${override("word/commentsIds.xml", COMMENTS_IDS_CT)}</Types>`,
+        );
+        parts["word/commentsIds.xml"] = commentsIdsPart("0000BBBB", "0000BBBB");
+        expect(commentIssues((await judged(parts, "strict")).issues).map((issue) => issue.code)).toEqual(["comment-marker-missing"]);
     });
 });

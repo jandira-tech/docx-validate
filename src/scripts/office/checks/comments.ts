@@ -45,6 +45,9 @@ const effectiveCommentXml = (ctx: ValidationContext, part: string): Document => 
     return parsed.document;
 };
 
+/** The main document the comment checks judge, and whether a relationship named it. */
+type MainDocument = { readonly part: string | null; readonly related: boolean };
+
 /**
  * The main document the comment checks judge (#696): the first part the
  * package's `officeDocument` relationship names, wherever it is stored, so
@@ -53,42 +56,59 @@ const effectiveCommentXml = (ctx: ValidationContext, part: string): Document => 
  * `word/document.xml` or its OPC-equivalent spelling (#711), never a
  * `document.xml` in another folder.
  */
-const mainDocumentPart = async (ctx: ValidationContext, profile?: Profile): Promise<string | null> => {
+const mainDocumentPart = async (ctx: ValidationContext, profile?: Profile): Promise<MainDocument> => {
     try {
         const [first] = await wordTypedRelationshipTargets(ctx, new Set(["officeDocument"]), profile);
         if (first !== undefined) {
-            return first.part;
+            return { part: first.part, related: true };
         }
     } catch {
         // An unreadable package view is reported by its own checks.
     }
-    return inFolderByName(ctx, "word", "document.xml");
+    return { part: inFolderByName(ctx, "word", "document.xml"), related: false };
 };
+
+/**
+ * The main document's comments as the comment checks read them: a part, no
+ * part at all, so every marker names a comment no part defines (#896), or a
+ * related part left unjudged (#693).
+ */
+type MainComments = { readonly kind: "part"; readonly part: string } | { readonly kind: "none" } | { readonly kind: "unjudged" };
 
 /**
  * The comments part the comment checks judge (#696): the first `comments`
  * target the main document's own relationships name, so a reached
  * glossary's comments never stand in for the main document's; a target that
- * is not XML leaves the comments unjudged, as #693 leaves the repair's. When
- * no relationship names a stored part, or the package view cannot be read,
- * the last `comments.xml` in the main document's folder, so the fallback
- * never pairs the main document with another story's comments.
+ * is not XML leaves the comments unjudged, as #693 leaves the repair's. A
+ * main document a relationship names, whose relationships name no stored
+ * comments part, reads none (#896): Word session 69 (s69a, two runs, all
+ * four readings agree) offered recovery for a body `w:commentReference`
+ * whose comment only an unrelated `word/comments.xml` defines, with and
+ * without a main-document relationships part. When the package view
+ * cannot be read, or no relationship names a stored main document (#711,
+ * #816), the last `comments.xml` in the main document's folder, so the
+ * fallback never pairs the main document with another story's comments,
+ * and none there leaves the comments unjudged, as before.
  */
 const mainCommentsPart = async (
     ctx: ValidationContext,
-    document: string | null,
+    document: MainDocument,
     xmlParts: ReadonlySet<string>,
     profile?: Profile,
-): Promise<string | null> => {
+): Promise<MainComments> => {
     try {
         const [first] = await wordTypedRelationshipTargets(ctx, new Set(["comments"]), profile);
         if (first !== undefined) {
-            return xmlParts.has(first.part) ? first.part : null;
+            return xmlParts.has(first.part) ? { kind: "part", part: first.part } : { kind: "unjudged" };
+        }
+        if (document.related) {
+            return { kind: "none" };
         }
     } catch {
         // An unreadable package view is reported by its own checks.
     }
-    return inFolderByName(ctx, document === null ? "word" : path.posix.dirname(document), "comments.xml");
+    const byName = inFolderByName(ctx, document.part === null ? "word" : path.posix.dirname(document.part), "comments.xml");
+    return byName === null ? { kind: "unjudged" } : { kind: "part", part: byName };
 };
 
 /** The last part named `name` in `folder`, else the OPC-equivalent spelling of `folder/name`. */
@@ -143,9 +163,10 @@ export const commentMarkersCheck: CheckDefinition = {
     run: async (ctx, profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
 
-        const documentXml = await mainDocumentPart(ctx, profile);
+        const document = await mainDocumentPart(ctx, profile);
+        const documentXml = document.part;
         const xmlParts = xmlPartNames(ctx.partNames, (part) => ctx.bytes(part));
-        const commentsXml = await mainCommentsPart(ctx, documentXml, xmlParts, profile);
+        const comments = await mainCommentsPart(ctx, document, xmlParts, profile);
 
         if (!documentXml) {
             // Mirrors Python: "no document.xml" is a pass.
@@ -208,29 +229,32 @@ export const commentMarkersCheck: CheckDefinition = {
             });
         }
 
-        if (commentsXml) {
-            let commentsDom: Document;
-            try {
-                commentsDom = effectiveCommentXml(ctx, commentsXml);
-            } catch (err) {
-                issues.push({
-                    severity: "error",
-                    message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
-                    path: commentsXml,
-                    code: "comment-marker-parse",
-                });
-                return issues;
-            }
-            // As the markers above: a Strict comments part defines its
-            // comments in the `purl.oclc.org` namespace, ids included.
+        if (comments.kind !== "unjudged") {
+            // With no comments part read, no comment is defined (#896).
             const commentIds = new Set<string>();
-            for (const wNs of WORD_PARAGRAPH_NAMESPACES) {
-                const list = getElementsByTagNameNSAll(commentsDom, wNs, "comment");
-                for (let i = 0; i < list.length; i += 1) {
-                    const elem = list[i];
-                    if (!elem) continue;
-                    const id = elem.getAttributeNS(wNs, "id");
-                    if (id) commentIds.add(id);
+            if (comments.kind === "part") {
+                let commentsDom: Document;
+                try {
+                    commentsDom = effectiveCommentXml(ctx, comments.part);
+                } catch (err) {
+                    issues.push({
+                        severity: "error",
+                        message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
+                        path: comments.part,
+                        code: "comment-marker-parse",
+                    });
+                    return issues;
+                }
+                // As the markers above: a Strict comments part defines its
+                // comments in the `purl.oclc.org` namespace, ids included.
+                for (const wNs of WORD_PARAGRAPH_NAMESPACES) {
+                    const list = getElementsByTagNameNSAll(commentsDom, wNs, "comment");
+                    for (let i = 0; i < list.length; i += 1) {
+                        const elem = list[i];
+                        if (!elem) continue;
+                        const id = elem.getAttributeNS(wNs, "id");
+                        if (id) commentIds.add(id);
+                    }
                 }
             }
 
@@ -272,9 +296,11 @@ export const commentThreadingCheck: CheckDefinition = {
     run: async (ctx, profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
 
-        const documentXml = await mainDocumentPart(ctx, profile);
+        const document = await mainDocumentPart(ctx, profile);
+        const documentXml = document.part;
         const xmlParts = xmlPartNames(ctx.partNames, (part) => ctx.bytes(part));
-        const commentsXml = await mainCommentsPart(ctx, documentXml, xmlParts, profile);
+        const comments = await mainCommentsPart(ctx, document, xmlParts, profile);
+        const commentsXml = comments.kind === "part" ? comments.part : null;
         const commentsExtendedXml = await threadPart(
             ctx,
             COMMENTS_EXTENDED_RELATIONSHIP_TYPE,
