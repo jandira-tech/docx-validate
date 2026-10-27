@@ -1883,7 +1883,9 @@ instead of editing it, changing nothing in the tree.
 The auto-repair writers then neither count nor report a
 repair for such a part: `writeXmlPart` returns whether it wrote (#880), and a
 part's repairs reach the `repairs` count, and its verbose `Repaired:` lines,
-only after a write — a refused write never reached disk.
+only after a write — a refused write never reached disk. A repair that
+edits several parts leaves all of them untouched when one cannot be decoded
+(#889).
 
 ### Drive the CLIs programmatically
 
