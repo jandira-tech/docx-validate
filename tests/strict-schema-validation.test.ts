@@ -275,10 +275,17 @@ describe("strict profile — non-OOXML parts", () => {
             const file = await writeDocx(dir, "custom-xml.docx", parts);
             const result = await validate(file, { profile: "strict" });
             // No OOXML schema applies to arbitrary customXml payloads — the
-            // part is simply not XSD-eligible, so no xsd-* issue (and in
-            // particular no schema-load failure) may be reported for it.
+            // part is not XSD-eligible. Audit the skip without reporting a
+            // schema-load failure (#628).
             const xsdIssues = result.issues.filter((i) => i.code?.startsWith("xsd-"));
-            expect(xsdIssues).toEqual([]);
+            expect(xsdIssues).toEqual([
+                {
+                    severity: "info",
+                    code: "xsd-no-schema",
+                    path: "customXml/item1.xml",
+                    message: "The bundled schemas map no schema to this part; XSD validation skipped for this part.",
+                },
+            ]);
         });
     }, 60_000);
 });

@@ -67,7 +67,15 @@ const lenientBefore = (part: string, shape: string): ValidationResult => {
     return { valid: false, issues };
 };
 
-// Independently replayed dd5a3da2 sources for PPTX lenient.
+// #628 audits the three unmapped parts in the minimal PPTX.
+const PPTX_UNMAPPED = ["ppt/slideLayouts/slideLayout1.xml", "ppt/slideMasters/slideMaster1.xml", "ppt/slides/slide1.xml"].map((path) => ({
+    severity: "info" as const,
+    code: "xsd-no-schema",
+    path,
+    message: "The bundled schemas map no schema to this part; XSD validation skipped for this part.",
+}));
+
+// Independently replayed dd5a3da2 sources for PPTX lenient, plus #628's audit.
 const PPTX_LENIENT: Readonly<Record<string, ValidationResult>> = {
     fallback: {
         valid: false,
@@ -84,6 +92,7 @@ const PPTX_LENIENT: Readonly<Record<string, ValidationResult>> = {
                 path: "ppt/_rels/presentation.xml.rels",
                 code: "xsd-error",
             },
+            ...PPTX_UNMAPPED,
         ],
     },
     choice: {
@@ -96,6 +105,7 @@ const PPTX_LENIENT: Readonly<Record<string, ValidationResult>> = {
                     "Root element mc:AlternateContent is in an ignorable namespace that is not understood; the part has no content to schema-validate.",
                 path: "ppt/_rels/presentation.xml.rels",
             },
+            ...PPTX_UNMAPPED,
         ],
     },
     "process-content": {
@@ -113,6 +123,7 @@ const PPTX_LENIENT: Readonly<Record<string, ValidationResult>> = {
                 path: "ppt/_rels/presentation.xml.rels",
                 code: "xsd-error",
             },
+            ...PPTX_UNMAPPED,
         ],
     },
 };
