@@ -47,11 +47,17 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { Command } from "commander";
-import { canonicalPartName, contentTypeMediaType, parseContentTypes, resolveContentType } from "../lib/content-types";
+import {
+    canonicalPartName,
+    contentTypeMediaType,
+    CONTENT_TYPES_NAMESPACE,
+    parseContentTypes,
+    resolveContentType,
+} from "../lib/content-types";
 import { commanderExitCode, runCli } from "../lib/run-cli";
 import { nextSecureLongHexNumber } from "../lib/secure-id";
 import { readXmlPart, writeXmlPart, writeXmlText, type DecodedXmlPart } from "../lib/xml-part-io";
-import { parseXml, serializeXml, xmlDeclarationEncoding } from "../lib/xml-helpers";
+import { getElementsByTagNameNSAll, parseXml, serializeXml, xmlDeclarationEncoding } from "../lib/xml-helpers";
 
 const TEMPLATE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "templates");
 
@@ -369,10 +375,14 @@ async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring>
     return { kind: "wired", mainDocument };
 }
 
+/**
+ * Whether the content-types stream holds an Override for `partName`, read
+ * in the content-types namespace so a stream that binds the namespace to a
+ * prefix is seen, and one in another namespace is not (#923). The `PartName`
+ * comparison stays exact: OPC equivalence there is a separate question.
+ */
 function hasContentType(dom: Document, partName: string): boolean {
-    const overrides = dom.getElementsByTagName("Override");
-    for (let i = 0; i < overrides.length; i += 1) {
-        const override = overrides.item(i)!;
+    for (const override of getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Override")) {
         if (override.getAttribute("PartName") === partName) {
             return true;
         }
@@ -435,7 +445,11 @@ async function ensureCommentRelationships(
  * left alone and answered with an Override under the part's own name, and
  * an Override that names the part under OPC equivalence with another type
  * is rewritten in place, never answered with a second Override. A
- * relationships part that already existed is never retyped.
+ * relationships part that already existed is never retyped. The stream is
+ * read and written in its namespace, whatever prefix it binds it to: an
+ * Override is read only in the content-types namespace, and each new one is
+ * created there carrying the prefix the root `Types` element uses, so an
+ * unprefixed stream serializes exactly as before (#923).
  */
 async function ensureCommentContentTypes(
     unpackedDir: string,
@@ -488,18 +502,17 @@ async function ensureCommentContentTypes(
         return;
     }
     const root = dom.documentElement;
+    const overridePrefix = root.prefix ? `${root.prefix}:` : "";
 
     for (const [partName, contentType] of overrides) {
-        const override = dom.createElement("Override");
+        const override = dom.createElementNS(CONTENT_TYPES_NAMESPACE, `${overridePrefix}Override`);
         override.setAttribute("PartName", partName);
         override.setAttribute("ContentType", contentType);
         root.appendChild(override);
     }
     if (mistypedRelsOverride) {
         const key = canonicalPartName(relsPartName);
-        const existing = dom.getElementsByTagName("Override");
-        for (let i = 0; i < existing.length; i += 1) {
-            const override = existing.item(i)!;
+        for (const override of getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Override")) {
             if (canonicalPartName(override.getAttribute("PartName") ?? "") === key) {
                 override.setAttribute("ContentType", RELATIONSHIPS_CONTENT_TYPE);
             }
