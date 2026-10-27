@@ -184,19 +184,40 @@ async function pathExists(p: string): Promise<boolean> {
     }
 }
 
-/** Append `content` under the part's root element, in the part's own encoding. */
-async function appendXml(xmlPath: string, rootTag: string, content: string, decoded?: DecodedXmlPart): Promise<boolean> {
+/**
+ * Append `content` under the part's root element, in the part's own
+ * encoding. The root is the first element of the expected `namespace` and
+ * local name in document order, wherever the part binds the namespace, so a
+ * part that prefixes it another way is appended to as the comment checks
+ * read it (#930); a first comment's freshly copied template parts behave
+ * exactly as before. The appended content is imported from the `w:`-prefixed
+ * templates as-is: the serializer declares each prefix the part does not
+ * already bind on the appended subtree itself, keeping the part well-formed
+ * and every element and attribute in its namespace.
+ */
+async function appendXml(
+    xmlPath: string,
+    rootNamespace: string,
+    rootLocalName: string,
+    content: string,
+    decoded?: DecodedXmlPart,
+): Promise<boolean> {
     const part = decoded ?? (await readXmlPart(xmlPath));
     if (part === undefined) {
         // An encoding we cannot decode: leave the part's bytes untouched.
         return false;
     }
     const dom = parseXml(part.text);
-    const roots = dom.getElementsByTagName(rootTag);
+    const roots = getElementsByTagNameNSAll(dom, rootNamespace, rootLocalName);
     if (roots.length === 0) {
-        throw new Error(`Root tag <${rootTag}> not found in ${xmlPath}`);
+        // Defensive: addComment's preflight refuses a part that holds none of
+        // its root element before any write (#930), so this branch is
+        // unreachable from addComment — kept, as its defensive parent check
+        // is, so a future caller fails loudly rather than appending under
+        // nothing.
+        throw new Error(`Root element <${rootLocalName}> in namespace ${rootNamespace} not found in ${xmlPath}`);
     }
-    const root = roots.item(0)!;
+    const root = roots[0]!;
     const nsAttrs = Object.entries(NS)
         .map(([k, v]) => `xmlns:${k}="${v}"`)
         .join(" ");
@@ -213,16 +234,22 @@ async function appendXml(xmlPath: string, rootTag: string, content: string, deco
     return true;
 }
 
+/**
+ * The `w14:paraId` of the first paragraph of the comment with the given id,
+ * or null when there is none. The comments, their ids, their paragraphs and
+ * the paragraph ids are read by namespace, so a part that binds the
+ * namespaces to other prefixes is read too (#930).
+ */
 function findParaId(commentsPart: DecodedXmlPart, commentId: number): string | null {
     const dom = parseXml(commentsPart.text);
-    const comments = dom.getElementsByTagName("w:comment");
+    const comments = getElementsByTagNameNSAll(dom, NS.w, "comment");
     for (let i = 0; i < comments.length; i += 1) {
-        const c = comments.item(i)!;
-        if (c.getAttribute("w:id") === String(commentId)) {
-            const ps = c.getElementsByTagName("w:p");
+        const c = comments[i]!;
+        if (c.getAttributeNS(NS.w, "id") === String(commentId)) {
+            const ps = getElementsByTagNameNSAll(c, NS.w, "p");
             for (let j = 0; j < ps.length; j += 1) {
-                const p = ps.item(j)!;
-                const pid = p.getAttribute("w14:paraId");
+                const p = ps[j]!;
+                const pid = p.getAttributeNS(NS.w14, "paraId");
                 if (pid) {
                     return pid;
                 }
@@ -232,14 +259,16 @@ function findParaId(commentsPart: DecodedXmlPart, commentId: number): string | n
     return null;
 }
 
-/** Return true if the comments part already contains a `<w:comment>` with the
- * given `w:id`. Used to preflight `addComment()` before mutating any part. */
+/** Return true if the comments part already contains a comment with the
+ * given id, reading the comments and their ids by namespace so a part that
+ * binds the WordprocessingML namespace to another prefix is read too (#930).
+ * Used to preflight `addComment()` before mutating any part. */
 function commentIdExists(commentsPart: DecodedXmlPart, commentId: number): boolean {
     const dom = parseXml(commentsPart.text);
-    const comments = dom.getElementsByTagName("w:comment");
+    const comments = getElementsByTagNameNSAll(dom, NS.w, "comment");
     for (let i = 0; i < comments.length; i += 1) {
-        const c = comments.item(i)!;
-        if (c.getAttribute("w:id") === String(commentId)) {
+        const c = comments[i]!;
+        if (c.getAttributeNS(NS.w, "id") === String(commentId)) {
             return true;
         }
     }
@@ -631,7 +660,9 @@ export interface AddCommentResult {
  * On success, returns the generated `paraId` and a human-readable status
  * message. On failure (missing `word/` directory, missing parent comment, a
  * part this edit would write that is stored in an encoding this tool cannot
- * decode (#879) or is not well-formed XML (#905), or, for a first comment,
+ * decode (#879) or is not well-formed XML (#905), a stored comment part that
+ * holds none of its expected root element, by namespace and local name —
+ * whatever prefix it binds (#930), or, for a first comment,
  * missing `[Content_Types].xml`, an `_rels/.rels` that cannot be decoded or
  * parsed, an `_rels/.rels` naming no non-External `officeDocument`
  * relationship, or an `officeDocument` target that, resolved as the read
@@ -715,6 +746,28 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
         decoded.set(part, xml);
     }
 
+    // Each comment part that exists must hold its root element, by namespace
+    // and local name, whatever prefix it binds: one that holds none — a root
+    // in another namespace, or of another local name — is refused before any
+    // write, the tree unchanged; before, the call threw mid-write (#930). A
+    // first comment appends to the three Microsoft parts too when they are
+    // already stored, so the check runs for it as well.
+    const rootElements: Array<[string, string, string]> = [
+        [comments, NS.w, "comments"],
+        [ext, NS.w15, "commentsEx"],
+        [ids, NS.w16cid, "commentsIds"],
+        [extensible, NS.w16cex, "commentsExtensible"],
+    ];
+    for (const [part, namespace, localName] of rootElements) {
+        const decodedPart = decoded.get(part);
+        if (decodedPart === undefined) {
+            continue;
+        }
+        if (getElementsByTagNameNSAll(parseXml(decodedPart.text), namespace, localName).length === 0) {
+            return { paraId: "", message: `Error: ${part} has no ${localName} element in the ${namespace} namespace` };
+        }
+    }
+
     // Preflight validation: check duplicate commentId and resolve `parent`
     // BEFORE we mutate any part. Without this, an existing comments.xml could
     // be mutated and then the parent-not-found branch leaves an orphan comment
@@ -749,7 +802,8 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
     if (
         !(await appendXml(
             comments,
-            "w:comments",
+            NS.w,
+            "comments",
             formatTemplate(COMMENT_XML, {
                 id: commentId,
                 author: escapeXml(author),
@@ -791,13 +845,14 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
         await fs.copyFile(path.join(TEMPLATE_DIR, "commentsExtensible.xml"), extensible);
     }
 
-    if (!(await appendXml(ext, "w15:commentsEx", commentEx, decoded.get(ext)))) {
+    if (!(await appendXml(ext, NS.w15, "commentsEx", commentEx, decoded.get(ext)))) {
         return { paraId: "", message: `Error: ${ext} is stored in an encoding this tool cannot decode` };
     }
     if (
         !(await appendXml(
             ids,
-            "w16cid:commentsIds",
+            NS.w16cid,
+            "commentsIds",
             `<w16cid:commentId w16cid:paraId="${paraId}" w16cid:durableId="${durableId}"/>`,
             decoded.get(ids),
         ))
@@ -807,7 +862,8 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
     if (
         !(await appendXml(
             extensible,
-            "w16cex:commentsExtensible",
+            NS.w16cex,
+            "commentsExtensible",
             `<w16cex:commentExtensible w16cex:durableId="${durableId}" w16cex:dateUtc="${ts}"/>`,
             decoded.get(extensible),
         ))
