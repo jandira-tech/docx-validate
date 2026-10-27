@@ -272,6 +272,41 @@ const referenceIds = (document: Document, localName: string): ReadonlySet<string
 const hasReference = (document: Document, localName: string): boolean =>
     WORD_MAIN_NAMESPACES.some((namespace) => getElementsByTagNameNSAll(document, namespace, localName).length > 0);
 
+/**
+ * A story root's effective XML when its bytes pass the byte-level XML
+ * checks; `undefined` when they fail or the effective view cannot be read,
+ * which leaves the root's usage undecided (#437, #536).
+ */
+const readableStory = async (context: ValidationContext, root: string): Promise<Document | undefined> => {
+    const bytes = context.bytes(root);
+    const readable = bytes !== undefined && !(await checkXmlSyntax(bytes, root)).some((issue) => issue.severity === "error");
+    const story = readable ? context.effectiveXml(root) : undefined;
+    return story?.ok ? story.document : undefined;
+};
+
+/** The reference element that uses each comments and notes segment. */
+const STORY_REFERENCES: ReadonlyMap<string, string> = new Map([
+    ["comments", "commentReference"],
+    ["footnotes", "footnoteReference"],
+    ["endnotes", "endnoteReference"],
+]);
+
+/**
+ * Whether the story root `root` is known to use its `segment` part — a
+ * comments, footnotes or endnotes reference in its readable effective XML.
+ * The read model keeps a lazy target whose usage it cannot decide (#437),
+ * so a rule that needs the use itself asks here (#858); `false` for an
+ * unreadable root and for any other segment.
+ */
+export const storyRootUses = async (context: ValidationContext, root: string, segment: string): Promise<boolean> => {
+    const reference = STORY_REFERENCES.get(segment);
+    if (reference === undefined) {
+        return false;
+    }
+    const story = await readableStory(context, root);
+    return story !== undefined && hasReference(story, reference);
+};
+
 /** The package traversal the reachability views share: the names, the lookup, the main documents. */
 type PackageReach = {
     readonly names: readonly string[];
@@ -617,14 +652,12 @@ const storyRootReadParts = async (
         // session 17) alike.
         targets.push(typed(sidecar, "relationships"));
     }
-    const bytes = context.bytes(root);
-    const readable = bytes !== undefined && !(await checkXmlSyntax(bytes, root)).some((issue) => issue.severity === "error");
-    const story = readable ? context.effectiveXml(root) : undefined;
-    const footerIds = story?.ok ? referenceIds(story.document, "footerReference") : undefined;
-    const headerIds = story?.ok ? referenceIds(story.document, "headerReference") : undefined;
-    const usesComments = story?.ok ? hasReference(story.document, "commentReference") : undefined;
-    const usesFootnotes = story?.ok ? hasReference(story.document, "footnoteReference") : undefined;
-    const usesEndnotes = story?.ok ? hasReference(story.document, "endnoteReference") : undefined;
+    const story = await readableStory(context, root);
+    const footerIds = story ? referenceIds(story, "footerReference") : undefined;
+    const headerIds = story ? referenceIds(story, "headerReference") : undefined;
+    const usesComments = story ? hasReference(story, "commentReference") : undefined;
+    const usesFootnotes = story ? hasReference(story, "footnoteReference") : undefined;
+    const usesEndnotes = story ? hasReference(story, "endnoteReference") : undefined;
     // Whether a lazily parsed relationship's target is used; `undefined`
     // when that cannot be decided, which keeps the target reached (#437).
     const lazyUsed = (segment: string, id: string): boolean | undefined => {
