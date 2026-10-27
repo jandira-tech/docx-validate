@@ -232,13 +232,15 @@ root (#910), and so does a second or nested call for the same part on the same
 validator (#941), a call for another part, a call from another validator, or one
 made after the walk's call settled by a task that call started (#926). That
 first call routes by the root its walk read, whatever a nested call or walk
-reads meanwhile: each walk and each call keeps its own roots (#949). Each schema
-walk keeps its own trace and engine-failure count, and the walk that finishes
-last leaves its own on the validator, so a walk nested in another on the same
-validator no longer lists parts twice or loses the outer walk's engine failures
-(#943). The earlier basename routes (`core.xml`, `app.xml`, `custom.xml`, …)
-still come first. The CLI prints the finding with `--json`; its human output
-lists errors only.
+reads meanwhile: each walk and each call keeps its own roots (#949). A task that
+outlives its walk or call reads the root afresh, even when it calls
+`_validateSingleFileXsd` directly; before, it routed by the root the walk or
+call had read (#964). Each schema walk keeps its own trace and engine-failure
+count, and the walk that finishes last leaves its own on the validator, so a
+walk nested in another on the same validator no longer lists parts twice or
+loses the outer walk's engine failures (#943). The earlier basename routes
+(`core.xml`, `app.xml`, `custom.xml`, …) still come first. The CLI prints the
+finding with `--json`; its human output lists errors only.
 
 Full DOCX/DOCM validation reports duplicate relationship `Id` values as
 `rels-id-duplicate`, judging the relationships part of every owner part in
