@@ -124,11 +124,14 @@ export const decodeXmlPart = (bytes: Uint8Array): DecodedXmlPart | undefined => 
     // so the byte order shows in the first two bytes (XML 1.0 Appendix F).
     // Read the declaration with that decoder, in full: it may carry any
     // amount of whitespace, so no fixed byte window is safe. Otherwise the
-    // declaration is ASCII and the first 200 bytes are plenty to name UTF-16.
+    // declaration is ASCII; read it up to its first `>`, past which the
+    // pattern below cannot match. A fixed window let a long declaration hide
+    // an encoding this project cannot decode (#881).
     const sixteenBit = bytes.length >= 2 && (bytes[0] === 0) !== (bytes[1] === 0);
+    const declarationEnd = sixteenBit ? -1 : bytes.indexOf(0x3e);
     const head = sixteenBit
         ? new TextDecoder(bytes[0] === 0 ? "utf-16be" : "utf-16le").decode(bytes)
-        : new TextDecoder("latin1").decode(bytes.subarray(0, Math.min(bytes.length, 200)));
+        : new TextDecoder("latin1").decode(declarationEnd === -1 ? bytes : bytes.subarray(0, declarationEnd + 1));
     const declared = /^\s*<\?xml[^>]*encoding\s*=\s*["']([^"']+)["']/i
         .exec(head)?.[1]
         ?.toLowerCase()

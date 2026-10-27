@@ -191,4 +191,24 @@ describe("mergeRuns", () => {
             });
         },
     );
+
+    it("leaves a main part whose long declaration names an encoding it cannot decode untouched (#881)", async () => {
+        await withTempDir(async (dir) => {
+            const body = "<w:body><w:p>" + "<w:r><w:t>Caf</w:t></w:r>" + "<w:r><w:t>\u008e</w:t></w:r>" + "</w:p></w:body>";
+            // "Café" as Mac Roman stores it (é is 0x8E), behind a declaration longer than 200 bytes.
+            const document = Buffer.from(
+                `<?xml version="1.0"${" ".repeat(240)} encoding="macintosh" standalone="yes"?>\n<w:document ${W}>${body}</w:document>`,
+                "latin1",
+            );
+            const wordDir = path.join(dir, "word");
+            await fs.mkdir(wordDir, { recursive: true });
+            const docPath = path.join(wordDir, "document.xml");
+            await fs.writeFile(docPath, document);
+
+            const result = await mergeRuns(dir);
+            expect(result.count).toBe(0);
+
+            expect((await fs.readFile(docPath)).equals(document)).toBe(true);
+        });
+    });
 });
