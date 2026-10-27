@@ -319,7 +319,7 @@ describe("resolveTarget: the root and a climb past it name no part (#970)", () =
         ["word", "../..", false],
         ["word", "../../footnotes.xml", false],
         [".", "/../footnotes.xml", false],
-    ] as const)("from %s, %s (clamped: %s) finds no stored %%2e spelling", (baseDir, target, clamp) => {
+    ] as const)("from %s, %s (clamped: %s) finds no stored encoded-dot spelling", (baseDir, target, clamp) => {
         expect(resolveTarget(lookup, baseDir, target, clamp)).toBeUndefined();
     });
 

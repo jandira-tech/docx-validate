@@ -1047,6 +1047,38 @@ describe("a notes relationship target escaping the package (#830, sessions 63 s6
         });
     });
 
+    // A target whose climb ends at the package root names no part, so it
+    // defines no note, even beside a stored `%2e` part, whose OPC-equivalent
+    // key is the root's `.`; until #970 the lookup matched it. Word has not
+    // been probed with a target naming the root.
+    it.each([
+        ["footnote", "../.."],
+        ["footnote", "../../.."],
+        ["endnote", "../.."],
+    ] as const)(
+        "rejects the %s reference whose target %s names the root beside a part stored as an encoded dot (#970)",
+        async (kind, target) => {
+            await withTempDir(async (dir) => {
+                const code = `word-${kind}-reference-missing`;
+                const file = path.join(dir, "root-target.docx");
+                await writeFile(file, await notesAt(kind, "%2e", target));
+                const selected = await validate(file, { profile: "word-valid", checks: [code] });
+                expect(selected.valid).toBe(false);
+                const errors = selected.issues.filter((issue) => issue.severity === "error");
+                expect(errors).toEqual([
+                    expect.objectContaining({
+                        code,
+                        path: "word/document.xml",
+                        message: expect.stringContaining(`${kind} reference uses id 1`),
+                    }),
+                ]);
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.valid).toBe(false);
+                expect(result.issues.filter((issue) => issue.code === code)).toEqual(errors);
+            });
+        },
+    );
+
     it("still rejects the escaping relationship whose note sits only in word/footnotes.xml", async () => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "escaping-in-word-folder.docx");
