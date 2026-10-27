@@ -652,7 +652,14 @@ describe("DOCXSchemaValidator", () => {
                 );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 expect(await v.repairParaId()).toBe(1);
-                expect(await fs.readFile(filePath, "utf-8")).toMatch(/w14:paraId="[0-9A-F]{8}"/);
+                // The stored value must be the replacement: the original
+                // FFFFFFFF is eight hex digits too (#894).
+                const paraIds = Array.from((await fs.readFile(filePath, "utf-8")).matchAll(/w14:paraId="([0-9A-F]{8})"/g)).map(
+                    (m) => m[1]!,
+                );
+                expect(paraIds).toHaveLength(1);
+                expect(paraIds[0]).not.toBe("FFFFFFFF");
+                expect(Number.parseInt(paraIds[0]!, 16)).toBeLessThan(0x80000000);
             });
         });
 

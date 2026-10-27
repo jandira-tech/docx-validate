@@ -53,12 +53,14 @@ export const readXmlPart = async (file: string): Promise<DecodedXmlPart | undefi
 /**
  * Write a DOM back to the part it came from, in the part's own encoding.
  *
- * The XML declaration names the encoding the bytes are written in, so a
- * UTF-16 part is written back as UTF-16, with its BOM if it had one, and a
- * UTF-8 part as UTF-8. A part whose encoding cannot be decoded is left
- * untouched — writing text decoded from it would corrupt the part — and
- * `false` is returned, so a caller does not count or report a repair that
- * never reached disk (#880). A written part returns `true`.
+ * A UTF-16 part is written back as UTF-16, with its BOM if it had one, and a
+ * UTF-8 part as UTF-8. The declaration's `encoding` pseudo-attribute names
+ * the encoding the bytes are written in when the writer adds the declaration
+ * or rewrites one that has it; a declaration without one keeps none (#888,
+ * #894). A part whose encoding cannot be decoded is left untouched — writing
+ * text decoded from it would corrupt the part — and `false` is returned, so
+ * a caller does not count or report a repair that never reached disk (#880).
+ * A written part returns `true`.
  *
  * `part` is the encoding the caller decoded the part in. A caller that holds
  * only a DOM may leave it out: the part's current bytes then decide the
