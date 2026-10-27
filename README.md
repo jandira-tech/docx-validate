@@ -1952,12 +1952,19 @@ document but `word/document.xml`
 ([#919](https://github.com/jandira-tech/docx-validate/issues/919)). Each target
 is relative to the main document's folder (`../word/comments.xml` from `main/`).
 An internal `comments` relationship, of the Transitional or the Strict type,
-whose target resolves to `word/comments.xml` under OPC part-name equivalence,
-relative or from the package root, counts as already there; an External
-relationship, or one of another type, does not, and the four relationships are
-added beside it; before, it stopped them being added, so the comment's markers
-named a comment Word does not read
-([#917](https://github.com/jandira-tech/docx-validate/issues/917)). The
+whose target names `word/comments.xml` under OPC part-name equivalence once
+resolved as the read model resolves it (`\` read as `/`, the query and fragment
+dropped, a URI scheme naming no part), relative or from the package root, counts
+as already there; an External relationship, or one of another type, does not,
+and the four relationships are added beside it; before, it stopped them being
+added, so the comment's markers named a comment Word does not read
+([#917](https://github.com/jandira-tech/docx-validate/issues/917)), and a target
+spelled with a query, a fragment or a backslash was not counted, so a second set
+of relationships was added beside it
+([#928](https://github.com/jandira-tech/docx-validate/issues/928)). A
+package-absolute target keeps its dot segments, as the read model's resolver
+does, so `/word/../word/comments.xml` names no part
+([#947](https://github.com/jandira-tech/docx-validate/issues/947)). The
 relationships parts are read and written in the package-relationships namespace,
 whatever prefix they bind it to: a prefixed `_rels/.rels` names its main
 document as an unprefixed one does, the new relationships are created under the
