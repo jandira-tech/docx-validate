@@ -2438,7 +2438,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     /**
      * Align the threaded-comment parts, preflighting the encoding and
      * writability of every part to be written before changing any of them.
-     * A failed write returns only the repairs already written (#909).
+     * A failed or refused write returns only the repairs already written
+     * (#909, #920).
      */
     async repairCommentThreading(): Promise<number> {
         const commentsXml = await this.mainRelatedPath("comments", "comments.xml");
@@ -2561,7 +2562,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             } catch {
                 return repairs;
             }
-            if (written) repairs += idsRepairs;
+            if (!written) return repairs;
+            repairs += idsRepairs;
         }
         if (retargetExtensible && cexDom && cexEntry && commentsExtensibleXml && alignedDurableId !== null) {
             cexEntry.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", alignedDurableId);
@@ -2912,8 +2914,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * are self-contained (no part references them), so each keeps its own
      * per-element renumbering, independent of the preflight below.
      * Every part the hex rewrite would write must be decodable and writable;
-     * otherwise only the decimal renumbering runs. A failed write returns
-     * only the repairs already written (#909).
+     * otherwise only the decimal renumbering runs. A failed or refused write
+     * returns only the repairs already written (#909, #920).
      */
     async repairDurableId(): Promise<number> {
         let repairs = 0;
@@ -3042,7 +3044,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 } catch {
                     return repairs;
                 }
-                if (written) repairs += partRepairs;
+                if (!written) return repairs;
+                repairs += partRepairs;
             }
         }
         return repairs;
@@ -3070,8 +3073,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      *          check.
      *
      * Every part to be written must be decodable and writable before any
-     * write starts. A failed write returns only the repairs already written
-     * (#909).
+     * write starts. A failed or refused write returns only the repairs already
+     * written (#909, #920).
      */
     async repairParaId(): Promise<number> {
         let repairs = 0;
@@ -3247,7 +3250,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 } catch {
                     return repairs;
                 }
-                if (written) repairs += partRepairs;
+                if (!written) return repairs;
+                repairs += partRepairs;
             }
         }
         return repairs;
