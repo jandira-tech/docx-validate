@@ -32,6 +32,8 @@ import { withTempDir } from "../src/lib/run-cli";
 import { parseXml } from "../src/lib/xml-helpers";
 import { SECURE_LONG_HEX_EXCLUSIVE_MAX } from "../src/lib/secure-id";
 import { addComment, generateHexId } from "../src/scripts/comment";
+import { validate } from "../src/scripts/office/validate";
+import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 const RELS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
@@ -39,6 +41,9 @@ const RELS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 </Relationships>`;
 
 const RELATIONSHIPS_TYPE = "application/vnd.openxmlformats-package.relationships+xml";
+const MAIN_DOCUMENT_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
+const OFFICE_DOCUMENT_RELATIONSHIP_TYPE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument";
+const STRICT_OFFICE_DOCUMENT_RELATIONSHIP_TYPE = "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument";
 
 const CT_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
@@ -50,6 +55,55 @@ async function makeFixture(dir: string): Promise<void> {
     await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
     await fs.writeFile(path.join(dir, "word", "_rels", "document.xml.rels"), RELS_XML, "utf-8");
     await fs.writeFile(path.join(dir, "[Content_Types].xml"), CT_XML, "utf-8");
+}
+
+/** The package relationships part holding one relationship with `attributes`. */
+const packageRels = (attributes: string): string =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n  <Relationship Id="rId1" ${attributes}/>\n</Relationships>`;
+
+const officeDocumentRels = (target: string): string => packageRels(`Type="${OFFICE_DOCUMENT_RELATIONSHIP_TYPE}" Target="${target}"`);
+
+/** The minimal main document with a paired marker triple for comment 0. */
+const markedMainDocument = (): string =>
+    MINIMAL_PARTS["word/document.xml"]!.replace(
+        "<w:r><w:t>Hello</w:t></w:r>",
+        '<w:commentRangeStart w:id="0"/><w:r><w:t>Hello</w:t></w:r><w:commentRangeEnd w:id="0"/><w:r><w:commentReference w:id="0"/></w:r>',
+    );
+
+/** Zip an unpacked tree into a DOCX at `file`. */
+async function packTree(dir: string, file: string): Promise<void> {
+    const parts: Record<string, Buffer> = {};
+    for (const [name, bytes] of await readTree(dir)) {
+        parts[name.split(path.sep).join("/")] = bytes;
+    }
+    await fs.writeFile(file, await buildDocx(parts));
+}
+
+/**
+ * An unpacked tree whose `_rels/.rels` holds `relsXml`, with `word/`, a
+ * `[Content_Types].xml` covering the stored parts, and the minimal main
+ * document stored at `mainPart` when given. Without `relsDefault` the package
+ * relationships part is typed by Override, so a relationships part a first
+ * comment creates must be typed too (#895, #906).
+ */
+async function makePackageFixture(dir: string, relsXml: string, mainPart?: string, options: { relsDefault?: boolean } = {}): Promise<void> {
+    await fs.mkdir(path.join(dir, "word"), { recursive: true });
+    await fs.mkdir(path.join(dir, "_rels"), { recursive: true });
+    await fs.writeFile(path.join(dir, "_rels", ".rels"), relsXml, "utf-8");
+    const relsCoverage =
+        options.relsDefault === false
+            ? `<Override PartName="/_rels/.rels" ContentType="${RELATIONSHIPS_TYPE}"/>`
+            : `<Default Extension="rels" ContentType="${RELATIONSHIPS_TYPE}"/>`;
+    const mainOverride = mainPart === undefined ? "" : `<Override PartName="/${mainPart}" ContentType="${MAIN_DOCUMENT_CONTENT_TYPE}"/>`;
+    await fs.writeFile(
+        path.join(dir, "[Content_Types].xml"),
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">${relsCoverage}${mainOverride}</Types>`,
+        "utf-8",
+    );
+    if (mainPart !== undefined) {
+        await fs.mkdir(path.dirname(path.join(dir, ...mainPart.split("/"))), { recursive: true });
+        await fs.writeFile(path.join(dir, ...mainPart.split("/")), MINIMAL_PARTS["word/document.xml"]!, "utf-8");
+    }
 }
 
 /** A part stored in UTF-16, with the byte order mark that says which way round it is. */
@@ -285,6 +339,272 @@ describe("addComment", () => {
             });
         },
     );
+
+    it("relates the comments parts through a renamed main document's own relationships part (#906)", { timeout: 30000 }, async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/main.xml"), "word/main.xml");
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The relationships live in the sidecar of the main document that
+            // exists, not the conventional one that does not.
+            const relsPath = path.join(dir, "word", "_rels", "main.xml.rels");
+            const relationships = parseXml(await fs.readFile(relsPath, "utf-8")).getElementsByTagName("Relationship");
+            const targets: string[] = [];
+            for (let i = 0; i < relationships.length; i += 1) {
+                targets.push(relationships.item(i)!.getAttribute("Target") ?? "");
+            }
+            expect(targets).toEqual(["comments.xml", "commentsExtended.xml", "commentsIds.xml", "commentsExtensible.xml"]);
+            await expect(fs.access(path.join(dir, "word", "_rels", "document.xml.rels"))).rejects.toThrow();
+
+            // A second comment adds no second set of relationships.
+            const second = await addComment({
+                unpackedDir: dir,
+                commentId: 1,
+                text: "Reply text",
+                author: "Reviewer",
+                initials: "R",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 5, 0)),
+            });
+            expect(second.message).toMatch(/^Added comment 1 \(para_id=[0-9A-F]{8}\)$/);
+            expect(parseXml(await fs.readFile(relsPath, "utf-8")).getElementsByTagName("Relationship").length).toBe(4);
+
+            // The marked, packed tree validates: the real main document reads
+            // its comments through its own relationships part.
+            await fs.writeFile(path.join(dir, "word", "main.xml"), markedMainDocument(), "utf-8");
+            const file = path.join(dir, "renamed-main.docx");
+            await packTree(dir, file);
+            const validation = await validate(file, { profile: "word-valid" });
+            expect(validation.issues.filter((issue) => issue.code === "comment-marker-missing")).toEqual([]);
+            expect(validation.valid).toBe(true);
+        });
+    });
+
+    it(
+        "relates the comments parts from a main document outside word/, with folder-relative targets (#906)",
+        { timeout: 30000 },
+        async () => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("main/doc.xml"), "main/doc.xml", { relsDefault: false });
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                const relationships = parseXml(
+                    await fs.readFile(path.join(dir, "main", "_rels", "doc.xml.rels"), "utf-8"),
+                ).getElementsByTagName("Relationship");
+                const targets: string[] = [];
+                for (let i = 0; i < relationships.length; i += 1) {
+                    targets.push(relationships.item(i)!.getAttribute("Target") ?? "");
+                }
+                expect(targets).toEqual([
+                    "../word/comments.xml",
+                    "../word/commentsExtended.xml",
+                    "../word/commentsIds.xml",
+                    "../word/commentsExtensible.xml",
+                ]);
+
+                // The relationships part a first comment creates outside the
+                // conventional place is typed under its own name (#895).
+                const ctAfter = await fs.readFile(path.join(dir, "[Content_Types].xml"), "utf-8");
+                expect(ctAfter).toContain(`<Override PartName="/main/_rels/doc.xml.rels" ContentType="${RELATIONSHIPS_TYPE}"/>`);
+
+                await fs.writeFile(path.join(dir, "main", "doc.xml"), markedMainDocument(), "utf-8");
+                const file = path.join(dir, "moved-main.docx");
+                await packTree(dir, file);
+                const validation = await validate(file, { profile: "word-valid" });
+                expect(validation.issues.filter((issue) => issue.code?.startsWith("comment-"))).toEqual([]);
+                expect(validation.valid).toBe(true);
+            });
+        },
+    );
+
+    it("keeps writing word/_rels/document.xml.rels when the package relationships name word/document.xml (#906)", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"));
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            const relsXml = await fs.readFile(path.join(dir, "word", "_rels", "document.xml.rels"), "utf-8");
+            expect(relsXml).toContain('Target="comments.xml"');
+            await expect(fs.access(path.join(dir, "word", "_rels", "main.xml.rels"))).rejects.toThrow();
+        });
+    });
+
+    it.each(["/word/document.xml", "Word/Document.xml", "word/d%6Fcument.xml"])(
+        "keeps the conventional wiring when the package relationships name %s, an equivalent of word/document.xml (#906)",
+        async (target) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels(target), "word/document.xml");
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // OPC part names compare ASCII case-insensitively, with
+                // unreserved escapes decoded, so the target names the
+                // conventional main document.
+                expect(await fs.readdir(path.join(dir, "word", "_rels"))).toEqual(["document.xml.rels"]);
+                const relationships = parseXml(
+                    await fs.readFile(path.join(dir, "word", "_rels", "document.xml.rels"), "utf-8"),
+                ).getElementsByTagName("Relationship");
+                const targets: string[] = [];
+                for (let i = 0; i < relationships.length; i += 1) {
+                    targets.push(relationships.item(i)!.getAttribute("Target") ?? "");
+                }
+                expect(targets).toEqual(["comments.xml", "commentsExtended.xml", "commentsIds.xml", "commentsExtensible.xml"]);
+            });
+        },
+    );
+
+    it("accepts the ISO Strict officeDocument relationship type when finding the main document (#906)", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(
+                dir,
+                packageRels(`Type="${STRICT_OFFICE_DOCUMENT_RELATIONSHIP_TYPE}" Target="word/main.xml"`),
+                "word/main.xml",
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+            expect(await fs.readFile(path.join(dir, "word", "_rels", "main.xml.rels"), "utf-8")).toContain('Target="comments.xml"');
+        });
+    });
+
+    it.each(["/word/comments.xml", "./comments.xml", "Comments.xml", "comm%65nts.xml"])(
+        "adds no second set of relationships when the main document already relates word/comments.xml as %s (#906)",
+        async (target) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("word/main.xml"), "word/main.xml");
+                await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+                await fs.writeFile(
+                    path.join(dir, "word", "_rels", "main.xml.rels"),
+                    RELS_XML.replace("relationships/styles", "relationships/comments").replace('Target="styles.xml"', `Target="${target}"`),
+                    "utf-8",
+                );
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // The resolved target is word/comments.xml under OPC
+                // part-name equivalence, so nothing is appended.
+                const relationships = parseXml(
+                    await fs.readFile(path.join(dir, "word", "_rels", "main.xml.rels"), "utf-8"),
+                ).getElementsByTagName("Relationship");
+                expect(relationships.length).toBe(1);
+                expect(relationships.item(0)!.getAttribute("Target")).toBe(target);
+            });
+        },
+    );
+
+    it.each([
+        [
+            "the package relationships declare an encoding it cannot decode",
+            officeDocumentRels("word/main.xml"),
+            "word/main.xml",
+            (dir: string) => `${path.join(dir, "_rels", ".rels")} is stored in an encoding this tool cannot decode`,
+            async (dir: string) => declareUndecodable(path.join(dir, "_rels", ".rels")),
+        ],
+        [
+            "the package relationships are not well-formed XML",
+            '<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n  <Relationship Id="rId1" Type="' +
+                OFFICE_DOCUMENT_RELATIONSHIP_TYPE +
+                '" Target="word/main.xml">\n</Relationships>',
+            "word/main.xml",
+            (dir: string) => `${path.join(dir, "_rels", ".rels")} is not well-formed XML`,
+            undefined,
+        ],
+        [
+            "the package relationships name no officeDocument relationship",
+            packageRels(`Type="${OFFICE_DOCUMENT_RELATIONSHIP_TYPE.replace(/officeDocument$/, "styles")}" Target="word/main.xml"`),
+            "word/main.xml",
+            (dir: string) => `${path.join(dir, "_rels", ".rels")} names no officeDocument relationship`,
+            undefined,
+        ],
+        [
+            "the officeDocument relationship is External",
+            packageRels(`Type="${OFFICE_DOCUMENT_RELATIONSHIP_TYPE}" Target="https://example.com/doc.xml" TargetMode="External"`),
+            "word/main.xml",
+            (dir: string) => `${path.join(dir, "_rels", ".rels")} names an External officeDocument relationship`,
+            undefined,
+        ],
+        [
+            "the officeDocument target escapes the package root",
+            officeDocumentRels("../outside/main.xml"),
+            undefined,
+            (dir: string) => `${path.join(dir, "_rels", ".rels")} names a main document outside the package`,
+            undefined,
+        ],
+        [
+            "the named main document does not exist",
+            officeDocumentRels("word/main.xml"),
+            undefined,
+            (dir: string) => `${path.join(dir, "word", "main.xml")} not found`,
+            undefined,
+        ],
+    ])("refuses a first comment when %s, changing nothing (#906)", async (_label, relsXml, mainPart, expected, prepare) => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, relsXml, mainPart);
+            await prepare?.(dir);
+
+            const before = await readTree(dir);
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "x",
+                author: "TestAuthor",
+                initials: "TA",
+            });
+
+            expect(result.paraId).toBe("");
+            expect(result.message).toMatch(/^Error: /);
+            expect(result.message).toContain(expected(dir));
+            expect(await readTree(dir)).toEqual(before);
+        });
+    });
 
     it("refuses a first comment when [Content_Types].xml is missing, changing nothing (#895)", async () => {
         await withTempDir(async (dir) => {
