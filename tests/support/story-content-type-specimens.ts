@@ -11,6 +11,22 @@ const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 export const storyContentType = (segment: string): string =>
     `application/vnd.openxmlformats-officedocument.wordprocessingml.${segment}+xml`;
 
+const STRICT_W = "http://purl.oclc.org/ooxml/wordprocessingml/main";
+const STRICT_R = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+/**
+ * `parts` with a Strict main document and styles part, and Strict
+ * relationship types and ids: every session behind a read-story co-reach
+ * citation stored a Transitional main document, so this package is
+ * unprobed (#857, #861). Story parts keep the roots `parts` gives them.
+ */
+export const uniformlyStrict = (parts: Record<string, string>): Record<string, string> => ({
+    ...parts,
+    "word/document.xml": parts["word/document.xml"]!.replaceAll(W, STRICT_W).replaceAll(R, STRICT_R),
+    "word/styles.xml": parts["word/styles.xml"]!.replaceAll(W, STRICT_W),
+    "_rels/.rels": parts["_rels/.rels"]!.replaceAll(R, STRICT_R),
+    "word/_rels/document.xml.rels": parts["word/_rels/document.xml.rels"]!.replaceAll(R, STRICT_R),
+});
+
 /** Sessions 24 and 26: the minimal package plus a main-document or reached-glossary header/footer. */
 export const storyContentTypeParts = (
     segment: "header" | "footer",
