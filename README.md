@@ -1966,7 +1966,14 @@ document, whatever spelling either has; before, a main document stored as
 sidecar, and a sidecar stored under another spelling got a second one beside
 it ([#946](https://github.com/jandira-tech/docx-validate/issues/946)). Each
 target is relative to the main document's folder (`../word/comments.xml` from
-`main/`).
+`main/`). The stored names are the ones the package view reads, so a main
+document stored as a symbolic link, or under one, that resolves inside the
+unpacked tree is found under the link's own name, and one that resolves
+outside it, or is broken, is not; before, every link was dropped
+([#938](https://github.com/jandira-tech/docx-validate/issues/938)).
+A directory that cannot be listed hides only the parts stored under it; before,
+it made `addComment` reject with the file system's error
+([#961](https://github.com/jandira-tech/docx-validate/issues/961)).
 An internal `comments` relationship, of the Transitional or the Strict type,
 whose target names `word/comments.xml` under OPC part-name equivalence once
 resolved as the read model resolves it (`\` read as `/`, the query and fragment

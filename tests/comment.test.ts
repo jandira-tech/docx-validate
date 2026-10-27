@@ -2437,6 +2437,226 @@ describe("addComment", () => {
         },
     );
 
+    // #938: the stored part names the wiring looks the main document up
+    // among are the ones the package view reads, so a symbolic link whose
+    // target resolves inside the unpacked tree counts under its own stored
+    // name, and one that resolves outside it, or is broken, is no stored
+    // part at all. A main document under an in-tree link is found, and the
+    // call is then refused by the #939 check naming the link it would write
+    // through — before, it was refused as naming no stored part.
+
+    it("adds a comment through a main document stored as a symbolic link inside the tree (#938)", { timeout: 30000 }, async () => {
+        await withTempDir(async (dir) => {
+            // The tree is named like a package so validate() dispatches the
+            // directory without an --original.
+            const tree = path.join(dir, "unpacked.docx");
+            await fs.mkdir(path.join(tree, "word"), { recursive: true });
+            await fs.mkdir(path.join(tree, "_rels"), { recursive: true });
+            await fs.writeFile(path.join(tree, "_rels", ".rels"), officeDocumentRels("word/main.xml"), "utf-8");
+            await fs.writeFile(
+                path.join(tree, "[Content_Types].xml"),
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="${RELATIONSHIPS_TYPE}"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/main.xml" ContentType="${MAIN_DOCUMENT_CONTENT_TYPE}"/></Types>`,
+                "utf-8",
+            );
+            await fs.writeFile(path.join(tree, "word", "source.xml"), MINIMAL_PARTS["word/document.xml"]!, "utf-8");
+            await fs.symlink("source.xml", path.join(tree, "word", "main.xml"), "file");
+            const sourceBefore = await fs.readFile(path.join(tree, "word", "source.xml"));
+
+            const result = await addComment({
+                unpackedDir: tree,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The wiring finds the link's own stored name, so the
+            // relationships are created in its sidecar; before #938 the
+            // stored-names walk kept only dirents that are files, so the
+            // link was dropped and the call refused the target as naming
+            // no stored part.
+            expect(relationshipRows(parseXml(await fs.readFile(path.join(tree, "word", "_rels", "main.xml.rels"), "utf-8")))).toEqual(
+                firstCommentRelationships(1),
+            );
+
+            // The link is left a link and its target's bytes untouched: the
+            // markers are written by hand below, through the real file.
+            expect((await fs.lstat(path.join(tree, "word", "main.xml"))).isSymbolicLink()).toBe(true);
+            expect(await fs.readlink(path.join(tree, "word", "main.xml"))).toBe("source.xml");
+            expect(await fs.readFile(path.join(tree, "word", "source.xml"))).toEqual(sourceBefore);
+
+            // The marked tree validates on the directory: the package view
+            // reads word/main.xml through the link, as the wiring now does.
+            // Nothing reports the link itself; the warnings name
+            // word/source.xml, the real file beside it.
+            await fs.writeFile(path.join(tree, "word", "source.xml"), markedMainDocument(), "utf-8");
+            const validation = await validate(tree, { profile: "word-valid" });
+            expect(validation.valid).toBe(true);
+            expect(validation.issues.filter((issue) => issue.path === "word/main.xml")).toEqual([]);
+        });
+    });
+
+    it("refuses a first comment whose main document sits under an in-tree directory link, changing nothing (#938)", async () => {
+        await withTempDir(async (dir) => {
+            const tree = path.join(dir, "unpacked");
+            await fs.mkdir(tree, { recursive: true });
+            await makePackageFixture(tree, officeDocumentRels("docs/main.xml"));
+            await fs.mkdir(path.join(tree, "src-docs"), { recursive: true });
+            await fs.writeFile(path.join(tree, "src-docs", "main.xml"), MINIMAL_PARTS["word/document.xml"]!, "utf-8");
+            await fs.symlink("src-docs", path.join(tree, "docs"), "dir");
+
+            const before = await readTree(tree);
+            const result = await addComment({ unpackedDir: tree, commentId: 0, text: "x", author: "Test", initials: "T" });
+
+            // The main document is found under the link's stored name, and
+            // its sidecar docs/_rels/main.xml.rels would be written through
+            // the link, so the #939 check refuses the call naming it; before
+            // #938 the directory link was dropped and the call was refused
+            // as docs/main.xml not being stored.
+            expect(result).toEqual({
+                paraId: "",
+                message: `Error: ${path.join(tree, "docs")} is a symbolic link; addComment does not write through one`,
+            });
+            expect(await readTree(tree)).toEqual(before);
+        });
+    });
+
+    it("refuses a first comment whose main document is a link to a file outside the tree, changing nothing (#938)", async () => {
+        await withTempDir(async (dir) => {
+            await withTempDir(async (outside) => {
+                const tree = path.join(dir, "unpacked");
+                await fs.mkdir(tree, { recursive: true });
+                await makePackageFixture(tree, officeDocumentRels("word/main.xml"));
+                const target = path.join(outside, "main.xml");
+                await fs.writeFile(target, MINIMAL_PARTS["word/document.xml"]!, "utf-8");
+                await fs.symlink(target, path.join(tree, "word", "main.xml"), "file");
+
+                const before = await readTree(tree);
+                const result = await addComment({ unpackedDir: tree, commentId: 0, text: "x", author: "Test", initials: "T" });
+
+                // The package view refuses the link at its stored name, so
+                // the target names no stored part — before #938 the old
+                // walker dropped the link and refused the same way.
+                expect(result).toEqual({ paraId: "", message: `Error: ${path.join(tree, "word", "main.xml")} not found` });
+                expect(await readTree(tree)).toEqual(before);
+                expect(await fs.readFile(target)).toEqual(Buffer.from(MINIMAL_PARTS["word/document.xml"]!, "utf-8"));
+            });
+        });
+    });
+
+    it("refuses a first comment whose main document is a broken link, changing nothing (#938)", async () => {
+        await withTempDir(async (dir) => {
+            const tree = path.join(dir, "unpacked");
+            await fs.mkdir(tree, { recursive: true });
+            await makePackageFixture(tree, officeDocumentRels("word/main.xml"));
+            await fs.symlink("nowhere.xml", path.join(tree, "word", "main.xml"), "file");
+
+            const before = await readTree(tree);
+            const result = await addComment({ unpackedDir: tree, commentId: 0, text: "x", author: "Test", initials: "T" });
+
+            // A broken link is unreadable to the package view too, so the
+            // target names no stored part, exactly as before #938.
+            expect(result).toEqual({ paraId: "", message: `Error: ${path.join(tree, "word", "main.xml")} not found` });
+            expect(await readTree(tree)).toEqual(before);
+        });
+    });
+
+    it("refuses a first comment whose sidecar is a symbolic link under an OPC-equivalent spelling, changing nothing (#938)", async () => {
+        await withTempDir(async (dir) => {
+            const tree = path.join(dir, "unpacked");
+            await makePackageFixture(tree, officeDocumentRels("word/main.xml"), "word/main.xml");
+            await fs.mkdir(path.join(tree, "word", "_rels"), { recursive: true });
+            await fs.mkdir(path.join(tree, "word", "rels"), { recursive: true });
+            await fs.writeFile(path.join(tree, "word", "rels", "main.xml.rels"), RELS_XML, "utf-8");
+            await fs.symlink("../rels/main.xml.rels", path.join(tree, "word", "_rels", "m%61in.xml.rels"), "file");
+
+            const before = await readTree(tree);
+            const result = await addComment({ unpackedDir: tree, commentId: 0, text: "x", author: "Test", initials: "T" });
+
+            // The sidecar lookup reads the package view's stored names, so
+            // it finds the link's OPC-equivalent spelling of
+            // word/_rels/main.xml.rels and the #939 check refuses the write
+            // naming it; before #938 the link was dropped from the stored
+            // names and the relationships were written to a second,
+            // OPC-equivalent word/_rels/main.xml.rels beside it.
+            expect(result).toEqual({
+                paraId: "",
+                message: `Error: ${path.join(tree, "word", "_rels", "m%61in.xml.rels")} is a symbolic link; addComment does not write through one`,
+            });
+            expect(await readTree(tree)).toEqual(before);
+            expect(await fs.readdir(path.join(tree, "word", "_rels"))).toEqual(["m%61in.xml.rels"]);
+        });
+    });
+
+    // chmod denies nothing to root, nor a directory listing on Windows.
+    const listingCannotBeDenied = process.platform === "win32" || process.getuid?.() === 0;
+
+    it.skipIf(listingCannotBeDenied).each([
+        ["no _rels/.rels", false],
+        ["an _rels/.rels naming word/main.xml", true],
+    ] as const)("adds a comment beside a directory that cannot be listed, with %s (#961)", async (_label, wired) => {
+        await withTempDir(async (dir) => {
+            if (wired) {
+                await makePackageFixture(dir, officeDocumentRels("word/main.xml"), "word/main.xml");
+            } else {
+                await makeFixture(dir);
+            }
+            const blocked = path.join(dir, "unused");
+            await fs.mkdir(blocked);
+            await fs.chmod(blocked, 0o000);
+            let result: Awaited<ReturnType<typeof addComment>> | undefined;
+            try {
+                result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+            } finally {
+                await fs.chmod(blocked, 0o755);
+            }
+
+            // The package view's walk reports a directory it cannot list
+            // instead of throwing, and nothing the edit needs is under it;
+            // before, the stored-names walk rejected the call with EACCES
+            // (since #919 with _rels/.rels, since #946 without).
+            expect(result?.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+            const relsPart = path.join(dir, "word", "_rels", wired ? "main.xml.rels" : "document.xml.rels");
+            expect(relationshipRows(parseXml(await fs.readFile(relsPart, "utf-8")))).toEqual(
+                wired
+                    ? firstCommentRelationships(1)
+                    : [["rId1", STYLES_RELATIONSHIP_TYPE, "styles.xml", ""], ...firstCommentRelationships(2)],
+            );
+        });
+    });
+
+    it.skipIf(listingCannotBeDenied)(
+        "refuses a first comment whose main document sits in a directory that cannot be listed, changing nothing (#961)",
+        async () => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("hidden/main.xml"), "hidden/main.xml");
+                const before = await readTree(dir);
+                await fs.chmod(path.join(dir, "hidden"), 0o000);
+                let result: Awaited<ReturnType<typeof addComment>> | undefined;
+                try {
+                    result = await addComment({ unpackedDir: dir, commentId: 0, text: "x", author: "Test", initials: "T" });
+                } finally {
+                    await fs.chmod(path.join(dir, "hidden"), 0o755);
+                }
+
+                // What the walk cannot list holds no stored part, so the
+                // target names none and the call is refused before any
+                // write; before, the walk rejected with EACCES instead.
+                expect(result).toEqual({ paraId: "", message: `Error: ${path.join(dir, "hidden", "main.xml")} not found` });
+                expect(await readTree(dir)).toEqual(before);
+            });
+        },
+    );
+
     it("refuses a first comment when [Content_Types].xml is missing, changing nothing (#895)", async () => {
         await withTempDir(async (dir) => {
             await makeFixture(dir);
