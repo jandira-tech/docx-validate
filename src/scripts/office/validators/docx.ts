@@ -2230,6 +2230,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
 
             let modified = false;
+            // Counted only after the write: a part whose encoding
+            // `writeXmlPart` refuses is left untouched (#880).
+            let partRepairs = 0;
             for (const { namespace, localName } of WORD_DRAWING_SCALAR_TEXT_ELEMENTS) {
                 const elems = getElementsByTagNameNSAll(dom, namespace, localName);
                 for (let i = 0; i < elems.length; i += 1) {
@@ -2241,14 +2244,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         const trimmed = text.data.trim();
                         if (trimmed === text.data) continue;
                         text.data = trimmed;
-                        repairs += 1;
+                        partRepairs += 1;
                         modified = true;
                     }
                 }
             }
 
-            if (modified) {
-                await writeXmlPart(xmlFile, dom);
+            if (modified && (await writeXmlPart(xmlFile, dom))) {
+                repairs += partRepairs;
             }
         }
         return repairs;
@@ -2265,6 +2268,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
 
             let modified = false;
+            // Counted only after the write: a part whose encoding
+            // `writeXmlPart` refuses is left untouched (#880).
+            let partRepairs = 0;
             const usedDocPrIds = collectNumericAttributeValues(dom, WP_NAMESPACE, "docPr", "id");
             const allocateDocPrId = (): string => {
                 let candidate = 1;
@@ -2285,7 +2291,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     extent.setAttribute("cx", DEFAULT_PICTURE_EXTENT_EMU);
                     extent.setAttribute("cy", DEFAULT_PICTURE_EXTENT_EMU);
                     inline.insertBefore(extent, graphic);
-                    repairs += 1;
+                    partRepairs += 1;
                     modified = true;
                 }
 
@@ -2294,7 +2300,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     docPr.setAttribute("id", allocateDocPrId());
                     docPr.setAttribute("name", "Picture 1");
                     inline.insertBefore(docPr, graphic);
-                    repairs += 1;
+                    partRepairs += 1;
                     modified = true;
                 }
 
@@ -2313,7 +2319,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         nvPicPr.appendChild(cNvPr);
                         nvPicPr.appendChild(cNvPicPr);
                         pic.insertBefore(nvPicPr, blipFill ?? pic.firstChild);
-                        repairs += 1;
+                        partRepairs += 1;
                         modified = true;
                     }
 
@@ -2325,7 +2331,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         const stretch = dom.createElementNS(DRAWINGML_NAMESPACE, "a:stretch");
                         stretch.appendChild(dom.createElementNS(DRAWINGML_NAMESPACE, "a:fillRect"));
                         blipFill.appendChild(stretch);
-                        repairs += 1;
+                        partRepairs += 1;
                         modified = true;
                     }
 
@@ -2346,14 +2352,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         spPr.appendChild(xfrm);
                         spPr.appendChild(prstGeom);
                         pic.appendChild(spPr);
-                        repairs += 1;
+                        partRepairs += 1;
                         modified = true;
                     }
                 }
             }
 
-            if (modified) {
-                await writeXmlPart(xmlFile, dom);
+            if (modified && (await writeXmlPart(xmlFile, dom))) {
+                repairs += partRepairs;
             }
         }
         return repairs;
@@ -2382,8 +2388,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 repairs += 1;
             }
         }
-        if (repairs > 0) {
-            await writeXmlPart(appXml, dom);
+        if (repairs > 0 && !(await writeXmlPart(appXml, dom))) {
+            // The part's encoding cannot be written back: nothing was repaired (#880).
+            return 0;
         }
         return repairs;
     }
@@ -2414,8 +2421,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 repairs += 1;
             }
         }
-        if (repairs > 0) {
-            await writeXmlPart(coreXml, dom);
+        if (repairs > 0 && !(await writeXmlPart(coreXml, dom))) {
+            // The part's encoding cannot be written back: nothing was repaired (#880).
+            return 0;
         }
         return repairs;
     }
@@ -2457,6 +2465,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let repairs = 0;
         let idsModified = false;
+        // Counted only after the write: a part whose encoding `writeXmlPart`
+        // refuses is left untouched (#880).
+        let idsRepairs = 0;
         let canonicalDurableId: string | null = null;
         const commentIds = getElementsByTagNameNSAll(idsDom, W16CID_NAMESPACE, "commentId");
         if (commentParaIds.size === 1 && commentIds.length === 1) {
@@ -2466,13 +2477,13 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             const currentParaId = commentId?.getAttributeNS(W16CID_NAMESPACE, "paraId");
             if (commentId && currentParaId && currentParaId !== targetParaId && !commentParaIds.has(currentParaId)) {
                 commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:paraId", targetParaId);
-                repairs += 1;
+                idsRepairs += 1;
                 idsModified = true;
             }
             const currentDurableId = commentId?.getAttributeNS(W16CID_NAMESPACE, "durableId");
             if (commentId && currentDurableId && currentDurableId !== canonicalDurableId) {
                 commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", canonicalDurableId);
-                repairs += 1;
+                idsRepairs += 1;
                 idsModified = true;
             }
         }
@@ -2484,8 +2495,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             if (durableId) durableIds.add(durableId);
         }
 
-        if (idsModified) {
-            await writeXmlPart(commentsIdsXml, idsDom);
+        if (idsModified && (await writeXmlPart(commentsIdsXml, idsDom))) {
+            repairs += idsRepairs;
         }
 
         if (!commentsExtensibleXml || durableIds.size !== 1) return repairs;
@@ -2499,8 +2510,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             const currentDurableId = entry?.getAttributeNS(W16CEX_NAMESPACE, "durableId");
             if (entry && currentDurableId && currentDurableId !== targetDurableId && !durableIds.has(currentDurableId)) {
                 entry.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", targetDurableId);
-                await writeXmlPart(commentsExtensibleXml, cexDom);
-                repairs += 1;
+                if (await writeXmlPart(commentsExtensibleXml, cexDom)) {
+                    repairs += 1;
+                }
             }
         } catch {
             return repairs;
@@ -2612,8 +2624,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             repairs += 1;
         }
 
-        if (repairs > 0) {
-            await writeXmlPart(stylesPath, stylesDom);
+        if (repairs > 0 && !(await writeXmlPart(stylesPath, stylesDom))) {
+            // The part's encoding cannot be written back: nothing was repaired (#880).
+            return 0;
         }
         return repairs;
     }
@@ -2682,6 +2695,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const [xmlFile, dom] of domByFile) {
             try {
                 let modified = false;
+                // Counted only after the write: a part whose encoding
+                // `writeXmlPart` refuses is left untouched (#880).
+                let partRepairs = 0;
                 for (const local of ["p", "tr"] as const) {
                     for (const ns of WORD_PARAGRAPH_NAMESPACES) {
                         const list = getElementsByTagNameNSAll(dom, ns, local);
@@ -2694,17 +2710,17 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                                 // Case 1: stamp both as a pair.
                                 elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", allocate(usedParaIds));
                                 elem.setAttributeNS(W14_NAMESPACE, "w14:textId", allocate(usedTextIds));
-                                repairs += 2;
+                                partRepairs += 2;
                                 modified = true;
                             } else if (paraId && !textId) {
                                 // Case 2: asymmetric — stamp textId.
                                 elem.setAttributeNS(W14_NAMESPACE, "w14:textId", allocate(usedTextIds));
-                                repairs += 1;
+                                partRepairs += 1;
                                 modified = true;
                             } else if (!paraId && textId) {
                                 // Case 3: has textId but no paraId — stamp paraId.
                                 elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", allocate(usedParaIds));
-                                repairs += 1;
+                                partRepairs += 1;
                                 modified = true;
                             }
                             // Case 4: both present — nothing to do.
@@ -2716,7 +2732,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     // list it in mc:Ignorable, as Word writes it, so the repair
                     // leaves no non-ignorable extension behind (#653).
                     if (dom.documentElement) declareIgnorableW14(dom.documentElement);
-                    await writeXmlPart(xmlFile, dom);
+                    if (await writeXmlPart(xmlFile, dom)) {
+                        repairs += partRepairs;
+                    }
                 }
             } catch {
                 // pass
@@ -2765,6 +2783,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 }
                 if (ignorableAttrs.length === 0) continue;
 
+                // Counted only after the write: a part whose encoding
+                // `writeXmlPart` refuses is left untouched (#880).
                 let perFileMutations = 0;
                 for (const { name, value } of ignorableAttrs) {
                     const tokens = value.split(/\s+/).filter(Boolean);
@@ -2781,12 +2801,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                             declared.add(prefix);
                             surviving.push(prefix);
                             perFileMutations += 1;
-                            repairs += 1;
                         } else {
                             // Truly unknown — drop from Ignorable rather than
                             // guessing a URI.
                             perFileMutations += 1;
-                            repairs += 1;
                         }
                     }
                     const next = surviving.join(" ");
@@ -2798,8 +2816,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     }
                 }
 
-                if (perFileMutations > 0) {
-                    await writeXmlPart(xmlFile, dom);
+                if (perFileMutations > 0 && (await writeXmlPart(xmlFile, dom))) {
+                    repairs += perFileMutations;
                 }
             } catch {
                 // swallow — corrupted XML files surface elsewhere
@@ -2815,6 +2833,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 const content = decodeXmlBytes(await fs.readFile(xmlFile));
                 const dom = parseXml(content);
                 let modified = false;
+                // Counted only after the write: a part whose encoding
+                // `writeXmlPart` refuses is left untouched (#880).
+                let partRepairs = 0;
                 const base = baseName(xmlFile);
                 const all = getElementsByTagNameAll(dom);
                 for (let i = 0; i < all.length; i += 1) {
@@ -2837,12 +2858,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         const newId = base === "numbering.xml" ? String(value) : value.toString(16).toUpperCase().padStart(8, "0");
                         // setAttributeNS keeps the prefix binding intact.
                         elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", newId);
-                        repairs += 1;
+                        partRepairs += 1;
                         modified = true;
                     }
                 }
-                if (modified) {
-                    await writeXmlPart(xmlFile, dom);
+                if (modified && (await writeXmlPart(xmlFile, dom))) {
+                    repairs += partRepairs;
                 }
             } catch {
                 // swallow — mirrors Python bare except
@@ -2978,6 +2999,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const [xmlFile, dom] of parsedDoms) {
             try {
                 let modified = false;
+                // Counted only after the write: a part whose encoding
+                // `writeXmlPart` refuses is left untouched (#880).
+                let partRepairs = 0;
                 const all = getElementsByTagNameAll(dom);
                 for (let i = 0; i < all.length; i += 1) {
                     const elem = all[i];
@@ -2985,30 +3009,30 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     const w14Para = elem.getAttributeNS(W14_NAMESPACE, "paraId");
                     if (w14Para && remap.has(w14Para)) {
                         elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", remap.get(w14Para)!);
-                        repairs += 1;
+                        partRepairs += 1;
                         modified = true;
                     }
                     const w14Text = elem.getAttributeNS(W14_NAMESPACE, "textId");
                     if (w14Text && textIdRemap.has(w14Text)) {
                         elem.setAttributeNS(W14_NAMESPACE, "w14:textId", textIdRemap.get(w14Text)!);
-                        repairs += 1;
+                        partRepairs += 1;
                         modified = true;
                     }
                     const w15Para = elem.getAttributeNS(W15_NAMESPACE, "paraId");
                     if (w15Para && remap.has(w15Para)) {
                         elem.setAttributeNS(W15_NAMESPACE, "w15:paraId", remap.get(w15Para)!);
-                        repairs += 1;
+                        partRepairs += 1;
                         modified = true;
                     }
                     const w15Parent = elem.getAttributeNS(W15_NAMESPACE, "paraIdParent");
                     if (w15Parent && remap.has(w15Parent)) {
                         elem.setAttributeNS(W15_NAMESPACE, "w15:paraIdParent", remap.get(w15Parent)!);
-                        repairs += 1;
+                        partRepairs += 1;
                         modified = true;
                     }
                 }
-                if (modified) {
-                    await writeXmlPart(xmlFile, dom);
+                if (modified && (await writeXmlPart(xmlFile, dom))) {
+                    repairs += partRepairs;
                 }
             } catch {
                 // swallow — mirrors Python bare except in repairDurableId
