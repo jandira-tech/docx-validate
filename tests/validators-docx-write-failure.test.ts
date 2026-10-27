@@ -129,7 +129,7 @@ describe("DOCX repair write failures after preflight (#909)", () => {
     );
 });
 
-const writeDurableIdParts = async (dir: string, extensibleFirst = false): Promise<string[]> => {
+const writeDurableIdParts = async (dir: string, extensibleFirst = false, numberingHex = false): Promise<string[]> => {
     for (const [name, text] of Object.entries(MINIMAL_PARTS)) {
         await fs.mkdir(path.dirname(path.join(dir, name)), { recursive: true });
         await fs.writeFile(path.join(dir, name), text);
@@ -161,10 +161,12 @@ const writeDurableIdParts = async (dir: string, extensibleFirst = false): Promis
             `<w16cex:commentExtensible w16cex:durableId="00000002"/>` +
             `</w16cex:commentsExtensible>`,
     );
+    // `numberingHex` also stores a `w16cex:durableId` naming `FFFFFFFF` in
+    // numbering, which the hex rewrite renames like any other (#942).
     await fs.writeFile(
         path.join(wordDir, "numbering.xml"),
-        `<?xml version="1.0"?><w:numbering ${W_NS} ${W16CID_NS}>` +
-            `<w:abstractNum w:abstractNumId="0" w16cid:durableId="4294967295"/>` +
+        `<?xml version="1.0"?><w:numbering ${W_NS} ${W16CID_NS}${numberingHex ? ` ${W16CEX_NS}` : ""}>` +
+            `<w:abstractNum w:abstractNumId="0" w16cid:durableId="4294967295"${numberingHex ? ` w16cex:durableId="FFFFFFFF"` : ""}/>` +
             `</w:numbering>`,
     );
     await fs.writeFile(
@@ -187,85 +189,83 @@ const hexDurableIds = async (part: string, attribute: string): Promise<string[]>
 const decimalDurableId = async (part: string): Promise<string> =>
     (await fs.readFile(part, "utf8")).match(/w16cid:durableId="([^"]+)"/)?.[1] ?? "";
 
-// [entry, failedWrite (1 = a.xml, 2 = numbering.xml, 3 = z.xml), failure, count]
+const KEEPS_PAIRED = "keeps the hex rename paired and the decimal renumbering running";
+const STOPS_BOTH = "stops both hex renames and keeps the decimal renumbering running";
+const STOPS_LAST = "stops the hex rewrite at the last hex part, after the first one and the decimal renumbering";
+
+// [entry, failedWrite (1 = a.xml, 2 = numbering.xml, 3 = z.xml), failure, outcome, count]
 const numberingSplitCases = [
-    ["direct", 2, "refused", 2],
-    ["direct", 2, "thrown", 2],
-    ["direct", 1, "refused", 1],
-    ["direct", 1, "thrown", 1],
-    ["direct", 3, "refused", 2],
-    ["repair", 2, "refused", 2],
-    ["repair", 2, "thrown", 2],
-    ["repair", 1, "refused", 1],
-    ["repair", 1, "thrown", 1],
-    ["repair", 3, "refused", 2],
+    ["direct", 2, "refused", KEEPS_PAIRED, 2],
+    ["direct", 2, "thrown", KEEPS_PAIRED, 2],
+    ["direct", 1, "refused", STOPS_BOTH, 1],
+    ["direct", 1, "thrown", STOPS_BOTH, 1],
+    ["direct", 3, "refused", STOPS_LAST, 2],
+    ["repair", 2, "refused", KEEPS_PAIRED, 2],
+    ["repair", 2, "thrown", KEEPS_PAIRED, 2],
+    ["repair", 1, "refused", STOPS_BOTH, 1],
+    ["repair", 1, "thrown", STOPS_BOTH, 1],
+    ["repair", 3, "refused", STOPS_LAST, 2],
 ] as const;
 
 describe("DOCX repair durableId hex rename and decimal renumbering (#925)", () => {
-    it.each(numberingSplitCases)(
-        "%s: write %i %s keeps the hex rename paired and the decimal renumbering running",
-        async (entry, failedWrite, failure, count) => {
-            await withTempDir(async (dir) => {
-                const parts = await writeDurableIdParts(dir);
-                const [aXml, numberingXml, zXml] = parts;
-                const before = await Promise.all(parts.map((part) => fs.readFile(part)));
-                const v = new DOCXSchemaValidator({ unpackedDir: dir });
-                // The write order the loop sees: hex part, decimal part, hex part.
-                expect(v.xmlFiles.filter((file) => parts.includes(file))).toEqual(parts);
-                const writeXmlPart = xmlPartIo.writeXmlPart;
-                let writes = 0;
-                const spy = vi.spyOn(xmlPartIo, "writeXmlPart").mockImplementation(async (...args) => {
-                    writes += 1;
-                    if (writes === failedWrite) {
-                        if (failure === "thrown") throw Object.assign(new Error("permission denied"), { code: "EACCES" });
-                        return false;
-                    }
-                    return writeXmlPart(...args);
-                });
-                try {
-                    await expect(entry === "repair" ? v.repair() : v.repairDurableId()).resolves.toBe(count);
-                    const after = await Promise.all(parts.map((part) => fs.readFile(part)));
-                    const [aIds, zIds] = await Promise.all([
-                        hexDurableIds(aXml, "w16cid:durableId"),
-                        hexDurableIds(zXml, "w16cex:durableId"),
-                    ]);
-                    const numberingId = await decimalDurableId(numberingXml);
-                    if (failedWrite === 2) {
-                        // A failed decimal-only write neither stops the hex
-                        // rewrite nor lands: numbering keeps its bytes.
-                        expect(after[1]).toEqual(before[1]);
-                        expect(aIds[0]).toMatch(/^[0-9A-F]{8}$/);
-                        expect(aIds[0]).not.toBe("FFFFFFFF");
-                        expect(zIds[0]).toBe(aIds[0]);
-                    } else if (failedWrite === 1) {
-                        // A failed hex write stops the remaining hex writes, so
-                        // both hex parts keep the old value; the decimal
-                        // renumbering still runs.
-                        expect(after[0]).toEqual(before[0]);
-                        expect(after[2]).toEqual(before[2]);
-                        expect(numberingId).toMatch(/^[1-9][0-9]*$/);
-                        expect(Number(numberingId)).toBeLessThan(4294967295);
-                    } else {
-                        // The #920 stop on the last hex part, with the decimal
-                        // renumbering done before it.
-                        expect(after[0]).not.toEqual(before[0]);
-                        expect(aIds[0]).toMatch(/^[0-9A-F]{8}$/);
-                        expect(aIds[0]).not.toBe("FFFFFFFF");
-                        expect(after[2]).toEqual(before[2]);
-                        expect(numberingId).toMatch(/^[1-9][0-9]*$/);
-                        expect(Number(numberingId)).toBeLessThan(4294967295);
-                    }
-                    // The in-range sibling keeps its value in every hex part written.
-                    if (failedWrite !== 1) {
-                        expect(aIds[1]).toBe("00000002");
-                        expect(zIds[1]).toBe("00000002");
-                    }
-                } finally {
-                    spy.mockRestore();
+    it.each(numberingSplitCases)("%s: write %i %s %s", async (entry, failedWrite, failure, _outcome, count) => {
+        await withTempDir(async (dir) => {
+            const parts = await writeDurableIdParts(dir);
+            const [aXml, numberingXml, zXml] = parts;
+            const before = await Promise.all(parts.map((part) => fs.readFile(part)));
+            const v = new DOCXSchemaValidator({ unpackedDir: dir });
+            // The write order the loop sees: hex part, decimal part, hex part.
+            expect(v.xmlFiles.filter((file) => parts.includes(file))).toEqual(parts);
+            const writeXmlPart = xmlPartIo.writeXmlPart;
+            let writes = 0;
+            const spy = vi.spyOn(xmlPartIo, "writeXmlPart").mockImplementation(async (...args) => {
+                writes += 1;
+                if (writes === failedWrite) {
+                    if (failure === "thrown") throw Object.assign(new Error("permission denied"), { code: "EACCES" });
+                    return false;
                 }
+                return writeXmlPart(...args);
             });
-        },
-    );
+            try {
+                await expect(entry === "repair" ? v.repair() : v.repairDurableId()).resolves.toBe(count);
+                const after = await Promise.all(parts.map((part) => fs.readFile(part)));
+                const [aIds, zIds] = await Promise.all([hexDurableIds(aXml, "w16cid:durableId"), hexDurableIds(zXml, "w16cex:durableId")]);
+                const numberingId = await decimalDurableId(numberingXml);
+                if (failedWrite === 2) {
+                    // A failed decimal-only write neither stops the hex
+                    // rewrite nor lands: numbering keeps its bytes.
+                    expect(after[1]).toEqual(before[1]);
+                    expect(aIds[0]).toMatch(/^[0-9A-F]{8}$/);
+                    expect(aIds[0]).not.toBe("FFFFFFFF");
+                    expect(zIds[0]).toBe(aIds[0]);
+                } else if (failedWrite === 1) {
+                    // A failed hex write stops the remaining hex writes, so
+                    // both hex parts keep the old value; the decimal
+                    // renumbering still runs.
+                    expect(after[0]).toEqual(before[0]);
+                    expect(after[2]).toEqual(before[2]);
+                    expect(numberingId).toMatch(/^[1-9][0-9]*$/);
+                    expect(Number(numberingId)).toBeLessThan(4294967295);
+                } else {
+                    // The #920 stop on the last hex part, with the decimal
+                    // renumbering done before it.
+                    expect(after[0]).not.toEqual(before[0]);
+                    expect(aIds[0]).toMatch(/^[0-9A-F]{8}$/);
+                    expect(aIds[0]).not.toBe("FFFFFFFF");
+                    expect(after[2]).toEqual(before[2]);
+                    expect(numberingId).toMatch(/^[1-9][0-9]*$/);
+                    expect(Number(numberingId)).toBeLessThan(4294967295);
+                }
+                // The in-range sibling keeps its value in every hex part written.
+                if (failedWrite !== 1) {
+                    expect(aIds[1]).toBe("00000002");
+                    expect(zIds[1]).toBe("00000002");
+                }
+            } finally {
+                spy.mockRestore();
+            }
+        });
+    });
 
     it.each([
         ["direct", "refused"],
@@ -304,4 +304,48 @@ describe("DOCX repair durableId hex rename and decimal renumbering (#925)", () =
             }
         });
     });
+
+    it.each([
+        ["direct", "refused"],
+        ["direct", "thrown"],
+        ["repair", "refused"],
+        ["repair", "thrown"],
+    ] as const)(
+        "%s: a %s write of a numbering.xml that also carries a hex rename stops the remaining hex renames (#942)",
+        async (entry, failure) => {
+            await withTempDir(async (dir) => {
+                const parts = await writeDurableIdParts(dir, false, true);
+                const [aXml, , zXml] = parts;
+                const before = await Promise.all(parts.map((part) => fs.readFile(part)));
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(v.xmlFiles.filter((file) => parts.includes(file))).toEqual(parts);
+                const writeXmlPart = xmlPartIo.writeXmlPart;
+                let writes = 0;
+                const spy = vi.spyOn(xmlPartIo, "writeXmlPart").mockImplementation(async (...args) => {
+                    writes += 1;
+                    if (writes === 2) {
+                        if (failure === "thrown") throw Object.assign(new Error("permission denied"), { code: "EACCES" });
+                        return false;
+                    }
+                    return writeXmlPart(...args);
+                });
+                try {
+                    // numbering's write carried a hex rename, so its failure stops
+                    // the rewrite as a hex part's does: only the commentsIds part,
+                    // written before it, counts; numbering and the
+                    // commentsExtensible part keep their bytes.
+                    await expect(entry === "repair" ? v.repair() : v.repairDurableId()).resolves.toBe(1);
+                    const after = await Promise.all(parts.map((part) => fs.readFile(part)));
+                    const aIds = await hexDurableIds(aXml!, "w16cid:durableId");
+                    expect(aIds[0]).toMatch(/^[0-9A-F]{8}$/);
+                    expect(aIds[0]).not.toBe("FFFFFFFF");
+                    expect(after[1]).toEqual(before[1]);
+                    expect(after[2]).toEqual(before[2]);
+                    expect(await hexDurableIds(zXml!, "w16cex:durableId")).toEqual(["FFFFFFFF", "00000002"]);
+                } finally {
+                    spy.mockRestore();
+                }
+            });
+        },
+    );
 });
