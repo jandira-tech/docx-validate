@@ -307,9 +307,15 @@ describe("decodeXmlPart / encodeXmlPart", () => {
     });
 
     it("names the encoding a part's declaration must carry", () => {
-        expect(xmlDeclarationEncoding("utf-8")).toBe("UTF-8");
-        expect(xmlDeclarationEncoding("utf-16le")).toBe("UTF-16");
-        expect(xmlDeclarationEncoding("utf-16be")).toBe("UTF-16");
+        expect(xmlDeclarationEncoding({ encoding: "utf-8" })).toBe("UTF-8");
+        expect(xmlDeclarationEncoding({ encoding: "utf-8", bom: "utf-8" })).toBe("UTF-8");
+        expect(xmlDeclarationEncoding({ encoding: "utf-16le", bom: "utf-16le" })).toBe("UTF-16");
+        expect(xmlDeclarationEncoding({ encoding: "utf-16be", bom: "utf-16be" })).toBe("UTF-16");
+    });
+
+    it("names the byte order of a UTF-16 part with no byte order mark (#878)", () => {
+        expect(xmlDeclarationEncoding({ encoding: "utf-16le" })).toBe("UTF-16LE");
+        expect(xmlDeclarationEncoding({ encoding: "utf-16be" })).toBe("UTF-16BE");
     });
 });
 

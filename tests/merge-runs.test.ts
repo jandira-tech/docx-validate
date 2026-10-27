@@ -167,4 +167,28 @@ describe("mergeRuns", () => {
             expect(after).toMatch(/Hello world/);
         });
     });
+
+    it.each(["le", "be"] as const)(
+        "keeps a UTF-16%s main part without a byte order mark, its declaration naming the byte order (#878)",
+        async (endian) => {
+            await withTempDir(async (dir) => {
+                const body = "<w:body><w:p>" + "<w:r><w:t>Hello </w:t></w:r>" + "<w:r><w:t>world</w:t></w:r>" + "</w:p></w:body>";
+                const declared = endian === "le" ? "UTF-16LE" : "UTF-16BE";
+                const document = `<?xml version="1.0" encoding="${declared}" standalone="yes"?>\n<w:document ${W}>${body}</w:document>`;
+                const wordDir = path.join(dir, "word");
+                await fs.mkdir(wordDir, { recursive: true });
+                const docPath = path.join(wordDir, "document.xml");
+                await fs.writeFile(docPath, utf16Part(document, endian).subarray(2));
+
+                const result = await mergeRuns(dir);
+                expect(result.count).toBe(1);
+
+                const bytes = await fs.readFile(docPath);
+                expect([...bytes.subarray(0, 2)]).toEqual(endian === "le" ? [0x3c, 0x00] : [0x00, 0x3c]);
+                const after = decodeUtf16(Buffer.concat([Buffer.alloc(2), bytes]), endian);
+                expect(after).toMatch(new RegExp(`^<\\?xml[^>]*encoding="${declared}"`));
+                expect(after).toMatch(/Hello world/);
+            });
+        },
+    );
 });

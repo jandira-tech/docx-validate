@@ -1867,8 +1867,10 @@ escapes.
 These helpers, and `validate()`'s auto-repair, keep every XML part in the
 encoding it is stored in (#866). The byte order mark, then the XML declaration,
 decide it: a UTF-16 part is written back as UTF-16 in its own byte order, with
-its byte order mark, and a declaration a helper writes names UTF-16. A UTF-8
-part is written without a byte order mark, as before. A part whose declaration
+its byte order mark if it had one. A declaration a helper writes names UTF-16
+beside a mark, and UTF-16LE or UTF-16BE without one, since XML requires the mark
+of a part declared plain UTF-16 (#878). A UTF-8 part is written without a byte
+order mark, as before. A part whose declaration
 names an encoding this package cannot decode (`windows-1252`, `macintosh`, …)
 is left byte-for-byte untouched, and `addComment` returns an error naming it
 instead of editing it.

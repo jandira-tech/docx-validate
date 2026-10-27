@@ -54,9 +54,9 @@ export const readXmlPart = async (file: string): Promise<DecodedXmlPart | undefi
  * Write a DOM back to the part it came from, in the part's own encoding.
  *
  * The XML declaration names the encoding the bytes are written in, so a
- * UTF-16 part is written back as UTF-16 with its BOM and a UTF-8 part as
- * UTF-8. A part whose encoding cannot be decoded is left untouched — writing
- * text decoded from it would corrupt the part.
+ * UTF-16 part is written back as UTF-16, with its BOM if it had one, and a
+ * UTF-8 part as UTF-8. A part whose encoding cannot be decoded is left
+ * untouched — writing text decoded from it would corrupt the part.
  *
  * `part` is the encoding the caller decoded the part in. A caller that holds
  * only a DOM may leave it out: the part's current bytes then decide the
@@ -67,7 +67,7 @@ export const writeXmlPart = async (file: string, dom: Document, part?: XmlPartEn
     if (encoding === undefined) {
         return;
     }
-    await fs.writeFile(file, encodeXmlPart(serializeXml(dom, xmlDeclarationEncoding(encoding.encoding)), encoding));
+    await fs.writeFile(file, encodeXmlPart(serializeXml(dom, xmlDeclarationEncoding(encoding)), encoding));
 };
 
 /**
