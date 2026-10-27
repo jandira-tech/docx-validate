@@ -91,6 +91,7 @@ import { isStoryReferenceLocalName, registerStoryReferenceIdentity } from "../st
 import { registerRelsBrokenTarget, registerRelsEmptyElementShape } from "../rels-finding-facts";
 import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
 import { CT_MARKUP_COMPATIBILITY, ctMarkupCompatibilityCheck } from "../checks/ct-markup-compatibility";
+import { globalElementKey, schemaGlobals } from "../schema-globals";
 import type JSZip from "jszip";
 import { AsyncLocalStorage } from "node:async_hooks";
 
@@ -235,16 +236,18 @@ const PPT_PART_NAME_BY_FOLDER: ReadonlyMap<string, RegExp> = new Map([
 ]);
 
 /**
- * The file names of the parts stored directly in `ppt/`, ASCII lower-cased,
- * whose root element pml.xsd, or a schema it imports, declares:
+ * The conventional file names of the parts stored directly in `ppt/`, ASCII
+ * lower-cased, whose root element pml.xsd, or a schema it imports, declares:
  * `p:presentation` (presentation.xml), `p:presentationPr` (presProps.xml),
  * `p:viewPr` (viewProps.xml), `p:cmAuthorLst` (commentAuthors.xml) and the
  * DrawingML `a:tblStyleLst` pml.xsd reaches through its dml-main.xsd import
- * (tableStyles.xml). Every other part directly in `ppt/` stays unmapped:
- * PowerPoint's modern comment authors list (`ppt/authors.xml`, root
- * `p188:authorLst`) and revision info (`ppt/revisionInfo.xml`, root
- * `p1510:revInfo`) hold Microsoft roots no bundled schema declares, so the
- * folder rule sent them to pml.xsd only to fail (#872). A set, not an object
+ * (tableStyles.xml). Since #887 they are a fast path only: every other name
+ * directly in `ppt/` routes by its root element (see `_schemaMappingKey`),
+ * so a renamed main presentation or a relocated slide keeps its schema
+ * check, while the roots no bundled schema declares — PowerPoint's modern
+ * comment authors list (`ppt/authors.xml`, `p188:authorLst`) and revision
+ * info (`ppt/revisionInfo.xml`, `p1510:revInfo`), which the folder rule sent
+ * to pml.xsd only to fail (#872) — stay unmapped. A set, not an object
  * literal: the file name comes from the package, and `constructor` or
  * `__proto__` must name no entry.
  */
@@ -415,6 +418,12 @@ export function containRelationshipTarget(unpackedDir: string, resolvedPath: str
 interface IdHit {
     file: string;
     tag: string;
+}
+
+/** A root element's identity: its namespace URI and local name. */
+interface RootQName {
+    readonly namespace: string;
+    readonly localName: string;
 }
 
 export interface XsdValidationOutcome {
@@ -1767,24 +1776,29 @@ export class BaseSchemaValidator {
      * XSD checks that only apply to Transitional documents.
      */
     protected _isStrictXmlFile(xmlFile: string): boolean {
-        const cached = this.strictRootCache.get(xmlFile);
-        if (cached !== undefined) return cached;
-        const strict = this.detectStrictRoot(xmlFile);
-        this.strictRootCache.set(xmlFile, strict);
-        return strict;
+        const root = this.rootQName(xmlFile);
+        return root !== null && root.namespace.startsWith(STRICT_OOXML_NS_PREFIX);
     }
 
-    private detectStrictRoot(xmlFile: string): boolean {
+    /**
+     * The root element's identity of `xmlFile`, read once per file: `null`
+     * when the part cannot be read or parsed, or its root is not namespaced,
+     * exactly as the Strict sniffing read it before #887 shared the answer
+     * with the `ppt/` root route.
+     */
+    private rootQName(xmlFile: string): RootQName | null {
+        const cached = this.rootQNames.get(xmlFile);
+        if (cached !== undefined) return cached;
+        let root: RootQName | null = null;
         try {
-            const content = decodeXmlBytes(readFileSync(xmlFile));
-            const dom = parseXml(content);
-            const root = dom.documentElement;
-            if (!root) return false;
-            const ns = root.namespaceURI;
-            return !!ns && ns.startsWith(STRICT_OOXML_NS_PREFIX);
+            const element = parseXml(decodeXmlBytes(readFileSync(xmlFile))).documentElement;
+            const namespace = element?.namespaceURI;
+            if (element && namespace) root = { namespace, localName: element.localName };
         } catch {
-            return false;
+            root = null;
         }
+        this.rootQNames.set(xmlFile, root);
+        return root;
     }
 
     async validateFileAgainstXsd(xmlFile: string): Promise<XsdValidationOutcome> {
@@ -2202,10 +2216,14 @@ export class BaseSchemaValidator {
             return "sig";
         }
         const parentName = path.posix.basename(path.posix.dirname(name));
-        // Directly in `ppt/`, the file name must name a root pml.xsd (or a
-        // schema it imports) declares; `word/` and `xl/` keep the folder rule.
+        // Directly in `ppt/`, the five conventional names are a fast path
+        // and every other name routes by its root element (#887), so a
+        // renamed main presentation or a relocated slide keeps its pml.xsd
+        // check while the Microsoft extension roots stay unmapped. `word/`
+        // and `xl/` keep the folder rule.
         if (parentName === "ppt") {
-            return PPT_DIRECT_PART_NAMES.has(base) ? "ppt" : null;
+            if (PPT_DIRECT_PART_NAMES.has(base)) return "ppt";
+            return this._routesToPptSchemaByRoot(xmlFile) ? "ppt" : null;
         }
         if (MAIN_CONTENT_FOLDERS.has(parentName) && SCHEMA_MAPPINGS[parentName]) {
             return parentName;
@@ -2229,6 +2247,25 @@ export class BaseSchemaValidator {
             return "ppt";
         }
         return null;
+    }
+
+    /**
+     * Whether `xmlFile`, stored directly in `ppt/` under a name outside
+     * {@link PPT_DIRECT_PART_NAMES}, holds a root element the `ppt` schema's
+     * closure declares for its conformance class. A part's identity in OPC
+     * comes from its relationship and content type, not its name, so the
+     * root decides (#887): a renamed main presentation or a relocated slide
+     * keeps its check, while a root no bundled schema declares —
+     * PowerPoint's `p188:authorLst`, `p1510:revInfo` — and a part that
+     * cannot be read or parsed stay unmapped and draw the `xsd-no-schema`
+     * audit, as they did before.
+     */
+    private _routesToPptSchemaByRoot(xmlFile: string): boolean {
+        const root = this.rootQName(xmlFile);
+        if (root === null) return false;
+        // The conformance dispatch `_getSchemaPath` applies one step later.
+        const schema = this._isStrictXmlFile(xmlFile) ? STRICT_SCHEMA_MAPPINGS.ppt : SCHEMA_MAPPINGS.ppt;
+        return schemaGlobals(path.join(this.schemasDir, schema)).has(globalElementKey(root.namespace, root.localName));
     }
 
     protected async _getOriginalFileErrors(xmlFile: string): Promise<Set<string>> {
@@ -2265,8 +2302,12 @@ export class BaseSchemaValidator {
         return path.relative(this.unpackedDir, absPath) || path.basename(absPath);
     }
 
-    /** Per-file memo for {@link _isStrictXmlFile} — root-namespace sniffing would otherwise re-read each part for eligibility, schema dispatch, and preprocessing. */
-    private readonly strictRootCache = new Map<string, boolean>();
+    /**
+     * Per-file memo of the root element's namespace and local name — root
+     * sniffing would otherwise re-read each part for eligibility, schema
+     * dispatch, preprocessing, and the `ppt/` root route (#887).
+     */
+    private readonly rootQNames = new Map<string, RootQName | null>();
     /** See {@link isMainDocumentPart}; reset at the start of every XSD walk (#657) and when a repair deletes files. */
     private mainDocumentParts: ReadonlySet<string> | undefined;
     /**

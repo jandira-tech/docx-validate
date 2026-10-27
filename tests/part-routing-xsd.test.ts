@@ -29,6 +29,13 @@
 // the parts whose root pml.xsd, or a schema it imports, declares — so the
 // Microsoft extension parts stored beside them (the modern comment authors
 // list and the revision info) stay unmapped instead of failing the walk.
+//
+// #887: those five names are a fast path, nothing more: a part's identity in
+// OPC comes from its relationship and content type, so every other name
+// directly in ppt/ is routed by its root element — the walk reaches pml.xsd
+// when the root is a global element of its schema closure for the part's
+// conformance class — and a renamed main presentation or a relocated slide
+// keeps its schema check, while the Microsoft extension roots stay unmapped.
 
 import { promises as fs } from "node:fs";
 import path from "node:path";
@@ -38,8 +45,9 @@ import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { RunDeadline } from "../src/lib/run-deadline";
 import type { Profile } from "../src/lib/types";
+import { schemaGlobals } from "../src/scripts/office/schema-globals";
 import { validate } from "../src/scripts/office/validate";
-import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
+import { BaseSchemaValidator, defaultSchemasDir } from "../src/scripts/office/validators/base";
 import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildPptx, MINIMAL_PPTX_PARTS } from "./support/minimal-pptx";
@@ -559,6 +567,339 @@ describe("schema routing of the parts directly in ppt/ (#872)", { timeout: 120_0
             expect(lenient.issues.filter((issue) => issue.code === "xsd-error")).toEqual([]);
             expect(lenient.issues.filter((issue) => issue.code === "xsd-strict-skipped")).toHaveLength(1);
             expect(lenient.xsdWalk.parts).not.toContain("ppt/presentation.xml");
+        });
+    });
+});
+
+describe("schema routing of the parts directly in ppt/ by their root (#887)", { timeout: 120_000 }, () => {
+    const OFFICE_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const PML_CT = "application/vnd.openxmlformats-officedocument.presentationml";
+    const PPT_NS =
+        `xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" ` +
+        `xmlns:r="${OFFICE_REL}" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"`;
+    const STRICT_PPT_NS =
+        `xmlns:a="http://purl.oclc.org/ooxml/drawingml/main" ` +
+        `xmlns:r="http://purl.oclc.org/ooxml/officeDocument" ` +
+        `xmlns:p="http://purl.oclc.org/ooxml/presentationml/main"`;
+    // The same shape tree and colour map the minimal PPTX's slide parts hold.
+    const PPT_TREE =
+        `<p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>` +
+        `<p:grpSpPr/></p:spTree></p:cSld>`;
+    const PPT_CLR_MAP =
+        `<p:clrMap bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" ` +
+        `accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/>`;
+
+    // The six part kinds the minimal PPTX lacks, each the smallest part
+    // pml.xsd accepts, related from the part the Open XML SDK part catalogue
+    // relates them from (NotesSlidePart.json, NotesMasterPart.json,
+    // HandoutMasterPart.json, SlideCommentsPart.json, UserDefinedTagsPart.json
+    // and the slide synchronization data part): #887 stored them directly in
+    // `ppt/`, where a part's identity comes from its relationship and content
+    // type, not from the folder it sits in.
+    const NOTES_SLIDE = `${HEAD}<p:notes ${PPT_NS}>${PPT_TREE}<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:notes>`;
+    const NOTES_MASTER = `${HEAD}<p:notesMaster ${PPT_NS}>${PPT_TREE}${PPT_CLR_MAP}</p:notesMaster>`;
+    const HANDOUT_MASTER = `${HEAD}<p:handoutMaster ${PPT_NS}>${PPT_TREE}${PPT_CLR_MAP}</p:handoutMaster>`;
+    const LEGACY_COMMENTS = `${HEAD}<p:cmLst ${PPT_NS}></p:cmLst>`;
+    const TAGS = `${HEAD}<p:tagLst ${PPT_NS}></p:tagLst>`;
+    const SLIDE_UPDATE_INFO =
+        `${HEAD}<p:sldSyncPr ${PPT_NS} serverSldId="1" serverSldModifiedTime="2026-01-01T00:00:00Z" ` +
+        `clientInsertedTime="2026-01-01T00:00:00Z"></p:sldSyncPr>`;
+
+    /** The six kinds stored directly in `ppt/`: the part, the sidecar that relates it, and its relationship and content-type name. */
+    const DIRECT_EXTRA_PARTS = [
+        ["ppt/notesSlide1.xml", NOTES_SLIDE, "ppt/slides/_rels/slide1.xml.rels", "notesSlide"],
+        ["ppt/notesMaster1.xml", NOTES_MASTER, "ppt/_rels/presentation.xml.rels", "notesMaster"],
+        ["ppt/handoutMaster1.xml", HANDOUT_MASTER, "ppt/_rels/presentation.xml.rels", "handoutMaster"],
+        ["ppt/comment1.xml", LEGACY_COMMENTS, "ppt/slides/_rels/slide1.xml.rels", "comments"],
+        ["ppt/tag1.xml", TAGS, "ppt/_rels/presentation.xml.rels", "tags"],
+        ["ppt/slideUpdateInfo1.xml", SLIDE_UPDATE_INFO, "ppt/slides/_rels/slide1.xml.rels", "slideUpdateInfo"],
+    ] as const;
+
+    /** The three part kinds the minimal PPTX already holds in its standard folders, each moved directly into `ppt/`. */
+    const MOVED_PARTS = ["ppt/slides/slide1.xml", "ppt/slideLayouts/slideLayout1.xml", "ppt/slideMasters/slideMaster1.xml"] as const;
+
+    /** The minimal PPTX plus `part`, related from `sidecar`'s owner and typed by its own Override. */
+    const pptxHolding = (part: string, xml: string, sidecar: string, kind: string): Record<string, string> => {
+        const owner = sidecar.replace("/_rels/", "/").slice(0, -".rels".length);
+        return {
+            ...MINIMAL_PPTX_PARTS,
+            [part]: xml,
+            "[Content_Types].xml": MINIMAL_PPTX_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/${part}" ContentType="${PML_CT}.${kind}+xml"/></Types>`,
+            ),
+            [sidecar]: MINIMAL_PPTX_PARTS[sidecar]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdExtra" Type="${OFFICE_REL}/${kind}" ` +
+                    `Target="${path.posix.relative(path.posix.dirname(owner), part)}"/></Relationships>`,
+            ),
+        };
+    };
+
+    /**
+     * The minimal PPTX with the part stored at `from` moved directly into
+     * `ppt/`: its sidecar moves with it, and every relationship target and
+     * content-type Override that named the old name names the new one — the
+     * same relocation the issue reproduced them by.
+     */
+    const pptxWithPartMoved = (from: string): Record<string, string> => {
+        const base = path.posix.basename(from);
+        const target = `ppt/${base}`;
+        const fromSidecar = `${path.posix.dirname(from)}/_rels/${base}.rels`;
+        const toSidecar = `ppt/_rels/${base}.rels`;
+        const move = (name: string): string => (name === from ? target : name === fromSidecar ? toSidecar : name);
+        const parts: Record<string, string> = {};
+        for (const [name, xml] of Object.entries(MINIMAL_PPTX_PARTS)) {
+            let content = xml;
+            if (name === "[Content_Types].xml") content = content.replaceAll(`/${from}`, `/${target}`);
+            if (name.endsWith(".rels")) {
+                // Resolve each target against the owner it names today and
+                // re-relativize it against the owner it will name.
+                const owner = name === "_rels/.rels" ? "" : name.replace("/_rels/", "/").slice(0, -".rels".length);
+                const moved = move(owner);
+                content = content.replace(/Target="([^"]+)"/g, (_, rel: string) => {
+                    const resolved = path.posix.normalize(path.posix.join(path.posix.dirname(owner), rel));
+                    return `Target="${path.posix.relative(path.posix.dirname(moved), move(resolved))}"`;
+                });
+            }
+            parts[move(name)] = content;
+        }
+        return parts;
+    };
+
+    /** The minimal PPTX with its main presentation renamed: the package relationship, the Override and the sidecar's name move with it. */
+    const pptxWithRenamedPresentation = (): Record<string, string> => {
+        const parts: Record<string, string> = {};
+        for (const [name, xml] of Object.entries(MINIMAL_PPTX_PARTS)) {
+            parts[name.replaceAll("presentation.xml", "presentation2.xml")] = xml.replaceAll("presentation.xml", "presentation2.xml");
+        }
+        return parts;
+    };
+
+    /** The part's XML with a `<rootPrefix:bogusDefect/>` as the root's first child. */
+    const withBogusDefect = (xml: string): string => {
+        const root = xml.indexOf("<", xml.indexOf("?>") + 1) + 1;
+        const prefix = xml.slice(root, xml.indexOf(">", root)).split(":")[0]!;
+        const at = xml.indexOf(">", root) + 1;
+        return `${xml.slice(0, at)}<${prefix}:bogusDefect/>${xml.slice(at)}`;
+    };
+
+    it.each([
+        // The root decides, not the name: a renamed main presentation, a
+        // slide under a name of its own, and a file name spelled like an
+        // Object.prototype key all route to pml.xsd when the root declares
+        // itself a global element of its closure.
+        ["ppt/presentation2.xml", MINIMAL_PPTX_PARTS["ppt/presentation.xml"]!],
+        ["ppt/slide1.xml", MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!],
+        ["ppt/constructor.xml", MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!],
+        ["ppt/__proto__.xml", MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!],
+    ])("maps %s to the ppt schema key by its root", async (part, xml) => {
+        await withTempDir(async (dir) => {
+            const pkg = path.join(dir, "pkg");
+            await fs.mkdir(path.dirname(path.join(pkg, part)), { recursive: true });
+            await fs.writeFile(path.join(pkg, part), xml, "utf-8");
+            expect(new KeyValidator({ unpackedDir: pkg }).schemaMappingKey(part)).toBe("ppt");
+            expect(new KeyValidator({ unpackedDir: pkg }).schemaFile(part)).toBe("ISO-IEC29500-4_2016/pml.xsd");
+        });
+    });
+
+    it("leaves a part directly in ppt/ unmapped when no bundled schema declares its root, or it does not parse", async () => {
+        await withTempDir(async (dir) => {
+            const pkg = path.join(dir, "pkg");
+            await fs.mkdir(path.join(pkg, "ppt"), { recursive: true });
+            await fs.writeFile(
+                path.join(pkg, "ppt/authors.xml"),
+                `${HEAD}<p188:authorLst xmlns:p188="http://schemas.microsoft.com/office/powerpoint/2018/8/main"></p188:authorLst>`,
+                "utf-8",
+            );
+            await fs.writeFile(path.join(pkg, "ppt/broken.xml"), "<p:sld", "utf-8");
+            const validator = new KeyValidator({ unpackedDir: pkg });
+            expect(validator.schemaMappingKey("ppt/authors.xml")).toBeNull();
+            expect(validator.schemaMappingKey("ppt/broken.xml")).toBeNull();
+            expect(validator.schemaMappingKey("ppt/absent.xml")).toBeNull();
+        });
+    });
+
+    it("keeps the earlier basename routes before the ppt/ root route", () => {
+        expect(new KeyValidator({ unpackedDir: "/pkg" }).schemaMappingKey("ppt/core.xml")).toBe("core.xml");
+        expect(new KeyValidator({ unpackedDir: "/pkg" }).schemaMappingKey("ppt/app.xml")).toBe("app.xml");
+        expect(new KeyValidator({ unpackedDir: "/pkg" }).schemaMappingKey("ppt/custom.xml")).toBe("custom.xml");
+    });
+
+    it.each([undefined, "lenient", "strict"] as const)(
+        "reports a schema violation in a renamed ppt/presentation2.xml under %s",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                const parts = pptxWithRenamedPresentation();
+                const file = path.join(dir, "renamed-defect.pptx");
+                await fs.writeFile(
+                    file,
+                    await buildPptx({ ...parts, "ppt/presentation2.xml": withBogusDefect(parts["ppt/presentation2.xml"]!) }),
+                );
+                const result = await validate(file, { profile });
+                expect(result.valid).toBe(false);
+                const errors = result.issues.filter((issue) => issue.code === "xsd-error");
+                expect(errors.length).toBeGreaterThan(0);
+                expect(errors.every((issue) => issue.path === "ppt/presentation2.xml")).toBe(true);
+                expect(errors.some((issue) => issue.message.includes("bogusDefect"))).toBe(true);
+                expect(result.xsdWalk.parts).toContain("ppt/presentation2.xml");
+            });
+        },
+    );
+
+    describe.each(["lenient", "strict"] as const)("under %s", (profile) => {
+        it("walks a clean renamed ppt/presentation2.xml without findings", async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "renamed-control.pptx");
+                await fs.writeFile(file, await buildPptx(pptxWithRenamedPresentation()));
+                const result = await validate(file, { profile });
+                expect(result.valid).toBe(true);
+                expect(result.xsdWalk.parts).toContain("ppt/presentation2.xml");
+                expect(result.issues.filter((issue) => issue.path === "ppt/presentation2.xml")).toEqual([]);
+            });
+        });
+
+        it.each(MOVED_PARTS)("reports a schema violation in the relocated %s", async (from) => {
+            await withTempDir(async (dir) => {
+                const part = `ppt/${path.posix.basename(from)}`;
+                const parts = pptxWithPartMoved(from);
+                const file = path.join(dir, "moved-defect.pptx");
+                await fs.writeFile(file, await buildPptx({ ...parts, [part]: withBogusDefect(parts[part]!) }));
+                const result = await validate(file, { profile });
+                expect(result.valid).toBe(false);
+                const errors = result.issues.filter((issue) => issue.code === "xsd-error");
+                expect(errors.length).toBeGreaterThan(0);
+                expect(errors.every((issue) => issue.path === part)).toBe(true);
+                expect(errors.some((issue) => issue.message.includes("bogusDefect"))).toBe(true);
+                expect(result.xsdWalk.parts).toContain(part);
+            });
+        });
+
+        it.each(MOVED_PARTS)("walks a clean relocated %s without findings", async (from) => {
+            await withTempDir(async (dir) => {
+                const part = `ppt/${path.posix.basename(from)}`;
+                const file = path.join(dir, "moved-control.pptx");
+                await fs.writeFile(file, await buildPptx(pptxWithPartMoved(from)));
+                const result = await validate(file, { profile });
+                expect(result.valid).toBe(true);
+                expect(result.xsdWalk.parts).toContain(part);
+                expect(result.issues.filter((issue) => issue.path === part)).toEqual([]);
+            });
+        });
+
+        it.each(DIRECT_EXTRA_PARTS)("reports a schema violation in %s", async (part, xml, sidecar, kind) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "direct-defect.pptx");
+                await fs.writeFile(file, await buildPptx({ ...pptxHolding(part, xml, sidecar, kind), [part]: withBogusDefect(xml) }));
+                const result = await validate(file, { profile });
+                expect(result.valid).toBe(false);
+                const errors = result.issues.filter((issue) => issue.code === "xsd-error");
+                expect(errors.length).toBeGreaterThan(0);
+                expect(errors.every((issue) => issue.path === part)).toBe(true);
+                expect(errors.some((issue) => issue.message.includes("bogusDefect"))).toBe(true);
+                expect(result.xsdWalk.parts).toContain(part);
+            });
+        });
+
+        it.each(DIRECT_EXTRA_PARTS)("walks a valid %s without findings", async (part, xml, sidecar, kind) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "direct-control.pptx");
+                await fs.writeFile(file, await buildPptx(pptxHolding(part, xml, sidecar, kind)));
+                const result = await validate(file, { profile });
+                expect(result.valid).toBe(true);
+                expect(result.xsdWalk.parts).toContain(part);
+                expect(result.issues.filter((issue) => issue.path === part)).toEqual([]);
+            });
+        });
+    });
+
+    it("routes a Strict slide stored as ppt/slide1.xml to the ISO Strict schema under strict, and skips it under lenient", async () => {
+        await withTempDir(async (dir) => {
+            const strictSlide = `${HEAD}<p:sld ${STRICT_PPT_NS}>${PPT_TREE}<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>`;
+            const parts = { ...pptxWithPartMoved("ppt/slides/slide1.xml"), "ppt/slide1.xml": withBogusDefect(strictSlide) };
+            const file = path.join(dir, "strict-slide.pptx");
+            await fs.writeFile(file, await buildPptx(parts));
+
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.valid).toBe(false);
+            expect(
+                strict.issues.some(
+                    (issue) => issue.code === "xsd-error" && issue.path === "ppt/slide1.xml" && issue.message.includes("bogusDefect"),
+                ),
+            ).toBe(true);
+            expect(strict.xsdWalk.parts).toContain("ppt/slide1.xml");
+
+            const lenient = await validate(file, { profile: "lenient" });
+            expect(lenient.valid).toBe(true);
+            expect(lenient.issues.filter((issue) => issue.code === "xsd-error")).toEqual([]);
+            expect(lenient.issues.filter((issue) => issue.code === "xsd-strict-skipped")).toHaveLength(1);
+            expect(lenient.xsdWalk.parts).not.toContain("ppt/slide1.xml");
+        });
+    });
+});
+
+describe("the global element declarations the ppt/ root route reads (#887)", () => {
+    const PML = "http://schemas.openxmlformats.org/presentationml/2006/main";
+    const DML = "http://schemas.openxmlformats.org/drawingml/2006/main";
+    const STRICT_PML = "http://purl.oclc.org/ooxml/presentationml/main";
+    const STRICT_DML = "http://purl.oclc.org/ooxml/drawingml/main";
+    const schemas = (schema: string): string => path.join(defaultSchemasDir(), schema);
+
+    it.each([
+        // The roots the route reads them for: the slide, the presentation,
+        // and the DrawingML table styles pml.xsd reaches through its
+        // dml-main.xsd import — declarations the bundled files own, so the
+        // route never carries a hand-listed copy of them.
+        ["ISO-IEC29500-4_2016/pml.xsd", `{${PML}}sld`],
+        ["ISO-IEC29500-4_2016/pml.xsd", `{${PML}}presentation`],
+        ["ISO-IEC29500-4_2016/pml.xsd", `{${DML}}tblStyleLst`],
+        ["iso-strict/pml.xsd", `{${STRICT_PML}}sld`],
+        ["iso-strict/pml.xsd", `{${STRICT_PML}}presentation`],
+        ["iso-strict/pml.xsd", `{${STRICT_DML}}tblStyleLst`],
+    ] as const)("declares %s's %s", (schema, key) => {
+        expect(schemaGlobals(schemas(schema)).has(key)).toBe(true);
+    });
+
+    it("declares no Microsoft authorLst in either conformance class", () => {
+        const key = "{http://schemas.microsoft.com/office/powerpoint/2018/8/main}authorLst";
+        expect(schemaGlobals(schemas("ISO-IEC29500-4_2016/pml.xsd")).has(key)).toBe(false);
+        expect(schemaGlobals(schemas("iso-strict/pml.xsd")).has(key)).toBe(false);
+    });
+
+    it("reads each entry schema's closure once", () => {
+        expect(schemaGlobals(schemas("ISO-IEC29500-4_2016/pml.xsd"))).toBe(schemaGlobals(schemas("ISO-IEC29500-4_2016/pml.xsd")));
+    });
+
+    it("follows a local import and include, and skips a URL or missing schemaLocation", async () => {
+        await withTempDir(async (dir) => {
+            const XSD = "http://www.w3.org/2001/XMLSchema";
+            await fs.writeFile(
+                path.join(dir, "root.xsd"),
+                `<xsd:schema xmlns:xsd="${XSD}" targetNamespace="urn:root">` +
+                    `<xsd:import namespace="urn:remote" schemaLocation="http://example.com/remote.xsd"/>` +
+                    `<xsd:import namespace="urn:missing" schemaLocation="missing.xsd"/>` +
+                    `<xsd:import namespace="urn:local" schemaLocation="local.xsd"/>` +
+                    `<xsd:include schemaLocation="chameleon.xsd"/>` +
+                    `<xsd:element name="root"/></xsd:schema>`,
+                "utf-8",
+            );
+            await fs.writeFile(
+                path.join(dir, "local.xsd"),
+                `<xsd:schema xmlns:xsd="${XSD}" targetNamespace="urn:local"><xsd:element name="localRoot"/></xsd:schema>`,
+                "utf-8",
+            );
+            // An include that declares no target namespace of its own (the
+            // chameleon case) declares its globals in the including one's.
+            await fs.writeFile(
+                path.join(dir, "chameleon.xsd"),
+                `<xsd:schema xmlns:xsd="${XSD}"><xsd:element name="chameleon"/></xsd:schema>`,
+                "utf-8",
+            );
+            expect([...schemaGlobals(path.join(dir, "root.xsd"))].sort()).toEqual([
+                "{urn:local}localRoot",
+                "{urn:root}chameleon",
+                "{urn:root}root",
+            ]);
         });
     });
 });

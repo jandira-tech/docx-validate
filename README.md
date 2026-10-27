@@ -214,13 +214,17 @@ In a PPTX, the slides, slide layouts and masters, notes slides and masters,
 handout masters, legacy comments and tags one folder below `ppt/` use `pml.xsd`,
 matched by folder and file name (#864). PowerPoint's modern comments
 (`ppt/comments/modernComment_*.xml`), whose root `pml.xsd` does not declare,
-are among the unmapped parts. Directly in `ppt/`, only the parts whose root
-`pml.xsd` (or a schema it imports) declares are sent to it, matched by file
-name (#872): `presentation.xml`, `presProps.xml`, `viewProps.xml`,
-`commentAuthors.xml` and `tableStyles.xml`. A PresentationML part stored
-directly in `ppt/` under any other name is not sent and draws the audit
-instead, so `ppt/authors.xml` and `ppt/revisionInfo.xml`, whose Microsoft
-roots `pml.xsd` cannot judge, no longer fail the walk. The CLI prints
+are among the unmapped parts. Directly in `ppt/`, the five conventional
+names (`presentation.xml`, `presProps.xml`, `viewProps.xml`,
+`commentAuthors.xml` and `tableStyles.xml`) go to `pml.xsd` by name (#872).
+Any other part there is routed by its root element (#887): it goes to
+`pml.xsd` when that root is a global element declared by `pml.xsd` or a
+schema it imports or includes, for the part's conformance class, and draws
+the audit otherwise. A renamed main presentation or a relocated slide
+therefore keeps its check, while `ppt/authors.xml` and
+`ppt/revisionInfo.xml`, whose Microsoft roots no bundled schema declares,
+stay unmapped. The earlier basename routes (`core.xml`, `app.xml`,
+`custom.xml`, …) still come first. The CLI prints
 the finding with `--json`; its human output lists errors only.
 
 Full DOCX/DOCM validation reports duplicate relationship `Id` values as
