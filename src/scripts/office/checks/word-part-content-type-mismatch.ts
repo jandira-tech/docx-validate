@@ -62,7 +62,7 @@ import {
 } from "../../../lib/content-types";
 import { NS, type Profile, type ValidationIssue } from "../../../lib/types";
 import type { ValidationContext, XmlPart } from "../../../lib/validation-context";
-import { wordReadTypedTargets } from "../../../lib/word-read-parts";
+import { type WordTypedTarget, wordReadTypedTargets } from "../../../lib/word-read-parts";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 import { REPORTING_SEGMENT_ORDER } from "./word-part-content-type-generic";
 import {
@@ -176,9 +176,10 @@ const segmentForMediaType = (mediaType: string): string | undefined =>
  * no type citation because Word refused its comments-typed twin too (#851).
  * Other Requires namespaces, a Strict root in the Fallback, other text
  * positions within the Choice or Fallback or combinations of these edits,
- * the endnotes and footnotes twins and the new
- * shapes' other spellings are unprobed and keep their verdicts without a
- * citation. Other effective-root wrappers remain unprobed for this type
+ * CDATA anywhere in the wrapper, a Strict comments root in a package whose
+ * main document is not Transitional (#857), the endnotes and footnotes
+ * twins and the new shapes' other spellings are unprobed and keep their
+ * verdicts without a citation. Other effective-root wrappers remain unprobed for this type
  * mismatch (#831, #837, #843). Main-document reaches only: a glossary's own
  * relationship co-reaches nothing here. A padded styles spelling with no
  * parameter, and the header and footer pairs' inexact spellings, stay
@@ -218,6 +219,7 @@ export const wordPartContentTypeMismatchFindings = async (
         entries.push(target);
         byPart.set(canonical, entries);
     }
+    let readTargets: readonly WordTypedTarget[] | undefined;
     let readKeys: ReadonlySet<string> | undefined;
     const findings: WordPartContentTypeFinding[] = [];
     for (const [canonical, candidates] of byPart) {
@@ -246,10 +248,9 @@ export const wordPartContentTypeMismatchFindings = async (
         // lookup; an eager read also interferes with staged-directory
         // write-back failures after repair (#412).
         if (swaps.length > 0 || entries.length > 1 || entries.some(({ segment }) => LAZY_OBSERVED_SEGMENTS.has(segment))) {
+            readTargets ??= await wordReadTypedTargets(ctx, profile);
             readKeys ??= new Set(
-                (await wordReadTypedTargets(ctx, profile)).map(
-                    (target) => `${target.via ?? "main"}\n${canonicalPartName(target.part)}\n${target.segment}`,
-                ),
+                readTargets.map((target) => `${target.via ?? "main"}\n${canonicalPartName(target.part)}\n${target.segment}`),
             );
         }
         const readEntries = entries.filter(
@@ -277,6 +278,20 @@ export const wordPartContentTypeMismatchFindings = async (
             isOwnRoot(parsed?.ok === true ? parsed.document.documentElement : null, segment);
         const childElements = (element: Element): Element[] =>
             Array.from(element.childNodes).filter((child): child is Element => child.nodeType === 1);
+        // Session 65 stored its Strict comments roots in a Transitional
+        // package, each main document's stored root a Transitional
+        // w:document (#857).
+        const transitionalMain = (): boolean => {
+            const mains = (readTargets ?? []).filter(({ segment, via }) => segment === "officeDocument" && via === undefined);
+            return (
+                mains.length > 0 &&
+                mains.every(({ part: main }) => {
+                    const stored = ctx.xml(main);
+                    const root = stored?.ok === true ? stored.document.documentElement : null;
+                    return root?.localName === "document" && root.namespaceURI === WORD_2006_NAMESPACE;
+                })
+            );
+        };
         // Keep the verdict of an unprobed co-reach without borrowing a
         // session's citation (#847).
         const readStoryCoreach = (entry: (typeof entries)[number]): { session?: string } | undefined => {
@@ -293,7 +308,7 @@ export const wordPartContentTypeMismatchFindings = async (
             if (!rootIsOwn(ctx.effectiveXml(part), entry.segment)) return undefined;
             // Sessions 58 and 62 stored Transitional story roots. Session
             // 65 (s65d) refused the exact-typed comments part with a Strict
-            // root directly stored in a Transitional package (#847).
+            // root directly stored in a Transitional package (#847, #857).
             const stored = ctx.xml(part);
             const storedRoot = stored?.ok === true ? stored.document.documentElement : null;
             if (rootIsOwn(stored, entry.segment)) {
@@ -304,7 +319,10 @@ export const wordPartContentTypeMismatchFindings = async (
                             ? exactSpelling
                                 ? session
                                 : "session 62"
-                            : entry.segment === "comments" && exactSpelling && storedRoot?.namespaceURI === WORD_STRICT_NAMESPACE
+                            : entry.segment === "comments" &&
+                                exactSpelling &&
+                                storedRoot?.namespaceURI === WORD_STRICT_NAMESPACE &&
+                                transitionalMain()
                               ? "session 65"
                               : undefined,
                 };
@@ -313,8 +331,11 @@ export const wordPartContentTypeMismatchFindings = async (
             // Transitional comments root, then an empty Fallback. Session
             // 65 (s65b/s65c) changed one thing at a time: text before that
             // root, text in the Fallback, Requires naming w, or a Strict
-            // root in the Choice. Text between branches is refused even
-            // typed comments (#851), so it supports no type citation.
+            // root in the Choice of a Transitional package. Text between
+            // branches is refused even typed comments (#851), so it
+            // supports no type citation. No session stored CDATA, so
+            // CDATA anywhere in the wrapper keeps the verdict without a
+            // citation (#857).
             const [choice, fallback, ...rest] = storedRoot ? childElements(storedRoot) : [];
             if (
                 entry.segment !== "comments" ||
@@ -332,23 +353,24 @@ export const wordPartContentTypeMismatchFindings = async (
                 return undefined;
             }
             const [storyRoot, ...otherRoots] = childElements(choice);
-            const isCharacterData = (node: Node): boolean =>
-                (node.nodeType === 3 || node.nodeType === 4) && /[^ \t\r\n]/.test(node.nodeValue ?? "");
-            if (Array.from(storedRoot.childNodes).some(isCharacterData)) return undefined;
+            const isText = (node: Node): boolean => node.nodeType === 3 && /[^ \t\r\n]/.test(node.nodeValue ?? "");
+            if (Array.from(storedRoot.childNodes).some(isText)) return undefined;
+            if ([storedRoot, choice, fallback].some((element) => Array.from(element.childNodes).some((node) => node.nodeType === 4)))
+                return {};
             if (storyRoot === undefined || otherRoots.length !== 0) return {};
             const required = (choice.getAttribute("Requires") ?? "").trim().split(/[ \t\r\n]+/);
             if (required.length !== 1) return {};
             const requiredNamespace = choice.lookupNamespaceURI(required[0]!);
-            const choiceText = Array.from(choice.childNodes).some(isCharacterData);
-            const fallbackText = Array.from(fallback.childNodes).some(isCharacterData);
+            const choiceText = Array.from(choice.childNodes).some(isText);
+            const fallbackText = Array.from(fallback.childNodes).some(isText);
             const transitionalRoot = storyRoot?.namespaceURI === WORD_2006_NAMESPACE;
             if (requiredNamespace === NS.W14) {
                 if (!choiceText && !fallbackText) {
-                    return { session: transitionalRoot ? "session 63" : "session 65" };
+                    return { session: transitionalRoot ? "session 63" : transitionalMain() ? "session 65" : undefined };
                 }
                 const trailingText = Array.from(choice.childNodes)
                     .slice(Array.from(choice.childNodes).indexOf(storyRoot) + 1)
-                    .some(isCharacterData);
+                    .some(isText);
                 return { session: transitionalRoot && !trailingText && choiceText !== fallbackText ? "session 65" : undefined };
             }
             return {
