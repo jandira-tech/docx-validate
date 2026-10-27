@@ -137,6 +137,11 @@ async function declareUndecodable(file: string): Promise<void> {
     await fs.writeFile(file, undecodable, "utf-8");
 }
 
+/** A part's text with its closing root tag dropped, so it decodes but does not parse (#905). */
+function malformed(text: string): string {
+    return text.replace(/<\/[^\s>]+>\s*$/, "");
+}
+
 describe("generateHexId", () => {
     afterEach(() => {
         vi.mocked(crypto.randomInt).mockReset();
@@ -727,6 +732,90 @@ describe("addComment", () => {
                 expect(retry.message).toMatch(/^Added comment 1 \(para_id=[0-9A-F]{8}\)$/);
                 const commentsXml = await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8");
                 expect(commentsXml).toContain('w:id="1"');
+            });
+        },
+    );
+
+    it.each([
+        [
+            "[Content_Types].xml is not well-formed XML",
+            async (dir: string) => {
+                await makeFixture(dir);
+                await fs.writeFile(path.join(dir, "[Content_Types].xml"), malformed(CT_XML), "utf-8");
+            },
+            (dir: string) => path.join(dir, "[Content_Types].xml"),
+        ],
+        [
+            "word/_rels/document.xml.rels is not well-formed XML",
+            async (dir: string) => {
+                await makeFixture(dir);
+                await fs.writeFile(path.join(dir, "word", "_rels", "document.xml.rels"), malformed(RELS_XML), "utf-8");
+            },
+            (dir: string) => path.join(dir, "word", "_rels", "document.xml.rels"),
+        ],
+        [
+            "a renamed main document's relationships part is not well-formed XML",
+            async (dir: string) => {
+                await makePackageFixture(dir, officeDocumentRels("word/main.xml"), "word/main.xml");
+                await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+                await fs.writeFile(path.join(dir, "word", "_rels", "main.xml.rels"), malformed(RELS_XML), "utf-8");
+            },
+            (dir: string) => path.join(dir, "word", "_rels", "main.xml.rels"),
+        ],
+    ])("refuses a first comment when %s, changing nothing (#905)", async (_label, prepare, partPath) => {
+        await withTempDir(async (dir) => {
+            await prepare(dir);
+
+            const before = await readTree(dir);
+            // Before #905 the call threw mid-write, after earlier parts changed.
+            const call = addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "x",
+                author: "TestAuthor",
+                initials: "TA",
+            });
+            await expect(call).resolves.toMatchObject({ paraId: "" });
+            const result = await call;
+
+            expect(result.message).toMatch(/^Error: /);
+            expect(result.message).toContain(`${partPath(dir)} is not well-formed XML`);
+            // The parser's own message follows the part name (#905).
+            expect(result.message).not.toBe(`Error: ${partPath(dir)} is not well-formed XML`);
+            expect(await readTree(dir)).toEqual(before);
+        });
+    });
+
+    it.each(["comments.xml", "commentsExtended.xml", "commentsIds.xml", "commentsExtensible.xml"])(
+        "refuses a later comment when word/%s is not well-formed XML, changing nothing (#905)",
+        async (name) => {
+            await withTempDir(async (dir) => {
+                await makeFixture(dir);
+                await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "first",
+                    author: "Test",
+                    initials: "T",
+                });
+
+                const part = path.join(dir, "word", name);
+                await fs.writeFile(part, malformed(await fs.readFile(part, "utf-8")), "utf-8");
+                const before = await readTree(dir);
+                // Before #905 the call threw mid-write, after earlier parts changed.
+                const call = addComment({
+                    unpackedDir: dir,
+                    commentId: 1,
+                    text: "second",
+                    author: "Test",
+                    initials: "T",
+                });
+                await expect(call).resolves.toMatchObject({ paraId: "" });
+                const result = await call;
+
+                expect(result.message).toMatch(/^Error: /);
+                expect(result.message).toContain(`${part} is not well-formed XML`);
+                expect(await readTree(dir)).toEqual(before);
             });
         },
     );
