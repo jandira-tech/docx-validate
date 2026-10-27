@@ -21,7 +21,7 @@ import JSZip from "jszip";
 import { describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
-import { escapeControlCharacters, extractPackageParts, extractZipEntries, resolveSafeZipEntry } from "../src/lib/zip-path";
+import { escapeControlCharacters, extractPackageParts, extractZipEntries, findLinkBelow, resolveSafeZipEntry } from "../src/lib/zip-path";
 import { poisonEntry } from "./support/poison-entry";
 import { buildRawZip } from "./support/raw-zip";
 
@@ -185,6 +185,59 @@ describe("extractZipEntries (#675)", () => {
             const archive = poisonEntry(await zip.generateAsync({ type: "uint8array", compression: "DEFLATE" }), "z/broken.xml");
             await expect(extractZipEntries(await JSZip.loadAsync(archive), out)).rejects.toThrow();
             expect(entriesUnder(out)).toEqual(["notes.txt", "word", "word/keep.xml"]);
+        });
+    });
+});
+
+describe("findLinkBelow (#675, #939)", () => {
+    it("returns the first link on the path to a destination, and extractZipEntries still refuses with its old message", async () => {
+        await withTempDir(async (dir) => {
+            const out = path.join(dir, "out");
+            const elsewhere = path.join(dir, "elsewhere");
+            await fsPromises.mkdir(out);
+            await fsPromises.mkdir(elsewhere);
+            await fsPromises.symlink(elsewhere, path.join(out, "word"), "dir");
+            expect(await findLinkBelow(out, path.join(out, "word", "document.xml"))).toBe(path.join(out, "word"));
+            const zip = await JSZip.loadAsync(await buildRawZip([{ name: "word/document.xml", content: "<d/>" }]));
+            await expect(extractZipEntries(zip, out)).rejects.toThrow("Refusing to extract word/document.xml: word is a symbolic link");
+        });
+    });
+
+    it("returns the link when the destination itself is one", async () => {
+        await withTempDir(async (dir) => {
+            const out = path.join(dir, "out");
+            const target = path.join(dir, "target.xml");
+            await fsPromises.mkdir(out);
+            await fsPromises.writeFile(target, "keep");
+            await fsPromises.symlink(target, path.join(out, "evil.xml"), "file");
+            expect(await findLinkBelow(out, path.join(out, "evil.xml"))).toBe(path.join(out, "evil.xml"));
+        });
+    });
+
+    it("returns undefined when no segment of the path is a link", async () => {
+        await withTempDir(async (dir) => {
+            const out = path.join(dir, "out");
+            await fsPromises.mkdir(path.join(out, "word"), { recursive: true });
+            await fsPromises.writeFile(path.join(out, "word", "document.xml"), "<d/>");
+            expect(await findLinkBelow(out, path.join(out, "word", "document.xml"))).toBeUndefined();
+        });
+    });
+
+    it("returns undefined when a segment does not exist yet: nothing below it is on disk", async () => {
+        await withTempDir(async (dir) => {
+            const out = path.join(dir, "out");
+            await fsPromises.mkdir(out);
+            expect(await findLinkBelow(out, path.join(out, "word", "document.xml"))).toBeUndefined();
+        });
+    });
+
+    it("leaves the output directory itself alone: the caller chose it", async () => {
+        await withTempDir(async (dir) => {
+            const real = path.join(dir, "real");
+            const out = path.join(dir, "out");
+            await fsPromises.mkdir(real);
+            await fsPromises.symlink(real, out, "dir");
+            expect(await findLinkBelow(out, path.join(out, "word", "document.xml"))).toBeUndefined();
         });
     });
 });
