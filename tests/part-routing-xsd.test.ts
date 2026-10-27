@@ -1301,9 +1301,112 @@ describe("schema routing of the parts directly in ppt/ by their root (#887)", { 
             const validators = [0, 1].map(() => new PPTXSchemaValidator({ unpackedDir: dir, profile: "strict" }));
             const results = await Promise.all(validators.map((validator) => validator.validateAgainstXsd()));
             expect(results.map((result) => result.valid)).toEqual([true, true]);
-            for (const validator of validators) expect(validator.xsdWalk).toEqual(lone.xsdWalk);
+            // The trace is pinned absolutely too, so a mutant publishing an
+            // empty trace for every walk cannot pass: under strict every part
+            // of the minimal package is eligible — the content-types stream
+            // and the five `.rels` sidecars through the OPC schemas, the
+            // four `ppt/` parts through pml.xsd — and each is listed once
+            // (#965).
+            const walkedParts = [
+                "[Content_Types].xml",
+                "_rels/.rels",
+                "ppt/_rels/presentation.xml.rels",
+                "ppt/presentation.xml",
+                "ppt/slideLayouts/_rels/slideLayout1.xml.rels",
+                "ppt/slideLayouts/slideLayout1.xml",
+                "ppt/slideMasters/_rels/slideMaster1.xml.rels",
+                "ppt/slideMasters/slideMaster1.xml",
+                "ppt/slides/_rels/slide1.xml.rels",
+                "ppt/slides/slide1.xml",
+            ];
+            for (const validator of validators) {
+                expect(validator.xsdWalk).toEqual(lone.xsdWalk);
+                expect(validator.xsdWalk.started).toBe(true);
+                expect(validator.xsdWalk.eligible).toBe(10);
+                expect([...validator.xsdWalk.parts].sort()).toEqual(walkedParts);
+                expect(new Set(validator.xsdWalk.parts).size).toBe(validator.xsdWalk.parts.length);
+            }
         });
     });
+
+    // Two concurrent walks on ONE validator (#965): the walk that finishes
+    // last leaves its own trace and engine-failure count on the instance.
+    // One walk holds at a gate on `ppt/_rels/presentation.xml.rels`, which
+    // walks before `ppt/extra.xml`, until the other walk settled; the held
+    // walk then reads the extra part after it was rewritten to the other
+    // root, so the two walks' traces differ. Its engine calls also run after
+    // `failing` was raised, so only the held walk counts engine failures:
+    // the gate part and every part behind the rewrite — eight when the
+    // rewritten extra part stays unwalked, nine when it is walked.
+    it.each(["first", "second"] as const)(
+        "leaves the walk that finishes last's trace and failures on one validator: %s entered holds (#943)",
+        async (held) => {
+            await withTempDir(async (dir) => {
+                const slide = MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!;
+                const unknown = `${HEAD}<p:unknown xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>`;
+                const parts = { ...MINIMAL_PPTX_PARTS, "ppt/extra.xml": held === "first" ? slide : unknown };
+                for (const [part, xml] of Object.entries(parts)) {
+                    await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                    await fs.writeFile(path.join(dir, part), xml, "utf-8");
+                }
+                const extra = path.join(dir, "ppt/extra.xml");
+                const gatePart = path.join(dir, "ppt/_rels/presentation.xml.rels");
+                let release!: () => void;
+                const gate = new Promise<void>((resolve) => {
+                    release = resolve;
+                });
+                let gateCalls = 0;
+                let failing = false;
+                const validator = new (class extends PPTXSchemaValidator {
+                    protected override async _getXsdValidator(): Promise<XsdValidator> {
+                        return {
+                            validate: async () => {
+                                if (failing) throw new Error("late engine failure");
+                                return [];
+                            },
+                        };
+                    }
+
+                    override async validateFileAgainstXsd(file: string) {
+                        if (file === gatePart && ++gateCalls === (held === "first" ? 1 : 2)) await gate;
+                        return super.validateFileAgainstXsd(file);
+                    }
+                })({ unpackedDir: dir, profile: "strict" });
+                const first = validator.validateAgainstXsd();
+                const firstTrace = validator.xsdWalk;
+                const second = validator.validateAgainstXsd();
+                const secondTrace = validator.xsdWalk;
+                const early = held === "first" ? second : first;
+                const late = held === "first" ? first : second;
+                const earlyResult = await early;
+                expect(earlyResult.valid).toBe(true);
+                expect(earlyResult.issues.some((issue) => issue.message.includes("late engine failure"))).toBe(false);
+                await fs.writeFile(extra, held === "first" ? unknown : slide, "utf-8");
+                failing = true;
+                release();
+                const lateResult = await late;
+                expect(lateResult.valid).toBe(false);
+                expect(lateResult.issues.some((issue) => issue.message.includes("late engine failure"))).toBe(true);
+                expect(validator.xsdWalk).toBe(held === "first" ? firstTrace : secondTrace);
+                expect(validator.xsdEngineFailures).toBe(held === "first" ? 8 : 9);
+                const expectedParts = [
+                    "[Content_Types].xml",
+                    "_rels/.rels",
+                    "ppt/_rels/presentation.xml.rels",
+                    ...(held === "first" ? [] : ["ppt/extra.xml"]),
+                    "ppt/presentation.xml",
+                    "ppt/slideLayouts/_rels/slideLayout1.xml.rels",
+                    "ppt/slideLayouts/slideLayout1.xml",
+                    "ppt/slideMasters/_rels/slideMaster1.xml.rels",
+                    "ppt/slideMasters/slideMaster1.xml",
+                    "ppt/slides/_rels/slide1.xml.rels",
+                    "ppt/slides/slide1.xml",
+                ];
+                expect(validator.xsdWalk).toEqual({ started: true, parts: expectedParts, eligible: expectedParts.length });
+                expect(new Set(validator.xsdWalk.parts).size).toBe(validator.xsdWalk.parts.length);
+            });
+        },
+    );
 
     it("publishes a lone walk's trace while it runs without changing its parts (#943)", async () => {
         await withTempDir(async (dir) => {
