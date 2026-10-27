@@ -1767,8 +1767,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 if (isExternalRelationship(elem, target)) continue;
                 // A final `.` or `..` segment, or a trailing `/`, names a
                 // folder, never the part its path spells, which the
-                // file-system resolution below would find (sessions 70, 71
-                // and 72, #975).
+                // file-system resolution below would find (sessions 70 to
+                // 73, #975).
                 const relsFolder = path.posix.dirname(name);
                 const sourceFolder = isRelationshipsFolderName(path.posix.basename(relsFolder))
                     ? path.posix.dirname(relsFolder)

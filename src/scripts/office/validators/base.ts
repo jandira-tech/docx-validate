@@ -1027,8 +1027,10 @@ export class BaseSchemaValidator {
                 // folder, never the part its path spells, which the
                 // file-system join below would find: Word refused every such
                 // target, whatever the relationship type and whether anything
-                // used it (sessions 70, 71 and 72, #975).
-                const folder = relationshipTargetFolder(sourceFolder, target);
+                // used it (sessions 70 to 73, #975). An External target
+                // names no part, so lenient's historical scan keeps resolving
+                // it as before (#980).
+                const folder = rel.getAttribute("TargetMode") === "External" ? undefined : relationshipTargetFolder(sourceFolder, target);
                 if (folder !== undefined) {
                     broken.push({ target, part: folder, folder: true });
                     continue;

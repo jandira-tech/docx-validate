@@ -465,9 +465,10 @@ describe("isWordBlockingIssue", () => {
         ["media/image1.png", false],
         // A target naming a folder, registered with its final `/` (the package
         // root as `/`): Word refused each one it was shown, whatever the
-        // relationship type and whether anything used it (sessions 70, 71 and
-        // 72, #975).
+        // relationship type and whether anything used it (sessions 70 to 73,
+        // #975).
         ["word/styles.xml/", true],
+        ["word/settings.xml/", true],
         ["word/media/image1.png/", true],
         ["word/header1.xml/", true],
         ["word/", true],

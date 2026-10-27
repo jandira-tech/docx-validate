@@ -307,9 +307,9 @@ and so does a target reaching the package root. The walks behind `rels-broken`
 and `rels-target-missing` resolved a file-system path, which drops the final `/`,
 so they found the stored part the path spells. Word 16.115 offered recovery for
 such a target beside that stored part for every relationship type it was shown,
-`officeDocument`, `footnotes`, `customXml`, `styles`, a used and an unused
-`header`, an unused `image` and the core properties, and opened each plain target
-clean (Word probes sessions 70, 71 and 72;
+`officeDocument`, `footnotes`, `customXml`, `styles`, `settings`, a used and an
+unused `header`, an unused `image` and the core properties, and opened each plain
+target clean (Word probes sessions 70 to 73;
 [#975](https://github.com/jandira-tech/docx-validate/issues/975)).
 
 The processed view is DOCX/DOCM-only: every observation behind it is Word

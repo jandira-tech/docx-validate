@@ -525,9 +525,9 @@ export const isWordBlockingIssue = (
             // `/`), blocks whatever the relationship type: Word offered
             // recovery for every one it was shown beside the stored part its
             // path spells — `officeDocument`, `footnotes`, `customXml`,
-            // `styles`, a used and an unused `header`, an unused `image` and
-            // the core properties — and opened each plain target clean
-            // (sessions 70, 71 and 72, #975).
+            // `styles`, `settings`, a used and an unused `header`, an unused
+            // `image` and the core properties — and opened each plain target
+            // clean (sessions 70 to 73, #975).
             const part = relsBrokenTarget(issue);
             return (
                 part !== undefined &&

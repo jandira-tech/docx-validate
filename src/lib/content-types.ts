@@ -316,7 +316,7 @@ export const relationshipTargetPartName = (baseDir: string, target: string, clam
  * when the target names a part, or nothing at all (a URI scheme, an empty
  * reference). Word refused every such target it was shown, beside the
  * stored part its path spells, whatever the relationship type and whether
- * anything used it (sessions 70, 71 and 72; #962, #975).
+ * anything used it (sessions 70 to 73; #962, #975).
  */
 export const relationshipTargetFolder = (baseDir: string, target: string): string | undefined => {
     const reference = relationshipTargetPartName(baseDir, target, true);

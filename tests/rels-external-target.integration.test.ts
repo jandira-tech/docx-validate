@@ -103,6 +103,22 @@ describe("TargetMode=External targets are not package paths (#665)", () => {
         expect(broken.map((issue) => issue.message)).toEqual([`Broken reference to ${target}`]);
     });
 
+    // #975 reads an internal target naming a folder as broken. An External
+    // target names no part, so lenient's historical scan keeps resolving it
+    // as before: `styles.xml/.` and `styles.xml/` reach the stored
+    // `word/styles.xml`, and `.` reaches no part (#980).
+    it.each([
+        ["styles.xml/.", []],
+        ["styles.xml/", []],
+        [".", ["Broken reference to ."]],
+    ] as const)("keeps lenient's historical scan for the External folder spelling %s", async (target, messages) => {
+        const { broken } = await run(withHyperlink(target, "direct"), "lenient");
+        expect(broken.map((issue) => issue.message)).toEqual(messages);
+        for (const profile of ["strict", "word-valid"] as const) {
+            expect((await run(withHyperlink(target, "direct"), profile)).broken, profile).toEqual([]);
+        }
+    });
+
     it.each([
         ["absent", null],
         ["Internal", "Internal"],
