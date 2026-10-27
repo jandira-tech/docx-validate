@@ -327,7 +327,13 @@ interface OverlapSpec {
     readonly cleanSecondPart: string;
     readonly build: (parts: Readonly<Record<string, string>>) => Promise<Buffer>;
     readonly control: (options: BaseSchemaValidatorOptions) => { validate(): Promise<ValidationResult> };
-    readonly gated: (options: BaseSchemaValidatorOptions, paused: Deferred, resume: Deferred) => { validate(): Promise<ValidationResult> };
+    /** A validator that pauses after `firstPart` and logs every part it sends to the schema engine. */
+    readonly gated: (
+        options: BaseSchemaValidatorOptions,
+        paused: Deferred,
+        resume: Deferred,
+        walked: string[],
+    ) => { validate(): Promise<ValidationResult> };
 }
 
 interface OverlapOutcome {
@@ -335,6 +341,8 @@ interface OverlapOutcome {
     expectedB: { valid: boolean; xsdErrors: string[] };
     runA: { valid: boolean; xsdErrors: string[] };
     runB: { valid: boolean; xsdErrors: string[] };
+    /** Every part runs A and B sent to the schema engine, in call order. */
+    walked: string[];
 }
 
 /**
@@ -362,7 +370,8 @@ async function overlappingBaselineRun(dir: string, spec: OverlapSpec, scenario: 
 
     const paused = deferred();
     const resume = deferred();
-    const validator = spec.gated({ unpackedDir, originalFile, profile: "lenient" }, paused, resume);
+    const walked: string[] = [];
+    const validator = spec.gated({ unpackedDir, originalFile, profile: "lenient" }, paused, resume, walked);
     const runA = validator.validate();
     await paused.promise;
 
@@ -380,7 +389,27 @@ async function overlappingBaselineRun(dir: string, spec: OverlapSpec, scenario: 
         expectedB: baselineSummary(expectedB),
         runA: baselineSummary(runAResult),
         runB: baselineSummary(runBResult),
+        walked,
     };
+}
+
+/**
+ * Both runs match their controls, and each reports what its scenario plants
+ * (#888): with every defect in original A and none in original B, run A
+ * subtracts both and run B reports both; with only the first defect in
+ * original A and both in original B, run A reports the second part's and run
+ * B subtracts both. Each run sends the second part to the schema engine once,
+ * so a second part the walk stopped judging fails here instead of matching
+ * a control that skipped it too.
+ */
+function expectOwnBaselines(outcome: OverlapOutcome, spec: OverlapSpec, scenario: "remove-defects" | "add-defects"): void {
+    expect(outcome.runA).toEqual(outcome.expectedA);
+    expect(outcome.runB).toEqual(outcome.expectedB);
+    const reported = (summary: { xsdErrors: string[] }): string[] => [...new Set(summary.xsdErrors)];
+    const both = [spec.firstPart, spec.secondPart].map((part) => `xsd-error@${part}`).sort();
+    expect(reported(outcome.runA)).toEqual(scenario === "remove-defects" ? [] : [`xsd-error@${spec.secondPart}`]);
+    expect(reported(outcome.runB)).toEqual(scenario === "remove-defects" ? both : []);
+    expect(outcome.walked.filter((part) => part === spec.secondPart)).toHaveLength(2);
 }
 
 const docxOverlap: OverlapSpec = {
@@ -392,12 +421,14 @@ const docxOverlap: OverlapSpec = {
     cleanSecondPart: MINIMAL_PARTS["word/styles.xml"]!,
     build: buildDocx,
     control: (options) => new DOCXSchemaValidator(options),
-    gated: (options, paused, resume) =>
+    gated: (options, paused, resume, walked) =>
         new (class extends DOCXSchemaValidator {
             didPause = false;
             override async validateFileAgainstXsd(file: string) {
+                const part = this.relPath(file).split(path.sep).join("/");
+                walked.push(part);
                 const outcome = await super.validateFileAgainstXsd(file);
-                if (!this.didPause && this.relPath(file).split(path.sep).join("/") === docxOverlap.firstPart) {
+                if (!this.didPause && part === docxOverlap.firstPart) {
                     this.didPause = true;
                     paused.resolve();
                     await resume.promise;
@@ -416,12 +447,14 @@ const pptxOverlap: OverlapSpec = {
     cleanSecondPart: CLEAN_VIEW_PROPS,
     build: buildPptx,
     control: (options) => new PPTXSchemaValidator(options),
-    gated: (options, paused, resume) =>
+    gated: (options, paused, resume, walked) =>
         new (class extends PPTXSchemaValidator {
             didPause = false;
             override async validateFileAgainstXsd(file: string) {
+                const part = this.relPath(file).split(path.sep).join("/");
+                walked.push(part);
                 const outcome = await super.validateFileAgainstXsd(file);
-                if (!this.didPause && this.relPath(file).split(path.sep).join("/") === pptxOverlap.firstPart) {
+                if (!this.didPause && part === pptxOverlap.firstPart) {
                     this.didPause = true;
                     paused.resolve();
                     await resume.promise;
@@ -436,9 +469,7 @@ describe("overlapping runs keep their own --original (#520)", () => {
         "DOCX run A keeps the baseline it loaded when run B overlaps (%s)",
         async (scenario) => {
             await withTempDir(async (dir) => {
-                const outcome = await overlappingBaselineRun(dir, docxOverlap, scenario);
-                expect(outcome.runA).toEqual(outcome.expectedA);
-                expect(outcome.runB).toEqual(outcome.expectedB);
+                expectOwnBaselines(await overlappingBaselineRun(dir, docxOverlap, scenario), docxOverlap, scenario);
             });
         },
         60_000,
@@ -448,9 +479,7 @@ describe("overlapping runs keep their own --original (#520)", () => {
         "PPTX run A keeps the baseline it loaded when run B overlaps (%s)",
         async (scenario) => {
             await withTempDir(async (dir) => {
-                const outcome = await overlappingBaselineRun(dir, pptxOverlap, scenario);
-                expect(outcome.runA).toEqual(outcome.expectedA);
-                expect(outcome.runB).toEqual(outcome.expectedB);
+                expectOwnBaselines(await overlappingBaselineRun(dir, pptxOverlap, scenario), pptxOverlap, scenario);
             });
         },
         60_000,

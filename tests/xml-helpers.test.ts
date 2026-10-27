@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import * as xmlHelpers from "../src/lib/xml-helpers";
 import { NS } from "../src/lib/types";
 
@@ -278,6 +278,36 @@ describe("decodeXmlPart / encodeXmlPart", () => {
         expect(decodeXmlBytes(utf8(macintosh))).toBe(macintosh);
         const utf8Long = `<?xml version="1.0"${padding} encoding="UTF-8"?><a>ok</a>`;
         expect(decodeXmlPart(utf8(utf8Long))).toEqual({ text: utf8Long, encoding: "utf-8", bom: undefined });
+    });
+
+    it("decodes a part that opens with no declaration only once (#888)", () => {
+        const decode = vi.spyOn(TextDecoder.prototype, "decode");
+        try {
+            const commented = `<!-- ${"> ".repeat(64)}-->\n<a>ok</a>`;
+            const unmarked = "plain text, no markup";
+            expect(decodeXmlPart(utf8(commented))).toEqual({ text: commented, encoding: "utf-8", bom: undefined });
+            expect(decodeXmlPart(utf8(unmarked))).toEqual({ text: unmarked, encoding: "utf-8", bom: undefined });
+            expect(decode.mock.contexts.map((decoder) => (decoder as TextDecoder).encoding)).toEqual(["utf-8", "utf-8"]);
+            // A part that opens with a declaration still has it read first.
+            decode.mockClear();
+            decodeXmlPart(utf8('<?xml version="1.0"?><a>ok</a>'));
+            expect(decode.mock.contexts.map((decoder) => (decoder as TextDecoder).encoding)).toEqual(["windows-1252", "utf-8"]);
+        } finally {
+            decode.mockRestore();
+        }
+    });
+
+    it("reads a declaration after the leading whitespace its pattern accepts, as before #888", () => {
+        // `latin1` decodes as windows-1252, where tab, line feed, vertical
+        // tab, form feed, carriage return, space and 0xA0 are what `\s`
+        // matches; 0x85 is an ellipsis there, and 0xC2 0xA0 starts "Â".
+        const macintosh = utf8('<?XML version="1.0" encoding="macintosh"?><a>ok</a>');
+        for (const lead of [[0x09, 0x0a, 0x0d, 0x20], [0x0b, 0x0c], [0xa0]]) {
+            expect(decodeXmlPart(new Uint8Array([...lead, ...macintosh]))).toBeUndefined();
+        }
+        for (const lead of [[0x85], [0xc2, 0xa0]]) {
+            expect(decodeXmlPart(new Uint8Array([...lead, ...macintosh]))?.encoding).toBe("utf-8");
+        }
     });
 
     it("decodes US-ASCII, whose every byte UTF-8 encodes the same way", () => {

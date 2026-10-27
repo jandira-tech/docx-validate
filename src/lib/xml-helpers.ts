@@ -96,6 +96,32 @@ const BOM_BYTES: Readonly<Record<XmlEncoding, readonly number[]>> = {
 const UTF8_DECLARATIONS: ReadonlySet<string> = new Set(["utf8", "usascii"]);
 
 /**
+ * The bytes the declaration pattern's leading `\s*` matches once `latin1`,
+ * which `TextDecoder` reads as windows-1252, has decoded them: tab, line
+ * feed, vertical tab, form feed, carriage return, space and no-break space.
+ */
+const DECLARATION_LEADING_SPACE: ReadonlySet<number> = new Set([0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x20, 0xa0]);
+
+/**
+ * An 8-bit part's bytes up to the first `>` of the XML declaration it opens
+ * with, decoded, or `""` when it opens with none. The declaration pattern
+ * needs `<?xml` after leading whitespace, so a part opening any other way
+ * cannot name an encoding and is not decoded here: one opening with a long
+ * comment, or holding no `>`, was otherwise decoded twice in full (#888).
+ */
+const declarationHead = (bytes: Uint8Array): string => {
+    let start = 0;
+    while (start < bytes.length && DECLARATION_LEADING_SPACE.has(bytes[start]!)) {
+        start += 1;
+    }
+    if (!/^<\?xml/i.test(String.fromCharCode(...bytes.subarray(start, start + 5)))) {
+        return "";
+    }
+    const declarationEnd = bytes.indexOf(0x3e, start);
+    return new TextDecoder("latin1").decode(declarationEnd === -1 ? bytes : bytes.subarray(0, declarationEnd + 1));
+};
+
+/**
  * Decode a part's bytes and report the encoding they are in, so a caller
  * that writes the part back can put it in the same encoding.
  *
@@ -128,10 +154,7 @@ export const decodeXmlPart = (bytes: Uint8Array): DecodedXmlPart | undefined => 
     // pattern below cannot match. A fixed window let a long declaration hide
     // an encoding this project cannot decode (#881).
     const sixteenBit = bytes.length >= 2 && (bytes[0] === 0) !== (bytes[1] === 0);
-    const declarationEnd = sixteenBit ? -1 : bytes.indexOf(0x3e);
-    const head = sixteenBit
-        ? new TextDecoder(bytes[0] === 0 ? "utf-16be" : "utf-16le").decode(bytes)
-        : new TextDecoder("latin1").decode(declarationEnd === -1 ? bytes : bytes.subarray(0, declarationEnd + 1));
+    const head = sixteenBit ? new TextDecoder(bytes[0] === 0 ? "utf-16be" : "utf-16le").decode(bytes) : declarationHead(bytes);
     const declared = /^\s*<\?xml[^>]*encoding\s*=\s*["']([^"']+)["']/i
         .exec(head)?.[1]
         ?.toLowerCase()
@@ -200,11 +223,13 @@ const withBom = (bom: XmlEncoding | undefined, body: Uint8Array): Uint8Array => 
  * The encoding name a part's XML declaration must name for the bytes it is
  * written in.
  *
- * A UTF-8 part declares `UTF-8`. A UTF-16 part with a byte order mark
- * declares `UTF-16`, as the mark says which way round the bytes are. A UTF-16
- * part without one declares `UTF-16LE` or `UTF-16BE`: XML 1.0 §4.3.3 requires
+ * For a UTF-8 part it is `UTF-8`. For a UTF-16 part with a byte order mark it
+ * is `UTF-16`, as the mark says which way round the bytes are. For a UTF-16
+ * part without one it is `UTF-16LE` or `UTF-16BE`: XML 1.0 §4.3.3 requires
  * the mark of an entity declared `UTF-16`, so without it only the
- * declaration can name the byte order (#878).
+ * declaration can name the byte order (#878). {@link serializeXml} writes it
+ * into the `encoding` pseudo-attribute of a declaration it adds or of one
+ * that has it; a declaration without one keeps none (#888).
  */
 export const xmlDeclarationEncoding = (part: XmlPartEncoding): string => {
     if (part.encoding === "utf-8") {
