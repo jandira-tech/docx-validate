@@ -327,12 +327,7 @@ interface OverlapSpec {
     readonly cleanSecondPart: string;
     readonly build: (parts: Readonly<Record<string, string>>) => Promise<Buffer>;
     readonly control: (options: BaseSchemaValidatorOptions) => { validate(): Promise<ValidationResult> };
-    /**
-     * A validator that pauses after `firstPart` and logs every part it sends
-     * to the schema engine. It overrides the walk's own route through the
-     * single-file pipeline, which #910 split from the public
-     * `validateFileAgainstXsd`.
-     */
+    /** A validator that pauses after `firstPart` and logs every part it sends to the schema engine. */
     readonly gated: (
         options: BaseSchemaValidatorOptions,
         paused: Deferred,
@@ -429,10 +424,10 @@ const docxOverlap: OverlapSpec = {
     gated: (options, paused, resume, walked) =>
         new (class extends DOCXSchemaValidator {
             didPause = false;
-            override async _validateFileAgainstXsdInWalk(file: string) {
+            override async validateFileAgainstXsd(file: string) {
                 const part = this.relPath(file).split(path.sep).join("/");
                 walked.push(part);
-                const outcome = await super._validateFileAgainstXsdInWalk(file);
+                const outcome = await super.validateFileAgainstXsd(file);
                 if (!this.didPause && part === docxOverlap.firstPart) {
                     this.didPause = true;
                     paused.resolve();
@@ -455,10 +450,10 @@ const pptxOverlap: OverlapSpec = {
     gated: (options, paused, resume, walked) =>
         new (class extends PPTXSchemaValidator {
             didPause = false;
-            override async _validateFileAgainstXsdInWalk(file: string) {
+            override async validateFileAgainstXsd(file: string) {
                 const part = this.relPath(file).split(path.sep).join("/");
                 walked.push(part);
-                const outcome = await super._validateFileAgainstXsdInWalk(file);
+                const outcome = await super.validateFileAgainstXsd(file);
                 if (!this.didPause && part === pptxOverlap.firstPart) {
                     this.didPause = true;
                     paused.resolve();

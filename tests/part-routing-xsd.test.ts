@@ -952,6 +952,41 @@ describe("schema routing of the parts directly in ppt/ by their root (#887)", { 
             }
         });
     });
+
+    // The walk keeps calling the public method, so a subclass that
+    // overrides validateFileAgainstXsd still sees every part the walk
+    // validates; calling super from the override keeps the walk's memo, so
+    // the root is still read once (#910).
+    it("calls an overriding validateFileAgainstXsd for every part a walk validates, reading each root once (#910)", async () => {
+        await withTempDir(async (dir) => {
+            const marker = "override-marker";
+            const parts = {
+                ...MINIMAL_PPTX_PARTS,
+                "ppt/extra.xml": MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!.replace('name=""', `name="${marker}"`),
+            };
+            for (const [part, xml] of Object.entries(parts)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const seen: string[] = [];
+            const validator = new (class extends PPTXSchemaValidator {
+                override async validateFileAgainstXsd(file: string) {
+                    seen.push(this.relPath(file).split(path.sep).join("/"));
+                    return super.validateFileAgainstXsd(file);
+                }
+            })({ unpackedDir: dir, profile: "strict" });
+            const spy = vi.spyOn(xmlHelpers, "parseXml");
+            try {
+                const result = await validator.validateAgainstXsd();
+                expect(result.valid).toBe(true);
+                expect(seen).toContain("ppt/extra.xml");
+                expect(seen).toEqual(validator.xsdWalk.parts);
+                expect(spy.mock.calls.filter((call) => String(call[0]).includes(marker))).toHaveLength(2);
+            } finally {
+                spy.mockRestore();
+            }
+        });
+    });
 });
 
 describe("the global element declarations the ppt/ root route reads (#887)", () => {
