@@ -169,6 +169,37 @@ describe("schema audit of unmapped parts (#628)", { timeout: 120_000 }, () => {
     });
     const mapped = ["[Content_Types].xml", "_rels/.rels", "word/_rels/document.xml.rels", "word/document.xml", "word/styles.xml"];
 
+    describe.each([false, true])("direct schema walk after validateXml: %s (#867)", (validateXmlFirst) => {
+        it.each([
+            ["malformed", "<business>", []],
+            ["well-formed", unmapped["customXml/item1.xml"], [audit("customXml/item1.xml")]],
+        ] as const)("audits only a part that parses: %s", async (shape, payload, expected) => {
+            await withTempDir(async (dir) => {
+                const directParts = {
+                    ...MINIMAL_PARTS,
+                    "customXml/item1.xml": payload,
+                    "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                        "</Relationships>",
+                        '<Relationship Id="rCustom" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/item1.xml"/></Relationships>',
+                    ),
+                };
+                for (const [part, xml] of Object.entries(directParts)) {
+                    await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                    await fs.writeFile(path.join(dir, part), xml, "utf-8");
+                }
+                const validator = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+                if (validateXmlFirst) {
+                    const xml = await validator.validateXml();
+                    expect(xml.valid).toBe(shape === "well-formed");
+                }
+                const result = await validator.validateAgainstXsd();
+                expect(result.issues.filter((issue) => issue.code === "xsd-no-schema")).toEqual(expected);
+                expect(result.valid).toBe(true);
+                expect(validator.xsdWalk).toEqual({ started: true, parts: mapped, eligible: mapped.length });
+            });
+        });
+    });
+
     describe.each(["strict", "lenient"] as const)("under %s", (profile) => {
         it.each(["docx", "docm"])(
             "reports each unmapped %s part once in walk order without changing coverage or validity",

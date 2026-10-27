@@ -1618,7 +1618,7 @@ export class BaseSchemaValidator {
             });
         };
 
-        const countEligible = (xmlFile: string): boolean => {
+        const countEligible = async (xmlFile: string): Promise<boolean> => {
             if (this.malformedParts.has(this.relPath(xmlFile))) return false;
             // Strict-conformance parts are only skipped outside the strict
             // profile: lenient keeps the documented `xsd-strict-skipped` info
@@ -1629,6 +1629,12 @@ export class BaseSchemaValidator {
                 return false;
             }
             if (!this._getSchemaPath(xmlFile)) {
+                // Direct walks have no recorded XML pass. Audit only bytes
+                // that parse, without reparsing parts in the full run (#867).
+                if (baselineRunStore.getStore() === undefined) {
+                    const syntax = await checkXmlSyntax(await fs.readFile(xmlFile), this.relPath(xmlFile));
+                    if (syntax.some((issue) => issue.severity === "error")) return false;
+                }
                 issues.push({
                     severity: "info",
                     message: "The bundled schemas map no schema to this part; XSD validation skipped for this part.",
@@ -1651,7 +1657,7 @@ export class BaseSchemaValidator {
                 this.deadline.record(`schema validation of ${notExamined} XML ${notExamined === 1 ? "part" : "parts"} it had not reached`);
                 break;
             }
-            if (!countEligible(xmlFile)) continue;
+            if (!(await countEligible(xmlFile))) continue;
 
             const outcome = await this.validateFileAgainstXsd(xmlFile);
             issues.push(...(outcome.issues ?? []));
