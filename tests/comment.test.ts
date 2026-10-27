@@ -2221,7 +2221,7 @@ describe("addComment", () => {
         });
     });
 
-    it.each([
+    it.each<[string, string, string, (dir: string) => string]>([
         [
             "word/document.xml, which is not stored",
             officeDocumentRels("word/document.xml"),
@@ -2253,6 +2253,15 @@ describe("addComment", () => {
             "word/main.xml",
             (dir: string) => `${path.join(dir, "_rels", ".rels")} names a folder, not a main document`,
         ],
+        // The package root is a folder too, and names no part whatever is
+        // stored, even beside a main document stored as `%2e`, which OPC
+        // equivalence would match to `.` (#970, #977).
+        ...[".", "./.", "word/..", "a/b/../..", "/", "/."].map((target): [string, string, string, (dir: string) => string] => [
+            `${target}, which names the package root, beside a main document stored as %2e`,
+            officeDocumentRels(target),
+            "%2e",
+            (dir: string) => `${path.join(dir, "_rels", ".rels")} names a folder, not a main document`,
+        ]),
     ])(
         "refuses a first comment when the package relationships name %s, naming no stored part, changing nothing (#919)",
         async (_label, relsXml, mainPart, expected) => {
