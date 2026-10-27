@@ -53,9 +53,10 @@ describe("word-footnote-reference-missing", () => {
 describe("endnote references (#784)", () => {
     it.each([W, WS])("ignores an endnote reference inside a footnote under %s (session 16)", async (namespace) => {
         const ctx = ValidationContext.fromEntries({
-            // #800 reads references only from the parts Word reads, so the
-            // footnotes part needs its relationships and a body use to be
-            // a read source the exclusion can skip.
+            // References are read only from the story roots (#852), so the
+            // footnotes part — related and body-used as it is — is no
+            // reference source at all, and session 16's shape needs no
+            // special case.
             "_rels/.rels": rels(relation("rId0", "officeDocument", "", "word/document.xml")),
             "word/document.xml": document('<w:footnoteReference w:id="1"/>', namespace),
             "word/_rels/document.xml.rels": rels(relation("rId1", "footnotes", "", "footnotes.xml")),

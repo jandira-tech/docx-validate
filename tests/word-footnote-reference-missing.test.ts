@@ -1060,6 +1060,203 @@ describe("a notes relationship target escaping the package (#830, sessions 63 s6
     });
 });
 
+describe("note references inside a notes or comments part (#852, sessions 65 s65a and 66 s66a)", { timeout: 30000 }, () => {
+    /** The s65 builder's `noteRef`: a run holding a `w:<kind>Reference w:id="<id>"`. */
+    const noteRef = (kind: "footnote" | "endnote", id: string): string => `<w:r><w:${kind}Reference w:id="${id}"/></w:r>`;
+
+    /**
+     * The s65 builder's `notesWithNested`: the related in-package
+     * `word/<kind>s.xml` holds note 1, whose paragraph also holds `nested`
+     * — a same- or cross-kind note reference — and the body references
+     * note 1.
+     */
+    const nestedNotes = (kind: "footnote" | "endnote", nested: string): Promise<Buffer> =>
+        buildDocx({
+            ...MINIMAL_PARTS,
+            "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+                "</w:r></w:p>",
+                `</w:r><w:r><w:${kind}Reference w:id="1"/></w:r></w:p>`,
+            ),
+            [`word/${kind}s.xml`]:
+                `<w:${kind}s xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+                `<w:${kind} w:id="1"><w:p><w:r><w:t>Text</w:t></w:r>${nested}</w:p></w:${kind}></w:${kind}s>`,
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdN" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/${kind}s" Target="${kind}s.xml"/></Relationships>`,
+            ),
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/word/${kind}s.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${kind}s+xml"/></Types>`,
+            ),
+        });
+
+    /**
+     * The s66 builder's `glossaryWithFootnotes`: a reached glossary whose
+     * own sidecar relates `word/glossary/footnotes.xml` holding footnote 1.
+     */
+    const glossaryWithFootnotes = (): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/glossary/document.xml":
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+            '<w:glossaryDocument xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>' +
+            '<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>' +
+            "<w:docPartBody><w:p><w:r><w:t>Text</w:t></w:r></w:p></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>",
+        "word/glossary/_rels/document.xml.rels":
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes" Target="footnotes.xml"/></Relationships>',
+        "word/glossary/footnotes.xml":
+            '<w:footnotes xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+            '<w:footnote w:id="1"><w:p><w:r><w:t>Text</w:t></w:r></w:p></w:footnote></w:footnotes>',
+        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            '<Relationship Id="rIdG" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/glossaryDocument" Target="glossary/document.xml"/></Relationships>',
+        ),
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            '<Override PartName="/word/glossary/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml"/>' +
+                '<Override PartName="/word/glossary/footnotes.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml"/></Types>',
+        ),
+    });
+
+    /**
+     * The s66 builder's `commentsReach`: `word/comments.xml` holding
+     * comment 0 with `inComment` in its paragraph, read by the main
+     * document and/or the reached glossary, with (`notes`) or without the
+     * glossary's footnotes part holding footnote 1.
+     */
+    const commentsReach = (main: boolean, glossary: boolean, inComment: string, notes: boolean): Promise<Buffer> => {
+        const parts = glossaryWithFootnotes();
+        const next: Record<string, string> = {
+            ...parts,
+            "word/comments.xml":
+                '<w:comments xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+                `<w:comment w:id="0" w:author="a"><w:p><w:r><w:t>Text</w:t></w:r>${inComment}</w:p></w:comment></w:comments>`,
+            "[Content_Types].xml": parts["[Content_Types].xml"]!.replace(
+                "</Types>",
+                '<Override PartName="/word/comments.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml"/></Types>',
+            ),
+        };
+        if (!notes) {
+            delete next["word/glossary/footnotes.xml"];
+            next["word/glossary/_rels/document.xml.rels"] = next["word/glossary/_rels/document.xml.rels"]!.replace(
+                '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes" Target="footnotes.xml"/>',
+                "",
+            );
+            next["[Content_Types].xml"] = next["[Content_Types].xml"]!.replace(
+                '<Override PartName="/word/glossary/footnotes.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml"/>',
+                "",
+            );
+        }
+        if (glossary) {
+            next["word/glossary/document.xml"] = next["word/glossary/document.xml"]!.replace(
+                "</w:r></w:p>",
+                '</w:r><w:r><w:commentReference w:id="0"/></w:r></w:p>',
+            );
+            next["word/glossary/_rels/document.xml.rels"] = next["word/glossary/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                '<Relationship Id="rIdC" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" Target="../comments.xml"/></Relationships>',
+            );
+        }
+        if (!main) {
+            return buildDocx(next);
+        }
+        return buildDocx({
+            ...next,
+            "word/document.xml": next["word/document.xml"]!.replace(
+                "</w:r></w:p>",
+                '</w:r><w:r><w:commentReference w:id="0"/></w:r></w:p>',
+            ),
+            "word/_rels/document.xml.rels": next["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                '<Relationship Id="rIdC" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" Target="comments.xml"/></Relationships>',
+            ),
+        });
+    };
+
+    // Session 65 (s65a, two runs, all four readings agree) opened footnote 1
+    // holding a footnote reference to 99 clean — as did its escaping twin —
+    // and session 66 (s66a, same) endnote 1 holding a footnote reference to
+    // 99, no footnotes part anywhere: with session 16 (s16a) having opened an
+    // endnote reference inside a footnote clean, every note reference these
+    // sessions stored inside a notes part opens clean, so none is judged.
+    it.each([
+        ["footnote", "footnote", "word-footnote-reference-missing"],
+        ["endnote", "endnote", "word-endnote-reference-missing"],
+        ["endnote", "footnote", "word-footnote-reference-missing"],
+    ] as const)("accepts the %s 1 holding a dangling %s reference", async (kind, nested, code) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "nested.docx");
+            await writeFile(file, await nestedNotes(kind, noteRef(nested, "99")));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+            const selected = await validate(file, { profile: "word-valid", checks: [code] });
+            expect(selected.valid).toBe(true);
+            expect(selected.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+        });
+    });
+
+    // Session 66 (s66a, two runs, all four readings agree) opened clean a
+    // comment holding a footnote reference to 99, no part defining a
+    // footnote, whether the main document or only the reached glossary
+    // reads the comments part; session 65 (s65d, same) opened the main-read
+    // twin clean whose footnote 1 only the glossary's notes part defines.
+    // The shared-reach rows are refused for the reach, not the reference
+    // (s66a), which is #850's rule, not this check's.
+    it.each([
+        [true, false, "99", false],
+        [false, true, "99", false],
+        [true, false, "1", true],
+    ] as const)(
+        "accepts the comment's footnote reference (read by main=%s, glossary=%s; id %s, glossary notes part %s)",
+        async (main, glossary, id, notes) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "comments-reference.docx");
+                await writeFile(file, await commentsReach(main, glossary, noteRef("footnote", id), notes));
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.valid).toBe(true);
+                expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+                const selected = await validate(file, { profile: "word-valid", checks: ["word-footnote-reference-missing"] });
+                expect(selected.valid).toBe(true);
+                expect(selected.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+            });
+        },
+    );
+
+    // The story roots stay judged: a reference in a reached glossary's own
+    // document still blocks, an unprobed reading this layer keeps.
+    it.each(["footnote", "endnote"] as const)("still rejects the dangling %s reference in the glossary's own document", async (kind) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "glossary-root.docx");
+            await writeFile(
+                file,
+                await buildDocx({
+                    ...glossaryWithFootnotes(),
+                    "word/glossary/document.xml": glossaryWithFootnotes()["word/glossary/document.xml"]!.replace(
+                        "</w:r></w:p>",
+                        `</w:r>${noteRef(kind, "5")}</w:p>`,
+                    ),
+                }),
+            );
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([
+                expect.objectContaining({
+                    code: `word-${kind}-reference-missing`,
+                    path: "word/glossary/document.xml",
+                    message: expect.stringContaining(`${kind} reference uses id 5`),
+                }),
+            ]);
+            const selected = await validate(file, { profile: "word-valid", checks: [`word-${kind}-reference-missing`] });
+            expect(selected.valid).toBe(false);
+            expect(selected.issues.filter((issue) => issue.severity === "error")).toEqual(
+                result.issues.filter((issue) => issue.severity === "error"),
+            );
+        });
+    });
+});
+
 describe("word-valid dangling footnote reference", { timeout: 30000 }, () => {
     it("rejects a footnote reference whose id is not a footnote id", async () => {
         const result = await validate(BROKEN, { profile: "word-valid" });
