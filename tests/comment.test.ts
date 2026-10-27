@@ -29,6 +29,7 @@ vi.mock("node:crypto", async (importOriginal) => {
 });
 
 import { withTempDir } from "../src/lib/run-cli";
+import { canonicalPartName } from "../src/lib/content-types";
 import { parseXml } from "../src/lib/xml-helpers";
 import { SECURE_LONG_HEX_EXCLUSIVE_MAX } from "../src/lib/secure-id";
 import { addComment, generateHexId } from "../src/scripts/comment";
@@ -62,6 +63,10 @@ const packageRels = (attributes: string): string =>
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n  <Relationship Id="rId1" ${attributes}/>\n</Relationships>`;
 
 const officeDocumentRels = (target: string): string => packageRels(`Type="${OFFICE_DOCUMENT_RELATIONSHIP_TYPE}" Target="${target}"`);
+
+/** A content-types stream whose `.rels` Default names `relsType`, with `overrides` spliced in (#901). */
+const contentTypes = (relsType: string, overrides: readonly string[] = []): string =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="${relsType}"/>${overrides.join("")}</Types>`;
 
 /** The minimal main document with a paired marker triple for comment 0. */
 const markedMainDocument = (): string =>
@@ -140,6 +145,32 @@ async function declareUndecodable(file: string): Promise<void> {
 /** A part's text with its closing root tag dropped, so it decodes but does not parse (#905). */
 function malformed(text: string): string {
     return text.replace(/<\/[^\s>]+>\s*$/, "");
+}
+
+/** Every [PartName, ContentType] pair of the Override elements naming `partName` under OPC equivalence. */
+function overridesNaming(dom: ReturnType<typeof parseXml>, partName: string): [string, string][] {
+    const found: [string, string][] = [];
+    const overrides = dom.getElementsByTagName("Override");
+    for (let i = 0; i < overrides.length; i += 1) {
+        const override = overrides.item(i)!;
+        if (canonicalPartName(override.getAttribute("PartName") ?? "") === canonicalPartName(partName)) {
+            found.push([override.getAttribute("PartName") ?? "", override.getAttribute("ContentType") ?? ""]);
+        }
+    }
+    return found;
+}
+
+/** Every [Extension, ContentType] pair of the Default elements naming `extension`. */
+function defaultsFor(dom: ReturnType<typeof parseXml>, extension: string): [string, string][] {
+    const found: [string, string][] = [];
+    const defaults = dom.getElementsByTagName("Default");
+    for (let i = 0; i < defaults.length; i += 1) {
+        const def = defaults.item(i)!;
+        if ((def.getAttribute("Extension") ?? "").toLowerCase() === extension.toLowerCase()) {
+            found.push([def.getAttribute("Extension") ?? "", def.getAttribute("ContentType") ?? ""]);
+        }
+    }
+    return found;
 }
 
 describe("generateHexId", () => {
@@ -341,6 +372,183 @@ describe("addComment", () => {
                     needsOverride,
                 );
                 expect(ctAfter).toContain('PartName="/word/comments.xml"');
+            });
+        },
+    );
+
+    it.each([
+        ["word/document.xml", "/word/_rels/document.xml.rels"],
+        ["word/main.xml", "/word/_rels/main.xml.rels"],
+    ])(
+        "answers a .rels Default of another type with an Override for the relationships part it creates beside %s (#901)",
+        async (mainPart, relsPartName) => {
+            await withTempDir(async (dir) => {
+                // The review's tree: the `.rels` Default names another type, so
+                // coverage alone left the created part mistyped while
+                // addComment reported success.
+                await makePackageFixture(dir, officeDocumentRels(mainPart), mainPart);
+                await fs.writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    contentTypes("application/xml", [
+                        `<Override PartName="/_rels/.rels" ContentType="${RELATIONSHIPS_TYPE}"/>`,
+                        `<Override PartName="/${mainPart}" ContentType="${MAIN_DOCUMENT_CONTENT_TYPE}"/>`,
+                    ]),
+                    "utf-8",
+                );
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // The Default of another type is left alone and answered with
+                // exactly one Override under the part's own name.
+                const dom = parseXml(await fs.readFile(path.join(dir, "[Content_Types].xml"), "utf-8"));
+                expect(overridesNaming(dom, relsPartName)).toEqual([[relsPartName, RELATIONSHIPS_TYPE]]);
+                expect(defaultsFor(dom, "rels")).toEqual([["rels", "application/xml"]]);
+            });
+        },
+    );
+
+    it.each(["/word/_rels/document.xml.rels", "/Word/_rels/Document.xml.rels"])(
+        "corrects an Override of another type naming the created part as %s, adding no second Override (#901)",
+        async (partName) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+                await fs.writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    contentTypes(RELATIONSHIPS_TYPE, [
+                        `<Override PartName="${partName}" ContentType="application/xml"/>`,
+                        `<Override PartName="/word/document.xml" ContentType="${MAIN_DOCUMENT_CONTENT_TYPE}"/>`,
+                    ]),
+                    "utf-8",
+                );
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // The Override is rewritten in place, whatever OPC-equivalent
+                // spelling names the part, never answered with a second one.
+                const dom = parseXml(await fs.readFile(path.join(dir, "[Content_Types].xml"), "utf-8"));
+                expect(overridesNaming(dom, partName)).toEqual([[partName, RELATIONSHIPS_TYPE]]);
+                expect(defaultsFor(dom, "rels")).toEqual([["rels", RELATIONSHIPS_TYPE]]);
+            });
+        },
+    );
+
+    it("adds no Override when a .rels Default already names the relationships media type in another case (#901)", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/main.xml"), "word/main.xml");
+            const oddCase = "Application/Vnd.Openxmlformats-Package.Relationships+XML";
+            await fs.writeFile(
+                path.join(dir, "[Content_Types].xml"),
+                contentTypes(oddCase, [`<Override PartName="/word/main.xml" ContentType="${MAIN_DOCUMENT_CONTENT_TYPE}"/>`]),
+                "utf-8",
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The media type already matches, whatever its case: the created
+            // part needs no Override, the Default keeps its spelling, and the
+            // comments parts are still typed.
+            const dom = parseXml(await fs.readFile(path.join(dir, "[Content_Types].xml"), "utf-8"));
+            expect(overridesNaming(dom, "/word/_rels/main.xml.rels")).toEqual([]);
+            expect(defaultsFor(dom, "rels")).toEqual([["rels", oddCase]]);
+            expect(overridesNaming(dom, "/word/comments.xml")).toHaveLength(1);
+        });
+    });
+
+    it("never retypes a relationships part that already existed, however it is typed (#901)", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.writeFile(
+                path.join(dir, "[Content_Types].xml"),
+                contentTypes(RELATIONSHIPS_TYPE, [
+                    `<Override PartName="/word/_rels/document.xml.rels" ContentType="application/xml"/>`,
+                    `<Override PartName="/word/document.xml" ContentType="${MAIN_DOCUMENT_CONTENT_TYPE}"/>`,
+                ]),
+                "utf-8",
+            );
+            await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+            await fs.writeFile(path.join(dir, "word", "_rels", "document.xml.rels"), RELS_XML, "utf-8");
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The part existed, so its typing is the package's own business:
+            // only the comments parts are typed.
+            const dom = parseXml(await fs.readFile(path.join(dir, "[Content_Types].xml"), "utf-8"));
+            expect(overridesNaming(dom, "/word/_rels/document.xml.rels")).toEqual([["/word/_rels/document.xml.rels", "application/xml"]]);
+        });
+    });
+
+    it(
+        "draws no content-type finding for the relationships part it types over a wrong .rels Default (#901)",
+        { timeout: 30000 },
+        async () => {
+            await withTempDir(async (dir) => {
+                // A control, not the defect: the content-type checks judge
+                // whether a part is covered, not by which type, so they accept
+                // the mistyped part too. The wrong-Default tree, with the comment
+                // referenced from the main document so the packed package reads it.
+                await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+                await fs.writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    contentTypes("application/xml", [
+                        `<Override PartName="/_rels/.rels" ContentType="${RELATIONSHIPS_TYPE}"/>`,
+                        `<Override PartName="/word/document.xml" ContentType="${MAIN_DOCUMENT_CONTENT_TYPE}"/>`,
+                    ]),
+                    "utf-8",
+                );
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                await fs.writeFile(path.join(dir, "word", "document.xml"), markedMainDocument(), "utf-8");
+                const file = path.join(dir, "wrong-rels-default.docx");
+                await packTree(dir, file);
+                const validation = await validate(file, { profile: "strict" });
+                expect(
+                    validation.issues.filter(
+                        (issue) =>
+                            (issue.code ?? "").startsWith("ct-") &&
+                            canonicalPartName(issue.path ?? "") === canonicalPartName("word/_rels/document.xml.rels"),
+                    ),
+                ).toEqual([]);
             });
         },
     );

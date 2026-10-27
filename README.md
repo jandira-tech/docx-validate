@@ -1930,10 +1930,15 @@ from the relationships part of the main document `_rels/.rels` names
 relative to the main document's folder (`../word/comments.xml` from `main/`). A
 relationship whose target resolves to `word/comments.xml` under OPC part-name
 equivalence, relative or from the package root, counts as already there. When
-the main document has no relationships part, `addComment` creates one, and types
-it in `[Content_Types].xml` under its own name when no Default or Override
-covers it; before, it reported success and left the comments parts related to
-nothing ([#895](https://github.com/jandira-tech/docx-validate/issues/895)).
+the main document has no relationships part, `addComment` creates one; before,
+it reported success and left the comments parts related to nothing
+([#895](https://github.com/jandira-tech/docx-validate/issues/895)). It types the
+created part in `[Content_Types].xml` as a relationships part under its own
+name: it adds an Override when nothing covers the part or a `.rels` Default
+names another type, which it leaves alone, and corrects an Override that names
+the part with another type, under any OPC-equivalent spelling; before, a `.rels`
+Default of another type left the part mistyped
+([#901](https://github.com/jandira-tech/docx-validate/issues/901)).
 
 A first comment is refused with an error naming the part, changing nothing,
 when the tree has no `[Content_Types].xml`, or when `_rels/.rels` cannot be

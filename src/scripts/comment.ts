@@ -47,7 +47,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { Command } from "commander";
-import { canonicalPartName, parseContentTypes, resolveContentType } from "../lib/content-types";
+import { canonicalPartName, contentTypeMediaType, parseContentTypes, resolveContentType } from "../lib/content-types";
 import { commanderExitCode, runCli } from "../lib/run-cli";
 import { nextSecureLongHexNumber } from "../lib/secure-id";
 import { readXmlPart, writeXmlPart, writeXmlText, type DecodedXmlPart } from "../lib/xml-part-io";
@@ -411,8 +411,12 @@ async function ensureCommentRelationships(
 /**
  * Type the comments parts in `[Content_Types].xml`, and the main document's
  * relationships part — named `relsPartName`, the part's own name — when
- * `createdRels` says addComment created it and no Default or Override covers
- * it yet (#895, #906).
+ * `createdRels` says addComment created it and nothing resolves it to the
+ * relationships media type (#895, #906, #901): a Default of another type is
+ * left alone and answered with an Override under the part's own name, and
+ * an Override that names the part under OPC equivalence with another type
+ * is rewritten in place, never answered with a second Override. A
+ * relationships part that already existed is never retyped.
  */
 async function ensureCommentContentTypes(
     unpackedDir: string,
@@ -442,10 +446,26 @@ async function ensureCommentContentTypes(
             ["/word/commentsExtensible.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtensible+xml"],
         );
     }
-    if (createdRels && resolveContentType(parseContentTypes(dom), relsPartName) === null) {
-        overrides.push([relsPartName, RELATIONSHIPS_CONTENT_TYPE]);
+    // Coverage alone is not correctness: a `.rels` Default of another type
+    // covered the created part with the wrong type while addComment reported
+    // success (#901). The media type comparison ignores case and parameters.
+    let mistypedRelsOverride = false;
+    if (createdRels) {
+        const resolved = resolveContentType(parseContentTypes(dom), relsPartName);
+        if (
+            resolved === null ||
+            (resolved.source === "default" &&
+                contentTypeMediaType(resolved.contentType) !== contentTypeMediaType(RELATIONSHIPS_CONTENT_TYPE))
+        ) {
+            overrides.push([relsPartName, RELATIONSHIPS_CONTENT_TYPE]);
+        } else if (
+            resolved.source === "override" &&
+            contentTypeMediaType(resolved.contentType) !== contentTypeMediaType(RELATIONSHIPS_CONTENT_TYPE)
+        ) {
+            mistypedRelsOverride = true;
+        }
     }
-    if (overrides.length === 0) {
+    if (overrides.length === 0 && !mistypedRelsOverride) {
         return;
     }
     const root = dom.documentElement;
@@ -455,6 +475,16 @@ async function ensureCommentContentTypes(
         override.setAttribute("PartName", partName);
         override.setAttribute("ContentType", contentType);
         root.appendChild(override);
+    }
+    if (mistypedRelsOverride) {
+        const key = canonicalPartName(relsPartName);
+        const existing = dom.getElementsByTagName("Override");
+        for (let i = 0; i < existing.length; i += 1) {
+            const override = existing.item(i)!;
+            if (canonicalPartName(override.getAttribute("PartName") ?? "") === key) {
+                override.setAttribute("ContentType", RELATIONSHIPS_CONTENT_TYPE);
+            }
+        }
     }
 
     await writeXmlPart(ctPath, dom, part);
