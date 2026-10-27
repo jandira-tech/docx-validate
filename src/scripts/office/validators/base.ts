@@ -467,7 +467,10 @@ export class BaseSchemaValidator {
     /** The run's wall-clock budget, when it has one (#630). */
     readonly deadline: RunDeadline | undefined;
     /**
-     * Engine trace for the most recent `validateAgainstXsd` on this instance.
+     * Engine trace owned by one `validateAgainstXsd` walk on this instance.
+     * Published at entry so a lone walk is observable while running; the
+     * walk that finishes last publishes its own trace again, even on a
+     * throw, so nested walks do not mix their parts or counts (#943).
      * `DOCXSchemaValidator.validate` resets it at entry. `mergeResults` drops
      * it, so the public `validate()` copies it off the instance afterwards.
      */
@@ -482,8 +485,13 @@ export class BaseSchemaValidator {
 
     /**
      * Parts whose schema the engine could not load, or whose XSD call threw,
-     * during the most recent `validateAgainstXsd`. Reset at that method's
-     * entry, like `xsdWalk`.
+     * in the walk that finished last. Each `validateAgainstXsd` owns its
+     * count, resets the instance at entry and publishes its count at exit,
+     * even on a throw, so a nested walk cannot erase the outer count (#943).
+     * A call outside every walk's active calls (a direct call, or a late
+     * task after its call settled) counts on the instance, and a walk still
+     * running replaces that count when it publishes its own: the failure is
+     * not the walk's, and its own outcome reports it.
      *
      * `xsdWalk.parts.length === xsdWalk.eligible` only proves every eligible
      * part was *offered* to the engine; this counter is what proves the engine
@@ -1660,122 +1668,128 @@ export class BaseSchemaValidator {
         if (baselineRunStore.getStore() === undefined) this.forgetOriginal();
         const issues: ValidationIssue[] = [];
         let strictSkipped = false;
-        this.xsdWalk.started = true;
-        this.xsdWalk.parts = [];
-        this.xsdWalk.eligible = 0;
-        delete this.xsdWalk.notExamined;
+        const trace: XsdWalkTrace = { started: true, parts: [], eligible: 0 };
+        const state = { trace, xsdEngineFailures: 0 };
+        this.xsdWalk = trace;
         this.xsdEngineFailures = 0;
-        // The main document comes from the processed package relationships,
-        // which a repair between walks can change (#657).
-        this.mainDocumentParts = undefined;
-        // A part rewritten between walks is routed by the root it holds now,
-        // not the one an earlier walk read (#902).
-        this.rootQNames.clear();
+        try {
+            // The main document comes from the processed package relationships,
+            // which a repair between walks can change (#657).
+            this.mainDocumentParts = undefined;
+            // A part rewritten between walks is routed by the root it holds now,
+            // not the one an earlier walk read (#902).
+            this.rootQNames.clear();
 
-        const noteStrict = (): void => {
-            if (strictSkipped) return;
-            strictSkipped = true;
-            issues.push({
-                severity: "info",
-                message:
-                    "Document uses ISO OOXML Strict conformance class namespace URIs; " +
-                    "XSD validation skipped under this profile. The bundled ISO Strict schemas " +
-                    "(schemas/iso-strict/) validate these parts under the strict profile.",
-                code: "xsd-strict-skipped",
-            });
-        };
-
-        const countEligible = async (xmlFile: string): Promise<boolean> => {
-            if (this.malformedParts.has(this.relPath(xmlFile))) return false;
-            // Strict-conformance parts are only skipped outside the strict
-            // profile: lenient keeps the documented `xsd-strict-skipped` info
-            // issue, while `strict` schema-validates them against the bundled
-            // iso-strict schemas. Word-valid never walks the schemas.
-            if (this._isStrictXmlFile(xmlFile) && this.profile !== "strict") {
-                noteStrict();
-                return false;
-            }
-            if (!this._getSchemaPath(xmlFile)) {
-                // Direct walks have no recorded XML pass. Audit only bytes
-                // that parse, without reparsing parts in the full run (#867).
-                if (baselineRunStore.getStore() === undefined) {
-                    const syntax = await checkXmlSyntax(await fs.readFile(xmlFile), this.relPath(xmlFile));
-                    if (syntax.some((issue) => issue.severity === "error")) return false;
-                }
+            const noteStrict = (): void => {
+                if (strictSkipped) return;
+                strictSkipped = true;
                 issues.push({
                     severity: "info",
-                    message: "The bundled schemas map no schema to this part; XSD validation skipped for this part.",
-                    path: this.relPath(xmlFile),
-                    code: "xsd-no-schema",
+                    message:
+                        "Document uses ISO OOXML Strict conformance class namespace URIs; " +
+                        "XSD validation skipped under this profile. The bundled ISO Strict schemas " +
+                        "(schemas/iso-strict/) validate these parts under the strict profile.",
+                    code: "xsd-strict-skipped",
                 });
-                return false;
-            }
-            this.xsdWalk.eligible += 1;
-            return true;
-        };
+            };
 
-        for (const [index, xmlFile] of this.xmlFiles.entries()) {
-            // #630: the walk stops between parts once the run's budget is
-            // spent. The parts it never reached are not judged eligible or
-            // not: that would read them.
-            if (this.deadline?.expired()) {
-                const notExamined = this.xmlFiles.length - index;
-                this.xsdWalk.notExamined = notExamined;
-                this.deadline.record(`schema validation of ${notExamined} XML ${notExamined === 1 ? "part" : "parts"} it had not reached`);
-                break;
-            }
-            if (!(await countEligible(xmlFile))) continue;
-
-            const token: XsdWalkCall = { validator: this, xmlFile, active: true, claimed: false };
-            let outcome: XsdValidationOutcome;
-            try {
-                outcome = await xsdWalkStore.run(token, () => this.validateFileAgainstXsd(xmlFile));
-            } finally {
-                token.active = false;
-            }
-            issues.push(...(outcome.issues ?? []));
-            const rel = this.relPath(xmlFile);
-            this.xsdWalk.parts.push(rel);
-            if (outcome.valid === null || outcome.valid) continue;
-
-            issues.push({
-                severity: "error",
-                message: `${rel}: ${outcome.errors.size} new error(s)`,
-                path: rel,
-                code: "xsd-summary",
-            });
-            if (this.profile === "strict") {
-                // One issue per occurrence, with the engine's own line and
-                // code preserved. When preprocessing rewrote the XML the
-                // reported line belongs to the transformed view, not the
-                // source part — say so instead of inventing source lines.
-                for (const issue of outcome.schemaIssues ?? []) {
-                    const message = issue.message.trim();
-                    const truncated = message.length > 250 ? `${message.slice(0, 250)}...` : message;
-                    const suffix =
-                        outcome.transformedView && issue.line !== undefined ? " (line refers to the preprocessed validation view)" : "";
-                    issues.push({
-                        severity: "error",
-                        message: `  - ${truncated}${suffix}`,
-                        path: rel,
-                        ...(issue.line !== undefined ? { line: issue.line } : {}),
-                        code: !issue.code || issue.code === "xsd-validation-failed" ? "xsd-error" : issue.code,
-                    });
+            const countEligible = async (xmlFile: string): Promise<boolean> => {
+                if (this.malformedParts.has(this.relPath(xmlFile))) return false;
+                // Strict-conformance parts are only skipped outside the strict
+                // profile: lenient keeps the documented `xsd-strict-skipped` info
+                // issue, while `strict` schema-validates them against the bundled
+                // iso-strict schemas. Word-valid never walks the schemas.
+                if (this._isStrictXmlFile(xmlFile) && this.profile !== "strict") {
+                    noteStrict();
+                    return false;
                 }
-            } else {
-                for (const e of [...outcome.errors].slice(0, 3)) {
-                    const truncated = e.length > 250 ? `${e.slice(0, 250)}...` : e;
+                if (!this._getSchemaPath(xmlFile)) {
+                    // Direct walks have no recorded XML pass. Audit only bytes
+                    // that parse, without reparsing parts in the full run (#867).
+                    if (baselineRunStore.getStore() === undefined) {
+                        const syntax = await checkXmlSyntax(await fs.readFile(xmlFile), this.relPath(xmlFile));
+                        if (syntax.some((issue) => issue.severity === "error")) return false;
+                    }
                     issues.push({
-                        severity: "error",
-                        message: `  - ${truncated}`,
-                        path: rel,
-                        code: "xsd-error",
+                        severity: "info",
+                        message: "The bundled schemas map no schema to this part; XSD validation skipped for this part.",
+                        path: this.relPath(xmlFile),
+                        code: "xsd-no-schema",
                     });
+                    return false;
+                }
+                trace.eligible += 1;
+                return true;
+            };
+
+            for (const [index, xmlFile] of this.xmlFiles.entries()) {
+                // #630: the walk stops between parts once the run's budget is
+                // spent. The parts it never reached are not judged eligible or
+                // not: that would read them.
+                if (this.deadline?.expired()) {
+                    const notExamined = this.xmlFiles.length - index;
+                    trace.notExamined = notExamined;
+                    this.deadline.record(
+                        `schema validation of ${notExamined} XML ${notExamined === 1 ? "part" : "parts"} it had not reached`,
+                    );
+                    break;
+                }
+                if (!(await countEligible(xmlFile))) continue;
+
+                const token: XsdWalkCall = { validator: this, xmlFile, active: true, claimed: false, state };
+                let outcome: XsdValidationOutcome;
+                try {
+                    outcome = await xsdWalkStore.run(token, () => this.validateFileAgainstXsd(xmlFile));
+                } finally {
+                    token.active = false;
+                }
+                issues.push(...(outcome.issues ?? []));
+                const rel = this.relPath(xmlFile);
+                trace.parts.push(rel);
+                if (outcome.valid === null || outcome.valid) continue;
+
+                issues.push({
+                    severity: "error",
+                    message: `${rel}: ${outcome.errors.size} new error(s)`,
+                    path: rel,
+                    code: "xsd-summary",
+                });
+                if (this.profile === "strict") {
+                    // One issue per occurrence, with the engine's own line and
+                    // code preserved. When preprocessing rewrote the XML the
+                    // reported line belongs to the transformed view, not the
+                    // source part — say so instead of inventing source lines.
+                    for (const issue of outcome.schemaIssues ?? []) {
+                        const message = issue.message.trim();
+                        const truncated = message.length > 250 ? `${message.slice(0, 250)}...` : message;
+                        const suffix =
+                            outcome.transformedView && issue.line !== undefined ? " (line refers to the preprocessed validation view)" : "";
+                        issues.push({
+                            severity: "error",
+                            message: `  - ${truncated}${suffix}`,
+                            path: rel,
+                            ...(issue.line !== undefined ? { line: issue.line } : {}),
+                            code: !issue.code || issue.code === "xsd-validation-failed" ? "xsd-error" : issue.code,
+                        });
+                    }
+                } else {
+                    for (const e of [...outcome.errors].slice(0, 3)) {
+                        const truncated = e.length > 250 ? `${e.slice(0, 250)}...` : e;
+                        issues.push({
+                            severity: "error",
+                            message: `  - ${truncated}`,
+                            path: rel,
+                            code: "xsd-error",
+                        });
+                    }
                 }
             }
+
+            return finalize(issues);
+        } finally {
+            this.xsdWalk = trace;
+            this.xsdEngineFailures = state.xsdEngineFailures;
         }
-
-        return finalize(issues);
     }
 
     /**
@@ -2039,6 +2053,11 @@ export class BaseSchemaValidator {
         const schemaPath = this._getSchemaPath(xmlFile);
         if (!schemaPath) return { valid: null, errors: new Set() };
 
+        const countEngineFailure = (): void => {
+            const token = xsdWalkStore.getStore();
+            const state = token?.validator === this && token.active ? token.state : this;
+            state.xsdEngineFailures += 1;
+        };
         const compatibilityIssues: ValidationIssue[] = [];
         try {
             const xmlContent = decodeXmlBytes(readFileSync(xmlFile));
@@ -2076,7 +2095,7 @@ export class BaseSchemaValidator {
                 (i) => i.code === "xsd-schema-load-failed" && !IGNORED_VALIDATION_ERRORS.some((pattern) => i.message.includes(pattern)),
             );
             if (engineFailure) {
-                this.xsdEngineFailures += 1;
+                countEngineFailure();
             }
             if (errorIssues.length === 0) {
                 return {
@@ -2103,7 +2122,7 @@ export class BaseSchemaValidator {
         } catch (err) {
             // The engine never produced a verdict for this part: reading the
             // part, preprocessing it, or the engine call itself failed.
-            this.xsdEngineFailures += 1;
+            countEngineFailure();
             const message = err instanceof Error ? err.message : String(err);
             return {
                 valid: false,
@@ -2777,9 +2796,17 @@ const baselineRunStore = new AsyncLocalStorage<BaselineState>();
  * The walk's own call for one part, active only until that call settles.
  * Its first base call for this validator and part claims the root memo
  * once (#941); second and nested calls read the root afresh. Inherited
- * async stores keep the token but not its active lifetime (#926).
+ * async stores keep the token but not its active lifetime (#926). Its state
+ * holds this walk's trace and engine-failure count; only an active call on
+ * this validator counts failures there, keeping nested walks separate (#943).
  */
-type XsdWalkCall = { validator: BaseSchemaValidator; xmlFile: string; active: boolean; claimed: boolean };
+type XsdWalkCall = {
+    validator: BaseSchemaValidator;
+    xmlFile: string;
+    active: boolean;
+    claimed: boolean;
+    state: { trace: XsdWalkTrace; xsdEngineFailures: number };
+};
 
 /** The active call's validator and part may claim the root memo once; see {@link BaseSchemaValidator.validateFileAgainstXsd} (#926, #941). */
 const xsdWalkStore = new AsyncLocalStorage<XsdWalkCall>();
