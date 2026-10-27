@@ -175,60 +175,63 @@ console.log(result.metadata?.schemaCompleted); // false
 ```
 
 For DOCX/DOCM, the path API and document validator do not compile or walk XSD
-schemas under `word-valid`, so `schemaCompleted` is always `false`. Full `lenient` and `strict` runs walk eligible parts; a malformed part
-can stop a lenient run before XSD. The XML part list uses OPC-equivalent
-extensions: ASCII case is ignored and unreserved escapes are decoded, so `.XML`,
-`.RELS` and `.%72els` parts are seen by the passes that iterate that list and by
-the XSD walk. It also holds every other part `[Content_Types].xml` declares
-with an XML type (`application/xml`, `text/xml`, or an `application/…+xml`
-type), whatever its name: Word reads a part by its relationship and content
-type, so a main document stored as `word/document.bin` under the main
-document's Override is checked as `word/document.xml` would be, and Word 16.115
-refuses it truncated (#620, session 32). Image types such as `image/svg+xml`
-are not XML parts here. DOCX relationships validation passes use the same OPC-equivalent
-`.rels` predicate. Relationship-id and hyperlink checks also resolve sidecars
-by OPC part-name equivalence in packed and directory inputs, including full,
-named and quick runs: a `.RELS` sidecar resolves like `.rels`, matching Word
-16.115's clean open. An escaped stored name such as `.%72els` still fails full
-Word-valid and strict validation, and quick Word-valid runs, through
-`opc-part-name-escaped-unreserved` (OPC [M1.8]),
-even though sidecar lookup resolves it ([#402](https://github.com/jandira-tech/docx-validate/issues/402)).
+schemas under `word-valid`, so `schemaCompleted` is always `false`. Full
+`lenient` and `strict` runs walk eligible parts; a malformed part can stop a
+lenient run before XSD. The XML part list uses OPC-equivalent extensions: ASCII
+case is ignored and unreserved escapes are decoded, so `.XML`, `.RELS` and
+`.%72els` parts are seen by the passes that iterate that list and by the XSD
+walk. It also holds every other part `[Content_Types].xml` declares with an XML
+type (`application/xml`, `text/xml`, or an `application/…+xml` type), whatever
+its name: Word reads a part by its relationship and content type, so a main
+document stored as `word/document.bin` under the main document's Override is
+checked as `word/document.xml` would be, and Word 16.115 refuses it truncated
+(#620, session 32). Image types such as `image/svg+xml` are not XML parts here.
+DOCX relationships validation passes use the same OPC-equivalent `.rels`
+predicate. Relationship-id and hyperlink checks also resolve sidecars by OPC
+part-name equivalence in packed and directory inputs, including full, named and
+quick runs: a `.RELS` sidecar resolves like `.rels`, matching Word 16.115's
+clean open. An escaped stored name such as `.%72els` still fails full Word-valid
+and strict validation, and quick Word-valid runs, through
+`opc-part-name-escaped-unreserved` (OPC [M1.8]), even though sidecar lookup
+resolves it ([#402](https://github.com/jandira-tech/docx-validate/issues/402)).
 Named selections diagnose the escaped name when they include that check.
-Empty-part auto-repair retains its exact lowercase `.rels` scope. The trace describes the schema walk, not a Microsoft Word invocation. Under `strict`, ISO Strict OOXML parts use the bundled
-`schemas/iso-strict/` schemas. Lenient skips those parts with the info-level
-`xsd-strict-skipped`; Word-valid emits no XSD skip issue because it runs no XSD.
-The walk sends a part to the schema its identity maps to. The glossary
-document's parts (`word/glossary/*.xml`) use `wml.xsd`, and the DrawingML
-diagram parts (`diagrams/dataN.xml`, `layoutN.xml`, `quickStyleN.xml`,
-`colorsN.xml` under `word/`, `ppt/` or `xl/`) use `dml-diagram.xsd` (#628). A
-part with no mapped schema, such as `customXml/item1.xml` or a diagram's
-`drawingN.xml` cache, is not sent: `xsdWalk.parts` lists exactly the parts
-that were. Each such well-formed part draws one info-level `xsd-no-schema`
-issue naming it, so the parts the walk skipped can be audited; validity,
-`xsdWalk` and `metadata.schemaCompleted` do not change, lenient's
-`--original` comparison never removes it, and a malformed part, a Strict part
-lenient skips and a part the run's deadline never reached draw none (#628).
-A direct `validateAgainstXsd()` call on a validator parses each unmapped part
-before auditing it, so a malformed one draws none there either (#867).
-In a PPTX, the slides, slide layouts and masters, notes slides and masters,
-handout masters, legacy comments and tags one folder below `ppt/` use `pml.xsd`,
-matched by folder and file name (#864). PowerPoint's modern comments
-(`ppt/comments/modernComment_*.xml`), whose root `pml.xsd` does not declare,
-are among the unmapped parts. Directly in `ppt/`, the five conventional
+Empty-part auto-repair retains its exact lowercase `.rels` scope. The trace
+describes the schema walk, not a Microsoft Word invocation. Under `strict`, ISO
+Strict OOXML parts use the bundled `schemas/iso-strict/` schemas. Lenient skips
+those parts with the info-level `xsd-strict-skipped`; Word-valid emits no XSD
+skip issue because it runs no XSD. The walk sends a part to the schema its
+identity maps to. The glossary document's parts (`word/glossary/*.xml`) use
+`wml.xsd`, and the DrawingML diagram parts (`diagrams/dataN.xml`, `layoutN.xml`,
+`quickStyleN.xml`, `colorsN.xml` under `word/`, `ppt/` or `xl/`) use
+`dml-diagram.xsd` (#628). A part with no mapped schema, such as
+`customXml/item1.xml` or a diagram's `drawingN.xml` cache, is not sent:
+`xsdWalk.parts` lists exactly the parts that were. Each such well-formed part
+draws one info-level `xsd-no-schema` issue naming it, so the parts the walk
+skipped can be audited; validity, `xsdWalk` and `metadata.schemaCompleted` do
+not change, lenient's `--original` comparison never removes it, and a malformed
+part, a Strict part lenient skips and a part the run's deadline never reached
+draw none (#628). A direct `validateAgainstXsd()` call on a validator parses
+each unmapped part before auditing it, so a malformed one draws none there
+either (#867). In a PPTX, the slides, slide layouts and masters, notes slides
+and masters, handout masters, legacy comments and tags one folder below `ppt/`
+use `pml.xsd`, matched by folder and file name (#864). PowerPoint's modern
+comments (`ppt/comments/modernComment_*.xml`), whose root `pml.xsd` does not
+declare, are among the unmapped parts. Directly in `ppt/`, the five conventional
 names (`presentation.xml`, `presProps.xml`, `viewProps.xml`,
-`commentAuthors.xml` and `tableStyles.xml`) go to `pml.xsd` by name (#872).
-Any other part there is routed by its root element (#887): it goes to
-`pml.xsd` when that root is a global element declared by `pml.xsd` or a
-schema it imports or includes, for the part's conformance class, and draws
-the audit otherwise. A renamed main presentation or a relocated slide
-therefore keeps its check, while `ppt/authors.xml` and
-`ppt/revisionInfo.xml`, whose Microsoft roots no bundled schema declares,
-stay unmapped. Each schema walk reads the roots afresh, and so does every
-direct `validateFileAgainstXsd` call, so a validator reused after a part is
-rewritten routes it by its new root (#902, #910). The earlier
-basename routes (`core.xml`, `app.xml`, `custom.xml`, …) still come first. The
-CLI prints
-the finding with `--json`; its human output lists errors only.
+`commentAuthors.xml` and `tableStyles.xml`) go to `pml.xsd` by name (#872). Any
+other part there is routed by its root element (#887): it goes to `pml.xsd` when
+that root is a global element declared by `pml.xsd` or a schema it imports or
+includes, for the part's conformance class, and draws the audit otherwise. A
+renamed main presentation or a relocated slide therefore keeps its check, while
+`ppt/authors.xml` and `ppt/revisionInfo.xml`, whose Microsoft roots no bundled
+schema declares, stay unmapped. Each schema walk reads the roots afresh (#902).
+Only the walk's own `validateFileAgainstXsd` call for a part, while it runs,
+keeps that part's root; every other call reads it afresh, so a validator reused
+after a part is rewritten routes it by its new root (#910), and so does a call
+for another part, a call from another validator, or one made after the walk's
+call settled by a task that call started (#926). The earlier basename routes
+(`core.xml`, `app.xml`, `custom.xml`, …) still come first. The CLI prints the
+finding with `--json`; its human output lists errors only.
 
 Full DOCX/DOCM validation reports duplicate relationship `Id` values as
 `rels-id-duplicate`, judging the relationships part of every owner part in
