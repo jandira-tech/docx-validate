@@ -283,3 +283,126 @@ describe("a relationship target naming a folder blocks word-valid (#975, session
         expect(valid).toBe(true);
     });
 });
+
+// #984: Word stops a relationship target's `..` segments at the package root,
+// as RFC 3986's remove_dot_segments does, for every relationship type it was
+// shown: it read a stored root customXml item (session 76), applied a root
+// caps styles part and rendered a root header (session 75), and rendered a
+// root note (session 74), each named by a target that climbs above the root,
+// all two runs with every reading agreeing. Both file-reference walks
+// resolved a file-system path and called such a target broken, so word-valid
+// rejected the customXml rows and every profile reported the part Word reads
+// as unreferenced.
+describe("an escaping target names the part its climb stops at (#984, sessions 74, 75 and 76)", () => {
+    const CT = "[Content_Types].xml";
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+    const FILE_REFERENCE_CODES = new Set(["rels-broken", "rels-unreferenced", "rels-target-missing"]);
+    const findings = async (parts: Record<string, string>, profile: Profile) =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            await fs.writeFile(file, await buildDocx(parts));
+            const result = await validate(file, { profile });
+            return {
+                valid: result.valid,
+                found: result.issues
+                    .filter((issue) => FILE_REFERENCE_CODES.has(issue.code ?? ""))
+                    .map((issue) => [issue.code, issue.message]),
+            };
+        });
+    const appendRelationship = (relationship: string) =>
+        MINIMAL_PARTS[SIDECAR]!.replace("</Relationships>", `${relationship}</Relationships>`);
+    const override = (part: string, type: string) =>
+        MINIMAL_PARTS[CT]!.replace("</Types>", `<Override PartName="/${part}" ContentType="${type}"/></Types>`);
+    /** s76a: a stored root customXml item with its properties, named from the main document's sidecar by `target`. */
+    const customXmlAt = (target: string): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "customXml/item1.xml": `${DECL}<root xmlns="urn:example:data"><v>1</v></root>`,
+        "customXml/itemProps1.xml":
+            `${DECL}<ds:datastoreItem ds:itemID="{11111111-2222-3333-4444-555555555555}" ` +
+            `xmlns:ds="http://schemas.openxmlformats.org/officeDocument/2006/customXml"><ds:schemaRefs/></ds:datastoreItem>`,
+        "customXml/_rels/item1.xml.rels":
+            `${DECL}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+            `<Relationship Id="rId1" Type="${RELATIONSHIPS}/customXmlProps" Target="itemProps1.xml"/></Relationships>`,
+        [SIDECAR]: appendRelationship(`<Relationship Id="rIdX" Type="${CUSTOM_XML}" Target="${target}"/>`),
+        [CT]: override("customXml/itemProps1.xml", "application/vnd.openxmlformats-officedocument.customXmlProperties+xml"),
+    });
+    /** s75a: the minimal styles part stored at `stored`, its Override moved there, named by `target`. */
+    const stylesAt = (stored: string, target: string): Record<string, string> => {
+        const parts: Record<string, string> = {
+            ...MINIMAL_PARTS,
+            [SIDECAR]: MINIMAL_PARTS[SIDECAR]!.replace('Target="styles.xml"', `Target="${target}"`),
+            [CT]: MINIMAL_PARTS[CT]!.replace('PartName="/word/styles.xml"', `PartName="/${stored}"`),
+        };
+        delete parts["word/styles.xml"];
+        parts[stored] = MINIMAL_PARTS["word/styles.xml"]!;
+        return parts;
+    };
+    /** s75a: a used default header stored at `stored`, named by `target`. */
+    const headerAt = (stored: string, target: string): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+            `xmlns:w="${W}"`,
+            `xmlns:w="${W}" xmlns:r="${RELATIONSHIPS}"`,
+        ).replace("<w:sectPr>", '<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>'),
+        [stored]: `${DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Head</w:t></w:r></w:p></w:hdr>`,
+        [SIDECAR]: appendRelationship(`<Relationship Id="rIdH" Type="${RELATIONSHIPS}/header" Target="${target}"/>`),
+        [CT]: override(stored, "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"),
+    });
+    /** s74a: footnote 1, which the body references, stored at `stored` and named by `target`. */
+    const footnotesAt = (stored: string, target: string): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+            "</w:r></w:p>",
+            '</w:r><w:r><w:footnoteReference w:id="1"/></w:r></w:p>',
+        ),
+        [stored]: `${DECL}<w:footnotes xmlns:w="${W}"><w:footnote w:id="1"><w:p><w:r><w:t>Note text</w:t></w:r></w:p></w:footnote></w:footnotes>`,
+        [SIDECAR]: appendRelationship(`<Relationship Id="rIdN" Type="${RELATIONSHIPS}/footnotes" Target="${target}"/>`),
+        [CT]: override(stored, "application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml"),
+    });
+
+    const OPENED_CLEAN: [string, Record<string, string>][] = [
+        ["s76a customXml ../../customXml/item1.xml", customXmlAt("../../customXml/item1.xml")],
+        ["s76a customXml ../../../customXml/item1.xml", customXmlAt("../../../customXml/item1.xml")],
+        ["s76a customXml /../customXml/item1.xml", customXmlAt("/../customXml/item1.xml")],
+        ["s75a styles ../../styles.xml", stylesAt("styles.xml", "../../styles.xml")],
+        ["s75a styles /../styles.xml", stylesAt("styles.xml", "/../styles.xml")],
+        ["s75a used header ../../header1.xml", headerAt("header1.xml", "../../header1.xml")],
+        ["s74a footnotes /../footnotes.xml", footnotesAt("footnotes.xml", "/../footnotes.xml")],
+        ["s74a footnotes /../word/footnotes.xml", footnotesAt("word/footnotes.xml", "/../word/footnotes.xml")],
+    ];
+
+    it.each(OPENED_CLEAN.slice(0, 3))("accepts the %s row under word-valid, as Word opened it clean", async (_row, parts) => {
+        const { valid, found } = await findings(parts, "word-valid");
+        expect(found).toEqual([]);
+        expect(valid).toBe(true);
+    });
+
+    it.each(OPENED_CLEAN)("reports no file-reference finding for the %s row under any profile", async (_row, parts) => {
+        for (const profile of ["word-valid", "strict", "lenient"] as const) {
+            expect((await findings(parts, profile)).found, profile).toEqual([]);
+        }
+    });
+
+    it.each([
+        ["s76a customXml ../customXml/item1.xml", customXmlAt("../customXml/item1.xml")],
+        ["s76a customXml /customXml/item1.xml", customXmlAt("/customXml/item1.xml")],
+        ["s75a styles ../styles.xml", stylesAt("styles.xml", "../styles.xml")],
+    ])("reports no file-reference finding for the %s calibration under any profile", async (_row, parts) => {
+        for (const profile of ["word-valid", "strict", "lenient"] as const) {
+            expect((await findings(parts, profile)).found, profile).toEqual([]);
+        }
+    });
+
+    // s75a: with the styles part only in word/, `../../styles.xml` names the
+    // absent `/styles.xml`; Word opened the package clean but applied none of
+    // `word/styles.xml`, so the climb does not fall back to the source folder.
+    it("keeps a climb whose stopped part is absent broken, naming the stopped part (s75a)", async () => {
+        const { found } = await findings(stylesAt("word/styles.xml", "../../styles.xml"), "strict");
+        expect(found).toEqual([
+            ["rels-broken", "Broken reference to ../../styles.xml"],
+            ["rels-unreferenced", "Unreferenced file: word/styles.xml"],
+            ["rels-target-missing", "Relationship target '../../styles.xml' resolves to 'styles.xml' which does not exist"],
+        ]);
+    });
+});

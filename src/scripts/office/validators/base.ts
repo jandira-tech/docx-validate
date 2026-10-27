@@ -416,6 +416,25 @@ export function containRelationshipTarget(unpackedDir: string, resolvedPath: str
     return target;
 }
 
+/**
+ * `resolvedPath` with a climb above `unpackedDir` stopped at it, then
+ * contained by {@link containRelationshipTarget}. RFC 3986's dot-segment
+ * removal keeps a relationship target's `..` above the package root at the
+ * root, and Word reads such a target there: a stored root customXml item,
+ * styles part, header and notes part, each named by `../../<name>` or
+ * `/../<name>` (sessions 54 and 74 to 76, #984). Only the lexical climb is
+ * stopped, so a path that leaves the tree through a symbolic link still
+ * returns `null`.
+ */
+export function stopAtPackageRoot(unpackedDir: string, resolvedPath: string): string | null {
+    const root = path.resolve(unpackedDir);
+    const rel = path.relative(root, path.resolve(resolvedPath));
+    if (path.isAbsolute(rel)) return null;
+    const segments = rel.split(path.sep);
+    const climb = segments.findIndex((segment) => segment !== "..");
+    return containRelationshipTarget(root, path.join(root, ...(climb === -1 ? [] : segments.slice(climb))));
+}
+
 interface IdHit {
     file: string;
     tag: string;
@@ -1047,14 +1066,17 @@ export class BaseSchemaValidator {
 
                 try {
                     targetPath = path.resolve(targetPath);
-                    if (containRelationshipTarget(this.unpackedDir, targetPath) === null) {
-                        // RFC 3986 dot-segment removal keeps a `..` above the
-                        // package root at the root: Word read
-                        // `../../customXml/item1.xml` from the main document's
-                        // sidecar as `customXml/item1.xml` (session 54).
+                    // RFC 3986 dot-segment removal keeps a `..` above the
+                    // package root at the root, where Word reads the target:
+                    // a stored part there is the one it names, and an absent
+                    // one is broken under that name (sessions 54 and 74 to
+                    // 76, #984). Only a symbolic link can leave the tree.
+                    const contained = stopAtPackageRoot(this.unpackedDir, targetPath);
+                    if (contained === null) {
                         broken.push({ target, part: this.entryName(targetPath).replace(/^(?:\.\.\/)+/, "") });
                         continue;
                     }
+                    targetPath = contained;
                     // Resolve against stored part names, as the main-part lookup
                     // does. Filesystem existence and target spelling cannot decide
                     // OPC equivalence (ASCII case and unreserved escapes, #393).

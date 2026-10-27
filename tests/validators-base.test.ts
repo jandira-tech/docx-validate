@@ -1456,19 +1456,41 @@ describe("BaseSchemaValidator", () => {
         const PR_NS = `xmlns="http://schemas.openxmlformats.org/package/2006/relationships"`;
         it("closes the existence oracle: an escaping target that EXISTS on disk is still broken", async () => {
             await withTempDir(async (dir) => {
-                // A real file outside the unpacked dir — pre-containment code
-                // would count it as "referenced" (the oracle leak).
+                // A real file outside the unpacked dir, exactly where the
+                // target's climb lands on disk — pre-containment code would
+                // count it as "referenced" (the oracle leak). The climb stops
+                // at the package root instead (#984), where nothing is stored.
+                const unpacked = path.join(dir, "unpacked");
                 await fs.writeFile(path.join(dir, "outside-secret.txt"), "secret", "utf-8");
-                const relsFile = path.join(dir, "word", "_rels", "document.xml.rels");
+                const relsFile = path.join(unpacked, "word", "_rels", "document.xml.rels");
                 const content =
                     `${RELS_HEADER}\n<Relationships ${PR_NS}>` +
                     `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="../../outside-secret.txt"/>` +
                     `</Relationships>`;
                 await writeFile(relsFile, content);
-                const v = new HarnessValidator({ unpackedDir: dir });
+                const v = new HarnessValidator({ unpackedDir: unpacked });
                 const result = await v.validateFileReferences();
                 expect(result.valid).toBe(false);
                 expect(result.issues.some((i) => i.code === "rels-broken" && i.message.includes("../../outside-secret.txt"))).toBe(true);
+            });
+        });
+
+        it("reads an escaping target's climb as stopped at the package root, where a stored part is the target's (#984)", async () => {
+            await withTempDir(async (dir) => {
+                // Word read a stored root part named by such a climb, for
+                // customXml, styles, header and notes targets (sessions 74
+                // to 76), as RFC 3986's dot-segment removal resolves it.
+                await fs.writeFile(path.join(dir, "root-part.xml"), "<root/>", "utf-8");
+                const relsFile = path.join(dir, "word", "_rels", "document.xml.rels");
+                const content =
+                    `${RELS_HEADER}\n<Relationships ${PR_NS}>` +
+                    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../../root-part.xml"/>` +
+                    `<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="/../../root-part.xml"/>` +
+                    `</Relationships>`;
+                await writeFile(relsFile, content);
+                const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                const result = await v.validateFileReferences();
+                expect(result.issues.filter((i) => i.code === "rels-broken" || i.path === "root-part.xml")).toEqual([]);
             });
         });
 

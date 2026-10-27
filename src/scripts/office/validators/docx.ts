@@ -94,6 +94,7 @@ import {
     collectDeclaredPrefixes,
     containRelationshipTarget,
     packageEntries,
+    stopAtPackageRoot,
     withoutRestatedIgnorablePrefixes,
     XML_NAMESPACE,
 } from "./base";
@@ -3601,7 +3602,9 @@ function resolveRelationshipTargetPath(unpackedDir: string, relsFile: string, ta
         resolved = path.resolve(baseDir, targetWithoutFragment);
     }
 
-    return containRelationshipTarget(unpackedDir, resolved);
+    // A climb above the package root stops at the root, as RFC 3986 and Word
+    // read it (#984); only a symbolic link can leave the tree.
+    return stopAtPackageRoot(unpackedDir, resolved);
 }
 
 function borderSignature(borders: Element | null, namespaceURI: string): BorderSignature | null {

@@ -3604,8 +3604,12 @@ describe("DOCXSchemaValidator", () => {
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateOrphanedRelationships();
                 expect(result.valid).toBe(false);
+                // The climb stops at the package root, as RFC 3986 and Word
+                // read it (#984), where nothing is stored.
                 expect(
-                    result.issues.some((i) => i.code === "rels-target-missing" && i.message.includes("escapes the unpacked directory")),
+                    result.issues.some(
+                        (i) => i.code === "rels-target-missing" && i.message.includes("resolves to 'etc/passwd' which does not exist"),
+                    ),
                 ).toBe(true);
             });
         });
@@ -3647,8 +3651,17 @@ describe("DOCXSchemaValidator", () => {
                 const result = await v.validate();
                 expect(result.issues.some((i) => i.code === "rels-broken" && i.message.includes("../../../secret.txt"))).toBe(true);
                 expect(result.issues.some((i) => i.code === "rels-broken" && i.message.includes("/../../../secret2.txt"))).toBe(true);
+                // Both climbs stop at the package root (#984), where nothing
+                // is stored.
                 expect(
-                    result.issues.some((i) => i.code === "rels-target-missing" && i.message.includes("escapes the unpacked directory")),
+                    result.issues.some(
+                        (i) => i.code === "rels-target-missing" && i.message.includes("resolves to 'secret.txt' which does not exist"),
+                    ),
+                ).toBe(true);
+                expect(
+                    result.issues.some(
+                        (i) => i.code === "rels-target-missing" && i.message.includes("resolves to 'secret2.txt' which does not exist"),
+                    ),
                 ).toBe(true);
             });
         });
