@@ -34,6 +34,7 @@ import {
     wordMainReachedParts,
     wordReadParts,
     wordReadTypedTargets,
+    wordStoryRootParts,
     wordTypedRelationshipTargets,
     wordUnobservedRelationshipTargets,
     wordReferenceLoadedSources,
@@ -352,6 +353,23 @@ describe("wordReadParts (#437)", () => {
     it("returns nothing when the package relationships part does not parse", async () => {
         const parts: Parts = { ...MINIMAL_PARTS, "_rels/.rels": "<Relationships" };
         expect(await wordReadParts(ValidationContext.fromEntries(parts))).toEqual(new Set());
+    });
+});
+
+describe("wordStoryRootParts: a package-absolute officeDocument target with dot segments (#947)", () => {
+    it.each(["/word/../word/main.xml", "/word/./main.xml"])("resolves %s to the stored main document", async (target) => {
+        const { "word/document.xml": _stored, "word/_rels/document.xml.rels": _storedRels, ...rest } = MINIMAL_PARTS;
+        const parts: Parts = {
+            ...rest,
+            "_rels/.rels": relsPart(`<Relationship Id="rId1" Type="${R}/officeDocument" Target="${target}"/>`),
+            "word/main.xml": MINIMAL_PARTS["word/document.xml"]!,
+            "word/_rels/main.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!,
+            "[Content_Types].xml": (MINIMAL_PARTS["[Content_Types].xml"] as string).replace(
+                'PartName="/word/document.xml"',
+                'PartName="/word/main.xml"',
+            ),
+        };
+        expect(await wordStoryRootParts(ValidationContext.fromEntries(parts))).toEqual(new Set([canonicalPartName("word/main.xml")]));
     });
 });
 

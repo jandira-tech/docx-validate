@@ -2081,6 +2081,80 @@ describe("addComment", () => {
         },
     );
 
+    it.each(["/word/../word/main.xml", "/word/./main.xml"])(
+        "adds a comment through word/_rels/main.xml.rels when the package relationships name %s (#947)",
+        async (target) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels(target), "word/main.xml");
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // The package-absolute target's dot segments resolve as a
+                // relative target's do, so it names the stored word/main.xml
+                // and the four relationships are wired through that part's
+                // own relationships part.
+                const relsPath = path.join(dir, "word", "_rels", "main.xml.rels");
+                expect(relationshipRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual(firstCommentRelationships(1));
+            });
+        },
+    );
+
+    it("still refuses a first comment when the package relationships name /../word/document.xml, changing nothing (#947)", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("/../word/document.xml"), "word/main.xml");
+
+            const before = await readTree(dir);
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "x",
+                author: "TestAuthor",
+                initials: "TA",
+            });
+
+            // The read model leaves an escaping target unclamped, so the
+            // climb past the package root is kept and the target still names
+            // no part, exactly as before #947.
+            expect(result.paraId).toBe("");
+            expect(result.message).toBe(`Error: ${path.join(dir, "_rels", ".rels")} names a main document outside the package`);
+            expect(await readTree(dir)).toEqual(before);
+        });
+    });
+
+    it("adds no second set of relationships when the main document relates word/comments.xml as /word/../word/comments.xml (#947)", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/main.xml"), "word/main.xml");
+            const relsPath = path.join(dir, "word", "_rels", "main.xml.rels");
+            await fs.mkdir(path.dirname(relsPath), { recursive: true });
+            await fs.writeFile(relsPath, packageRels(`Type="${COMMENTS_RELATIONSHIP_TYPE}" Target="/word/../word/comments.xml"`), "utf-8");
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The package-absolute target's dot segments resolve, so the
+            // stored relationship already names word/comments.xml and the
+            // part keeps exactly that one comments relationship.
+            expect(relationshipRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual([
+                ["rId1", COMMENTS_RELATIONSHIP_TYPE, "/word/../word/comments.xml", ""],
+            ]);
+        });
+    });
+
     it.each([
         [
             "the package relationships declare an encoding it cannot decode",

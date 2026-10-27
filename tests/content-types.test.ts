@@ -27,6 +27,7 @@ import {
     normalizePartName,
     parseContentTypes,
     partExtension,
+    relationshipTargetPartName,
     resolveContentType,
 } from "../src/lib/content-types";
 import { parseXml } from "../src/lib/xml-helpers";
@@ -259,6 +260,30 @@ describe("resolvePartName (#349)", () => {
             expect(resolvePartName(names, target)).toBeUndefined();
         },
     );
+});
+
+describe("relationshipTargetPartName (#947)", () => {
+    it.each([
+        ["/word/../word/main.xml", "/word/main.xml"],
+        ["/word/./main.xml", "/word/main.xml"],
+    ])("resolves the dot segments of the package-absolute target %s", (target, expected) => {
+        expect(relationshipTargetPartName("word", target)).toBe(expected);
+    });
+
+    it("keeps a package-absolute climb past the package root, and clamps it only when asked", () => {
+        expect(relationshipTargetPartName(".", "/../word/document.xml")).toBe("/../word/document.xml");
+        expect(relationshipTargetPartName(".", "/../word/document.xml", true)).toBe("/word/document.xml");
+    });
+
+    it.each(["/", "/word/.."])("keeps the package root spelled / when the package-absolute target %s resolves to it", (target) => {
+        expect(relationshipTargetPartName("word", target)).toBe("/");
+    });
+
+    it("resolves a relative target as it always has (#830)", () => {
+        expect(relationshipTargetPartName(".", "word/x/../main.xml")).toBe("word/main.xml");
+        expect(relationshipTargetPartName("word", "../../word/x.xml")).toBe("../word/x.xml");
+        expect(relationshipTargetPartName("word", "../../word/x.xml", true)).toBe("word/x.xml");
+    });
 });
 
 describe("partNameViolation: ECMA-376 Part 2, 4th edition §9.1.1.1 (#455)", () => {

@@ -1029,6 +1029,24 @@ describe("a notes relationship target escaping the package (#830, sessions 63 s6
         });
     });
 
+    // Unprobed: since #947 a package-absolute target's dot segments resolve
+    // as a relative target's do, so its climb stops at the package root the
+    // same way. Word has not been probed with a package-absolute target.
+    it.each([
+        ["footnote", "/../footnotes.xml"],
+        ["endnote", "/../endnotes.xml"],
+    ] as const)("accepts the %s reference the package-absolute target %s resolves at the package root (#947)", async (kind, target) => {
+        await withTempDir(async (dir) => {
+            const code = `word-${kind}-reference-missing`;
+            const file = path.join(dir, "absolute-escaping.docx");
+            await writeFile(file, await notesAt(kind, `${kind}s.xml`, target));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.issues.filter((issue) => issue.code === code)).toEqual([]);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+            expect(result.valid).toBe(true);
+        });
+    });
+
     it("still rejects the escaping relationship whose note sits only in word/footnotes.xml", async () => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "escaping-in-word-folder.docx");

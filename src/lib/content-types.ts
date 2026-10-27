@@ -264,9 +264,12 @@ const hasUriScheme = (target: string): boolean => /^[a-z][a-z\d+.-]*:/i.test(tar
  * The package-relative part name one relationship target references,
  * resolved against `baseDir`, the folder of its source part, as the rest of
  * the codebase does (`\` reads as `/`, a query or fragment is dropped,
- * dot segments resolve): `undefined` for a target with a URI scheme or an
+ * dot segments resolve, a package-absolute reference resolving the path
+ * below its leading `/` against the package root the same way and keeping
+ * the `/` (#947)): `undefined` for a target with a URI scheme or an
  * empty reference. `clampAtPackageRoot` stops the target's `..` segments at
- * the package root instead of leaving them to climb past it — RFC 3986's
+ * the package root instead of leaving them to climb past it, a
+ * package-absolute reference's climb included — RFC 3986's
  * remove_dot_segments, the way Word resolved `word/`'s
  * `../../footnotes.xml` to `/footnotes.xml` (session 64 s64a, #830).
  */
@@ -278,17 +281,28 @@ export const relationshipTargetPartName = (baseDir: string, target: string, clam
     if (reference === "") {
         return undefined;
     }
-    const joined = reference.startsWith("/") ? reference : path.posix.join(baseDir, reference);
-    return clampAtPackageRoot ? joined.replace(/^(?:\.\.\/)+/, "") : joined;
+    // A package-absolute reference resolves against the package root: the
+    // path below its leading `/` resolves as a relative reference does from
+    // the root, then the `/` goes back on (#947).
+    const absolute = reference.startsWith("/");
+    const belowRoot = path.posix.join(absolute ? "." : baseDir, absolute ? reference.slice(1) : reference);
+    const resolved = clampAtPackageRoot ? belowRoot.replace(/^(?:\.\.\/)+/, "") : belowRoot;
+    if (!absolute) {
+        return resolved;
+    }
+    // The package root itself keeps its one spelling.
+    return resolved === "." ? "/" : `/${resolved}`;
 };
 
 /**
  * Resolve one relationship target against the folder of its source part, as
  * the rest of the codebase does (`\` reads as `/`, a query or fragment is
- * dropped, dot segments resolve), then take the OPC-equivalent stored entry
- * (`canonicalPartName` comparison); `undefined` when it names no stored part.
- * `clampAtPackageRoot` stops the target's `..` segments at the package root
- * instead of dropping the whole target when they climb past it — RFC 3986's
+ * dropped, dot segments resolve, a package-absolute target's below its
+ * leading `/` too, which it keeps (#947)), then take the OPC-equivalent
+ * stored entry (`canonicalPartName` comparison); `undefined` when it names
+ * no stored part. `clampAtPackageRoot` stops the target's `..` segments at
+ * the package root instead of dropping the whole target when they climb
+ * past it, a package-absolute target's climb included — RFC 3986's
  * remove_dot_segments, the way Word resolved `word/`'s `../../footnotes.xml`
  * to `/footnotes.xml` (session 64 s64a, #830).
  */

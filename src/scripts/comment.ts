@@ -338,11 +338,11 @@ function effectiveRelationships(dom: Document): Element[] {
  * read model resolves it: `\` read as `/`, the query and fragment dropped,
  * a URI scheme or an empty reference naming no part (#906, #928). A target
  * that climbs past the package root keeps its `../` and names no part, as
- * the read model leaves it unclamped; a package-absolute target keeps its
- * dot segments, so `/word/../word/comments.xml` names no part either
- * (#947). The relationships are read on the effective view
- * `effectiveRelationships` returns — the stored DOM after markup
- * compatibility selects a branch — so a relationship a selected
+ * the read model leaves it unclamped; a package-absolute target's dot
+ * segments resolve below its leading `/`, so `/word/../word/comments.xml`
+ * names `word/comments.xml` (#947). The relationships are read on the
+ * effective view `effectiveRelationships` returns — the stored DOM after
+ * markup compatibility selects a branch — so a relationship a selected
  * `mc:Fallback` or an understood `mc:Choice` holds counts, and one only an
  * unselected branch holds does not (#932, #927); a part whose root binds
  * the package-relationships namespace to a prefix is read too, and an
