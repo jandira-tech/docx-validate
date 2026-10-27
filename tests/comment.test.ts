@@ -2355,7 +2355,7 @@ describe("addComment", () => {
             const call = addComment({ unpackedDir: dir, commentId: 1, text: "second", author: "Test", initials: "T" });
             await expect(call).resolves.toMatchObject({ paraId: "" });
             const result = await call;
-            expect(result.message).toBe(`Error: ${commentsPath} has no comments element in the ${WORD_MAIN_NAMESPACE} namespace`);
+            expect(result.message).toBe(`Error: ${commentsPath} has no comments root element in the ${WORD_MAIN_NAMESPACE} namespace`);
             expect(await readTree(dir)).toEqual(before);
         });
     });
@@ -2384,7 +2384,7 @@ describe("addComment", () => {
                 const call = addComment({ unpackedDir: dir, commentId: 0, text: "first", author: "Test", initials: "T" });
                 await expect(call).resolves.toMatchObject({ paraId: "" });
                 const result = await call;
-                expect(result.message).toBe(`Error: ${partPath} has no ${localName} element in the ${namespace} namespace`);
+                expect(result.message).toBe(`Error: ${partPath} has no ${localName} root element in the ${namespace} namespace`);
                 expect(await readTree(dir)).toEqual(before);
             });
         },
@@ -2425,6 +2425,79 @@ describe("addComment", () => {
                 await packTree(dir, file);
                 const validation = await validate(file, { profile: "word-valid" });
                 expect(validation.valid).toBe(true);
+            });
+        },
+    );
+
+    it.each(
+        [
+            ["comments.xml", "comments", WORD_MAIN_NAMESPACE],
+            ["commentsExtended.xml", "commentsEx", W15_NAMESPACE],
+            ["commentsIds.xml", "commentsIds", W16CID_NAMESPACE],
+            ["commentsExtensible.xml", "commentsExtensible", W16CEX_NAMESPACE],
+        ].flatMap(([name, localName, namespace]) => [
+            [name, "in another namespace", localName, namespace, "urn:example:other"],
+            [name, "of another local name", localName, namespace, namespace],
+        ]),
+    )(
+        "refuses a later comment when the stored word/%s nests its root under a document element %s, changing nothing (#953)",
+        async (name, _kind, localName, namespace, wrapperNamespace) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+                await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "first",
+                    author: "Test",
+                    initials: "T",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                const partPath = path.join(dir, "word", name);
+                const stored = await fs.readFile(partPath, "utf-8");
+                const declaration = stored.startsWith("<?xml") ? stored.slice(0, stored.indexOf("?>") + 2) : "";
+                await fs.writeFile(
+                    partPath,
+                    `${declaration}<x:wrap xmlns:x="${wrapperNamespace}">${stored.slice(declaration.length)}</x:wrap>`,
+                    "utf-8",
+                );
+
+                // The part still holds its root element, one level down; only
+                // the document element counts, so the call is refused before
+                // any write instead of appending inside the nested element.
+                const before = await readTree(dir);
+                const result = await addComment({ unpackedDir: dir, commentId: 1, text: "second", author: "Test", initials: "T" });
+                expect(result).toEqual({
+                    paraId: "",
+                    message: `Error: ${partPath} has no ${localName} root element in the ${namespace} namespace`,
+                });
+                expect(await readTree(dir)).toEqual(before);
+            });
+        },
+    );
+
+    it.each([
+        ["commentsExtended.xml", "commentsEx", W15_NAMESPACE],
+        ["commentsIds.xml", "commentsIds", W16CID_NAMESPACE],
+        ["commentsExtensible.xml", "commentsExtensible", W16CEX_NAMESPACE],
+    ])(
+        "refuses a first comment when the stored word/%s nests its root under a foreign document element, changing nothing (#953)",
+        async (name, localName, namespace) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+                const partPath = path.join(dir, "word", name);
+                await fs.writeFile(
+                    partPath,
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<x:wrap xmlns:x="urn:example:other"><m:${localName} xmlns:m="${namespace}"/></x:wrap>`,
+                    "utf-8",
+                );
+
+                const before = await readTree(dir);
+                const result = await addComment({ unpackedDir: dir, commentId: 0, text: "first", author: "Test", initials: "T" });
+                expect(result).toEqual({
+                    paraId: "",
+                    message: `Error: ${partPath} has no ${localName} root element in the ${namespace} namespace`,
+                });
+                expect(await readTree(dir)).toEqual(before);
             });
         },
     );

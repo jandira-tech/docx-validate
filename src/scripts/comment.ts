@@ -186,11 +186,12 @@ async function pathExists(p: string): Promise<boolean> {
 
 /**
  * Append `content` under the part's root element, in the part's own
- * encoding. The root is the first element of the expected `namespace` and
- * local name in document order, wherever the part binds the namespace, so a
- * part that prefixes it another way is appended to as the comment checks
- * read it (#930); a first comment's freshly copied template parts behave
- * exactly as before. The appended content is imported from the `w:`-prefixed
+ * encoding. The root is the document element when it has the expected
+ * `namespace` and local name, whatever prefix the part binds, so a part that
+ * prefixes it another way is appended to as the comment checks read it
+ * (#930); one nested deeper is not the root, and nothing is appended under it
+ * (#953). A first comment's freshly copied template parts behave exactly as
+ * before. The appended content is imported from the `w:`-prefixed
  * templates as-is: the serializer declares each prefix the part does not
  * already bind on the appended subtree itself, keeping the part well-formed
  * and every element and attribute in its namespace.
@@ -208,16 +209,15 @@ async function appendXml(
         return false;
     }
     const dom = parseXml(part.text);
-    const roots = getElementsByTagNameNSAll(dom, rootNamespace, rootLocalName);
-    if (roots.length === 0) {
-        // Defensive: addComment's preflight refuses a part that holds none of
-        // its root element before any write (#930), so this branch is
-        // unreachable from addComment — kept, as its defensive parent check
-        // is, so a future caller fails loudly rather than appending under
-        // nothing.
+    const root = dom.documentElement;
+    if (!root || root.namespaceURI !== rootNamespace || root.localName !== rootLocalName) {
+        // Defensive: addComment's preflight refuses a part whose document
+        // element is not its root element before any write (#930, #953), so
+        // this branch is unreachable from addComment — kept, as its defensive
+        // parent check is, so a future caller fails loudly rather than
+        // appending under another element.
         throw new Error(`Root element <${rootLocalName}> in namespace ${rootNamespace} not found in ${xmlPath}`);
     }
-    const root = roots[0]!;
     const nsAttrs = Object.entries(NS)
         .map(([k, v]) => `xmlns:${k}="${v}"`)
         .join(" ");
@@ -657,9 +657,9 @@ export interface AddCommentResult {
  * On success, returns the generated `paraId` and a human-readable status
  * message. On failure (missing `word/` directory, missing parent comment, a
  * part this edit would write that is stored in an encoding this tool cannot
- * decode (#879) or is not well-formed XML (#905), a stored comment part that
- * holds none of its expected root element, by namespace and local name —
- * whatever prefix it binds (#930), or, for a first comment,
+ * decode (#879) or is not well-formed XML (#905), a stored comment part whose
+ * document element is not its expected root element, by namespace and local
+ * name — whatever prefix it binds (#930, #953), or, for a first comment,
  * missing `[Content_Types].xml`, an `_rels/.rels` that cannot be decoded or
  * parsed, an `_rels/.rels` naming no non-External `officeDocument`
  * relationship, or an `officeDocument` target that, resolved as the read
@@ -743,12 +743,13 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
         decoded.set(part, xml);
     }
 
-    // Each comment part that exists must hold its root element, by namespace
-    // and local name, whatever prefix it binds: one that holds none — a root
-    // in another namespace, or of another local name — is refused before any
-    // write, the tree unchanged; before, the call threw mid-write (#930). A
-    // first comment appends to the three Microsoft parts too when they are
-    // already stored, so the check runs for it as well.
+    // Each comment part that exists must have its root element, by namespace
+    // and local name, whatever prefix it binds, as its document element: one
+    // whose document element is in another namespace or of another local name
+    // is refused before any write, the tree unchanged; before, the call threw
+    // mid-write (#930), and a root nested under another document element was
+    // appended to (#953). A first comment appends to the three Microsoft parts
+    // too when they are already stored, so the check runs for it as well.
     const rootElements: Array<[string, string, string]> = [
         [comments, NS.w, "comments"],
         [ext, NS.w15, "commentsEx"],
@@ -760,8 +761,9 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
         if (decodedPart === undefined) {
             continue;
         }
-        if (getElementsByTagNameNSAll(parseXml(decodedPart.text), namespace, localName).length === 0) {
-            return { paraId: "", message: `Error: ${part} has no ${localName} element in the ${namespace} namespace` };
+        const documentElement = parseXml(decodedPart.text).documentElement;
+        if (!documentElement || documentElement.namespaceURI !== namespace || documentElement.localName !== localName) {
+            return { paraId: "", message: `Error: ${part} has no ${localName} root element in the ${namespace} namespace` };
         }
     }
 
