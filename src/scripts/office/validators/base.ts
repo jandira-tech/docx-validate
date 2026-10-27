@@ -1726,7 +1726,7 @@ export class BaseSchemaValidator {
             }
             if (!(await countEligible(xmlFile))) continue;
 
-            const token: XsdWalkCall = { validator: this, xmlFile, active: true };
+            const token: XsdWalkCall = { validator: this, xmlFile, active: true, claimed: false };
             let outcome: XsdValidationOutcome;
             try {
                 outcome = await xsdWalkStore.run(token, () => this.validateFileAgainstXsd(xmlFile));
@@ -1791,9 +1791,10 @@ export class BaseSchemaValidator {
 
     /**
      * The root element's identity of `xmlFile`, read once per file in each
-     * schema walk (#902). Only the walk's own call for that part, while it
-     * runs, keeps the memo; every other `validateFileAgainstXsd` call drops
-     * the file's entry first (#910, #926):
+     * schema walk (#902). Only the first base call the walk's own active
+     * call makes for that part keeps the memo, once; every other
+     * `validateFileAgainstXsd` call drops the file's entry first, a second
+     * or nested call for the same part included (#910, #926, #941):
      * `null` when the part cannot be read or parsed, or its root is not
      * namespaced, exactly as the Strict sniffing read it before #887 shared
      * the answer with the `ppt/` root route.
@@ -1816,16 +1817,23 @@ export class BaseSchemaValidator {
     /**
      * Validate one part against the schema the routing picks for it. The
      * schema walk calls it for each part it validates, so a subclass that
-     * overrides it sees every one. Only the walk's own call for this part,
-     * while it runs, keeps its root memo, read once per walk (#902). Every
-     * other call drops `xmlFile`'s entry first and reads the root afresh,
-     * including a call for another part, a call from another validator, and
-     * one made after the walk's call settled by a task that call started
-     * (#910, #926).
+     * overrides it sees every one. Only the first base call the walk's own
+     * active call makes for this part keeps its root memo, once, read by
+     * the walk's eligibility check (#902). Every other call drops
+     * `xmlFile`'s entry first and reads the root afresh, a second or nested
+     * call for the same part on this validator included (#941), as well as
+     * a call for another part, a call from another validator, or one made
+     * after the walk's call settled by a task that call started (#910, #926).
+     * A nested call made before the first base call has routed still
+     * replaces the root that call routes by (#949).
      */
     async validateFileAgainstXsd(xmlFile: string): Promise<XsdValidationOutcome> {
         const token = xsdWalkStore.getStore();
-        if (token?.validator !== this || token.xmlFile !== xmlFile || !token.active) this.rootQNames.delete(xmlFile);
+        if (token?.validator === this && token.xmlFile === xmlFile && token.active && !token.claimed) {
+            token.claimed = true;
+        } else {
+            this.rootQNames.delete(xmlFile);
+        }
         const single = await this._validateSingleFileXsd(xmlFile);
         if (single.valid === null) {
             return { valid: null, errors: new Set() };
@@ -2331,9 +2339,10 @@ export class BaseSchemaValidator {
      * Per-file memo of the root element's namespace and local name — root
      * sniffing would otherwise re-read each part for eligibility, schema
      * dispatch, preprocessing, and the `ppt/` root route (#887). Cleared at
-     * the start of every XSD walk (#902); only the walk's own active call
-     * for a part keeps its entry, so every other `validateFileAgainstXsd`
-     * call reads its root again (#910, #926).
+     * the start of every XSD walk (#902); only the first base call the
+     * walk's own active call makes for a part keeps its entry, once, so
+     * every other `validateFileAgainstXsd` call reads its root again
+     * (#910, #926, #941).
      */
     private readonly rootQNames = new Map<string, RootQName | null>();
     /** See {@link isMainDocumentPart}; reset at the start of every XSD walk (#657) and when a repair deletes files. */
@@ -2765,12 +2774,14 @@ export interface BaselineState {
 const baselineRunStore = new AsyncLocalStorage<BaselineState>();
 
 /**
- * The walk's own call for one part, active only until that call settles;
- * inherited async stores keep the token but not its active lifetime (#926).
+ * The walk's own call for one part, active only until that call settles.
+ * Its first base call for this validator and part claims the root memo
+ * once (#941); second and nested calls read the root afresh. Inherited
+ * async stores keep the token but not its active lifetime (#926).
  */
-type XsdWalkCall = { validator: BaseSchemaValidator; xmlFile: string; active: boolean };
+type XsdWalkCall = { validator: BaseSchemaValidator; xmlFile: string; active: boolean; claimed: boolean };
 
-/** Only the active call's validator and part keep the root memo; see {@link BaseSchemaValidator.validateFileAgainstXsd} (#926). */
+/** The active call's validator and part may claim the root memo once; see {@link BaseSchemaValidator.validateFileAgainstXsd} (#926, #941). */
 const xsdWalkStore = new AsyncLocalStorage<XsdWalkCall>();
 
 const IGNORABLE_UNDECLARED_MESSAGE = /^Namespace '(.+)' in Ignorable but not declared$/;

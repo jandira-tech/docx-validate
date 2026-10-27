@@ -225,13 +225,16 @@ includes, for the part's conformance class, and draws the audit otherwise. A
 renamed main presentation or a relocated slide therefore keeps its check, while
 `ppt/authors.xml` and `ppt/revisionInfo.xml`, whose Microsoft roots no bundled
 schema declares, stay unmapped. Each schema walk reads the roots afresh (#902).
-Only the walk's own `validateFileAgainstXsd` call for a part, while it runs,
-keeps that part's root; every other call reads it afresh, so a validator reused
-after a part is rewritten routes it by its new root (#910), and so does a call
-for another part, a call from another validator, or one made after the walk's
-call settled by a task that call started (#926). The earlier basename routes
-(`core.xml`, `app.xml`, `custom.xml`, …) still come first. The CLI prints the
-finding with `--json`; its human output lists errors only.
+Only the first base `validateFileAgainstXsd` call the walk's own active call
+makes for a part keeps that part's root, and only once; every other call reads
+it afresh, so a validator reused after a part is rewritten routes it by its new
+root (#910), and so does a second or nested call for the same part on the same
+validator (#941), a call for another part, a call from another validator, or one
+made after the walk's call settled by a task that call started (#926). A nested
+call made before that first call has routed still replaces the root it routes by
+(#949). The earlier basename routes (`core.xml`, `app.xml`, `custom.xml`, …)
+still come first. The CLI prints the finding with `--json`; its human output
+lists errors only.
 
 Full DOCX/DOCM validation reports duplicate relationship `Id` values as
 `rels-id-duplicate`, judging the relationships part of every owner part in
