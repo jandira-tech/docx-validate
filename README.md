@@ -223,8 +223,10 @@ schema it imports or includes, for the part's conformance class, and draws
 the audit otherwise. A renamed main presentation or a relocated slide
 therefore keeps its check, while `ppt/authors.xml` and
 `ppt/revisionInfo.xml`, whose Microsoft roots no bundled schema declares,
-stay unmapped. The earlier basename routes (`core.xml`, `app.xml`,
-`custom.xml`, …) still come first. The CLI prints
+stay unmapped. Each schema walk reads the roots afresh, so a validator reused
+after a part is rewritten routes it by its new root (#902). The earlier
+basename routes (`core.xml`, `app.xml`, `custom.xml`, …) still come first. The
+CLI prints
 the finding with `--json`; its human output lists errors only.
 
 Full DOCX/DOCM validation reports duplicate relationship `Id` values as

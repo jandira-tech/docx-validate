@@ -1668,6 +1668,9 @@ export class BaseSchemaValidator {
         // The main document comes from the processed package relationships,
         // which a repair between walks can change (#657).
         this.mainDocumentParts = undefined;
+        // A part rewritten between walks is routed by the root it holds now,
+        // not the one an earlier walk read (#902).
+        this.rootQNames.clear();
 
         const noteStrict = (): void => {
             if (strictSkipped) return;
@@ -1781,8 +1784,9 @@ export class BaseSchemaValidator {
     }
 
     /**
-     * The root element's identity of `xmlFile`, read once per file: `null`
-     * when the part cannot be read or parsed, or its root is not namespaced,
+     * The root element's identity of `xmlFile`, read once per file in each
+     * schema walk (#902): `null` when the part cannot be read or parsed, or
+     * its root is not namespaced,
      * exactly as the Strict sniffing read it before #887 shared the answer
      * with the `ppt/` root route.
      */
@@ -2255,10 +2259,11 @@ export class BaseSchemaValidator {
      * closure declares for its conformance class. A part's identity in OPC
      * comes from its relationship and content type, not its name, so the
      * root decides (#887): a renamed main presentation or a relocated slide
-     * keeps its check, while a root no bundled schema declares —
-     * PowerPoint's `p188:authorLst`, `p1510:revInfo` — and a part that
-     * cannot be read or parsed stay unmapped and draw the `xsd-no-schema`
-     * audit, as they did before.
+     * keeps its check, while a well-formed root no bundled schema declares
+     * — PowerPoint's `p188:authorLst`, `p1510:revInfo` — stays unmapped and
+     * draws the `xsd-no-schema` audit, as it did before. A part that cannot
+     * be read or parsed maps to no schema either; a malformed one draws its
+     * XML diagnostics, not the audit (#902).
      */
     private _routesToPptSchemaByRoot(xmlFile: string): boolean {
         const root = this.rootQName(xmlFile);
@@ -2305,7 +2310,8 @@ export class BaseSchemaValidator {
     /**
      * Per-file memo of the root element's namespace and local name — root
      * sniffing would otherwise re-read each part for eligibility, schema
-     * dispatch, preprocessing, and the `ppt/` root route (#887).
+     * dispatch, preprocessing, and the `ppt/` root route (#887). Cleared at
+     * the start of every XSD walk (#902).
      */
     private readonly rootQNames = new Map<string, RootQName | null>();
     /** See {@link isMainDocumentPart}; reset at the start of every XSD walk (#657) and when a repair deletes files. */
