@@ -1498,6 +1498,168 @@ describe("schema routing of the parts directly in ppt/ by their root (#887)", { 
             expect(validator.xsdEngineFailures).toBe(0);
         });
     });
+
+    // Once the base call claims the walk's root, another call or walk may
+    // read rewritten bytes without replacing the root it routes by (#949).
+    it.each(["call", "walk"] as const)("keeps the claiming call's root while a nested %s reads a rewrite (#949)", async (kind) => {
+        await withTempDir(async (dir) => {
+            const slide = MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!;
+            const parts = { ...MINIMAL_PPTX_PARTS, "ppt/extra.xml": slide };
+            for (const [part, xml] of Object.entries(parts)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const extra = path.join(dir, "ppt/extra.xml");
+            let entered = false;
+            let nested: Awaited<ReturnType<PPTXSchemaValidator["validateFileAgainstXsd"]>> | undefined;
+            let inner: Awaited<ReturnType<PPTXSchemaValidator["validateAgainstXsd"]>> | undefined;
+            let claiming: Awaited<ReturnType<PPTXSchemaValidator["validateFileAgainstXsd"]>> | undefined;
+            const validator = new (class extends PPTXSchemaValidator {
+                protected override async _validateSingleFileXsd(file: string): ReturnType<PPTXSchemaValidator["validateFileAgainstXsd"]> {
+                    if (file === extra && !entered) {
+                        entered = true;
+                        await fs.writeFile(
+                            file,
+                            `${HEAD}<p:unknown xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>`,
+                        );
+                        if (kind === "call") nested = await this.validateFileAgainstXsd(file);
+                        else inner = await this.validateAgainstXsd();
+                        await fs.writeFile(file, slide);
+                        claiming = await super._validateSingleFileXsd(file);
+                        return claiming;
+                    }
+                    return super._validateSingleFileXsd(file);
+                }
+            })({ unpackedDir: dir, profile: "strict" });
+            const result = await validator.validateAgainstXsd();
+            if (kind === "call") expect(nested?.valid).toBe(null);
+            else {
+                expect(inner?.valid).toBe(true);
+                expect(inner?.issues.filter((issue) => issue.path === "ppt/extra.xml").map((issue) => issue.code)).toEqual([
+                    "xsd-no-schema",
+                ]);
+            }
+            expect(claiming?.valid).toBe(true);
+            expect(result).toEqual({ valid: true, issues: [] });
+            expect([...validator.xsdWalk.parts].sort()).toEqual(Object.keys(parts).sort());
+            expect(validator.xsdWalk.eligible).toBe(Object.keys(parts).length);
+            expect((await validator.validateFileAgainstXsd(extra)).valid).toBe(true);
+        });
+    });
+
+    // Count the marked bytes as in #910: the walk reads the slide's root,
+    // the nested call reads the unknown root, and only preprocessing parses
+    // the restored slide again: routing the claiming call reads no root (#949).
+    it("reads no extra root when the claiming call routes after a nested call (#949)", async () => {
+        await withTempDir(async (dir) => {
+            const marker = "nested-root-marker";
+            const slide = MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!.replace('name=""', `name="${marker}"`);
+            const unknown = `${HEAD}<p:unknown xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" marker="${marker}"/>`;
+            const parts = { ...MINIMAL_PPTX_PARTS, "ppt/extra.xml": slide };
+            for (const [part, xml] of Object.entries(parts)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const extra = path.join(dir, "ppt/extra.xml");
+            const spy = vi.spyOn(xmlHelpers, "parseXml");
+            const markedParses = () => spy.mock.calls.filter((call) => String(call[0]).includes(marker)).length;
+            let entered = false;
+            const validator = new (class extends PPTXSchemaValidator {
+                protected override async _validateSingleFileXsd(file: string): ReturnType<PPTXSchemaValidator["validateFileAgainstXsd"]> {
+                    if (file === extra && !entered) {
+                        entered = true;
+                        expect(markedParses()).toBe(1);
+                        await fs.writeFile(file, unknown);
+                        expect((await this.validateFileAgainstXsd(file)).valid).toBe(null);
+                        expect(markedParses()).toBe(2);
+                        await fs.writeFile(file, slide);
+                        const outcome = await super._validateSingleFileXsd(file);
+                        expect(markedParses()).toBe(3);
+                        return outcome;
+                    }
+                    return super._validateSingleFileXsd(file);
+                }
+            })({ unpackedDir: dir, profile: "strict" });
+            try {
+                expect((await validator.validateAgainstXsd()).valid).toBe(true);
+                expect(validator.xsdWalk.parts).toContain("ppt/extra.xml");
+                expect(markedParses()).toBe(3);
+            } finally {
+                spy.mockRestore();
+            }
+        });
+    });
+
+    // A nested call for a part the walk has not reached must not leave its
+    // root in the walk's map: eligibility reads that part's own bytes (#949).
+    it("keeps a non-owning call's roots out of a later part's eligibility (#949)", async () => {
+        await withTempDir(async (dir) => {
+            const slide = MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!;
+            const parts = { ...MINIMAL_PPTX_PARTS, "ppt/extra.xml": slide };
+            for (const [part, xml] of Object.entries(parts)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const extra = path.join(dir, "ppt/extra.xml");
+            let entered = false;
+            let nested: Awaited<ReturnType<PPTXSchemaValidator["validateFileAgainstXsd"]>> | undefined;
+            const validator = new (class extends PPTXSchemaValidator {
+                protected override async _validateSingleFileXsd(file: string): ReturnType<PPTXSchemaValidator["validateFileAgainstXsd"]> {
+                    if (!entered) {
+                        entered = true;
+                        expect(file).not.toBe(extra);
+                        await fs.writeFile(
+                            extra,
+                            `${HEAD}<p:unknown xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>`,
+                        );
+                        nested = await this.validateFileAgainstXsd(extra);
+                        await fs.writeFile(extra, slide);
+                    }
+                    return super._validateSingleFileXsd(file);
+                }
+            })({ unpackedDir: dir, profile: "strict" });
+            const result = await validator.validateAgainstXsd();
+            expect(nested?.valid).toBe(null);
+            expect(result).toEqual({ valid: true, issues: [] });
+            expect([...validator.xsdWalk.parts].sort()).toEqual(Object.keys(parts).sort());
+            expect(validator.xsdWalk.eligible).toBe(Object.keys(parts).length);
+        });
+    });
+
+    // Protected routing helpers can run without their own scope. Another
+    // validator must read afresh, even inside a call with the same path (#949).
+    it("reads another validator's root afresh inside the claiming call's scope (#949)", async () => {
+        await withTempDir(async (dir) => {
+            const slide = MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!;
+            const parts = { ...MINIMAL_PPTX_PARTS, "ppt/extra.xml": slide };
+            for (const [part, xml] of Object.entries(parts)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const extra = path.join(dir, "ppt/extra.xml");
+            const other = new (class extends PPTXSchemaValidator {
+                isStrict(file: string): boolean {
+                    return this._isStrictXmlFile(file);
+                }
+            })({ unpackedDir: dir, profile: "strict" });
+            expect(other.isStrict(extra)).toBe(false);
+            let entered = false;
+            const validator = new (class extends PPTXSchemaValidator {
+                protected override async _validateSingleFileXsd(file: string): ReturnType<PPTXSchemaValidator["validateFileAgainstXsd"]> {
+                    if (file === extra && !entered) {
+                        entered = true;
+                        await fs.writeFile(file, `${HEAD}<p:unknown xmlns:p="http://purl.oclc.org/ooxml/presentationml/main"/>`);
+                        expect(other.isStrict(file)).toBe(true);
+                        await fs.writeFile(file, slide);
+                        expect(other.isStrict(file)).toBe(false);
+                    }
+                    return super._validateSingleFileXsd(file);
+                }
+            })({ unpackedDir: dir, profile: "strict" });
+            expect((await validator.validateAgainstXsd()).valid).toBe(true);
+            expect(entered).toBe(true);
+        });
+    });
 });
 
 describe("the global element declarations the ppt/ root route reads (#887)", () => {
