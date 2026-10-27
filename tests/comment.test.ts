@@ -48,6 +48,8 @@ const STRICT_OFFICE_DOCUMENT_RELATIONSHIP_TYPE = "http://purl.oclc.org/ooxml/off
 const COMMENTS_RELATIONSHIP_TYPE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
 const STRICT_COMMENTS_RELATIONSHIP_TYPE = "http://purl.oclc.org/ooxml/officeDocument/relationships/comments";
 const HYPERLINK_RELATIONSHIP_TYPE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
+const STYLES_RELATIONSHIP_TYPE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles";
+const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
 const COMMENTS_EXTENDED_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2011/relationships/commentsExtended";
 const COMMENTS_IDS_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2016/09/relationships/commentsIds";
 const COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible";
@@ -69,6 +71,10 @@ const packageRels = (attributes: string): string =>
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n  <Relationship Id="rId1" ${attributes}/>\n</Relationships>`;
 
 const officeDocumentRels = (target: string): string => packageRels(`Type="${OFFICE_DOCUMENT_RELATIONSHIP_TYPE}" Target="${target}"`);
+
+/** The package relationships part with its namespace bound to the `p:` prefix, holding one relationship with `attributes` (#918). */
+const prefixedPackageRels = (attributes: string): string =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<p:Relationships xmlns:p="${PACKAGE_RELATIONSHIPS_NAMESPACE}">\n  <p:Relationship Id="rId1" ${attributes}/>\n</p:Relationships>`;
 
 /** The four relationships a first comment appends, with ids counting from `firstRid`. */
 const firstCommentRelationships = (firstRid: number): string[][] => [
@@ -213,6 +219,26 @@ function relationshipRows(dom: ReturnType<typeof parseXml>): string[][] {
             rel.getAttribute("Type") ?? "",
             rel.getAttribute("Target") ?? "",
             rel.getAttribute("TargetMode") ?? "",
+        ]);
+    }
+    return rows;
+}
+
+/** Every [localName, prefix, namespaceURI, Id, Type, Target] row of a relationships root's element children, whatever their namespace (#918). */
+function relationshipElementRows(dom: ReturnType<typeof parseXml>): string[][] {
+    const rows: string[][] = [];
+    for (let child = dom.documentElement.firstChild; child; child = child.nextSibling) {
+        if (child.nodeType !== 1) {
+            continue;
+        }
+        const rel = child as Element;
+        rows.push([
+            rel.localName ?? "",
+            rel.prefix ?? "",
+            rel.namespaceURI ?? "",
+            rel.getAttribute("Id") ?? "",
+            rel.getAttribute("Type") ?? "",
+            rel.getAttribute("Target") ?? "",
         ]);
     }
     return rows;
@@ -1092,6 +1118,250 @@ describe("addComment", () => {
             expect(relationshipRows(parseXml(await fs.readFile(path.join(dir, "word", "_rels", "main.xml.rels"), "utf-8")))).toEqual([
                 ["rId1", STRICT_COMMENTS_RELATIONSHIP_TYPE, "comments.xml", ""],
             ]);
+        });
+    });
+
+    it.each([
+        ["word/document.xml", "document.xml.rels"],
+        ["word/main.xml", "main.xml.rels"],
+    ])("relates the comments parts through a _rels/.rels bound to a prefix naming %s (#918)", async (mainPart, relsName) => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(
+                dir,
+                prefixedPackageRels(`Type="${OFFICE_DOCUMENT_RELATIONSHIP_TYPE}" Target="${mainPart}"`),
+                mainPart,
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The prefixed p:Relationship names the main document, so the
+            // comments are related from that document's own sidecar.
+            const relsPath = path.join(dir, "word", "_rels", relsName);
+            expect(relationshipRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual(firstCommentRelationships(1));
+        });
+    });
+
+    it(
+        "writes the new relationships in the package-relationships namespace, under the root's prefix (#918)",
+        { timeout: 30000 },
+        async () => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+                await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+                const relsPath = path.join(dir, "word", "_rels", "document.xml.rels");
+                await fs.writeFile(
+                    relsPath,
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                        `<p:Relationships xmlns:p="${PACKAGE_RELATIONSHIPS_NAMESPACE}">` +
+                        `<p:Relationship Id="rId1" Type="${STYLES_RELATIONSHIP_TYPE}" Target="styles.xml"/>` +
+                        `</p:Relationships>`,
+                    "utf-8",
+                );
+                // The styles relationship must name a stored, typed part for the
+                // packed tree to validate, as the minimal package's does.
+                await fs.writeFile(path.join(dir, "word", "styles.xml"), MINIMAL_PARTS["word/styles.xml"]!, "utf-8");
+                await fs.writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    contentTypes(RELATIONSHIPS_TYPE, [
+                        `<Override PartName="/word/document.xml" ContentType="${MAIN_DOCUMENT_CONTENT_TYPE}"/>`,
+                        `<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>`,
+                    ]),
+                    "utf-8",
+                );
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // Five relationships: the prefixed one that was there, unchanged,
+                // and the four a first comment appends beside it — every one in
+                // the package-relationships namespace under the root's `p:`
+                // prefix, with ids rId1–rId5, all distinct.
+                const rows = relationshipElementRows(parseXml(await fs.readFile(relsPath, "utf-8")));
+                expect(rows).toEqual([
+                    ["Relationship", "p", PACKAGE_RELATIONSHIPS_NAMESPACE, "rId1", STYLES_RELATIONSHIP_TYPE, "styles.xml"],
+                    ...firstCommentRelationships(2).map(([id, type, target]) => [
+                        "Relationship",
+                        "p",
+                        PACKAGE_RELATIONSHIPS_NAMESPACE,
+                        id,
+                        type,
+                        target,
+                    ]),
+                ]);
+                expect(new Set(rows.map((row) => row[3])).size).toBe(5);
+
+                // The marked, packed tree validates: the relationships Word reads
+                // are the ones the root's prefix binds, duplicated ids and all.
+                await fs.writeFile(path.join(dir, "word", "document.xml"), markedMainDocument(), "utf-8");
+                const file = path.join(dir, "prefixed-rels.docx");
+                await packTree(dir, file);
+                const validation = await validate(file, { profile: "word-valid" });
+                expect(validation.issues.filter((issue) => issue.code === "opc-relationships-structure")).toEqual([]);
+                expect(validation.issues.filter((issue) => issue.code === "comment-marker-missing")).toEqual([]);
+                expect(validation.valid).toBe(true);
+            });
+        },
+    );
+
+    it("adds no second set of relationships when a prefixed relationships part already relates word/comments.xml (#918)", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/main.xml"), "word/main.xml");
+            await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+            const relsPath = path.join(dir, "word", "_rels", "main.xml.rels");
+            await fs.writeFile(
+                relsPath,
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                    `<p:Relationships xmlns:p="${PACKAGE_RELATIONSHIPS_NAMESPACE}">` +
+                    `<p:Relationship Id="rId1" Type="${COMMENTS_RELATIONSHIP_TYPE}" Target="comments.xml"/>` +
+                    `</p:Relationships>`,
+                "utf-8",
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The prefixed p:Relationship relates the comments part under OPC
+            // part-name equivalence, so nothing is appended and it is left
+            // as it was, prefix and all.
+            expect(relationshipElementRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual([
+                ["Relationship", "p", PACKAGE_RELATIONSHIPS_NAMESPACE, "rId1", COMMENTS_RELATIONSHIP_TYPE, "comments.xml"],
+            ]);
+        });
+    });
+
+    it("writes the new relationships under the root's prefix when it binds the namespace both ways (#918)", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/main.xml"), "word/main.xml");
+            await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+            const relsPath = path.join(dir, "word", "_rels", "main.xml.rels");
+            await fs.writeFile(
+                relsPath,
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                    `<p:Relationships xmlns:p="${PACKAGE_RELATIONSHIPS_NAMESPACE}" xmlns="${PACKAGE_RELATIONSHIPS_NAMESPACE}">` +
+                    `<p:Relationship Id="rId1" Type="${STYLES_RELATIONSHIP_TYPE}" Target="styles.xml"/>` +
+                    `</p:Relationships>`,
+                "utf-8",
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The root has a prefix, so the new relationships carry it — not
+            // the default binding the root also declares.
+            expect(relationshipElementRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual([
+                ["Relationship", "p", PACKAGE_RELATIONSHIPS_NAMESPACE, "rId1", STYLES_RELATIONSHIP_TYPE, "styles.xml"],
+                ...firstCommentRelationships(2).map(([id, type, target]) => [
+                    "Relationship",
+                    "p",
+                    PACKAGE_RELATIONSHIPS_NAMESPACE,
+                    id,
+                    type,
+                    target,
+                ]),
+            ]);
+        });
+    });
+
+    it("numbers new ids past every Relationship in the part, in any namespace, and reads only namespaced relationships (#918)", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+            const relsPath = path.join(dir, "word", "_rels", "document.xml.rels");
+            const relsXml =
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                `<Relationships xmlns="${PACKAGE_RELATIONSHIPS_NAMESPACE}">` +
+                `<Relationship Id="rId1" Type="${STYLES_RELATIONSHIP_TYPE}" Target="styles.xml"/>` +
+                `<x:Relationship xmlns:x="urn:example:other" Id="rId7" Type="${COMMENTS_RELATIONSHIP_TYPE}" Target="comments.xml"/>` +
+                `</Relationships>`;
+            await fs.writeFile(relsPath, relsXml, "utf-8");
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The comments-typed relationship in another namespace does not
+            // relate the comments part, so the four relationships are added;
+            // and their ids start past the rId7 it holds, whatever its
+            // namespace, so no id the part already uses is repeated.
+            expect(relationshipElementRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual([
+                ["Relationship", "", PACKAGE_RELATIONSHIPS_NAMESPACE, "rId1", STYLES_RELATIONSHIP_TYPE, "styles.xml"],
+                ["Relationship", "x", "urn:example:other", "rId7", COMMENTS_RELATIONSHIP_TYPE, "comments.xml"],
+                ...firstCommentRelationships(8).map(([id, type, target]) => [
+                    "Relationship",
+                    "",
+                    PACKAGE_RELATIONSHIPS_NAMESPACE,
+                    id,
+                    type,
+                    target,
+                ]),
+            ]);
+
+            // The appended relationships serialize exactly as the unprefixed
+            // part always has: no xmlns declaration of their own.
+            const appended = firstCommentRelationships(8)
+                .map(([id, type, target]) => `<Relationship Id="${id}" Type="${type}" Target="${target}"/>`)
+                .join("");
+            expect(await fs.readFile(relsPath, "utf-8")).toBe(relsXml.replace("</Relationships>", `${appended}</Relationships>`));
+        });
+    });
+
+    it("refuses a first comment when _rels/.rels's only officeDocument-typed element is in another namespace, changing nothing (#918)", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(
+                dir,
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                    `<Relationships xmlns="${PACKAGE_RELATIONSHIPS_NAMESPACE}">` +
+                    `<x:Relationship xmlns:x="urn:example:other" Id="rId1" Type="${OFFICE_DOCUMENT_RELATIONSHIP_TYPE}" Target="word/document.xml"/>` +
+                    `</Relationships>`,
+            );
+
+            const before = await readTree(dir);
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "x",
+                author: "TestAuthor",
+                initials: "TA",
+            });
+
+            expect(result.paraId).toBe("");
+            expect(result.message).toBe(`Error: ${path.join(dir, "_rels", ".rels")} names no officeDocument relationship`);
+            expect(await readTree(dir)).toEqual(before);
         });
     });
 
