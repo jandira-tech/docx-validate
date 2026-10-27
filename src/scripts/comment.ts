@@ -47,12 +47,20 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { Command } from "commander";
+import { parseContentTypes, resolveContentType } from "../lib/content-types";
 import { commanderExitCode, runCli } from "../lib/run-cli";
 import { nextSecureLongHexNumber } from "../lib/secure-id";
 import { readXmlPart, writeXmlPart, writeXmlText, type DecodedXmlPart } from "../lib/xml-part-io";
 import { parseXml, serializeXml, xmlDeclarationEncoding } from "../lib/xml-helpers";
 
 const TEMPLATE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "templates");
+
+/** The main document's relationships part, as `[Content_Types].xml` names it. */
+const RELS_PART_NAME = "/word/_rels/document.xml.rels";
+const RELATIONSHIPS_CONTENT_TYPE = "application/vnd.openxmlformats-package.relationships+xml";
+/** The relationships part addComment creates for a main document that has none (#895). */
+const EMPTY_RELATIONSHIPS_XML =
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>';
 
 const NS: Record<string, string> = {
     w: "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
@@ -244,10 +252,19 @@ function hasContentType(dom: Document, partName: string): boolean {
     return false;
 }
 
-async function ensureCommentRelationships(unpackedDir: string, decoded?: DecodedXmlPart): Promise<void> {
+/**
+ * Relate the comments parts from the main document's relationships part.
+ * Returns whether it created that part: a main document with no
+ * relationships part is legal, but the comments parts are reached only
+ * through relationships, so it creates one rather than leave them related
+ * to nothing (#895).
+ */
+async function ensureCommentRelationships(unpackedDir: string, decoded?: DecodedXmlPart): Promise<boolean> {
     const relsPath = path.join(unpackedDir, "word", "_rels", "document.xml.rels");
-    if (!(await pathExists(relsPath))) {
-        return;
+    const created = !(await pathExists(relsPath));
+    if (created) {
+        await fs.mkdir(path.dirname(relsPath), { recursive: true });
+        await fs.writeFile(relsPath, EMPTY_RELATIONSHIPS_XML, "utf-8");
     }
 
     const part = decoded ?? (await readXmlPart(relsPath));
@@ -259,7 +276,7 @@ async function ensureCommentRelationships(unpackedDir: string, decoded?: Decoded
     }
     const dom = parseXml(part.text);
     if (hasRelationship(dom, "comments.xml")) {
-        return;
+        return created;
     }
     const root = dom.documentElement;
     let nextRid = getNextRid(dom);
@@ -281,9 +298,15 @@ async function ensureCommentRelationships(unpackedDir: string, decoded?: Decoded
     }
 
     await writeXmlPart(relsPath, dom, part);
+    return created;
 }
 
-async function ensureCommentContentTypes(unpackedDir: string, decoded?: DecodedXmlPart): Promise<void> {
+/**
+ * Type the comments parts in `[Content_Types].xml`, and the main document's
+ * relationships part when `createdRels` says addComment created it and no
+ * Default or Override covers it yet (#895).
+ */
+async function ensureCommentContentTypes(unpackedDir: string, createdRels: boolean, decoded?: DecodedXmlPart): Promise<void> {
     const ctPath = path.join(unpackedDir, "[Content_Types].xml");
     if (!(await pathExists(ctPath))) {
         return;
@@ -297,17 +320,22 @@ async function ensureCommentContentTypes(unpackedDir: string, decoded?: DecodedX
         throw new Error(`${ctPath} is stored in an encoding this tool cannot decode`);
     }
     const dom = parseXml(part.text);
-    if (hasContentType(dom, "/word/comments.xml")) {
+    const overrides: Array<[string, string]> = [];
+    if (!hasContentType(dom, "/word/comments.xml")) {
+        overrides.push(
+            ["/word/comments.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml"],
+            ["/word/commentsExtended.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml"],
+            ["/word/commentsIds.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsIds+xml"],
+            ["/word/commentsExtensible.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtensible+xml"],
+        );
+    }
+    if (createdRels && resolveContentType(parseContentTypes(dom), RELS_PART_NAME) === null) {
+        overrides.push([RELS_PART_NAME, RELATIONSHIPS_CONTENT_TYPE]);
+    }
+    if (overrides.length === 0) {
         return;
     }
     const root = dom.documentElement;
-
-    const overrides: Array<[string, string]> = [
-        ["/word/comments.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml"],
-        ["/word/commentsExtended.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml"],
-        ["/word/commentsIds.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsIds+xml"],
-        ["/word/commentsExtensible.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtensible+xml"],
-    ];
 
     for (const [partName, contentType] of overrides) {
         const override = dom.createElement("Override");
@@ -341,8 +369,9 @@ export interface AddCommentResult {
  * Add a comment (or reply) to an unpacked DOCX.
  *
  * On success, returns the generated `paraId` and a human-readable status
- * message. On failure (missing `word/` directory, missing parent comment),
- * returns `paraId = ""` and a message starting with `Error:`.
+ * message. On failure (missing `word/` directory, missing parent comment,
+ * or, for a first comment, missing `[Content_Types].xml`), returns
+ * `paraId = ""` and a message starting with `Error:`.
  */
 export async function addComment(opts: AddCommentOptions): Promise<AddCommentResult> {
     const { unpackedDir, commentId, text, parent, author, initials, date } = opts;
@@ -363,6 +392,12 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
     const relsPath = path.join(word, "_rels", "document.xml.rels");
     const ctPath = path.join(unpackedDir, "[Content_Types].xml");
     const firstComment = !(await pathExists(comments));
+    if (firstComment && !(await pathExists(ctPath))) {
+        // A first comment's parts must be typed in the content-types stream.
+        // A package without one cannot be made valid here, so refuse before
+        // anything is written rather than report a success (#895).
+        return { paraId: "", message: `Error: ${ctPath} not found` };
+    }
 
     // Preflight: decode every existing part this edit may write, before any
     // file is created, copied or changed. `word/_rels/document.xml.rels` and
@@ -414,8 +449,8 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
 
     if (firstComment) {
         await fs.copyFile(path.join(TEMPLATE_DIR, "comments.xml"), comments);
-        await ensureCommentRelationships(unpackedDir, decoded.get(relsPath));
-        await ensureCommentContentTypes(unpackedDir, decoded.get(ctPath));
+        const createdRels = await ensureCommentRelationships(unpackedDir, decoded.get(relsPath));
+        await ensureCommentContentTypes(unpackedDir, createdRels, decoded.get(ctPath));
     }
     if (
         !(await appendXml(

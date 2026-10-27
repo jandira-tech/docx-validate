@@ -1891,6 +1891,15 @@ only after a write — a refused write never reached disk. A repair that
 edits several parts leaves all of them untouched when one cannot be decoded
 (#889).
 
+For a document's first comment, `addComment` relates the four comments parts
+from `word/_rels/document.xml.rels`. When the main document has no relationships
+part, it creates one, and types it in `[Content_Types].xml` when no Default or
+Override covers it; before, it reported success and left the comments parts
+related to nothing
+([#895](https://github.com/jandira-tech/docx-validate/issues/895)). A first
+comment on a tree with no `[Content_Types].xml` is refused with an error,
+changing nothing.
+
 ### Drive the CLIs programmatically
 
 If you want the CLI behaviour (commander parsing, exit codes, the same status

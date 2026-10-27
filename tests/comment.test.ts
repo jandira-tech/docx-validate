@@ -38,6 +38,8 @@ const RELS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
   <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
 </Relationships>`;
 
+const RELATIONSHIPS_TYPE = "application/vnd.openxmlformats-package.relationships+xml";
+
 const CT_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
   <Default Extension="xml" ContentType="application/xml"/>
@@ -230,6 +232,77 @@ describe("addComment", () => {
                 "utf16le",
             );
             expect(rels).toContain('Target="comments.xml"');
+        });
+    });
+
+    it.each([
+        [
+            "types .rels parts by Default",
+            CT_XML.replace(
+                '<Default Extension="xml"',
+                `<Default Extension="rels" ContentType="${RELATIONSHIPS_TYPE}"/>\n  <Default Extension="xml"`,
+            ),
+            false,
+        ],
+        ["types no .rels part", CT_XML, true],
+    ])(
+        "relates the comments parts through a relationships part it creates when the main document has none, and the content types %s (#895)",
+        async (_label, ctXml, needsOverride) => {
+            await withTempDir(async (dir) => {
+                await fs.mkdir(path.join(dir, "word"), { recursive: true });
+                await fs.writeFile(path.join(dir, "[Content_Types].xml"), ctXml, "utf-8");
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                const rels = parseXml(await fs.readFile(path.join(dir, "word", "_rels", "document.xml.rels"), "utf-8"));
+                const relationships = rels.getElementsByTagName("Relationship");
+                const targets: string[] = [];
+                for (let i = 0; i < relationships.length; i += 1) {
+                    const rel = relationships.item(i)!;
+                    targets.push(`${rel.getAttribute("Id")} ${rel.getAttribute("Target")}`);
+                }
+                expect(targets).toEqual([
+                    "rId1 comments.xml",
+                    "rId2 commentsExtended.xml",
+                    "rId3 commentsIds.xml",
+                    "rId4 commentsExtensible.xml",
+                ]);
+
+                // The new part must be typed, or the package gains an uncovered part.
+                const ctAfter = await fs.readFile(path.join(dir, "[Content_Types].xml"), "utf-8");
+                expect(ctAfter.includes(`<Override PartName="/word/_rels/document.xml.rels" ContentType="${RELATIONSHIPS_TYPE}"/>`)).toBe(
+                    needsOverride,
+                );
+                expect(ctAfter).toContain('PartName="/word/comments.xml"');
+            });
+        },
+    );
+
+    it("refuses a first comment when [Content_Types].xml is missing, changing nothing (#895)", async () => {
+        await withTempDir(async (dir) => {
+            await makeFixture(dir);
+            await fs.rm(path.join(dir, "[Content_Types].xml"));
+
+            const before = await readTree(dir);
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "x",
+                author: "TestAuthor",
+                initials: "TA",
+            });
+
+            expect(result.paraId).toBe("");
+            expect(result.message).toBe(`Error: ${path.join(dir, "[Content_Types].xml")} not found`);
+            expect(await readTree(dir)).toEqual(before);
         });
     });
 
