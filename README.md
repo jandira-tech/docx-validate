@@ -1949,14 +1949,23 @@ from the relationships part of the main document `_rels/.rels` names
 main document is found as the read model finds it — `\` read as `/`, the query
 and fragment dropped, the stored part matched under OPC equivalence — and the
 comments are wired through the stored part's own name:
-`word/_rels/document.xml.rels` when there is no `_rels/.rels` or it names
-`word/document.xml` under any OPC-equivalent spelling (`Word/Document.xml`),
-`word/_rels/main.xml.rels` for a main document stored as `word/main.xml`, and
-`main/_rels/doc.xml.rels` for one stored as `main/doc.xml`; before, a target
-with a query or fragment was refused, and so was an escaped spelling of any main
-document but `word/document.xml`
-([#919](https://github.com/jandira-tech/docx-validate/issues/919)). Each target
-is relative to the main document's folder (`../word/comments.xml` from `main/`).
+`word/_rels/document.xml.rels` when there is no `_rels/.rels` or it names a
+main document stored as exactly `word/document.xml`, `word/_rels/main.xml.rels`
+for a main document stored as `word/main.xml`, and `main/_rels/doc.xml.rels`
+for one stored as `main/doc.xml`; before, a target with a query or fragment
+was refused, and so was an escaped spelling of any main document but
+`word/document.xml`
+([#919](https://github.com/jandira-tech/docx-validate/issues/919)). The
+relationships part itself is the stored part equivalent to
+`<main folder>/_rels/<main basename>.rels` when one is stored, and that
+derived name when none is — found under OPC equivalence like the main
+document, whatever spelling either has; before, a main document stored as
+`word/Document.xml` or `word/docum%65nt.xml` was wired through
+`word/_rels/document.xml.rels`, a second, OPC-equivalent part beside its own
+sidecar, and a sidecar stored under another spelling got a second one beside
+it ([#946](https://github.com/jandira-tech/docx-validate/issues/946)). Each
+target is relative to the main document's folder (`../word/comments.xml` from
+`main/`).
 An internal `comments` relationship, of the Transitional or the Strict type,
 whose target names `word/comments.xml` under OPC part-name equivalence once
 resolved as the read model resolves it (`\` read as `/`, the query and fragment

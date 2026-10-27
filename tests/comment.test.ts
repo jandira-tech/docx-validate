@@ -2264,6 +2264,179 @@ describe("addComment", () => {
         },
     );
 
+    it.each([
+        ["word/Document.xml", "word/Document.xml?x=1", "Document.xml.rels"],
+        ["word/docum%65nt.xml", "word/docum%65nt.xml", "docum%65nt.xml.rels"],
+        ["word/main.xml", "word/main.xml", "m%61in.xml.rels"],
+        ["word/document.xml", "word/document.xml", "docum%65nt.xml.rels"],
+    ])(
+        "writes a first comment's relationships through the stored sidecar beside a main document stored as %s (#946)",
+        async (mainPart, relsTarget, relsName) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels(relsTarget), mainPart);
+                await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+                await fs.writeFile(path.join(dir, "word", "_rels", relsName), RELS_XML, "utf-8");
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // The relationships join the styles relationship in the
+                // stored sidecar, found under OPC equivalence like the main
+                // document itself, whatever spelling either has; before, a
+                // differently spelled word/document.xml was wired through
+                // word/_rels/document.xml.rels — a second, OPC-equivalent
+                // part beside its own sidecar — and a sidecar stored under
+                // another spelling got that conventional twin beside it.
+                expect(await fs.readdir(path.join(dir, "word", "_rels"))).toEqual([relsName]);
+                expect(relationshipRows(parseXml(await fs.readFile(path.join(dir, "word", "_rels", relsName), "utf-8")))).toEqual([
+                    ["rId1", STYLES_RELATIONSHIP_TYPE, "styles.xml", ""],
+                    ...firstCommentRelationships(2),
+                ]);
+            });
+        },
+    );
+
+    it.each(["docum%65nt.xml.rels", "Document.xml.rels"])(
+        "writes a first comment's relationships through the stored sidecar word/_rels/%s when the package has no _rels/.rels (#946)",
+        async (relsName) => {
+            await withTempDir(async (dir) => {
+                await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+                await fs.writeFile(path.join(dir, "word", "_rels", relsName), RELS_XML, "utf-8");
+                await fs.writeFile(path.join(dir, "[Content_Types].xml"), CT_XML, "utf-8");
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // With no package relationships the main document is the
+                // conventional word/document.xml, and its sidecar is still
+                // found under OPC equivalence. The case variant folds into
+                // the stored file on a case-insensitive file system, so only
+                // the escaped spelling fails there without the lookup.
+                expect(await fs.readdir(path.join(dir, "word", "_rels"))).toEqual([relsName]);
+                expect(relationshipRows(parseXml(await fs.readFile(path.join(dir, "word", "_rels", relsName), "utf-8")))).toEqual([
+                    ["rId1", STYLES_RELATIONSHIP_TYPE, "styles.xml", ""],
+                    ...firstCommentRelationships(2),
+                ]);
+            });
+        },
+    );
+
+    it.each([
+        ["word/docum%65nt.xml", "docum%65nt.xml.rels"],
+        ["word/Document.xml", "Document.xml.rels"],
+    ])(
+        "creates the sidecar under the main document's stored spelling when %s, a differently spelled word/document.xml, has none (#946)",
+        async (mainName, sidecar) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels(mainName), mainName);
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // The created part keeps the main document's own spelling, the
+                // one the read model's equivalence lookup finds again; before,
+                // the canonical comparison derived
+                // word/_rels/document.xml.rels from the conventional name. With
+                // no sidecar stored, nothing folds the case variant either, so
+                // both rows fail before #946 on any file system.
+                expect(await fs.readdir(path.join(dir, "word", "_rels"))).toEqual([sidecar]);
+                expect(relationshipRows(parseXml(await fs.readFile(path.join(dir, "word", "_rels", sidecar), "utf-8")))).toEqual(
+                    firstCommentRelationships(1),
+                );
+            });
+        },
+    );
+
+    it("keeps creating and typing word/_rels/document.xml.rels when the conventional main document has no sidecar (#895, #901, #946)", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml", { relsDefault: false });
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            expect(await fs.readdir(path.join(dir, "word", "_rels"))).toEqual(["document.xml.rels"]);
+            expect(relationshipRows(parseXml(await fs.readFile(path.join(dir, "word", "_rels", "document.xml.rels"), "utf-8")))).toEqual(
+                firstCommentRelationships(1),
+            );
+
+            // The created part is typed under its own name when nothing
+            // else covers it (#895, #901).
+            const dom = parseXml(await fs.readFile(path.join(dir, "[Content_Types].xml"), "utf-8"));
+            expect(overridesNaming(dom, "/word/_rels/document.xml.rels")).toEqual([["/word/_rels/document.xml.rels", RELATIONSHIPS_TYPE]]);
+        });
+    });
+
+    it(
+        "validates once the markers are added over a main document stored as word/Document.xml, with no OPC-equivalent part names (#946)",
+        { timeout: 30000 },
+        async () => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("word/Document.xml?x=1"), "word/Document.xml");
+                await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+                await fs.writeFile(path.join(dir, "word", "_rels", "Document.xml.rels"), RELS_XML, "utf-8");
+                await fs.writeFile(path.join(dir, "word", "styles.xml"), MINIMAL_PARTS["word/styles.xml"]!, "utf-8");
+                await fs.writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    contentTypes(RELATIONSHIPS_TYPE, [
+                        `<Override PartName="/word/Document.xml" ContentType="${MAIN_DOCUMENT_CONTENT_TYPE}"/>`,
+                        '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>',
+                    ]),
+                    "utf-8",
+                );
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // With the relationships in the stored sidecar, the packed
+                // tree holds one spelling of it; the conventional twin the
+                // old wiring created on a case-sensitive file system was a
+                // second, OPC-equivalent spelling of the same part.
+                await fs.writeFile(path.join(dir, "word", "Document.xml"), markedMainDocument(), "utf-8");
+                const file = path.join(dir, "case-main.docx");
+                await packTree(dir, file);
+                const validation = await validate(file, { profile: "word-valid" });
+                expect(validation.issues.filter((issue) => issue.code === "opc-equivalent-part-names")).toEqual([]);
+                expect(validation.issues.filter((issue) => issue.code === "comment-marker-missing")).toEqual([]);
+                expect(validation.valid).toBe(true);
+            });
+        },
+    );
+
     it("refuses a first comment when [Content_Types].xml is missing, changing nothing (#895)", async () => {
         await withTempDir(async (dir) => {
             await makeFixture(dir);
