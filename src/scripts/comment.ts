@@ -67,6 +67,11 @@ const OFFICE_DOCUMENT_RELATIONSHIP_TYPES: ReadonlySet<string> = new Set([
     "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
     "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument",
 ]);
+/** The relationship types that relate the comments part, in either conformance class. */
+const COMMENTS_PART_RELATIONSHIP_TYPES: ReadonlySet<string> = new Set([
+    "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments",
+    "http://purl.oclc.org/ooxml/officeDocument/relationships/comments",
+]);
 /** The conventional main document, whose relationships part is `word/_rels/document.xml.rels` (#906). */
 const CONVENTIONAL_MAIN_DOCUMENT = "word/document.xml";
 /** The comments parts, in the order their relationships are written. */
@@ -247,12 +252,26 @@ function getNextRid(dom: Document): number {
     return maxRid + 1;
 }
 
-/** Whether a relationship in `dom` targets `partName`, under OPC part-name equivalence (#906). */
-function hasRelationship(dom: Document, baseDir: string, partName: string): boolean {
+/**
+ * Whether a relationship in `dom` relates `partName`: an internal
+ * relationship of the comments type, Transitional or Strict, whose target
+ * resolves to `partName` under OPC part-name equivalence (#906). An External
+ * relationship, or one of another type, does not count; before, it stopped
+ * addComment adding the comments relationships, so it reported success with
+ * the comments parts related to nothing (#917).
+ */
+function relatesCommentsPart(dom: Document, baseDir: string, partName: string): boolean {
     const key = canonicalPartName(partName);
     const rels = dom.getElementsByTagName("Relationship");
     for (let i = 0; i < rels.length; i += 1) {
-        const resolved = resolveTargetFrom(baseDir, rels.item(i)!.getAttribute("Target") ?? "");
+        const rel = rels.item(i)!;
+        if (!COMMENTS_PART_RELATIONSHIP_TYPES.has(rel.getAttribute("Type") ?? "")) {
+            continue;
+        }
+        if (rel.getAttribute("TargetMode") === "External") {
+            continue;
+        }
+        const resolved = resolveTargetFrom(baseDir, rel.getAttribute("Target") ?? "");
         if (resolved !== undefined && canonicalPartName(resolved) === key) {
             return true;
         }
@@ -389,7 +408,7 @@ async function ensureCommentRelationships(
         throw new Error(`${relsPath} is stored in an encoding this tool cannot decode`);
     }
     const dom = parseXml(part.text);
-    if (hasRelationship(dom, baseDir, path.posix.join("word", "comments.xml"))) {
+    if (relatesCommentsPart(dom, baseDir, path.posix.join("word", "comments.xml"))) {
         return created;
     }
     const root = dom.documentElement;

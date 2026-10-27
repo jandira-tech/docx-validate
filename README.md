@@ -1930,11 +1930,16 @@ from the relationships part of the main document `_rels/.rels` names
 `word/document.xml` under any OPC-equivalent spelling (`Word/Document.xml`),
 `word/_rels/main.xml.rels` for a main document stored as `word/main.xml`, and
 `main/_rels/doc.xml.rels` for one stored as `main/doc.xml`. Each target is
-relative to the main document's folder (`../word/comments.xml` from `main/`). A
-relationship whose target resolves to `word/comments.xml` under OPC part-name
-equivalence, relative or from the package root, counts as already there. When
-the main document has no relationships part, `addComment` creates one; before,
-it reported success and left the comments parts related to nothing
+relative to the main document's folder (`../word/comments.xml` from `main/`). An
+internal `comments` relationship, of the Transitional or the Strict type, whose
+target resolves to `word/comments.xml` under OPC part-name equivalence, relative
+or from the package root, counts as already there; an External relationship, or
+one of another type, does not, and the four relationships are added beside it;
+before, it stopped them being added, so the comment's markers named a comment
+Word does not read
+([#917](https://github.com/jandira-tech/docx-validate/issues/917)). When the
+main document has no relationships part, `addComment` creates one; before, it
+reported success and left the comments parts related to nothing
 ([#895](https://github.com/jandira-tech/docx-validate/issues/895)). It types the
 created part in `[Content_Types].xml` as a relationships part under its own
 name: it adds an Override when nothing covers the part or a `.rels` Default
