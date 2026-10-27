@@ -2000,7 +2000,16 @@ namespace with the prefix the root uses, and an Override in another namespace is
 not read as typing a part; before, a prefixed stream got Overrides in no
 namespace, which left the comments parts typed `application/xml` and the created
 relationships part mistyped
-([#923](https://github.com/jandira-tech/docx-validate/issues/923)).
+([#923](https://github.com/jandira-tech/docx-validate/issues/923)). Each comment
+part is decided on its own, read as the checks read the stream: an Override
+already naming it under OPC equivalence (`/WORD/comments.xml`, an escaped
+spelling) counts, with whatever type, and is neither retyped nor answered with a
+second Override, so a stream that types only some of the four gains only the
+rest; before, the comparison was literal and one check on `/word/comments.xml`
+decided all four, so a stream naming the comments part under another spelling,
+or typing some of the other three but not it, got duplicate Overrides, and one
+typing it but not the others got no Override for them
+([#937](https://github.com/jandira-tech/docx-validate/issues/937)).
 
 A first comment is refused with an error naming the part, changing nothing, when
 the tree has no `[Content_Types].xml`, or when `_rels/.rels` cannot be decoded

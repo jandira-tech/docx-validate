@@ -93,6 +93,13 @@ const COMMENT_RELATIONSHIP_TYPES: readonly string[] = [
     "http://schemas.microsoft.com/office/2016/09/relationships/commentsIds",
     "http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible",
 ];
+/** The content type of each comments part, in `COMMENT_PART_NAMES` order. */
+const COMMENT_CONTENT_TYPES: readonly string[] = [
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsIds+xml",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtensible+xml",
+];
 
 const NS: Record<string, string> = {
     w: "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
@@ -480,21 +487,6 @@ async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring>
 }
 
 /**
- * Whether the content-types stream holds an Override for `partName`, read
- * in the content-types namespace so a stream that binds the namespace to a
- * prefix is seen, and one in another namespace is not (#923). The `PartName`
- * comparison stays exact: OPC equivalence there is a separate question.
- */
-function hasContentType(dom: Document, partName: string): boolean {
-    for (const override of getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Override")) {
-        if (override.getAttribute("PartName") === partName) {
-            return true;
-        }
-    }
-    return false;
-}
-
-/**
  * Relate the comments parts from the main document's relationships part,
  * stored at `relsPath` with each part's `target` relative to the main
  * document's folder `baseDir` (#906). New relationships are created in the
@@ -556,11 +548,16 @@ async function ensureCommentRelationships(
  * left alone and answered with an Override under the part's own name, and
  * an Override that names the part under OPC equivalence with another type
  * is rewritten in place, never answered with a second Override. A
- * relationships part that already existed is never retyped. The stream is
- * read and written in its namespace, whatever prefix it binds it to: an
- * Override is read only in the content-types namespace, and each new one is
- * created there carrying the prefix the root `Types` element uses, so an
- * unprefixed stream serializes exactly as before (#923).
+ * relationships part that already existed is never retyped. Each comment
+ * part is decided on its own, read as the checks read the stream: its
+ * Override is added only when no Override in the content-types namespace
+ * names the part under OPC equivalence, and one that already names it, with
+ * whatever type, is neither retyped nor answered with a second one; before,
+ * one literal check on `/word/comments.xml` decided all four (#937). The
+ * stream is read and written in its namespace, whatever prefix it binds it
+ * to: an Override is read only in the content-types namespace, and each new
+ * one is created there carrying the prefix the root `Types` element uses,
+ * so an unprefixed stream serializes exactly as before (#923).
  */
 async function ensureCommentContentTypes(
     unpackedDir: string,
@@ -581,21 +578,20 @@ async function ensureCommentContentTypes(
         throw new Error(`${ctPath} is stored in an encoding this tool cannot decode`);
     }
     const dom = parseXml(part.text);
+    const table = parseContentTypes(dom);
     const overrides: Array<[string, string]> = [];
-    if (!hasContentType(dom, "/word/comments.xml")) {
-        overrides.push(
-            ["/word/comments.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml"],
-            ["/word/commentsExtended.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml"],
-            ["/word/commentsIds.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsIds+xml"],
-            ["/word/commentsExtensible.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtensible+xml"],
-        );
+    for (let i = 0; i < COMMENT_PART_NAMES.length; i += 1) {
+        const partName = `/word/${COMMENT_PART_NAMES[i]!}`;
+        if (!table.overrides.has(canonicalPartName(partName))) {
+            overrides.push([partName, COMMENT_CONTENT_TYPES[i]!]);
+        }
     }
     // Coverage alone is not correctness: a `.rels` Default of another type
     // covered the created part with the wrong type while addComment reported
     // success (#901). The media type comparison ignores case and parameters.
     let mistypedRelsOverride = false;
     if (createdRels) {
-        const resolved = resolveContentType(parseContentTypes(dom), relsPartName);
+        const resolved = resolveContentType(table, relsPartName);
         if (
             resolved === null ||
             (resolved.source === "default" &&
