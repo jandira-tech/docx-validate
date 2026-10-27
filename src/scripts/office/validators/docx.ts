@@ -2861,38 +2861,143 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         return repairs;
     }
 
+    /**
+     * Repair every over-cap `w16cid:durableId` (`>= 0x7FFFFFFF`) and
+     * propagate the renumbering into the threaded-comments extension, as
+     * `repairParaId` does for paraIds.
+     *
+     * Two-pass implementation:
+     *
+     *  Pass 1: scan all XML files, build a `Map<oldId, newId>` for every
+     *          over-cap hex `w16cid:durableId` outside `numbering.xml`.
+     *          Each old value gets one fresh in-range value that collides
+     *          with no durableId in use — `w16cid` anywhere outside
+     *          `numbering.xml`, and `w16cex` in `commentsExtensible.xml` —
+     *          so two over-cap ids can't land on the same fresh value and
+     *          none can land on a value an extensible entry already names.
+     *  Pass 2: walk every XML file again and rewrite (a) every
+     *          `w16cid:durableId` named in the map, AND (b) every
+     *          `w16cex:durableId` in any part that names a remapped value.
+     *          Without (b), `commentsExtensible.xml`'s references still
+     *          name the old values and every extensible entry is left
+     *          orphaned — surfaced by `validateCommentThreading`'s
+     *          `comment-thread-durableid-orphan` check.
+     *
+     * `numbering.xml` is unchanged by the remap: its decimal durableIds
+     * are self-contained (no part references them), so each keeps its own
+     * per-element renumbering, independent of the preflight below.
+     */
     async repairDurableId(): Promise<number> {
         let repairs = 0;
+        const remap = new Map<string, string>();
+        const usedDurableIds = new Set<string>();
+        const overCapIds = new Set<string>();
+
+        // Pass 1: discover every over-cap hex durableId and every value
+        // already in use, so a fresh value collides with neither.
+        const parsedDoms = new Map<string, Document>();
         for (const xmlFile of this.xmlFiles) {
             try {
-                const content = decodeXmlBytes(await fs.readFile(xmlFile));
-                const dom = parseXml(content);
-                let modified = false;
-                // Counted only after the write: a part whose encoding
-                // `writeXmlPart` refuses is left untouched (#880).
-                let partRepairs = 0;
+                const dom = parseXmlBytes(await fs.readFile(xmlFile));
+                parsedDoms.set(xmlFile, dom);
                 const base = baseName(xmlFile);
                 const all = getElementsByTagNameAll(dom);
                 for (let i = 0; i < all.length; i += 1) {
                     const elem = all[i];
                     if (!elem) continue;
-                    const durableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
-                    if (!durableId) continue;
-
-                    let needsRepair: boolean;
-                    if (base === "numbering.xml") {
-                        const v = parseIdValue(durableId, 10);
-                        needsRepair = Number.isNaN(v) || v >= MAX_DURABLE_ID;
-                    } else {
-                        const v = parseIdValue(durableId, 16);
-                        needsRepair = Number.isNaN(v) || v >= MAX_DURABLE_ID;
+                    if (base !== "numbering.xml") {
+                        const durableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
+                        if (durableId) {
+                            usedDurableIds.add(durableId.toUpperCase());
+                            const v = parseIdValue(durableId, 16);
+                            if (Number.isNaN(v) || v >= MAX_DURABLE_ID) overCapIds.add(durableId);
+                        }
                     }
+                    if (base === "commentsExtensible.xml") {
+                        const durableId = elem.getAttributeNS(W16CEX_NAMESPACE, "durableId");
+                        if (durableId) usedDurableIds.add(durableId.toUpperCase());
+                    }
+                }
+            } catch {
+                // pass — corrupted XML files surface elsewhere.
+            }
+        }
 
-                    if (needsRepair) {
-                        const value = nextSecureLongHexNumber();
-                        const newId = base === "numbering.xml" ? String(value) : value.toString(16).toUpperCase().padStart(8, "0");
+        // One fresh in-range value per distinct over-cap id; the same old
+        // value always maps to the same new value.
+        for (const oldId of overCapIds) {
+            for (;;) {
+                const newId = nextSecureLongHexNumber().toString(16).toUpperCase().padStart(8, "0");
+                if (!usedDurableIds.has(newId)) {
+                    usedDurableIds.add(newId);
+                    remap.set(oldId, newId);
+                    break;
+                }
+            }
+        }
+
+        // Preflight: the same rename must land in every part that
+        // references it, so decode every part the hex rewrite would write
+        // before mutating any DOM. A part the rewrite would leave alone
+        // does not block it; one it would write but cannot decode refuses
+        // the whole hex rewrite — the numbering renumbering below still
+        // runs — rather than splitting references that agreed before it
+        // ran (#889).
+        let hexRefused = false;
+        if (remap.size > 0) {
+            for (const [xmlFile, dom] of parsedDoms) {
+                const base = baseName(xmlFile);
+                let wouldWrite = false;
+                const all = getElementsByTagNameAll(dom);
+                for (let i = 0; i < all.length; i += 1) {
+                    const elem = all[i];
+                    if (!elem) continue;
+                    const w16cid = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
+                    if (w16cid && base !== "numbering.xml" && remap.has(w16cid)) wouldWrite = true;
+                    const w16cex = elem.getAttributeNS(W16CEX_NAMESPACE, "durableId");
+                    if (w16cex && remap.has(w16cex)) wouldWrite = true;
+                    if (wouldWrite) break;
+                }
+                if (!wouldWrite) continue;
+                if (decodeXmlPart(await fs.readFile(xmlFile)) === undefined) {
+                    hexRefused = true;
+                    break;
+                }
+            }
+        }
+
+        // Pass 2: rewrite all references; numbering.xml keeps its own
+        // self-contained decimal renumbering.
+        for (const [xmlFile, dom] of parsedDoms) {
+            try {
+                const base = baseName(xmlFile);
+                let modified = false;
+                // Counted only after the write: a part whose encoding
+                // `writeXmlPart` refuses is left untouched (#880).
+                let partRepairs = 0;
+                const all = getElementsByTagNameAll(dom);
+                for (let i = 0; i < all.length; i += 1) {
+                    const elem = all[i];
+                    if (!elem) continue;
+                    const cidDurableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
+                    if (cidDurableId && base === "numbering.xml") {
+                        const v = parseIdValue(cidDurableId, 10);
+                        if (Number.isNaN(v) || v >= MAX_DURABLE_ID) {
+                            // setAttributeNS keeps the prefix binding intact.
+                            elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", String(nextSecureLongHexNumber()));
+                            partRepairs += 1;
+                            modified = true;
+                        }
+                    } else if (cidDurableId && !hexRefused && remap.has(cidDurableId)) {
                         // setAttributeNS keeps the prefix binding intact.
-                        elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", newId);
+                        elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", remap.get(cidDurableId)!);
+                        partRepairs += 1;
+                        modified = true;
+                    }
+                    const cexDurableId = elem.getAttributeNS(W16CEX_NAMESPACE, "durableId");
+                    if (cexDurableId && !hexRefused && remap.has(cexDurableId)) {
+                        // setAttributeNS keeps the prefix binding intact.
+                        elem.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", remap.get(cexDurableId)!);
                         partRepairs += 1;
                         modified = true;
                     }
