@@ -209,6 +209,30 @@ const MAIN_CONTENT_FOLDERS = new Set(["word", "ppt", "xl"]);
  */
 const DIAGRAM_PART_NAME = /^(?:data|layout|quickstyle|colors)\d*\.xml$/;
 
+/**
+ * The PresentationML parts one folder below `ppt/`, keyed by their folder's
+ * ASCII lower case: each file-name pattern names the parts whose root element
+ * pml.xsd declares there — `p:sld` (slides), `p:sldLayout` (slideLayouts),
+ * `p:sldMaster` (slideMasters), `p:notes` (notesSlides), `p:notesMaster`
+ * (notesMasters), `p:handoutMaster` (handoutMasters), the legacy `p:cmLst`
+ * comments (comments) and `p:tagLst` tags (tags). PowerPoint's modern
+ * comments (`ppt/comments/modernComment_*.xml`, root in the Microsoft
+ * 2018/8 namespace pml.xsd does not declare) match no pattern, so they stay
+ * unmapped and draw the #628 audit (#864). A map, not an object literal: the
+ * folder name comes from the package, and `constructor` or `__proto__` must
+ * name no entry.
+ */
+const PPT_PART_NAME_BY_FOLDER: ReadonlyMap<string, RegExp> = new Map([
+    ["slides", /^slide\d*\.xml$/],
+    ["slidelayouts", /^slidelayout\d*\.xml$/],
+    ["slidemasters", /^slidemaster\d*\.xml$/],
+    ["notesslides", /^notesslide\d*\.xml$/],
+    ["notesmasters", /^notesmaster\d*\.xml$/],
+    ["handoutmasters", /^handoutmaster\d*\.xml$/],
+    ["comments", /^comment\d*\.xml$/],
+    ["tags", /^tag\d*\.xml$/],
+]);
+
 const asciiLowerCase = (text: string): string => text.replace(/[A-Z]/g, (letter) => letter.toLowerCase());
 
 /** {@link SCHEMA_MAPPINGS} keys by their ASCII lower case, for part-name lookups (#377). */
@@ -2159,6 +2183,14 @@ export class BaseSchemaValidator {
         }
         if (parentName === "diagrams" && MAIN_CONTENT_FOLDERS.has(grandparentName) && DIAGRAM_PART_NAME.test(base)) {
             return "diagram";
+        }
+        // One folder below `ppt/`: the slide, layout, master, notes, comments
+        // and tags parts pml.xsd declares, matched by folder and file name so
+        // a sibling pml.xsd never declares (the modern comments) stays
+        // unmapped. The folder rule above reached only `ppt/` itself, so
+        // these parts were never walked (#864).
+        if (grandparentName === "ppt" && PPT_PART_NAME_BY_FOLDER.get(parentName)?.test(base)) {
+            return "ppt";
         }
         return null;
     }
