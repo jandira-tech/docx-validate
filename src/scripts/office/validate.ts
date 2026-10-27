@@ -619,9 +619,61 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
             assertPlaceableNames(stored);
         } catch (err) {
             // The package still is not staged, but a refused name no longer
-            // hides the rest of it: opc-item-name-refused named each refused
-            // entry above, and the checks that read the archive directly
-            // judge every other entry, as after a failed extraction (#629).
+            // hides the rest of it (#629): `opc-item-name-refused` named each
+            // refused entry above, and the retained entries are judged as
+            // fully as a clean package's — the archive without the refused
+            // central records is staged and validated like a clean packed
+            // file, under the original archive's envelope findings, which are
+            // reported once here and never recomputed on the subset.
+            const rest = archiveWithoutEntries(buf, (record) => !record.directory && entryNameRefusal(record.name) !== undefined);
+            // The run of the retained entries, when the subset they form can
+            // be staged; `undefined` leaves the failure to the fallback below.
+            let staged: ValidateRunResult | undefined;
+            if (rest !== undefined && rest !== buf) {
+                let subset: JSZip | undefined;
+                try {
+                    const loaded = await loadCentralNamedArchive(rest);
+                    // The remaining names must place their parts too: a
+                    // portable collision among them refuses the subset as well
+                    // (#413), and no deeper view of the package exists.
+                    assertPlaceableNames(
+                        archiveStoredNames(
+                            rest,
+                            Object.values(loaded.files).filter((entry) => !entry.dir),
+                        ),
+                    );
+                    subset = loaded;
+                } catch {
+                    // The subset does not load: leave it to the staging
+                    // failure below, as after a failed extraction (#454).
+                }
+                if (subset !== undefined) {
+                    if (deadline?.reached("staging the package and every later step")) return finish(stopped(named));
+                    // The packed-repair disclosure rule of the clean packed
+                    // path (#649, #666): a repair ran only when the staging
+                    // reached it.
+                    let repairRan = autoRepair && format !== "xlsx";
+                    const run = await runStaged(subset, named, undefined, () => {
+                        repairRan = false;
+                        return archiveFindings(rest, format, profile, registry, deadline);
+                    });
+                    // The subset is the deepest view the package offers, but the
+                    // input still is not staged: the same failure `stagingFailed`
+                    // reports, naming the first refused name (#629), and the run
+                    // never passes on a package it could not stage.
+                    const unstaged = {
+                        ...run,
+                        valid: false,
+                        issues: [...run.issues, packageExtractFailedIssue(target, err instanceof Error ? err.message : String(err))],
+                    };
+                    staged = repairRan ? { ...unstaged, issues: [...unstaged.issues, PACKED_REPAIR_DISCLOSURE] } : unstaged;
+                }
+            }
+            if (staged !== undefined) return finish(staged);
+            // The subset cannot be built (an envelope the rewrite cannot
+            // honor), does not load, or is refused for staging itself (#413):
+            // the failure keeps what the archive still offers, as after a
+            // failed extraction (#454).
             return finish(stagingFailed(named, err, await placeableEntryFindings(buf, format, profile, registry, deadline)));
         }
         // The extraction can fail after the archive opened: the host
@@ -975,11 +1027,12 @@ async function archiveFindings(
 /**
  * The findings {@link archiveFindings} reads from the archive's other entries
  * when a stored item name places no part (#629). The refused records are
- * left out of the directory, so an entry a refused `..` name hid in JSZip's
- * view is judged by its own bytes. An envelope the rewrite cannot honor adds
- * nothing, and an archive whose remaining view is refused too — a portable
- * name collision — adds nothing either (#413). The bytes come back as given
- * when no name was refused, so they add nothing either.
+ * left out of the directory — a ZIP64 tail included, when it can move — so
+ * an entry a refused `..` name hid in JSZip's view is judged by its own
+ * bytes. An envelope the rewrite cannot honor adds nothing, and an archive
+ * whose remaining view is refused too — a portable name collision — adds
+ * nothing either (#413). The bytes come back as given when no name was
+ * refused, so they add nothing either.
  */
 async function placeableEntryFindings(
     bytes: Uint8Array,

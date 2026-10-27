@@ -43,10 +43,14 @@ const CENTRAL_EXTRA_LENGTH_OFFSET = 30;
 const ZIP64_EOCD_SIGNATURE = 0x06064b50;
 const ZIP64_EOCD_FIXED_LENGTH = 56;
 const ZIP64_EOCD_SIZE_OFFSET = 4;
+const ZIP64_EOCD_DISK_ENTRIES_OFFSET = 24;
+const ZIP64_EOCD_TOTAL_ENTRIES_OFFSET = 32;
 const ZIP64_EOCD_CD_SIZE_OFFSET = 40;
 const ZIP64_EOCD_CD_OFFSET_OFFSET = 48;
 const ZIP64_LOCATOR_RECORD_OFFSET_OFFSET = 8;
 const CENTRAL_LOCAL_OFFSET_OFFSET = 42;
+/** A saturated 16-bit field, as a ZIP64 archive stores it in the 32-bit EOCD. */
+const ZIP64_COUNT = 0xffff;
 
 /** One central record's local header and compressed stream, located. */
 type LocalRecord = {
@@ -370,15 +374,33 @@ export const centralKeyedArchive = (bytes: Uint8Array): Uint8Array => {
  * directory size follow them; its directory offset is unchanged, so the bytes
  * before the archive keep rebasing every offset as before (#467).
  *
+ * A ZIP64 archive is rewritten too, whenever the tail `centralKeyedArchive`
+ * moves (#479): the record and the locator follow the directory it shrinks —
+ * the bytes between the walked directory and the record stay verbatim, as
+ * `centralKeyedArchive` keeps them — the record's entry counts (both) and
+ * directory size follow the kept records, its directory offset is unchanged,
+ * and the locator's record offset names the record's new absolute position
+ * (#521). The 32-bit EOCD's counts and directory size are rewritten only
+ * where they are not saturated; a saturated field defers to the ZIP64 record,
+ * whose readers use it, and stays as stored.
+ *
  * The bytes come back as given when no record matches, and `undefined` when
  * the rewrite cannot honor the envelope: a directory
- * `readCentralDirectoryView` cannot parse, a ZIP64 directory, or bytes
- * between the walked directory and the EOCD, which moving the EOCD would drop
- * (#468, #478).
+ * `readCentralDirectoryView` cannot parse, a ZIP64 tail it cannot move (a
+ * record with extensible data or short of its fixed 44 bytes, or one not
+ * adjacent to its locator), or — outside ZIP64 — bytes between the walked
+ * directory and the EOCD, which moving the EOCD up would drop (#468, #478).
  */
 export const archiveWithoutEntries = (bytes: Uint8Array, drop: (record: ZipCentralRecord) => boolean): Uint8Array | undefined => {
     const view = readCentralDirectoryView(bytes);
-    if (view === undefined || view.zip64 || view.cdEnd !== view.eocdOffset) {
+    if (view === undefined) {
+        return undefined;
+    }
+    // A ZIP64 package moves its tail with the directory, as `centralKeyedArchive`
+    // moves it (#479); the non-ZIP64 bytes between the walked directory and the
+    // EOCD stay refused, which moving the EOCD up would drop (#468).
+    const zip64 = view.zip64 ? zip64Tail(bytes, view) : undefined;
+    if ((view.zip64 && zip64 === undefined) || (!view.zip64 && view.cdEnd !== view.eocdOffset)) {
         return undefined;
     }
     const kept = view.records.filter((record) => !drop(record));
@@ -395,15 +417,51 @@ export const archiveWithoutEntries = (bytes: Uint8Array, drop: (record: ZipCentr
                 record.commentBytes.length,
         ),
     );
+    // What the moved tail counts as the directory: the kept records, plus the
+    // bytes a ZIP64 record's declared size spans past them (#478).
+    const between = zip64 === undefined ? new Uint8Array() : bytes.subarray(view.cdEnd, zip64.record);
+    const directorySize = records.reduce((size, record) => size + record.length, 0) + between.length;
     const eocd = Buffer.from(bytes.subarray(view.eocdOffset, view.eocdOffset + EOCD_FIXED_LENGTH));
-    eocd.writeUInt16LE(kept.length, EOCD_DISK_ENTRIES_OFFSET);
-    eocd.writeUInt16LE(kept.length, EOCD_TOTAL_ENTRIES_OFFSET);
-    eocd.writeUInt32LE(
-        records.reduce((size, record) => size + record.length, 0),
-        EOCD_CD_SIZE_OFFSET,
-    );
-    const parts = [bytes.subarray(0, view.cdOffset), ...records, eocd, bytes.subarray(view.eocdOffset + EOCD_FIXED_LENGTH)];
-    return Buffer.concat(parts.map((part) => Buffer.from(part.buffer, part.byteOffset, part.byteLength)));
+    if (zip64 === undefined) {
+        eocd.writeUInt16LE(kept.length, EOCD_DISK_ENTRIES_OFFSET);
+        eocd.writeUInt16LE(kept.length, EOCD_TOTAL_ENTRIES_OFFSET);
+        eocd.writeUInt32LE(directorySize, EOCD_CD_SIZE_OFFSET);
+        const parts = [bytes.subarray(0, view.cdOffset), ...records, eocd, bytes.subarray(view.eocdOffset + EOCD_FIXED_LENGTH)];
+        return Buffer.concat(parts.map((part) => Buffer.from(part.buffer, part.byteOffset, part.byteLength)));
+    }
+    // The ZIP64 record keeps its directory offset: the prefix is verbatim and
+    // the directory does not move, so the stored (rebased) value stays true.
+    const tailRecord = Buffer.from(bytes.subarray(zip64.record, zip64.record + ZIP64_EOCD_FIXED_LENGTH));
+    tailRecord.writeBigUInt64LE(BigInt(kept.length), ZIP64_EOCD_DISK_ENTRIES_OFFSET);
+    tailRecord.writeBigUInt64LE(BigInt(kept.length), ZIP64_EOCD_TOTAL_ENTRIES_OFFSET);
+    tailRecord.writeBigUInt64LE(BigInt(directorySize), ZIP64_EOCD_CD_SIZE_OFFSET);
+    // The locator's record offset names the record's absolute position in the
+    // buffer, not a rebased one: JSZip tests it before `reader.zero` is
+    // assigned, so a relative value would miss (#521).
+    const recordOffset = view.cdOffset + directorySize;
+    const tailLocator = Buffer.from(bytes.subarray(zip64.locator, zip64.locator + ZIP64_LOCATOR_LENGTH));
+    tailLocator.writeBigUInt64LE(BigInt(recordOffset), ZIP64_LOCATOR_RECORD_OFFSET_OFFSET);
+    // A saturated field defers to the ZIP64 record, whose readers use it; an
+    // unsaturated one keeps naming the subset's own counts and size.
+    if (readU16(eocd, EOCD_DISK_ENTRIES_OFFSET) !== ZIP64_COUNT) {
+        eocd.writeUInt16LE(kept.length, EOCD_DISK_ENTRIES_OFFSET);
+    }
+    if (readU16(eocd, EOCD_TOTAL_ENTRIES_OFFSET) !== ZIP64_COUNT) {
+        eocd.writeUInt16LE(kept.length, EOCD_TOTAL_ENTRIES_OFFSET);
+    }
+    if (readU32(eocd, EOCD_CD_SIZE_OFFSET) !== ZIP64_OFFSET) {
+        eocd.writeUInt32LE(directorySize, EOCD_CD_SIZE_OFFSET);
+    }
+    const tailParts = [
+        bytes.subarray(0, view.cdOffset),
+        ...records,
+        between,
+        tailRecord,
+        tailLocator,
+        eocd,
+        bytes.subarray(view.eocdOffset + EOCD_FIXED_LENGTH),
+    ];
+    return Buffer.concat(tailParts.map((part) => Buffer.from(part.buffer, part.byteOffset, part.byteLength)));
 };
 
 /**

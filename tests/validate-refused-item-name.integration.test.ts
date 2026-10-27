@@ -9,7 +9,7 @@ import { withTempDir } from "../src/lib/run-cli";
 import type { Profile, ValidationResult } from "../src/lib/types";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
 import { validate, type ValidateRunResult } from "../src/scripts/office/validate";
-import { MINIMAL_PARTS } from "./support/minimal-docx";
+import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { MINIMAL_PPTX_PARTS } from "./support/minimal-pptx";
 import { buildRawZip, type RawZipEntry } from "./support/raw-zip";
 
@@ -22,13 +22,35 @@ import { buildRawZip, type RawZipEntry } from "./support/raw-zip";
  */
 const ID = "opc-item-name-refused";
 const HOSTILE = "word/a/../b.xml";
+const ABS_HOSTILE = "/abs/hostile.xml";
 const MALFORMED_DOCUMENT = MINIMAL_PARTS["word/document.xml"]!.slice(0, -20);
+const SCHEMA_DEFECT_DOCUMENT = MINIMAL_PARTS["word/document.xml"]!.replace("<w:sectPr>", "<w:bogusDefect/><w:sectPr>");
+const PARAID_DOCUMENT = MINIMAL_PARTS["word/document.xml"]!.replace(' w14:paraId="00000001" w14:textId="00000001"', "");
 const PROFILES: readonly Profile[] = ["word-valid", "strict", "lenient"];
 
 const entries = (parts: Readonly<Record<string, string>>): RawZipEntry[] =>
     Object.entries(parts).map(([name, content]) => ({ name, content }));
 const malformedDocx = (...extra: RawZipEntry[]): Buffer =>
     buildRawZip([...entries({ ...MINIMAL_PARTS, "word/document.xml": MALFORMED_DOCUMENT }), ...extra]);
+/** The minimal package with `document` as its main document, plus one refused stored name. */
+const hostileDocx = (document: string, options: { zip64?: boolean } = {}): Buffer =>
+    buildRawZip(
+        [...entries({ ...MINIMAL_PARTS, "word/document.xml": document }), { name: ABS_HOSTILE, content: "<x/>" }],
+        options.zip64 === true ? { zip64: true } : {},
+    );
+/**
+ * Put junk between the ZIP64 end record and its locator, a tail no rewrite can
+ * move (#479). The record's declared directory size counts the junk, so both
+ * readers keep finding the EOCD where the record says it is.
+ */
+const zip64RecordOffItsLocator = (bytes: Buffer, junk = 5): Buffer => {
+    const eocd = bytes.length - 22;
+    const locator = eocd - 20;
+    const record = locator - 56;
+    const out = Buffer.concat([bytes.subarray(0, locator), Buffer.alloc(junk, 0x5a), bytes.subarray(locator)]);
+    out.writeBigUInt64LE(out.readBigUInt64LE(record + 40) + BigInt(junk), record + 40);
+    return out;
+};
 const errors = (result: ValidationResult): string[] =>
     result.issues.filter((issue) => issue.severity === "error").map((issue) => `${issue.code}@${issue.path ?? ""}`);
 /** The distinct error findings, in order: one malformed part can draw several parser messages. */
@@ -50,7 +72,11 @@ describe("a refused item name no longer hides the rest of the package (#629)", {
         );
         expect(result.issues.find((issue) => issue.code === "package-extract-failed")?.message).toContain(HOSTILE);
         expect(result.metadata?.executedChecks).toEqual(expect.arrayContaining([ID, "xml-syntax"]));
-        expect(result.xsdWalk.started).toBe(false);
+        // The retained entries are staged and validated like a clean package's
+        // (#629): strict walks the well-formed parts around the malformed one,
+        // word-valid compiles no schema, and lenient stops at the malformed
+        // part before the walk starts.
+        expect(result.xsdWalk.started).toBe(profile === "strict");
     });
 
     it("reports every refused name, while the staging failure names the first", async () => {
@@ -82,6 +108,40 @@ describe("a refused item name no longer hides the rest of the package (#629)", {
         expect(errors(hidesWellFormed)).not.toContain("xml-syntax@word/document.xml");
     });
 
+    it.each(["lenient", "strict"] as const)("%s: the retained entries keep their schema walk", async (profile) => {
+        const twin = await run(hostileDocx(SCHEMA_DEFECT_DOCUMENT), { profile });
+        expect(twin.valid).toBe(false);
+        expect(errors(twin)).toEqual(
+            expect.arrayContaining([
+                `${ID}@${ABS_HOSTILE}`,
+                "package-extract-failed@",
+                "xsd-error@word/document.xml",
+                ...(profile === "lenient" ? ["xsd-summary@word/document.xml"] : []),
+            ]),
+        );
+        expect(twin.xsdWalk.started).toBe(true);
+        expect(twin.xsdWalk.parts).toContain("word/document.xml");
+        // The walk judges the retained parts as the clean package of the same content: same findings, message for message.
+        const control = await run(await buildDocx({ ...MINIMAL_PARTS, "word/document.xml": SCHEMA_DEFECT_DOCUMENT }), { profile });
+        const xsdErrors = (result: ValidationResult): string[] =>
+            result.issues.filter((issue) => issue.code === "xsd-error").map((issue) => issue.message);
+        expect(xsdErrors(twin)).toEqual(xsdErrors(control));
+    });
+
+    it("word-valid: reports a defect only the format validator's own rules find", async () => {
+        // No registered check reports a missing w14:paraId, so only the staged
+        // run of the retained entries can surface the DOCX validator's rule.
+        const twin = await run(hostileDocx(PARAID_DOCUMENT));
+        expect(twin.valid).toBe(false);
+        expect(twin.issues).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ code: "paraid-missing-element", path: "word/document.xml" }),
+                expect.objectContaining({ code: ID, path: ABS_HOSTILE, severity: "error" }),
+                expect.objectContaining({ code: "package-extract-failed" }),
+            ]),
+        );
+    });
+
     it("a partial run reports no error the full run does not (#381)", async () => {
         const bytes = malformedDocx({ name: HOSTILE, content: "<x/>" });
         for (const profile of ["word-valid", "lenient"] as const) {
@@ -91,6 +151,42 @@ describe("a refused item name no longer hides the rest of the package (#629)", {
                 expect(full, `${profile} ${JSON.stringify(selection)}`).toEqual(expect.arrayContaining(errors(partial)));
                 if (selection.checks === undefined || selection.checks.includes(ID)) {
                     expect(errors(partial), `${profile} ${JSON.stringify(selection)}`).toContain(`${ID}@${HOSTILE}`);
+                }
+            }
+        }
+    });
+
+    it("a partial run of every hostile specimen reports no error the full run does not (#381)", async () => {
+        const specimens: readonly {
+            readonly name: string;
+            readonly bytes: () => Buffer;
+            /** An error the full run must report, so the subset claim is load-bearing. */
+            readonly anchors: Readonly<Record<"word-valid" | "lenient", readonly string[]>>;
+        }[] = [
+            {
+                name: "a schema defect only the schema walk finds",
+                bytes: () => hostileDocx(SCHEMA_DEFECT_DOCUMENT),
+                anchors: { "word-valid": ["word-unknown-element@word/document.xml"], lenient: ["xsd-error@word/document.xml"] },
+            },
+            {
+                name: "a defect only the format validator finds",
+                bytes: () => hostileDocx(PARAID_DOCUMENT),
+                anchors: { "word-valid": [], lenient: [] },
+            },
+            {
+                name: "a malformed main in a ZIP64 envelope",
+                bytes: () => hostileDocx(MALFORMED_DOCUMENT, { zip64: true }),
+                anchors: { "word-valid": ["xml-syntax@word/document.xml"], lenient: ["xml-syntax@word/document.xml"] },
+            },
+        ];
+        for (const { name, bytes, anchors } of specimens) {
+            for (const profile of ["word-valid", "lenient"] as const) {
+                const tag = `${name} ${profile}`;
+                const full = errorPairs(await run(bytes(), { profile }));
+                expect(full, tag).toEqual(expect.arrayContaining([`${ID}@${ABS_HOSTILE}`, "package-extract-failed@", ...anchors[profile]]));
+                for (const selection of [{ quick: true }, { checks: ["xml-syntax"] }, { checks: [ID] }]) {
+                    const partial = errorPairs(await run(bytes(), { profile, ...selection }));
+                    expect(full, `${tag} ${JSON.stringify(selection)}`).toEqual(expect.arrayContaining(partial));
                 }
             }
         }
@@ -109,13 +205,17 @@ describe("a refused item name no longer hides the rest of the package (#629)", {
         expect(errors(result)).not.toContain("xml-syntax@word/document.xml");
     });
 
-    it("runs no fallback for an envelope the subset rewrite cannot honor (ZIP64)", async () => {
-        const result = await run(
-            buildRawZip([...entries({ ...MINIMAL_PARTS, "word/document.xml": MALFORMED_DOCUMENT }), { name: HOSTILE, content: "<x/>" }], {
-                zip64: true,
-            }),
+    it.each(PROFILES)("judges the retained entries of a ZIP64 envelope (%s)", async (profile) => {
+        const result = await run(hostileDocx(MALFORMED_DOCUMENT, { zip64: true }), { profile });
+        expect(result.valid).toBe(false);
+        expect(errors(result)).toEqual(
+            expect.arrayContaining([`${ID}@${ABS_HOSTILE}`, "package-extract-failed@", "xml-syntax@word/document.xml"]),
         );
-        expect(errors(result)).toEqual(expect.arrayContaining([`${ID}@${HOSTILE}`, "package-extract-failed@"]));
+    });
+
+    it("runs no fallback for a ZIP64 tail the subset rewrite cannot move", async () => {
+        const result = await run(zip64RecordOffItsLocator(hostileDocx(MALFORMED_DOCUMENT, { zip64: true })));
+        expect(errors(result)).toEqual(expect.arrayContaining([`${ID}@${ABS_HOSTILE}`, "package-extract-failed@"]));
         expect(errors(result)).not.toContain("xml-syntax@word/document.xml");
     });
 
