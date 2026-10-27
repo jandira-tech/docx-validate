@@ -74,14 +74,8 @@ import {
     unobservedReferenceAttributeValues,
     wordRelationshipReferenceIds,
 } from "./word-blocking";
-import {
-    decodeXmlBytes,
-    getElementsByTagNameAll,
-    getElementsByTagNameNSAll,
-    parseXml,
-    parseXmlBytes,
-    serializeXml,
-} from "../../../lib/xml-helpers";
+import { decodeXmlBytes, getElementsByTagNameAll, getElementsByTagNameNSAll, parseXml, parseXmlBytes } from "../../../lib/xml-helpers";
+import { writeXmlPart } from "../../../lib/xml-part-io";
 import {
     BaseSchemaValidator,
     collectDeclaredPrefixes,
@@ -2254,7 +2248,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
 
             if (modified) {
-                await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+                await writeXmlPart(xmlFile, dom);
             }
         }
         return repairs;
@@ -2359,7 +2353,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
 
             if (modified) {
-                await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+                await writeXmlPart(xmlFile, dom);
             }
         }
         return repairs;
@@ -2389,7 +2383,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         }
         if (repairs > 0) {
-            await fs.writeFile(appXml, serializeXml(dom, "UTF-8"), "utf-8");
+            await writeXmlPart(appXml, dom);
         }
         return repairs;
     }
@@ -2421,7 +2415,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         }
         if (repairs > 0) {
-            await fs.writeFile(coreXml, serializeXml(dom, "UTF-8"), "utf-8");
+            await writeXmlPart(coreXml, dom);
         }
         return repairs;
     }
@@ -2491,7 +2485,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
 
         if (idsModified) {
-            await fs.writeFile(commentsIdsXml, serializeXml(idsDom, "UTF-8"), "utf-8");
+            await writeXmlPart(commentsIdsXml, idsDom);
         }
 
         if (!commentsExtensibleXml || durableIds.size !== 1) return repairs;
@@ -2505,7 +2499,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             const currentDurableId = entry?.getAttributeNS(W16CEX_NAMESPACE, "durableId");
             if (entry && currentDurableId && currentDurableId !== targetDurableId && !durableIds.has(currentDurableId)) {
                 entry.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", targetDurableId);
-                await fs.writeFile(commentsExtensibleXml, serializeXml(cexDom, "UTF-8"), "utf-8");
+                await writeXmlPart(commentsExtensibleXml, cexDom);
                 repairs += 1;
             }
         } catch {
@@ -2619,7 +2613,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
 
         if (repairs > 0) {
-            await fs.writeFile(stylesPath, serializeXml(stylesDom, "UTF-8"), "utf-8");
+            await writeXmlPart(stylesPath, stylesDom);
         }
         return repairs;
     }
@@ -2722,7 +2716,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     // list it in mc:Ignorable, as Word writes it, so the repair
                     // leaves no non-ignorable extension behind (#653).
                     if (dom.documentElement) declareIgnorableW14(dom.documentElement);
-                    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+                    await writeXmlPart(xmlFile, dom);
                 }
             } catch {
                 // pass
@@ -2805,7 +2799,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 }
 
                 if (perFileMutations > 0) {
-                    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+                    await writeXmlPart(xmlFile, dom);
                 }
             } catch {
                 // swallow — corrupted XML files surface elsewhere
@@ -2848,7 +2842,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     }
                 }
                 if (modified) {
-                    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+                    await writeXmlPart(xmlFile, dom);
                 }
             } catch {
                 // swallow — mirrors Python bare except
@@ -3014,7 +3008,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     }
                 }
                 if (modified) {
-                    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+                    await writeXmlPart(xmlFile, dom);
                 }
             } catch {
                 // swallow — mirrors Python bare except in repairDurableId

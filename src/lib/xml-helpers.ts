@@ -59,29 +59,66 @@ export const parseXml = (text: string): Document => {
 };
 
 /**
- * Byte-level decoding for the DOM layer. `@xmldom` takes a JavaScript string,
- * so a part stored as UTF-16 must be decoded from its ORIGINAL BYTES first —
- * reading it as UTF-8 (`fs.readFile(file, "utf-8")`) yields NUL-interleaved
- * garbage that no parser can rescue.
+ * The encodings an OOXML part can be stored in.
  *
- * Encoding selection follows XML 1.0 §4.3.3: the byte order mark wins, then
- * the `encoding` pseudo-attribute of the XML declaration. Only the three
- * encodings OOXML parts actually use are supported — UTF-8, UTF-16LE,
- * UTF-16BE — and anything else falls back to UTF-8 rather than guessing.
- * The result carries no BOM and no leading whitespace, so callers can hand it
- * straight to {@link parseXml}.
+ * UTF-16 is split by byte order: the byte order mark says which way round
+ * the bytes are, and the XML declaration may name either variant.
  */
-export const decodeXmlBytes = (bytes: Uint8Array): string => {
+export type XmlEncoding = "utf-8" | "utf-16le" | "utf-16be";
+
+/** A part's encoding, with the byte order mark it carried (if any). */
+export type XmlPartEncoding = {
+    /** The encoding the part's bytes are in. */
+    readonly encoding: XmlEncoding;
+    /** The byte order mark the part's bytes carried, if any. */
+    readonly bom?: XmlEncoding;
+};
+
+/** A part's decoded text, with the encoding it was read from. */
+export type DecodedXmlPart = XmlPartEncoding & {
+    /** The decoded text: no byte order mark, no leading whitespace. */
+    readonly text: string;
+};
+
+/** The byte order mark each encoding starts with. */
+const BOM_BYTES: Readonly<Record<XmlEncoding, readonly number[]>> = {
+    "utf-8": [0xef, 0xbb, 0xbf],
+    "utf-16le": [0xff, 0xfe],
+    "utf-16be": [0xfe, 0xff],
+};
+
+/**
+ * Declaration names this project decodes as UTF-8: UTF-8 itself and US-ASCII,
+ * whose every byte UTF-8 encodes the same way. Every other name (ISO-8859-1,
+ * windows-1252, macintosh, …) has bytes UTF-8 does not share, so decoding
+ * them as UTF-8 would replace them.
+ */
+const UTF8_DECLARATIONS: ReadonlySet<string> = new Set(["utf8", "usascii"]);
+
+/**
+ * Decode a part's bytes and report the encoding they are in, so a caller
+ * that writes the part back can put it in the same encoding.
+ *
+ * The encoding is chosen exactly as {@link decodeXmlBytes} chooses it — the
+ * byte order mark first, then the XML declaration — with one difference: a
+ * declaration naming an encoding this project cannot decode makes this
+ * function return `undefined` instead of falling back to UTF-8. The caller
+ * must then leave such a part's bytes untouched: decoding them as UTF-8
+ * replaces every byte the two encodings do not share, and writing that text
+ * back corrupts the part. The validators keep {@link decodeXmlBytes}' UTF-8
+ * fallback and report the mismatch as an `xml-encoding` finding instead.
+ */
+export const decodeXmlPart = (bytes: Uint8Array): DecodedXmlPart | undefined => {
     if (bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) {
         // UTF-8 BOM. `TextDecoder` drops it for "utf-8" only when told not to
         // be fatal about it, so decode the remainder explicitly.
-        return new TextDecoder("utf-8").decode(bytes.subarray(3));
+        return { text: new TextDecoder("utf-8").decode(bytes.subarray(3)), encoding: "utf-8", bom: "utf-8" };
     }
     if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xfe) {
-        return new TextDecoder("utf-16le").decode(bytes.subarray(2));
+        return { text: new TextDecoder("utf-16le").decode(bytes.subarray(2)), encoding: "utf-16le", bom: "utf-16le" };
     }
     if (bytes.length >= 2 && bytes[0] === 0xfe && bytes[1] === 0xff) {
-        return new TextDecoder("utf-16be").decode(bytes.subarray(2));
+        return { text: new TextDecoder("utf-16be").decode(bytes.subarray(2)), encoding: "utf-16be", bom: "utf-16be" };
     }
     // No BOM. A 16-bit entity puts a NUL beside its first (ASCII) character,
     // so the byte order shows in the first two bytes (XML 1.0 Appendix F).
@@ -100,10 +137,88 @@ export const decodeXmlBytes = (bytes: Uint8Array): string => {
         // XML 1.0 §4.3.3 requires a BOM for UTF-16 entities; without one, the
         // first character discriminates the endianness ('<' as 3C 00 or 00 3C).
         const littleEndian = declared === "utf16le" || (declared === "utf16" && !(bytes[0] === 0 && bytes[1] === 0x3c));
-        return new TextDecoder(littleEndian ? "utf-16le" : "utf-16be").decode(bytes);
+        return {
+            text: new TextDecoder(littleEndian ? "utf-16le" : "utf-16be").decode(bytes),
+            encoding: littleEndian ? "utf-16le" : "utf-16be",
+        };
     }
-    return new TextDecoder("utf-8").decode(bytes);
+    if (declared !== undefined && !UTF8_DECLARATIONS.has(declared)) {
+        // An encoding this project cannot decode.
+        return undefined;
+    }
+    return { text: new TextDecoder("utf-8").decode(bytes), encoding: "utf-8" };
 };
+
+/**
+ * Encode text back into a part's own encoding, restoring the byte order mark
+ * a UTF-16 part carried.
+ *
+ * The counterpart of {@link decodeXmlPart}: a part read as UTF-16LE with a
+ * BOM is written back as UTF-16LE with a BOM, never transcoded to UTF-8. A
+ * UTF-8 part is written without one, as every writer wrote it before #866:
+ * XML requires the mark only of UTF-16 (XML 1.0 §4.3.3).
+ */
+export const encodeXmlPart = (text: string, part: XmlPartEncoding): Uint8Array => {
+    if (part.encoding === "utf-16be") {
+        return withBom(part.bom, utf16Bytes(text, false));
+    }
+    if (part.encoding === "utf-16le") {
+        return withBom(part.bom, utf16Bytes(text, true));
+    }
+    return new TextEncoder().encode(text);
+};
+
+/** The UTF-16 code units of `text`, in the requested byte order. */
+const utf16Bytes = (text: string, littleEndian: boolean): Uint8Array => {
+    const out = new Uint8Array(text.length * 2);
+    for (let i = 0; i < text.length; i += 1) {
+        const code = text.charCodeAt(i);
+        // oxlint-disable-next-line no-bitwise
+        out[i * 2] = littleEndian ? code & 0xff : code >> 8;
+        // oxlint-disable-next-line no-bitwise
+        out[i * 2 + 1] = littleEndian ? code >> 8 : code & 0xff;
+    }
+    return out;
+};
+
+/** The bytes of `body`, prefixed with the byte order mark `bom` names. */
+const withBom = (bom: XmlEncoding | undefined, body: Uint8Array): Uint8Array => {
+    if (bom === undefined) {
+        return body;
+    }
+    const head = Uint8Array.from(BOM_BYTES[bom]);
+    const out = new Uint8Array(head.length + body.length);
+    out.set(head, 0);
+    out.set(body, head.length);
+    return out;
+};
+
+/**
+ * The encoding name a part's XML declaration must name for the bytes it is
+ * written in.
+ *
+ * A UTF-16 part declares `UTF-16` — the byte order mark says which way round
+ * the bytes are — and a UTF-8 part declares `UTF-8`.
+ */
+export const xmlDeclarationEncoding = (encoding: XmlEncoding): string => (encoding === "utf-8" ? "UTF-8" : "UTF-16");
+
+/**
+ * Byte-level decoding for the DOM layer. `@xmldom` takes a JavaScript string,
+ * so a part stored as UTF-16 must be decoded from its ORIGINAL BYTES first —
+ * reading it as UTF-8 (`fs.readFile(file, "utf-8")`) yields NUL-interleaved
+ * garbage that no parser can rescue.
+ *
+ * Encoding selection follows XML 1.0 §4.3.3: the byte order mark wins, then
+ * the `encoding` pseudo-attribute of the XML declaration. Only the three
+ * encodings OOXML parts actually use are supported — UTF-8, UTF-16LE,
+ * UTF-16BE — and anything else falls back to UTF-8 rather than guessing.
+ * The result carries no BOM and no leading whitespace, so callers can hand it
+ * straight to {@link parseXml}.
+ *
+ * A caller that writes the part back must use {@link decodeXmlPart}, which
+ * reports the encoding it found and refuses an encoding it cannot decode.
+ */
+export const decodeXmlBytes = (bytes: Uint8Array): string => decodeXmlPart(bytes)?.text ?? new TextDecoder("utf-8").decode(bytes);
 
 /**
  * Parse ORIGINAL XML part bytes into a DOM `Document`.

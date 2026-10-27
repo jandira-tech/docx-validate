@@ -7,11 +7,14 @@ import { NS } from "../src/lib/types";
 
 import {
     decodeXmlBytes,
+    decodeXmlPart,
+    encodeXmlPart,
     getElementsByTagNameAll,
     getElementsByTagNameNSAll,
     parseXml,
     parseXmlBytes,
     prettyXml,
+    xmlDeclarationEncoding,
 } from "../src/lib/xml-helpers";
 
 const DOC = `<?xml version="1.0"?>
@@ -218,6 +221,95 @@ describe("decodeXmlBytes", () => {
     it("parseXmlBytes builds the DOM from the decoded bytes", () => {
         const dom = parseXmlBytes(new Uint8Array([0xef, 0xbb, 0xbf, ...utf8(BODY)]));
         expect(dom.documentElement?.textContent).toBe("café — 日本語");
+    });
+});
+
+describe("decodeXmlPart / encodeXmlPart", () => {
+    /** UTF-16 bytes with (or without) a leading BOM, in the requested endianness. */
+    const utf16 = (text: string, endian: "le" | "be", withBom: boolean): Uint8Array => {
+        const out = new Uint8Array((withBom ? 2 : 0) + text.length * 2);
+        let offset = 0;
+        if (withBom) {
+            out[0] = endian === "le" ? 0xff : 0xfe;
+            out[1] = endian === "le" ? 0xfe : 0xff;
+            offset = 2;
+        }
+        for (let i = 0; i < text.length; i += 1) {
+            out[offset + i * 2] = endian === "le" ? text.charCodeAt(i) & 0xff : text.charCodeAt(i) >> 8;
+            out[offset + i * 2 + 1] = endian === "le" ? text.charCodeAt(i) >> 8 : text.charCodeAt(i) & 0xff;
+        }
+        return out;
+    };
+
+    const utf8 = (text: string): Uint8Array => new TextEncoder().encode(text);
+    const BODY = "<a>café — 日本語</a>";
+
+    it("reports the encoding and the byte order mark of a UTF-8 part", () => {
+        expect(decodeXmlPart(utf8(BODY))).toEqual({ text: BODY, encoding: "utf-8", bom: undefined });
+        expect(decodeXmlPart(new Uint8Array([0xef, 0xbb, 0xbf, ...utf8(BODY)]))).toEqual({
+            text: BODY,
+            encoding: "utf-8",
+            bom: "utf-8",
+        });
+    });
+
+    it("reports the encoding and the byte order mark of a UTF-16 part", () => {
+        expect(decodeXmlPart(utf16(BODY, "le", true))).toEqual({ text: BODY, encoding: "utf-16le", bom: "utf-16le" });
+        expect(decodeXmlPart(utf16(BODY, "be", true))).toEqual({ text: BODY, encoding: "utf-16be", bom: "utf-16be" });
+    });
+
+    it("reports the encoding of a BOM-less UTF-16 part the declaration names", () => {
+        const declared = `<?xml version="1.0" encoding="UTF-16"?>${BODY}`;
+        expect(decodeXmlPart(utf16(declared, "le", false))).toEqual({ text: declared, encoding: "utf-16le", bom: undefined });
+        expect(decodeXmlPart(utf16(declared, "be", false))).toEqual({ text: declared, encoding: "utf-16be", bom: undefined });
+    });
+
+    it("refuses an encoding it cannot decode", () => {
+        expect(decodeXmlPart(utf8('<?xml version="1.0" encoding="macintosh"?><a>ok</a>'))).toBeUndefined();
+        expect(decodeXmlPart(utf8('<?xml version="1.0" encoding="windows-1252"?><a>ok</a>'))).toBeUndefined();
+        expect(decodeXmlPart(utf8('<?xml version="1.0" encoding="ISO-8859-1"?><a>ok</a>'))).toBeUndefined();
+    });
+
+    it("decodes US-ASCII, whose every byte UTF-8 encodes the same way", () => {
+        const ascii = '<?xml version="1.0" encoding="US-ASCII"?><a>ok</a>';
+        expect(decodeXmlPart(utf8(ascii))).toEqual({ text: ascii, encoding: "utf-8", bom: undefined });
+    });
+
+    it("keeps decodeXmlBytes' UTF-8 fallback for an encoding it cannot decode", () => {
+        const macintosh = '<?xml version="1.0" encoding="macintosh"?><a>ok</a>';
+        expect(decodeXmlBytes(utf8(macintosh))).toBe(macintosh);
+    });
+
+    it("writes a part back in its own encoding, byte order mark included", () => {
+        for (const [encoding, bom, bytes] of [
+            ["utf-8", undefined, utf8(BODY)],
+            ["utf-16le", "utf-16le", utf16(BODY, "le", true)],
+            ["utf-16be", "utf-16be", utf16(BODY, "be", true)],
+        ] as const) {
+            const part = decodeXmlPart(bytes)!;
+            expect(part.encoding).toBe(encoding);
+            expect(part.bom).toBe(bom);
+            expect(encodeXmlPart(part.text, part)).toEqual(bytes);
+        }
+    });
+
+    it("writes a UTF-8 part without a byte order mark, as before #866", () => {
+        const part = decodeXmlPart(new Uint8Array([0xef, 0xbb, 0xbf, ...utf8(BODY)]))!;
+        expect(part).toEqual({ text: BODY, encoding: "utf-8", bom: "utf-8" });
+        expect(encodeXmlPart(part.text, part)).toEqual(utf8(BODY));
+    });
+
+    it("round-trips text through a UTF-16 part without losing a character", () => {
+        const part = decodeXmlPart(utf16(BODY, "be", true))!;
+        const written = encodeXmlPart(part.text, part);
+        expect(decodeXmlPart(written)).toEqual(part);
+        expect([...written.subarray(0, 2)]).toEqual([0xfe, 0xff]);
+    });
+
+    it("names the encoding a part's declaration must carry", () => {
+        expect(xmlDeclarationEncoding("utf-8")).toBe("UTF-8");
+        expect(xmlDeclarationEncoding("utf-16le")).toBe("UTF-16");
+        expect(xmlDeclarationEncoding("utf-16be")).toBe("UTF-16");
     });
 });
 

@@ -39,6 +39,7 @@ import { Command } from "commander";
 import JSZip from "jszip";
 
 import { commanderExitCode, runCli } from "../../lib/run-cli";
+import { readXmlPart, writeXmlText } from "../../lib/xml-part-io";
 import { parseXml, prettyXml } from "../../lib/xml-helpers";
 import { escapeControlCharacters, extractZipEntries } from "../../lib/zip-path";
 import { mergeRuns } from "./helpers/merge-runs";
@@ -178,10 +179,14 @@ async function collectXmlFiles(root: string): Promise<string[]> {
 
 async function prettyPrintXml(xmlFile: string): Promise<void> {
     try {
-        const content = await fs.readFile(xmlFile, "utf8");
-        const dom = parseXml(content);
+        const part = await readXmlPart(xmlFile);
+        if (part === undefined) {
+            // An encoding we cannot decode: leave the part's bytes untouched.
+            return;
+        }
+        const dom = parseXml(part.text);
         const pretty = prettyXml(dom, "  ");
-        await fs.writeFile(xmlFile, pretty, "utf8");
+        await writeXmlText(xmlFile, pretty, part);
     } catch {
         // Match Python: silently skip files we cannot pretty-print.
     }
@@ -189,11 +194,17 @@ async function prettyPrintXml(xmlFile: string): Promise<void> {
 
 async function escapeSmartQuotes(xmlFile: string): Promise<void> {
     try {
-        let content = await fs.readFile(xmlFile, "utf8");
+        const part = await readXmlPart(xmlFile);
+        if (part === undefined) {
+            // An encoding we cannot decode: writing text decoded from it
+            // would corrupt the part, so leave its bytes untouched.
+            return;
+        }
+        let content = part.text;
         for (const [char, entity] of SMART_QUOTE_REPLACEMENTS) {
             content = content.split(char).join(entity);
         }
-        await fs.writeFile(xmlFile, content, "utf8");
+        await writeXmlText(xmlFile, content, part);
     } catch {
         // Match Python.
     }

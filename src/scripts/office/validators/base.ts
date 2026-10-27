@@ -80,6 +80,7 @@ import {
     parseXmlBytes,
     serializeXml,
 } from "../../../lib/xml-helpers";
+import { writeXmlPart } from "../../../lib/xml-part-io";
 import { checkXmlSyntax } from "../../../lib/xml-syntax";
 import { resolveSafeZipEntry } from "../../../lib/zip-path";
 import { XML_SYNTAX_CHECK_ID, xmlPartNames } from "../checks/xml";
@@ -763,7 +764,7 @@ export class BaseSchemaValidator {
                 }
 
                 if (modified) {
-                    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+                    await writeXmlPart(xmlFile, dom);
                 }
             } catch {
                 // pass — mirrors Python's bare except

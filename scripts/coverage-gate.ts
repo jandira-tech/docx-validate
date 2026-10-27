@@ -47,6 +47,7 @@ export const COVERAGE_GATES: readonly CoverageGate[] = [
     { pattern: "src/lib/validation-context.ts", ...NEW_MODULE },
     { pattern: "src/lib/word-provenance.ts", ...NEW_MODULE },
     { pattern: "src/lib/word-verifier.ts", ...NEW_MODULE },
+    { pattern: "src/lib/xml-part-io.ts", ...NEW_MODULE },
     { pattern: "src/lib/xml-syntax.ts", ...NEW_MODULE },
     { pattern: "src/lib/zip-central-directory.ts", ...NEW_MODULE },
     { pattern: "src/scripts/office/package-context.ts", ...NEW_MODULE },

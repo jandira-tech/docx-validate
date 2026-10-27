@@ -50,6 +50,11 @@ async function makeFixture(dir: string): Promise<void> {
     await fs.writeFile(path.join(dir, "[Content_Types].xml"), CT_XML, "utf-8");
 }
 
+/** A part stored in UTF-16, with the byte order mark that says which way round it is. */
+function utf16Part(text: string): Buffer {
+    return Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(text, "utf16le")]);
+}
+
 describe("generateHexId", () => {
     afterEach(() => {
         vi.mocked(crypto.randomInt).mockReset();
@@ -167,6 +172,38 @@ describe("addComment", () => {
             expect(comment.getAttribute("w:initials")).toBe('J"R');
             const t = dom.getElementsByTagName("w:t").item(0)!;
             expect(t.textContent).toBe('a & b < c > d "quoted"');
+        });
+    });
+
+    it("keeps a UTF-16 package's parts in their own encoding (#866)", async () => {
+        await withTempDir(async (dir) => {
+            await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+            await fs.writeFile(
+                path.join(dir, "word", "_rels", "document.xml.rels"),
+                utf16Part(RELS_XML.replace('encoding="UTF-8"', 'encoding="UTF-16"')),
+            );
+            await fs.writeFile(path.join(dir, "[Content_Types].xml"), utf16Part(CT_XML.replace('encoding="UTF-8"', 'encoding="UTF-16"')));
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            for (const name of ["word/_rels/document.xml.rels", "[Content_Types].xml"]) {
+                const bytes = await fs.readFile(path.join(dir, name));
+                expect([...bytes.subarray(0, 2)]).toEqual([0xff, 0xfe]);
+                const text = Buffer.from(bytes.subarray(2)).toString("utf16le");
+                expect(text).toContain('encoding="UTF-16"');
+            }
+            const rels = Buffer.from((await fs.readFile(path.join(dir, "word", "_rels", "document.xml.rels"))).subarray(2)).toString(
+                "utf16le",
+            );
+            expect(rels).toContain('Target="comments.xml"');
         });
     });
 
