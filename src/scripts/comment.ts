@@ -280,22 +280,30 @@ function commentIdExists(commentsPart: DecodedXmlPart, commentId: number): boole
  * whose local name is `Relationship`, whatever its namespace or prefix, so a
  * new id never repeats one the part already holds — in a part whose
  * relationships are prefixed, or one holding a `Relationship` element in
- * another namespace, alike (#918).
+ * another namespace, alike (#918). The leading digits of the suffix are
+ * counted as a `bigint`, however many there are, so the ids count on past
+ * 2^53; before, they were read as a Number, which adding 1 no longer changes
+ * there, so a part holding `rId9007199254740992` got four relationships with
+ * that id, and one holding an id numbered 10^21 or more got four ids in
+ * exponent notation (#940).
  */
-function getNextRid(dom: Document): number {
-    let maxRid = 0;
+function getNextRid(dom: Document): bigint {
+    let maxRid = 0n;
     const rels = getElementsByTagNameNSAll(dom, "*", "Relationship");
     for (let i = 0; i < rels.length; i += 1) {
         const rel = rels[i]!;
         const rid = rel.getAttribute("Id");
         if (rid && rid.startsWith("rId")) {
-            const n = Number.parseInt(rid.slice(3), 10);
-            if (Number.isFinite(n)) {
-                maxRid = Math.max(maxRid, n);
+            const digits = /^\d+/.exec(rid.slice(3));
+            if (digits) {
+                const n = BigInt(digits[0]);
+                if (n > maxRid) {
+                    maxRid = n;
+                }
             }
         }
     }
-    return maxRid + 1;
+    return maxRid + 1n;
 }
 
 /**
@@ -544,7 +552,7 @@ async function ensureCommentRelationships(
         rel.setAttribute("Type", COMMENT_RELATIONSHIP_TYPES[i]!);
         rel.setAttribute("Target", targets[i]!);
         root.appendChild(rel);
-        nextRid += 1;
+        nextRid += 1n;
     }
 
     await writeXmlPart(relsPath, dom, part);

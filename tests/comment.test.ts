@@ -1449,6 +1449,112 @@ describe("addComment", () => {
         });
     });
 
+    it.each([
+        ["rId9007199254740992", ["rId9007199254740993", "rId9007199254740994", "rId9007199254740995", "rId9007199254740996"]],
+        [
+            "rId99999999999999999999",
+            ["rId100000000000000000000", "rId100000000000000000001", "rId100000000000000000002", "rId100000000000000000003"],
+        ],
+        [
+            "rId123456789012345678901234567890",
+            [
+                "rId123456789012345678901234567891",
+                "rId123456789012345678901234567892",
+                "rId123456789012345678901234567893",
+                "rId123456789012345678901234567894",
+            ],
+        ],
+    ])("numbers new ids one by one past a held %s, and the package validates (#940)", { timeout: 30000 }, async (heldId, newIds) => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+            const relsPath = path.join(dir, "word", "_rels", "document.xml.rels");
+            await fs.writeFile(
+                relsPath,
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                    `<Relationships xmlns="${PACKAGE_RELATIONSHIPS_NAMESPACE}">` +
+                    `<Relationship Id="${heldId}" Type="${STYLES_RELATIONSHIP_TYPE}" Target="styles.xml"/>` +
+                    `</Relationships>`,
+                "utf-8",
+            );
+            await fs.writeFile(path.join(dir, "word", "styles.xml"), MINIMAL_PARTS["word/styles.xml"]!, "utf-8");
+            await fs.writeFile(
+                path.join(dir, "[Content_Types].xml"),
+                contentTypes(RELATIONSHIPS_TYPE, [
+                    `<Override PartName="/word/document.xml" ContentType="${MAIN_DOCUMENT_CONTENT_TYPE}"/>`,
+                    `<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>`,
+                ]),
+                "utf-8",
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The suffix is counted exactly, however many digits it runs to, so
+            // each new id is one past the one before it and none repeats an id
+            // the part holds.
+            expect(relationshipRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual([
+                [heldId, STYLES_RELATIONSHIP_TYPE, "styles.xml", ""],
+                ...firstCommentRelationships(1).map(([, type, target, mode], i) => [newIds[i]!, type, target, mode]),
+            ]);
+
+            await fs.writeFile(path.join(dir, "word", "document.xml"), markedMainDocument(), "utf-8");
+            const file = path.join(dir, "long-rid.docx");
+            await packTree(dir, file);
+            const validation = await validate(file, { profile: "word-valid" });
+            expect(validation.issues.filter((issue) => issue.code === "rels-id-duplicate")).toEqual([]);
+            expect(validation.valid).toBe(true);
+        });
+    });
+
+    it.each([
+        ["rIdX", 1],
+        ["R1", 1],
+        ["rId007", 8],
+        ["rId12x", 13],
+        ["rId+5", 1],
+    ])("counts only the digits right after rId in a held %s (#940)", async (heldId, firstRid) => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+            const relsPath = path.join(dir, "word", "_rels", "document.xml.rels");
+            await fs.writeFile(
+                relsPath,
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                    `<Relationships xmlns="${PACKAGE_RELATIONSHIPS_NAMESPACE}">` +
+                    `<Relationship Id="${heldId}" Type="${STYLES_RELATIONSHIP_TYPE}" Target="styles.xml"/>` +
+                    `</Relationships>`,
+                "utf-8",
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // An id that is not `rId` followed by digits is not counted, and an
+            // `rId` suffix counts by its leading digits: `rId007` as 7 and
+            // `rId12x` as 12. `rId+5`, which `Number.parseInt` read as 5, is
+            // not an id a new `rId<N>` can repeat, and no longer counts.
+            expect(relationshipRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual([
+                [heldId, STYLES_RELATIONSHIP_TYPE, "styles.xml", ""],
+                ...firstCommentRelationships(firstRid),
+            ]);
+        });
+    });
+
     it("refuses a first comment when _rels/.rels's only officeDocument-typed element is in another namespace, changing nothing (#918)", async () => {
         await withTempDir(async (dir) => {
             await makePackageFixture(
