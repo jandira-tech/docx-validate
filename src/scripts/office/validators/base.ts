@@ -234,6 +234,28 @@ const PPT_PART_NAME_BY_FOLDER: ReadonlyMap<string, RegExp> = new Map([
     ["tags", /^tag\d*\.xml$/],
 ]);
 
+/**
+ * The file names of the parts stored directly in `ppt/`, ASCII lower-cased,
+ * whose root element pml.xsd, or a schema it imports, declares:
+ * `p:presentation` (presentation.xml), `p:presentationPr` (presProps.xml),
+ * `p:viewPr` (viewProps.xml), `p:cmAuthorLst` (commentAuthors.xml) and the
+ * DrawingML `a:tblStyleLst` pml.xsd reaches through its dml-main.xsd import
+ * (tableStyles.xml). Every other part directly in `ppt/` stays unmapped:
+ * PowerPoint's modern comment authors list (`ppt/authors.xml`, root
+ * `p188:authorLst`) and revision info (`ppt/revisionInfo.xml`, root
+ * `p1510:revInfo`) hold Microsoft roots no bundled schema declares, so the
+ * folder rule sent them to pml.xsd only to fail (#872). A set, not an object
+ * literal: the file name comes from the package, and `constructor` or
+ * `__proto__` must name no entry.
+ */
+const PPT_DIRECT_PART_NAMES: ReadonlySet<string> = new Set([
+    "presentation.xml",
+    "presprops.xml",
+    "viewprops.xml",
+    "commentauthors.xml",
+    "tablestyles.xml",
+]);
+
 const asciiLowerCase = (text: string): string => text.replace(/[A-Z]/g, (letter) => letter.toLowerCase());
 
 /** {@link SCHEMA_MAPPINGS} keys by their ASCII lower case, for part-name lookups (#377). */
@@ -2172,6 +2194,11 @@ export class BaseSchemaValidator {
             return "sig";
         }
         const parentName = path.posix.basename(path.posix.dirname(name));
+        // Directly in `ppt/`, the file name must name a root pml.xsd (or a
+        // schema it imports) declares; `word/` and `xl/` keep the folder rule.
+        if (parentName === "ppt") {
+            return PPT_DIRECT_PART_NAMES.has(base) ? "ppt" : null;
+        }
         if (MAIN_CONTENT_FOLDERS.has(parentName) && SCHEMA_MAPPINGS[parentName]) {
             return parentName;
         }

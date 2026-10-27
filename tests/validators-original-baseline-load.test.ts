@@ -306,9 +306,15 @@ const DEFECTIVE_DOCX_PARTS: Readonly<Record<string, string>> = {
 const DEFECTIVE_PPTX_PARTS: Readonly<Record<string, string>> = {
     ...MINIMAL_PPTX_PARTS,
     "ppt/presentation.xml": MINIMAL_PPTX_PARTS["ppt/presentation.xml"]!.replace("</p:presentation>", "<p:bogus/></p:presentation>"),
-    // A second schema-mapped part under ppt/ so the walk subtracts twice.
-    "ppt/z-extra.xml": MINIMAL_PPTX_PARTS["ppt/presentation.xml"]!.replace("</p:presentation>", "<p:bogus/></p:presentation>"),
+    // A second schema-mapped part under ppt/ so the walk subtracts twice —
+    // a file name pml.xsd judges a root for (#872), unlike the z-extra.xml
+    // placeholder the pre-#872 folder rule also mapped.
+    "ppt/viewProps.xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<p:viewPr xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:bogus/></p:viewPr>`,
 };
+
+/** A clean `p:viewPr`, the second PPTX part's defect-free spelling. */
+const CLEAN_VIEW_PROPS =
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<p:viewPr xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"></p:viewPr>';
 
 interface OverlapSpec {
     readonly extension: "docx" | "pptx";
@@ -404,10 +410,10 @@ const docxOverlap: OverlapSpec = {
 const pptxOverlap: OverlapSpec = {
     extension: "pptx",
     firstPart: "ppt/presentation.xml",
-    secondPart: "ppt/z-extra.xml",
+    secondPart: "ppt/viewProps.xml",
     minimal: MINIMAL_PPTX_PARTS,
     defective: DEFECTIVE_PPTX_PARTS,
-    cleanSecondPart: MINIMAL_PPTX_PARTS["ppt/presentation.xml"]!,
+    cleanSecondPart: CLEAN_VIEW_PROPS,
     build: buildPptx,
     control: (options) => new PPTXSchemaValidator(options),
     gated: (options, paused, resume) =>
