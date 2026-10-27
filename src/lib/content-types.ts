@@ -307,7 +307,7 @@ export const relationshipTargetPartName = (baseDir: string, target: string, clam
  * final `/.` drops its slash, as {@link relationshipTargetPartName} says,
  * unprobed (#962)), then take the OPC-equivalent stored entry
  * (`canonicalPartName` comparison); `undefined` when it names no stored
- * part. `clampAtPackageRoot` stops the target's `..` segments at the
+ * part, or resolves to the package root or past it (#970). `clampAtPackageRoot` stops the target's `..` segments at the
  * package root instead of dropping the whole target when they climb past
  * it, a package-absolute target's climb and a final bare `..` included
  * (#962), as RFC 3986's remove_dot_segments stops them, the way Word
@@ -321,7 +321,13 @@ export const resolveTarget = (
     clampAtPackageRoot = false,
 ): string | undefined => {
     const reference = relationshipTargetPartName(baseDir, target, clampAtPackageRoot);
-    return reference === undefined ? undefined : lookup(reference);
+    // The package root, and a reference still climbing past it, name no
+    // part, even beside a stored `%2e` or `%2e%2e`, whose OPC-equivalent
+    // key the lookup would otherwise match (#970).
+    if (reference === undefined || reference === "." || reference === "/" || /(?:^|\/)\.\.(?:\/|$)/.test(reference)) {
+        return undefined;
+    }
+    return lookup(reference);
 };
 
 /**
