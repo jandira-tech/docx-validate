@@ -284,6 +284,28 @@ describe("relationshipTargetPartName (#947)", () => {
         expect(relationshipTargetPartName("word", "../../word/x.xml")).toBe("../word/x.xml");
         expect(relationshipTargetPartName("word", "../../word/x.xml", true)).toBe("word/x.xml");
     });
+
+    it.each([
+        ["word", "../..", ".", ".."],
+        ["word", "../../..", ".", "../.."],
+        [".", "/..", "/", "/.."],
+        ["word", "/word/../..", "/", "/.."],
+        [".", "/../..", "/", "/../.."],
+    ])("clamps a climb that ends in a bare .. at the package root: from %s, %s (#962)", (baseDir, target, clamped, unclamped) => {
+        expect(relationshipTargetPartName(baseDir, target, true)).toBe(clamped);
+        expect(relationshipTargetPartName(baseDir, target)).toBe(unclamped);
+    });
+
+    // path.posix.join, not RFC 3986: Word has not been probed with either
+    // spelling, so these rows pin the reading until it is (#962).
+    it.each([
+        [".", "word//main.xml", "word/main.xml"],
+        ["word", "/word//main.xml", "/word/main.xml"],
+        [".", "word/main.xml/.", "word/main.xml"],
+        ["word", "/word/main.xml/.", "/word/main.xml"],
+    ])("collapses an empty segment and a final /. as path.posix.join does: from %s, %s (#962)", (baseDir, target, expected) => {
+        expect(relationshipTargetPartName(baseDir, target)).toBe(expected);
+    });
 });
 
 describe("partNameViolation: ECMA-376 Part 2, 4th edition §9.1.1.1 (#455)", () => {

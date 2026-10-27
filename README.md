@@ -1990,7 +1990,11 @@ before, `/word/../word/main.xml` named no part, so the read model found no main
 document and `addComment` refused it or added a second set of comment
 relationships
 ([#947](https://github.com/jandira-tech/docx-validate/issues/947)); Word has not
-been probed with such a target. The relationships parts are read and written in
+been probed with such a target. Either kind also collapses an empty segment and
+drops a final `/.`, as `path.posix.join` does, so `word//main.xml` and
+`/word/main.xml/.` name `word/main.xml`; Word has not been probed with either
+spelling ([#962](https://github.com/jandira-tech/docx-validate/issues/962)).
+The relationships parts are read and written in
 the package-relationships namespace, whatever prefix they bind it to: a prefixed
 `_rels/.rels` names its main document as an unprefixed one does, the new
 relationships are created under the root's prefix, and their ids are numbered
