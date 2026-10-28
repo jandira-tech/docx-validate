@@ -222,6 +222,46 @@ describe("ValidationContext: a view with unparseable parts (#307)", () => {
         expect(view.partNames).toEqual(ctx.partNames);
         expect(view.source).toBe(ctx.source);
     });
+
+    // #1128: the scheduler builds a new view per gated check, so a helper
+    // that caches per view recomputes for every rule. The gate key is what
+    // views that read alike share.
+    describe("the gate key (#1128)", () => {
+        const ctx = ValidationContext.fromEntries({ "word/document.xml": DOCUMENT, "word/styles.xml": DOCUMENT });
+
+        it("is the base's for a view with no unparseable parts", () => {
+            expect(ctx.withUnparseable(new Map()).gateKey).toBe(ctx.gateKey);
+        });
+
+        it("is one for every view with the same unparseable parts and reasons, in any order, or names spelled with a leading /", () => {
+            const a = ctx.withUnparseable(
+                new Map([
+                    ["word/styles.xml", "not well-formed"],
+                    ["word/document.xml", "unclosed"],
+                ]),
+            );
+            const b = ctx.withUnparseable(
+                new Map([
+                    ["/word/document.xml", "unclosed"],
+                    ["word/styles.xml", "not well-formed"],
+                ]),
+            );
+            const c = ctx
+                .withUnparseable(new Map([["word/document.xml", "unclosed"]]))
+                .withUnparseable(new Map([["word/styles.xml", "not well-formed"]]));
+            expect(b.gateKey).toBe(a.gateKey);
+            expect(c.gateKey).toBe(a.gateKey);
+            expect(a.gateKey).not.toBe(ctx.gateKey);
+        });
+
+        it("differs for another part, another reason, and another package with the same entries", () => {
+            const styles = ctx.withUnparseable(new Map([["word/styles.xml", "not well-formed"]]));
+            expect(ctx.withUnparseable(new Map([["word/document.xml", "not well-formed"]])).gateKey).not.toBe(styles.gateKey);
+            expect(ctx.withUnparseable(new Map([["word/styles.xml", "unclosed"]])).gateKey).not.toBe(styles.gateKey);
+            const other = ValidationContext.fromEntries({ "word/document.xml": DOCUMENT, "word/styles.xml": DOCUMENT });
+            expect(other.gateKey).not.toBe(ctx.gateKey);
+        });
+    });
 });
 
 describe("ValidationContext: two entries naming one part (#366)", () => {

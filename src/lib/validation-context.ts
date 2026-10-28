@@ -218,6 +218,8 @@ export class ValidationContext {
     private readonly parses: Map<string, number>;
     /** Parts this view reports as not parsing, with the reason. */
     private readonly unparseable: ReadonlyMap<string, string>;
+    /** The gate keys this package has handed out, by unparseable-parts signature; shared by every view of it. */
+    private readonly gateKeys: Map<string, object>;
 
     /** `base`, when given, is the context whose caches this view shares. */
     private constructor(
@@ -239,6 +241,24 @@ export class ValidationContext {
         this.reads = base?.reads ?? new Map();
         this.parses = base?.parses ?? new Map();
         this.unparseable = unparseable;
+        this.gateKeys = base?.gateKeys ?? new Map();
+    }
+
+    /**
+     * One object per package and set of unparseable parts with their reasons:
+     * every view that reads the package alike shares it, so a helper can
+     * cache what it derives from the package on it. The scheduler builds a new
+     * view for each check gated on a failed part (#1128), so a cache keyed by
+     * the view itself misses for every rule.
+     */
+    public get gateKey(): object {
+        const signature = JSON.stringify([...this.unparseable].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
+        let key = this.gateKeys.get(signature);
+        if (key === undefined) {
+            key = {};
+            this.gateKeys.set(signature, key);
+        }
+        return key;
     }
 
     /** Build a context from part names (leading `/` optional) and their content. */

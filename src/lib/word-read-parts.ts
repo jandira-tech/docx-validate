@@ -801,8 +801,12 @@ const schemeTargetPart = (lookup: (partName: string) => string | undefined, base
 /** The lazily read stories, beside the story roots' own `officeDocument` entries. */
 const STORY_SEGMENTS: ReadonlySet<string> = new Set(["header", "footer", "comments", "footnotes", "endnotes"]);
 
-/** One computation per context and profile: twenty-odd Word rules walk the same list in a run. */
-const readStoryPartsCache = new WeakMap<ValidationContext, Map<string, Promise<readonly string[]>>>();
+/**
+ * One computation per package, gate state and profile: twenty-odd Word rules
+ * walk the same list in a run, each through its own view when a part fails
+ * the XML checks (#1128).
+ */
+const readStoryPartsCache = new WeakMap<object, Map<string, Promise<readonly string[]>>>();
 
 /**
  * The story parts Word reads (#1106, #1113): every main document and
@@ -818,8 +822,8 @@ const readStoryPartsCache = new WeakMap<ValidationContext, Map<string, Promise<r
  * judges references in none of those four kinds (#1119).
  */
 export const wordReadStoryParts = (context: ValidationContext, profile?: Profile): Promise<readonly string[]> => {
-    const byProfile = readStoryPartsCache.get(context) ?? new Map<string, Promise<readonly string[]>>();
-    readStoryPartsCache.set(context, byProfile);
+    const byProfile = readStoryPartsCache.get(context.gateKey) ?? new Map<string, Promise<readonly string[]>>();
+    readStoryPartsCache.set(context.gateKey, byProfile);
     const key = profile ?? "";
     const cached = byProfile.get(key);
     if (cached !== undefined) {

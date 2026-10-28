@@ -2097,6 +2097,25 @@ describe("wordReadStoryParts (#1106, #1113)", () => {
         expect(wordReadStoryParts(ctx, "word-valid")).toBe(wordReadStoryParts(ctx, "word-valid"));
         expect(wordReadStoryParts(ctx, "strict")).not.toBe(wordReadStoryParts(ctx, "word-valid"));
     });
+
+    // #1128: the scheduler hands each check gated on xml-syntax a new
+    // withUnparseable view, so a per-view cache recomputed the list for every
+    // story rule.
+    it("computes the list once for every view with the same unparseable parts (#1128)", async () => {
+        const ctx = ValidationContext.fromEntries(withHeaders(true));
+        const gate = (): ValidationContext => ctx.withUnparseable(new Map([["word/header9.xml", "malformed"]]));
+        expect(wordReadStoryParts(gate(), "word-valid")).toBe(wordReadStoryParts(gate(), "word-valid"));
+        expect(wordReadStoryParts(ctx.withUnparseable(new Map()), "word-valid")).toBe(wordReadStoryParts(ctx, "word-valid"));
+    });
+
+    // A main document the view cannot parse leaves lazy usage unknown (#536),
+    // so that view keeps the related header the base drops.
+    it("computes its own list for a view with other unparseable parts (#1128)", async () => {
+        const ctx = ValidationContext.fromEntries(withHeaders(false));
+        expect(await wordReadStoryParts(ctx, "word-valid")).toEqual(["word/document.xml"]);
+        const view = ctx.withUnparseable(new Map([["word/document.xml", "malformed"]]));
+        expect(await wordReadStoryParts(view, "word-valid")).toEqual(["word/document.xml", "word/header1.xml"]);
+    });
 });
 
 describe("wordPossiblyReadParts (#1116, #1125)", () => {
