@@ -1914,13 +1914,25 @@ edits several parts leaves all of them untouched when one cannot be decoded
 (#889).
 
 For a document's first comment, `addComment` relates the four comments parts
-from `word/_rels/document.xml.rels`. When the main document has no relationships
-part, it creates one, and types it in `[Content_Types].xml` when no Default or
-Override covers it; before, it reported success and left the comments parts
-related to nothing
-([#895](https://github.com/jandira-tech/docx-validate/issues/895)). A first
-comment on a tree with no `[Content_Types].xml` is refused with an error,
-changing nothing.
+from the relationships part of the main document `_rels/.rels` names
+([#906](https://github.com/jandira-tech/docx-validate/issues/906)). That is
+`word/_rels/document.xml.rels` when there is no `_rels/.rels` or it names
+`word/document.xml` under any OPC-equivalent spelling (`Word/Document.xml`),
+`word/_rels/main.xml.rels` for a main document stored as `word/main.xml`, and
+`main/_rels/doc.xml.rels` for one stored as `main/doc.xml`. Each target is
+relative to the main document's folder (`../word/comments.xml` from `main/`). A
+relationship whose target resolves to `word/comments.xml` under OPC part-name
+equivalence, relative or from the package root, counts as already there. When
+the main document has no relationships part, `addComment` creates one, and types
+it in `[Content_Types].xml` under its own name when no Default or Override
+covers it; before, it reported success and left the comments parts related to
+nothing ([#895](https://github.com/jandira-tech/docx-validate/issues/895)).
+
+A first comment is refused with an error naming the part, changing nothing,
+when the tree has no `[Content_Types].xml`, or when `_rels/.rels` cannot be
+decoded or parsed, names no `officeDocument` relationship that is not
+External, names a target outside the package, or names a main document that is
+not stored. A later comment reads no `_rels/.rels`.
 
 ### Drive the CLIs programmatically
 
