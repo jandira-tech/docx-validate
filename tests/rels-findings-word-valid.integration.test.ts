@@ -451,7 +451,40 @@ describe("a relative target that starts with http is resolved as a part (#988, s
     // Lenient keeps its historical prefix scan, byte for byte (#665).
     it("keeps lenient's historical prefix scan", async () => {
         expect((await run(withBrokenTarget("http_item.xml", CUSTOM_XML), "lenient")).broken).toEqual([]);
+        expect((await run(withBrokenTarget("httpfoo:bar"), "lenient")).broken).toEqual([]);
     });
+
+    // Word-valid and strict skip only the `http:` and `https:` schemes: another
+    // scheme that merely starts with `http` is resolved as a part, as `ftp:` is.
+    it.each([
+        ["httpfoo:bar", "word-valid", "warning"],
+        ["httpfoo:bar", "strict", "error"],
+        ["http+unix:/x", "word-valid", "warning"],
+        ["http+unix:/x", "strict", "error"],
+    ] as const)("resolves %s as a part under %s, as ftp: is", async (target, profile, severity) => {
+        const { broken } = await run(withBrokenTarget(target), profile);
+        expect(broken.map((issue) => [issue.severity, issue.message])).toEqual([[severity, `Broken reference to ${target}`]]);
+    });
+
+    // #1008: a URI scheme is ASCII case-insensitive (RFC 3986 §3.1), so
+    // word-valid and strict skip an `HTTP:` or `MAILTO:` URI as they skip
+    // its lowercase spelling, where they resolved it as a part.
+    it.each(["HTTP://example.com/x.png", "Http:x", "HTTP://x/.", "HTTPS://example.com/x.png", "MAILTO:a@b.c", "Mailto:a@b.c"])(
+        "skips the URI %s under word-valid and strict, as its lowercase spelling (#1008)",
+        async (target) => {
+            expect((await run(withBrokenTarget(target), "word-valid")).broken).toEqual([]);
+            expect((await run(withBrokenTarget(target), "strict")).broken).toEqual([]);
+        },
+    );
+
+    it.each(["HTTP://example.com/x.png", "Http:x", "HTTP://x/.", "HTTPS://example.com/x.png", "MAILTO:a@b.c", "Mailto:a@b.c"])(
+        "keeps lenient's case-sensitive scan for %s (#665, #1008)",
+        async (target) => {
+            const { valid, broken } = await run(withBrokenTarget(target), "lenient");
+            expect(broken.map((issue) => [issue.severity, issue.message])).toEqual([["error", `Broken reference to ${target}`]]);
+            expect(valid).toBe(false);
+        },
+    );
 });
 
 // #987: Word checks a relationship's target only in the relationships parts
