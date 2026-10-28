@@ -392,7 +392,9 @@ function climbsPastPackageRoot(reference: string): boolean {
  * package view reads, so a file or directory symbolic link whose target
  * resolves inside the unpacked root counts under its own stored name, and
  * an entry that walk cannot read — a link that resolves outside the root,
- * a broken link, a loop, a FIFO — is no stored name at all. Before, a
+ * a broken link, a loop, a FIFO — is not a candidate here, though the
+ * package context keeps its name for the stored-name checks (#971).
+ * Before, a
  * private dirents walker dropped every link, so a main document stored as
  * a link inside the tree was refused as naming no stored part while the
  * checks read it (#938), and a directory it could not list rejected the
