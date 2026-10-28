@@ -1277,7 +1277,10 @@ like one whose relationships part lacks the id — session 55 (s55a) saw
 Word refuse a referenced `word/header1.xml` with no relationships part
 holding each of the three references, as it does one whose relationships
 part lacks the id, and open clean the same header with no `r:` reference —
-while `rels-missing-sidecar` still reports the absent sidecar itself; an
+while `rels-missing-sidecar` still reports the absent sidecar where its
+walk fires — an `r:id`, `r:embed` or `r:link` attribute in a relationships
+namespace, which the `dgm:relIds` shape's `r:dm`, `r:lo`, `r:qs` and
+`r:cs` are not, so that shape's only finding is this rule's; an
 unparseable one is skipped for `xml-syntax` to report. The finding is an
 error, and Word-blocking, under word-valid and strict; lenient runs no Word
 rule. In a full word-valid or strict run, a dangling Transitional `r:id` on a

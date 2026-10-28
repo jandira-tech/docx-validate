@@ -60,7 +60,8 @@
  * not the empty id. The same pair on `o:OLEObject`, `dgm:relIds` and
  * `w:headerReference`/`w:footerReference` was not shown to Word —
  * session 33 showed only a non-empty Strict id alone on a Transitional
- * header reference opening clean — so those elements keep their verdicts.
+ * footer reference opening clean (the `rs-id-valid-footer` row of chunk
+ * s33c) — so those elements keep their verdicts.
  *
  * Word reads the selected markup-compatibility view, so this check judges
  * `ctx.effectiveXml` and each part's own sidecar: an unparseable one is
@@ -68,8 +69,11 @@
  * at all is judged like one whose relationships part lacks the id — every
  * non-empty id it holds names no relationship, and an empty id is wrong
  * before any lookup (#728) — while `rels-missing-sidecar` still reports
- * the absent sidecar itself (#751; session 55, chunk s55a, two runs: the
- * recovery offer for a referenced `word/header1.xml` with no
+ * the absent sidecar where its walk fires, on an `r:id`, `r:embed` or
+ * `r:link` attribute in a relationships namespace, so the `dgm:relIds`
+ * shape — whose `r:dm`, `r:lo`, `r:qs` and `r:cs` are outside that walk —
+ * draws this rule's finding alone (#751; session 55, chunk s55a, two
+ * runs: the recovery offer for a referenced `word/header1.xml` with no
  * relationships part holding `c:chart r:id`, `o:OLEObject r:id` or
  * `dgm:relIds`, as for the same header whose relationships part lacks the
  * id, and a clean open for the same header with no `r:` reference). The
