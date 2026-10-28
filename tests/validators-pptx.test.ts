@@ -1012,6 +1012,9 @@ describe("rels-id-mismatch reads PPTX relationship types exactly outside lenient
             "http://example.com/relationships/xslideMaster",
             "slideMasters/slideMaster1.xml",
         ],
+        // #1062: the known segments compare in their real casing.
+        ["a p:sldId", "SLIDE", "sldIdLst", "sldId", `${R_NS}/SLIDE`, "slides/slide1.xml"],
+        ["a p:sldMasterId", "SLIDEMASTER", "sldMasterIdLst", "sldMasterId", `${R_NS}/SLIDEMASTER`, "slideMasters/slideMaster1.xml"],
     ])("reports %s naming a %s relationship only outside lenient", async (_label, _typeLabel, list, element, type, target) => {
         await withTempDir(async (dir) => {
             await writeFile(
@@ -1039,6 +1042,47 @@ describe("rels-id-mismatch reads PPTX relationship types exactly outside lenient
             expect(await findings(dir, "word-valid")).toEqual([
                 "<sldLayoutId> references 'rId1' which points to 'xslideLayout' but should point to a 'slidelayout' relationship",
             ]);
+        });
+    });
+
+    // #1062: lenient's substring reading rejects this one too.
+    it.each(["lenient", "word-valid", "strict"] as const)(
+        "reports a p:sldMasterId naming a slideLayout relationship under %s",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "ppt", "presentation.xml"),
+                    presentationXml('<p:sldMasterIdLst><p:sldMasterId id="2147483648" r:id="rId1"/></p:sldMasterIdLst>'),
+                );
+                await writeFile(
+                    path.join(dir, "ppt", "_rels", "presentation.xml.rels"),
+                    relsXml(rel("rId1", `${R_NS}/slideLayout`, "slideLayouts/slideLayout1.xml")),
+                );
+                expect(await findings(dir, profile)).toEqual([
+                    "<sldMasterId> references 'rId1' which points to 'slideLayout' but should point to a 'slidemaster' relationship",
+                ]);
+            });
+        },
+    );
+
+    // #1062: the minimal deck has no notes or handout master.
+    it.each(["lenient", "word-valid", "strict"] as const)("accepts a notes master and a handout master under %s", async (profile) => {
+        await withTempDir(async (dir) => {
+            await writeFile(
+                path.join(dir, "ppt", "presentation.xml"),
+                presentationXml(
+                    '<p:notesMasterIdLst><p:notesMasterId r:id="rId1"/></p:notesMasterIdLst>' +
+                        '<p:handoutMasterIdLst><p:handoutMasterId r:id="rId2"/></p:handoutMasterIdLst>',
+                ),
+            );
+            await writeFile(
+                path.join(dir, "ppt", "_rels", "presentation.xml.rels"),
+                relsXml(
+                    rel("rId1", `${R_NS}/notesMaster`, "notesMasters/notesMaster1.xml") +
+                        rel("rId2", `${R_NS}/handoutMaster`, "handoutMasters/handoutMaster1.xml"),
+                ),
+            );
+            expect(await findings(dir, profile)).toEqual([]);
         });
     });
 
