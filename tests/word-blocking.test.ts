@@ -12,6 +12,7 @@ import { registerRelsBrokenTarget, registerRelsEmptyElementShape } from "../src/
 import {
     hasWordRelationshipReference,
     isWordBlockingIssue,
+    namedByNoRelationship,
     unobservedReferenceAttributeValues,
 } from "../src/scripts/office/validators/word-blocking";
 
@@ -227,6 +228,45 @@ describe("isWordBlockingIssue", () => {
             ).toBe(true);
         },
     );
+
+    it.each(["mce-malformed", "mce-must-understand"])(
+        "%s warns in a word/ part no relationship names, and blocks in one a relationship names (#1116, session 83)",
+        (code) => {
+            for (const path of ["word/header83.xml", "WORD/header83.XML", "word/header%38%33.xml", "word\\header83.xml"]) {
+                const finding = issue(code, { path });
+                expect
+                    .soft(isWordBlockingIssue(finding, new Set(), new Set(), new Set(), new Set(), { namedByNoRelationship: true }), path)
+                    .toBe(false);
+                expect
+                    .soft(isWordBlockingIssue(finding, new Set(), new Set(), new Set(), new Set(), { namedByNoRelationship: false }), path)
+                    .toBe(true);
+                expect.soft(isWordBlockingIssue(finding), path).toBe(true);
+            }
+            // No relationship names a relationships part, so the fact must not
+            // reach the sidecar half: there the story roots decide (#644).
+            const roots = new Set(["word/document.xml"]);
+            for (const path of ["_rels/.rels", "word/_rels/document.xml.rels"]) {
+                expect
+                    .soft(
+                        isWordBlockingIssue(issue(code, { path }), new Set(), new Set(), roots, new Set(), { namedByNoRelationship: true }),
+                        path,
+                    )
+                    .toBe(true);
+            }
+        },
+    );
+
+    it("reads a part as named by no relationship only when the named list is known and lacks it (#1116)", () => {
+        const named = new Set([canonicalPartName("word/document.xml"), canonicalPartName("word/header1.xml")]);
+        expect(namedByNoRelationship(issue("mce-malformed", { path: "word/header83.xml" }), named)).toBe(true);
+        // OPC-equivalent spellings, and a backslash separator, name the listed part.
+        for (const path of ["word/header1.xml", "WORD/Header1.XML", "word/header%31.xml", "word\\header1.xml"]) {
+            expect.soft(namedByNoRelationship(issue("mce-malformed", { path }), named), path).toBe(false);
+        }
+        // An unknown list, or a finding with no part, says nothing.
+        expect(namedByNoRelationship(issue("mce-malformed", { path: "word/header83.xml" }), undefined)).toBe(false);
+        expect(namedByNoRelationship(issue("mce-malformed"), named)).toBe(false);
+    });
 
     it("blocks an unrecognized content type only on the observed reach (#707, #718)", () => {
         // The verdict reads the observed set the callers resolve once per run

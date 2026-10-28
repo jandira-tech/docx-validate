@@ -18,6 +18,11 @@ describe("word error explanations", () => {
         expect(explanation).toContain("stray");
         expect(explanation).toContain("unobserved");
     });
+    it.each(["mce-malformed", "mce-must-understand"])("explains %s as a warning in a word/ part no relationship names (#1116)", (code) => {
+        expect(explainWordError(code)).toContain(
+            "In an XML part under word/ that no relationship names, Word opened an undeclared Choice Requires (session 83) and a root MustUnderstand (session 84) clean, so word-valid warns there",
+        );
+    });
     it("explains a package root that unwraps to the Relationships element as accepted (#646)", () => {
         const explanation = explainWordError("mce-malformed");
         expect(explanation).not.toContain("still rejects");

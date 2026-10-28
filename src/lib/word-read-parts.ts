@@ -102,7 +102,7 @@ import {
     isRelationshipsPartName,
     resolveTarget,
 } from "./content-types";
-import type { Profile } from "./types";
+import { NS, type Profile } from "./types";
 import type { ValidationContext, XmlPart } from "./validation-context";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "./xml-helpers";
 import { checkXmlSyntax } from "./xml-syntax";
@@ -721,6 +721,49 @@ export const wordStoryRootParts = async (context: ValidationContext, profile?: P
  */
 export const wordReadTypedTargets = async (context: ValidationContext, profile?: Profile): Promise<readonly WordTypedTarget[]> =>
     (await wordStoryReadTargets(context, profile))?.targets ?? [];
+
+/**
+ * Canonical names of the parts an internal relationship names (#1116), from
+ * any relationships part, wherever it is stored and whether or not Word reads
+ * its source. Every `Relationship` element of the stored DOM counts, nested
+ * ones included, so a relationship inside a Choice Word does not select still
+ * names its part: the list can be too wide, never too narrow. `undefined`
+ * when that cannot be decided: the package relationships part is missing or
+ * does not parse, it names no stored main document (#816), or a relationships
+ * part fails the byte-level XML checks.
+ */
+export const wordRelationshipNamedParts = async (
+    context: ValidationContext,
+    profile?: Profile,
+): Promise<ReadonlySet<string> | undefined> => {
+    const reach = await packageReach(context, profile);
+    if (reach === undefined || reach.mainParts.length === 0) {
+        return undefined;
+    }
+    const { names, lookup } = reach;
+    const named = new Set<string>();
+    for (const name of names) {
+        if (!isRelationshipsPartName(name)) {
+            continue;
+        }
+        const bytes = context.bytes(name);
+        const parsed = context.xml(name);
+        if (bytes === undefined || !parsed?.ok || (await checkXmlSyntax(bytes, name)).some((issue) => issue.severity === "error")) {
+            return undefined;
+        }
+        const baseDir = relationshipsBaseDir(name);
+        for (const relationship of getElementsByTagNameNSAll(parsed.document, NS.PR, "Relationship")) {
+            if (relationship.getAttribute("TargetMode") === "External") {
+                continue;
+            }
+            const target = resolveTarget(lookup, baseDir, relationship.getAttribute("Target") ?? "");
+            if (target !== undefined) {
+                named.add(canonicalPartName(target));
+            }
+        }
+    }
+    return named;
+};
 
 /** The lazily read stories, beside the story roots' own `officeDocument` entries. */
 const STORY_SEGMENTS: ReadonlySet<string> = new Set(["header", "footer", "comments", "footnotes", "endnotes"]);

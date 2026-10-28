@@ -30625,3 +30625,620 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed,", matches, 
 `````
 
 </details>
+
+### Session 84: 14:01Z–14:01Z on 2026-10-28, validator columns at 51288228
+
+Whether Word judges markup compatibility in a `word/` part it does not read ([#1116](https://github.com/jandira-tech/docx-validate/issues/1116)). Session 83 (s83d) opened clean an undeclared-`Requires` Choice (`mce-malformed`) in a `word/header83.xml` that no relationship names, and refused it in a main document stored as `word/main.xml`. `mce-must-understand` in such a part was unprobed, and #639's rows pinned it blocking in a stray `word/foo.xml`. One chunk, s84a, mostly on the minimal package:
+
+- `mu-unrelated-header` adds `word/header83.xml`, typed header by its Override and named by no relationship, whose `w:hdr` root carries `mc:MustUnderstand="foo"` for an unknown `urn:foo`; its `-calibration` drops the attribute;
+- `mu-stray-foo` is #639's specimen, `word/foo.xml` with no Override and no relationship, a `w:document` root carrying the same attribute around an empty body, with its `-calibration`;
+- `mu-used-header` has the main document relate the header and the body's `w:sectPr` reference it, and `mu-unused-header` has it related and referenced by nothing;
+- `mu-main` puts the attribute on the main document's root;
+- `choice-unused-header` is session 83's `choice-requires-undeclared-unrelated-header` with the main document relating the header and nothing referencing it.
+
+The chunk ends with a minimal control. It ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 9 of 9 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`51288228dfe6ca4454d16562ec0a4798364614ab`), judging an export of that commit. The strict column names only the markup-compatibility findings.
+
+Every calibration and the control opened clean. Every row Word opened renders the main document's `Hello` in both runs (`pdftotext`), never the header's `Header 84`; the Choice row renders no text, as its clean twin did in session 83. No refused row left a PDF.
+
+- **Word refuses an unknown `mc:MustUnderstand` in a part it reads.** It offered to recover unreadable content for the main document's root and for a header the body references.
+- **It does not judge it in a part no relationship names.** It opened clean the unrelated header and #639's stray `word/foo.xml`, as it opened session 83's Choice there.
+- **Nor in a header the main document relates but does not use.** It opened clean the related, unreferenced header holding the attribute and the one holding session 83's Choice.
+
+Word-valid at 51288228 matches Word on 5 of 9 rows: it rejects the four clean rows that hold a finding. #1116 makes both findings warn in a `word/` part no relationship names, so it passes `mu-unrelated-header` and `mu-stray-foo`; [#1125](https://github.com/jandira-tech/docx-validate/issues/1125) covers the two related, unused headers.
+
+| Run    | Observed             | Specimen                          | Shape                                                                                                                                                                                                                  | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at 51288228                           | strict at 51288228                               |
+| ------ | -------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ------------------------------------------------ | ------------------------------------------------ |
+| `s84a` | 14:01:31Z, 14:01:52Z | `mu-unrelated-header`             | #1116 mce-must-understand: minimal plus word/header83.xml, typed header, named by no relationship, root MustUnderstand urn:foo                                                                                         | `ee9f112a5b639c87` | clean-open     | clean-open     | clean-open                 | invalid: `mce-must-understand@word/header83.xml` | invalid: `mce-must-understand@word/header83.xml` |
+| `s84a` | 14:01:31Z, 14:01:52Z | `mu-unrelated-header-calibration` | calibration: the same header without MustUnderstand                                                                                                                                                                    | `627df9bbca283a46` | clean-open     | clean-open     | clean-open                 | valid                                            | invalid: no markup-compatibility finding         |
+| `s84a` | 14:01:31Z, 14:01:52Z | `mu-stray-foo`                    | #1116/#639 mce-must-understand: minimal plus word/foo.xml (no Override, no relationship), w:document root MustUnderstand urn:foo                                                                                       | `07c881cba45e22f7` | clean-open     | clean-open     | clean-open                 | invalid: `mce-must-understand@word/foo.xml`      | invalid: `mce-must-understand@word/foo.xml`      |
+| `s84a` | 14:01:31Z, 14:01:52Z | `mu-stray-foo-calibration`        | calibration: the same word/foo.xml without MustUnderstand                                                                                                                                                              | `025199ec85e23ca5` | clean-open     | clean-open     | clean-open                 | valid                                            | invalid: no markup-compatibility finding         |
+| `s84a` | 14:01:31Z, 14:01:52Z | `mu-used-header`                  | #1116 mce-must-understand: the header related by the main document and referenced by its w:sectPr                                                                                                                      | `24f000b5d34a4327` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-must-understand@word/header83.xml` | invalid: `mce-must-understand@word/header83.xml` |
+| `s84a` | 14:01:31Z, 14:01:52Z | `mu-unused-header`                | #1116 mce-must-understand: the header related by the main document, referenced by nothing                                                                                                                              | `f7d49286c122f3c5` | clean-open     | clean-open     | clean-open                 | invalid: `mce-must-understand@word/header83.xml` | invalid: `mce-must-understand@word/header83.xml` |
+| `s84a` | 14:01:31Z, 14:01:52Z | `mu-main`                         | #1116 mce-must-understand: the main document's root carrying MustUnderstand urn:foo                                                                                                                                    | `cfd182457fc182bc` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-must-understand@word/document.xml` | invalid: `mce-must-understand@word/document.xml` |
+| `s84a` | 14:01:31Z, 14:01:52Z | `choice-unused-header`            | #1116 mce-malformed: working/package.word-choice-requires-declared.docx plus word/header83.xml holding broken/package.word-choice-requires-undeclared.docx's body, related by the main document, referenced by nothing | `7b8102df5ab932bd` | clean-open     | clean-open     | clean-open                 | invalid: `mce-malformed@word/header83.xml`       | invalid: `mce-malformed@word/header83.xml`       |
+| `s84a` | 14:01:31Z, 14:01:52Z | `s84a-control-minimal`            | control                                                                                                                                                                                                                | `28ac679cc2c418f3` | clean-open     | clean-open     | clean-open                 | valid                                            | valid                                            |
+
+<details><summary>Raw records, session 84</summary>
+
+```jsonl
+{"run": "s84a", "pass": 1, "name": "mu-unrelated-header", "sha256": "ee9f112a5b639c879e7f34fd5a2626012ffbc32ac69cad533142b09bb21fae3d", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:31+00:00", "staged": "00005__wfv__mu-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-unrelated-header_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s84a", "pass": 2, "name": "mu-unrelated-header", "sha256": "ee9f112a5b639c879e7f34fd5a2626012ffbc32ac69cad533142b09bb21fae3d", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:52+00:00", "staged": "00005__wfv__mu-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-unrelated-header_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s84a", "pass": 1, "name": "mu-unrelated-header-calibration", "sha256": "627df9bbca283a467b5b696d1c5ca7f14b5b915271cf5904bd8ded3c2de60b75", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:31+00:00", "staged": "00004__wfv__mu-unrelated-header-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-unrelated-header-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s84a", "pass": 2, "name": "mu-unrelated-header-calibration", "sha256": "627df9bbca283a467b5b696d1c5ca7f14b5b915271cf5904bd8ded3c2de60b75", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:52+00:00", "staged": "00004__wfv__mu-unrelated-header-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-unrelated-header-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s84a", "pass": 1, "name": "mu-stray-foo", "sha256": "07c881cba45e22f7f333f7d7b0863f7d0b0d111fecb4a3d4f77cfcac16abf343", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:31+00:00", "staged": "00003__wfv__mu-stray-foo.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-stray-foo_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s84a", "pass": 2, "name": "mu-stray-foo", "sha256": "07c881cba45e22f7f333f7d7b0863f7d0b0d111fecb4a3d4f77cfcac16abf343", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:52+00:00", "staged": "00003__wfv__mu-stray-foo.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-stray-foo_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s84a", "pass": 1, "name": "mu-stray-foo-calibration", "sha256": "025199ec85e23ca5c61e32a7325e61508f233f0752547b30c8b1a83e32048365", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:31+00:00", "staged": "00002__wfv__mu-stray-foo-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-stray-foo-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s84a", "pass": 2, "name": "mu-stray-foo-calibration", "sha256": "025199ec85e23ca5c61e32a7325e61508f233f0752547b30c8b1a83e32048365", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:52+00:00", "staged": "00002__wfv__mu-stray-foo-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-stray-foo-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s84a", "pass": 1, "name": "mu-used-header", "sha256": "24f000b5d34a43271313ac120fb4660e447b06cae0d3468762e8ee995fcbfa1f", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:31+00:00", "staged": "00007__wfv__mu-used-header.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 10:01:30.316 'Word found unreadable content in 00007__wfv__mu-used-header.docx. Do you want to recover the conten … ? If you trust the source of this document, click Yes.'", "2026-10-28 10:01:30.824 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  Recovery converter. (00007__wfv__mu-used-header.docx)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s84a", "pass": 2, "name": "mu-used-header", "sha256": "24f000b5d34a43271313ac120fb4660e447b06cae0d3468762e8ee995fcbfa1f", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:52+00:00", "staged": "00007__wfv__mu-used-header.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 10:01:51.148 'Word found unreadable content in 00007__wfv__mu-used-header.docx. Do you want to recover the conten … ? If you trust the source of this document, click Yes.'", "2026-10-28 10:01:51.656 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  Recovery converter. (00007__wfv__mu-used-header.docx)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s84a", "pass": 1, "name": "mu-unused-header", "sha256": "f7d49286c122f3c58a664e1bbe7fe9fa790a9857ab03c5c98d46a7168988988d", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:31+00:00", "staged": "00006__wfv__mu-unused-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-unused-header_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s84a", "pass": 2, "name": "mu-unused-header", "sha256": "f7d49286c122f3c58a664e1bbe7fe9fa790a9857ab03c5c98d46a7168988988d", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:52+00:00", "staged": "00006__wfv__mu-unused-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-unused-header_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s84a", "pass": 1, "name": "mu-main", "sha256": "cfd182457fc182bcf10741fbea29842c0cf1a00d2cf87b2c1f37bcb24ab8eba8", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:31+00:00", "staged": "00001__wfv__mu-main.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 10:01:26.031 'Word found unreadable content in 00001__wfv__mu-main.docx. Do you want to recover the contents of t … ? If you trust the source of this document, click Yes.'", "2026-10-28 10:01:26.522 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … he Text Recovery converter. (00001__wfv__mu-main.docx)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s84a", "pass": 2, "name": "mu-main", "sha256": "cfd182457fc182bcf10741fbea29842c0cf1a00d2cf87b2c1f37bcb24ab8eba8", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:52+00:00", "staged": "00001__wfv__mu-main.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 10:01:46.848 'Word found unreadable content in 00001__wfv__mu-main.docx. Do you want to recover the contents of t … ? If you trust the source of this document, click Yes.'", "2026-10-28 10:01:47.373 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … he Text Recovery converter. (00001__wfv__mu-main.docx)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s84a", "pass": 1, "name": "choice-unused-header", "sha256": "7b8102df5ab932bd5f35a6155206aac8c65a9dde1172d55a2e20932b4c77ae95", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:31+00:00", "staged": "00000__wfv__choice-unused-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF choice-unused-header_byword.pdf (11571 bytes), no dialog named the file"]}
+{"run": "s84a", "pass": 2, "name": "choice-unused-header", "sha256": "7b8102df5ab932bd5f35a6155206aac8c65a9dde1172d55a2e20932b4c77ae95", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:52+00:00", "staged": "00000__wfv__choice-unused-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF choice-unused-header_byword.pdf (11571 bytes), no dialog named the file"]}
+{"run": "s84a", "pass": 1, "name": "s84a-control-minimal", "sha256": "28ac679cc2c418f3abf3aa8425d1e7f7483b7241f2db5ef4db736866ff8165ce", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:31+00:00", "staged": "00008__wfv__s84a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s84a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s84a", "pass": 2, "name": "s84a-control-minimal", "sha256": "28ac679cc2c418f3abf3aa8425d1e7f7483b7241f2db5ef4db736866ff8165ce", "validatorRevision": "51288228dfe6ca4454d16562ec0a4798364614ab", "observedAt": "2026-10-28T14:01:52+00:00", "staged": "00008__wfv__s84a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s84a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 84 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged. The builder ran on an export of the recorded revision (`git archive`), `node_modules` linked in, with `WT` and `REVISION` naming them.
+
+`s84builder.mts`:
+
+```ts
+// Session 84 (2026-10-28): does Word read markup compatibility in a word/ part no relationship names (#1116)?
+// Session 83 (s83d) opened clean an undeclared-Requires Choice (`mce-malformed`) in an unrelated word/header83.xml and
+// refused it in a main document stored as word/main.xml. #1116 lets `mce-malformed` and `mce-must-understand` warn in a
+// word/ part no relationship names; `mce-must-understand` there is unprobed, and #639's rows pin it blocking in a stray
+// word/foo.xml. Rows, on the minimal package (`tests/support/minimal-docx.ts`) unless named otherwise:
+// - `mu-unrelated-header`: word/header83.xml, typed header by its Override, named by no relationship, whose w:hdr root
+//   carries mc:MustUnderstand="foo" for an unknown urn:foo; its `-calibration` drops the attribute;
+// - `mu-stray-foo`: #639's specimen, word/foo.xml with no Override and no relationship, a w:document root carrying the
+//   same MustUnderstand and an empty body; its `-calibration` drops the attribute;
+// - `mu-used-header`: the header related by the main document and referenced by its w:sectPr, the read placement;
+// - `mu-unused-header`: the header related by the main document, referenced by nothing (unprobed for these findings);
+// - `mu-main`: the main document's root carrying the MustUnderstand;
+// - `choice-unused-header`: s83d's `choice-requires-undeclared-unrelated-header` with the main document relating the
+//   header and nothing referencing it (`mce-malformed` in a related, unused part, unprobed);
+// - a minimal control.
+// Every row records the validator revision it was judged at (`validatorRevision`).
+// Run: WT=<exported tree> REVISION=<its commit> CHUNK=s84a tsx <this file>
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { createRequire } from "node:module";
+import { appendFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+// WT names an exported tree (no .git), REVISION the commit it was exported at.
+const WT = process.env.WT ?? process.cwd();
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const { parseXml } = await import(path.join(WT, "src/lib/xml-helpers.ts"));
+const { MINIMAL_PARTS, buildDocx } = await import(path.join(WT, "tests/support/minimal-docx.ts"));
+const JSZip = createRequire(path.join(WT, "package.json"))("jszip");
+const REVISION = process.env.REVISION ?? execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+const FIXTURES = path.join(WT, "tests/fixtures");
+
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const MAIN_RELS = "word/_rels/document.xml.rels";
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n`;
+
+const replaceOnce = (text: string, from: string | RegExp, to: string) => {
+    const count = typeof from === "string" ? text.split(from).length - 1 : (text.match(new RegExp(from.source, "g")) ?? []).length;
+    if (count !== 1) throw new Error(`expected exactly one ${from}, found ${count}`);
+    return text.replace(from, to);
+};
+
+type Parts = Map<string, Uint8Array>;
+const utf8 = new TextDecoder("utf-8");
+const encoder = new TextEncoder();
+const textOf = (parts: Parts, name: string) => {
+    const bytes = parts.get(name);
+    if (!bytes) throw new Error(`no ${name}`);
+    const text = utf8.decode(bytes);
+    return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+};
+
+/** The fixture's parts in stored order. */
+const load = async (rel: string): Promise<Parts> => {
+    const zip = await JSZip.loadAsync(readFileSync(path.join(FIXTURES, rel)));
+    const parts: Parts = new Map();
+    for (const name of Object.keys(zip.files)) {
+        if (!zip.files[name].dir) parts.set(name, await zip.files[name].async("uint8array"));
+    }
+    return parts;
+};
+const pack = async (parts: Parts): Promise<Uint8Array> => {
+    const zip = new JSZip();
+    for (const [name, bytes] of parts) zip.file(name, bytes, { compression: "DEFLATE" });
+    return zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
+};
+
+/** The package with its main document stored as word/main.xml; every name that points at it follows. */
+const renameMain = (parts: Parts): Parts => {
+    if (!parts.has(MAIN)) throw new Error("no word/document.xml");
+    const out: Parts = new Map();
+    for (const [name, bytes] of parts) {
+        if (name === MAIN) out.set("word/main.xml", bytes);
+        else if (name === MAIN_RELS) out.set("word/_rels/main.xml.rels", bytes);
+        else if (name === "_rels/.rels")
+            out.set(
+                name,
+                encoder.encode(replaceOnce(textOf(parts, name), /Target="(\/?)word\/document\.xml"/, 'Target="$1word/main.xml"')),
+            );
+        else if (name === CT)
+            out.set(name, encoder.encode(replaceOnce(textOf(parts, name), 'PartName="/word/document.xml"', 'PartName="/word/main.xml"')));
+        else out.set(name, bytes);
+    }
+    return out;
+};
+
+/** `text` without its outermost `<tag>` elements, nested ones (a w:sectPr inside a w:sectPrChange) counted, not matched. */
+const withoutElements = (text: string, tag: string): string => {
+    const token = new RegExp(`<${tag}\\b[^>]*?(/?)>|</${tag}>`, "g");
+    let out = "";
+    let depth = 0;
+    let start = 0;
+    let cut = 0;
+    for (let match = token.exec(text); match; match = token.exec(text)) {
+        const closing = match[0].startsWith("</");
+        const selfClosing = !closing && match[1] === "/";
+        if (depth === 0 && !closing) {
+            out += text.slice(cut, match.index);
+            start = match.index;
+            if (selfClosing) {
+                cut = token.lastIndex;
+                continue;
+            }
+            depth = 1;
+        } else if (closing) {
+            depth -= 1;
+            if (depth < 0) throw new Error(`unbalanced </${tag}>`);
+            if (depth === 0) cut = token.lastIndex;
+        } else if (!selfClosing) {
+            depth += 1;
+        }
+    }
+    if (depth !== 0) throw new Error(`unclosed <${tag}> at ${start}`);
+    return out + text.slice(cut);
+};
+
+/** `broken`'s main-document body as a header part: the w:document root's attributes on w:hdr, its w:sectPr elements dropped. */
+const bodyAsHeader = (doc: string): string => {
+    const attributes = doc.match(/<w:document\b([^>]*)>/)?.[1];
+    const body = doc.match(/<w:body>([\s\S]*)<\/w:body>/)?.[1];
+    if (attributes === undefined || body === undefined) throw new Error("no w:document root or w:body");
+    const inner = withoutElements(body, "w:sectPr");
+    if (!/<w:(p|tbl|sdt)\b/.test(inner)) throw new Error("the body holds no block-level content");
+    const header = `${XML_DECL}<w:hdr${attributes}>${inner}</w:hdr>`;
+    parseXml(header);
+    return header;
+};
+
+const UNRELATED = "header83.xml";
+/** The clean twin plus word/header83.xml, typed header and named by no relationship, holding the broken body. */
+const withUnrelatedHeader = (clean: Parts, broken: Parts): Parts => {
+    if ([...clean.keys()].some((name) => name.toLowerCase().includes(UNRELATED))) throw new Error(`the twin already stores ${UNRELATED}`);
+    const out: Parts = new Map(clean);
+    out.set(
+        CT,
+        encoder.encode(
+            replaceOnce(textOf(clean, CT), "</Types>", `<Override PartName="/word/${UNRELATED}" ContentType="${WML}.header+xml"/></Types>`),
+        ),
+    );
+    out.set(`word/${UNRELATED}`, encoder.encode(bodyAsHeader(textOf(broken, MAIN))));
+    out.set(`word/_rels/${UNRELATED}.rels`, broken.get(MAIN_RELS)!);
+    return out;
+};
+
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const MU = `xmlns:mc="${MC}" xmlns:foo="urn:foo" mc:MustUnderstand="foo"`;
+const minimal = (): Parts =>
+    new Map(Object.entries(MINIMAL_PARTS as Record<string, string>).map(([name, text]) => [name, encoder.encode(text)]));
+const headerXml = (mustUnderstand: boolean) =>
+    `${XML_DECL}<w:hdr xmlns:w="${W}"${mustUnderstand ? ` ${MU}` : ""}><w:p><w:r><w:t>Header 84</w:t></w:r></w:p></w:hdr>`;
+/** `parts` plus word/header83.xml typed header; `relate` adds the main document's relationship, `use` its w:sectPr reference. */
+const withHeader = (parts: Parts, header: string | undefined, relate: boolean, use: boolean): Parts => {
+    const out: Parts = new Map(parts);
+    if (header !== undefined) {
+        out.set(
+            CT,
+            encoder.encode(
+                replaceOnce(
+                    textOf(parts, CT),
+                    "</Types>",
+                    `<Override PartName="/word/${UNRELATED}" ContentType="${WML}.header+xml"/></Types>`,
+                ),
+            ),
+        );
+        out.set(`word/${UNRELATED}`, encoder.encode(header));
+    }
+    if (relate)
+        out.set(
+            MAIN_RELS,
+            encoder.encode(
+                replaceOnce(
+                    textOf(parts, MAIN_RELS),
+                    "</Relationships>",
+                    `<Relationship Id="rId84" Type="${R}/header" Target="${UNRELATED}"/></Relationships>`,
+                ),
+            ),
+        );
+    if (use) {
+        const main = textOf(parts, MAIN);
+        const at = main.lastIndexOf("<w:sectPr");
+        const open = main.indexOf(">", at) + 1;
+        if (at < 0 || main[open - 2] === "/") throw new Error("no open w:sectPr");
+        out.set(
+            MAIN,
+            encoder.encode(`${main.slice(0, open)}<w:headerReference xmlns:r="${R}" w:type="default" r:id="rId84"/>${main.slice(open)}`),
+        );
+    }
+    return out;
+};
+const STRAY_FOO = (mustUnderstand: boolean) =>
+    `${XML_DECL}<w:document xmlns:w="${W}"${mustUnderstand ? ` ${MU}` : ""}><w:body/></w:document>`;
+const withStrayFoo = (mustUnderstand: boolean): Parts =>
+    new Map([...minimal(), ["word/foo.xml", encoder.encode(STRAY_FOO(mustUnderstand))]]);
+const mainMustUnderstand = (): Parts => {
+    const parts = minimal();
+    // The minimal root already binds mc; add the urn:foo binding and the MustUnderstand only.
+    parts.set(
+        MAIN,
+        encoder.encode(
+            replaceOnce(textOf(parts, MAIN), / mc:Ignorable="w14">/, ` xmlns:foo="urn:foo" mc:Ignorable="w14" mc:MustUnderstand="foo">`),
+        ),
+    );
+    return parts;
+};
+const CHOICE_BROKEN = "broken/package.word-choice-requires-undeclared.docx";
+const CHOICE_CLEAN = "working/package.word-choice-requires-declared.docx";
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const chunks: Record<string, Row[]> = {
+    s84a: [
+        [
+            "mu-unrelated-header",
+            "#1116 mce-must-understand: minimal plus word/header83.xml, typed header, named by no relationship, root MustUnderstand urn:foo",
+            async () => pack(withHeader(minimal(), headerXml(true), false, false)),
+        ],
+        [
+            "mu-unrelated-header-calibration",
+            "calibration: the same header without MustUnderstand",
+            async () => pack(withHeader(minimal(), headerXml(false), false, false)),
+        ],
+        [
+            "mu-stray-foo",
+            "#1116/#639 mce-must-understand: minimal plus word/foo.xml (no Override, no relationship), w:document root MustUnderstand urn:foo",
+            async () => pack(withStrayFoo(true)),
+        ],
+        ["mu-stray-foo-calibration", "calibration: the same word/foo.xml without MustUnderstand", async () => pack(withStrayFoo(false))],
+        [
+            "mu-used-header",
+            "#1116 mce-must-understand: the header related by the main document and referenced by its w:sectPr",
+            async () => pack(withHeader(minimal(), headerXml(true), true, true)),
+        ],
+        [
+            "mu-unused-header",
+            "#1116 mce-must-understand: the header related by the main document, referenced by nothing",
+            async () => pack(withHeader(minimal(), headerXml(true), true, false)),
+        ],
+        [
+            "mu-main",
+            "#1116 mce-must-understand: the main document's root carrying MustUnderstand urn:foo",
+            async () => pack(mainMustUnderstand()),
+        ],
+        [
+            "choice-unused-header",
+            `#1116 mce-malformed: ${CHOICE_CLEAN} plus word/${UNRELATED} holding ${CHOICE_BROKEN}'s body, related by the main document, referenced by nothing`,
+            async () => pack(withHeader(withUnrelatedHeader(await load(CHOICE_CLEAN), await load(CHOICE_BROKEN)), undefined, true, false)),
+        ],
+        ["s84a-control-minimal", "control", async () => buildDocx({ ...(MINIMAL_PARTS as Record<string, string>) })],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+// A rerun starts from an empty src, so a removed or renamed row leaves no stale specimen (CodeRabbit on #985).
+rmSync(dir, { recursive: true, force: true });
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+    }
+};
+
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        control: issue === "control",
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-84 chunk: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s84a",)
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0], "unknown") if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
+                     # A match needs agreed readings: an unknown row matches nothing (CodeRabbit on #985).
+                     "validatorMatchesWord": agreed and ((all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True))})
+(ROOT / "s84/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-84 part of docs/plans/evidence/word-probes-2026-10-24.md into s84/section.md.
+
+Reads the chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796). The text Word rendered is read from its own
+PDFs with pdftotext, so the narrative's "rendered" claims are checked here.
+"""
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s84a",)
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s84/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e}`" for e in v["errors"])
+
+
+def strict_cell(v):
+    # Strict also reports the specimens' unreferenced-part, paraId, content-type and XSD findings; the column names only
+    # the markup-compatibility findings, the ones this session probes.
+    if v["valid"] is None:
+        return cell(v)
+    if v["valid"]:
+        return "valid"
+    mce = [e for e in v["errors"] if e.startswith("mce-")]
+    return "invalid: " + (", ".join(f"`{e}`" for e in mce) if mce else "no markup-compatibility finding")
+
+
+def manifest(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return row
+    raise KeyError(file)
+
+
+def run_at(run, file):
+    return datetime.fromisoformat(manifest(run, file)["run_at"]).astimezone(timezone.utc)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+def rendered(run, file):
+    pdf = run / "pdf" / (Path(file).stem + "_byword.pdf")
+    if not pdf.exists():
+        return None
+    return " ".join(subprocess.run(["pdftotext", str(pdf), "-"], check=True, capture_output=True, text=True).stdout.split())
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {strict_cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            record = {"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                      "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                      "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                      "pdf": row["pdf"], "evidence": row["evidence"]}
+            error = manifest(r, s["file"]).get("error")
+            if error:
+                record["error"] = error
+            raw.append(json.dumps(record, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+
+REFUSED = {"mu-used-header.docx", "mu-main.docx"}
+FINDING = {"mu-unrelated-header.docx", "mu-stray-foo.docx", "mu-used-header.docx", "mu-unused-header.docx",
+           "mu-main.docx", "choice-unused-header.docx"}
+# The narrative's claims, checked against results.json: every row's four readings agree; Word offered to recover the two
+# read placements and opened every other row clean; word-valid at the probed revision rejects every row holding a
+# finding and passes the rest, so it is wrong exactly on the four clean rows holding one.
+for (label, file), r in results.items():
+    assert r["agreed"], (label, file, r)
+    if file in REFUSED:
+        assert r["everyReadingRejects"] and r["outcome"] == "unreadable-content-warning", (label, file, r)
+    else:
+        assert set(r["readings"]) == {"clean-open"}, (label, file, r)
+    assert r["wordValid"] is (file not in FINDING), (label, file, r)
+    assert r["validatorMatchesWord"] is (file not in FINDING - REFUSED), (label, file, r)
+assert agreed == len(rows) == 9, (agreed, len(rows))
+# The driver opens files in name order (#671).
+for label in CHUNKS:
+    files = sorted(json.loads(l)["file"] for l in (ROOT / label / "specimens.jsonl").read_text().splitlines())
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        opened = [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()]
+        assert opened == files, (run, opened)
+# The text Word rendered, both runs: every row it opened on the minimal package renders the main document's "Hello" and
+# never the header's "Header 84"; the Choice row renders what its clean twin renders in session 83 (nothing); a refused
+# row left no PDF.
+texts = {}
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+            file = json.loads(line)["original_filename"]
+            text = rendered(run, file)
+            texts.setdefault(file, set()).add(text)
+            if file in REFUSED:
+                assert text is None, (run, file, text)
+for file, seen in texts.items():
+    if file in REFUSED:
+        continue
+    assert seen == ({""} if file == "choice-unused-header.docx" else {"Hello"}), (file, seen)
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}", (min(starts), max(ends))
+matches = sum(r["validatorMatchesWord"] for r in results.values())
+out = [
+    f"### Session 84: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {at}",
+    "",
+    "Whether Word judges markup compatibility in a `word/` part it does not read "
+    "([#1116](https://github.com/jandira-tech/docx-validate/issues/1116)). Session 83 (s83d) opened clean an "
+    "undeclared-`Requires` Choice (`mce-malformed`) in a `word/header83.xml` that no relationship names, and refused it "
+    "in a main document stored as `word/main.xml`. `mce-must-understand` in such a part was unprobed, and #639's rows "
+    "pinned it blocking in a stray `word/foo.xml`. One chunk, s84a, mostly on the minimal package:",
+    "",
+    "- `mu-unrelated-header` adds `word/header83.xml`, typed header by its Override and named by no relationship, whose "
+    "`w:hdr` root carries `mc:MustUnderstand=\"foo\"` for an unknown `urn:foo`; its `-calibration` drops the attribute;",
+    "- `mu-stray-foo` is #639's specimen, `word/foo.xml` with no Override and no relationship, a `w:document` root "
+    "carrying the same attribute around an empty body, with its `-calibration`;",
+    "- `mu-used-header` has the main document relate the header and the body's `w:sectPr` reference it, and "
+    "`mu-unused-header` has it related and referenced by nothing;",
+    "- `mu-main` puts the attribute on the main document's root;",
+    "- `choice-unused-header` is session 83's `choice-requires-undeclared-unrelated-header` with the main document "
+    "relating the header and nothing referencing it.",
+    "",
+    "The chunk ends with a minimal control. It ran twice, as two separate driver runs of byte-identical copies, and each "
+    "run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. "
+    "Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; "
+    f"{agreed} of {len(rows)} rows agree. The two times in Observed are the ends of the first and second runs. Shape is "
+    f"the builder's description of the specimen. The builder recorded the validator revision in every row (`{rev}`), "
+    "judging an export of that commit. The strict column names only the markup-compatibility findings.",
+    "",
+    "Every calibration and the control opened clean. Every row Word opened renders the main document's `Hello` in both "
+    "runs (`pdftotext`), never the header's `Header 84`; the Choice row renders no text, as its clean twin did in "
+    "session 83. No refused row left a PDF.",
+    "",
+    "- **Word refuses an unknown `mc:MustUnderstand` in a part it reads.** It offered to recover unreadable content for "
+    "the main document's root and for a header the body references.",
+    "- **It does not judge it in a part no relationship names.** It opened clean the unrelated header and #639's stray "
+    "`word/foo.xml`, as it opened session 83's Choice there.",
+    "- **Nor in a header the main document relates but does not use.** It opened clean the related, unreferenced header "
+    "holding the attribute and the one holding session 83's Choice.",
+    "",
+    f"Word-valid at {at} matches Word on {matches} of {len(rows)} rows: it rejects the four clean rows that hold a "
+    "finding. #1116 makes both findings warn in a `word/` part no relationship names, so it passes `mu-unrelated-header` "
+    "and `mu-stray-foo`; [#1125](https://github.com/jandira-tech/docx-validate/issues/1125) covers the two related, "
+    "unused headers.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 84</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 84 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged. "
+    "The builder ran on an export of the recorded revision (`git archive`), `node_modules` linked in, with `WT` and "
+    "`REVISION` naming them.",
+    "",
+]
+for name, path, lang in (("s84builder.mts", ROOT / "s84builder.mts", "ts"), ("compare.py", ROOT / "s84/compare.py", "python"),
+                         ("section.py", ROOT / "s84/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s84/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed,", matches, "match")
+`````
+
+</details>

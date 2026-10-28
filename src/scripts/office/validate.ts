@@ -98,9 +98,9 @@ import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanti
 import { PPTXSchemaValidator } from "./validators/pptx";
 import { validateRedlining } from "./validators/redlining";
 import { propertiesParts } from "../../lib/properties-parts";
-import { wordReadParts, wordStoryRootParts } from "../../lib/word-read-parts";
+import { wordReadParts, wordRelationshipNamedParts, wordStoryRootParts } from "../../lib/word-read-parts";
 import { CT_DUPLICATE_DECLARATION } from "../../lib/content-types";
-import { isWordBlockingIssue } from "./validators/word-blocking";
+import { isWordBlockingIssue, namedByNoRelationship } from "./validators/word-blocking";
 import { explainWordError } from "./validators/word-error-explanations";
 import { archiveWithoutEntries, loadCentralNamedArchive } from "../../lib/zip-central-names";
 import { WORD_PART_CONTENT_TYPE_MISMATCH } from "./checks/word-part-content-type-mismatch";
@@ -912,6 +912,7 @@ function findingsUnderProfile(
     context?: ValidationContext,
     storyRootParts: ReadonlySet<string> = new Set(),
     observedContentTypeParts: ReadonlySet<string> = new Set(),
+    relationshipNamedParts?: ReadonlySet<string>,
 ): ValidationIssue[] {
     // Full DOCX validation diagnoses root Ignorable prefixes before dropping
     // their MC restatements. Apply those same two steps only when the selected
@@ -948,7 +949,9 @@ function findingsUnderProfile(
                 ? outcome.issues
                 : outcome.issues.map((issue): ValidationIssue =>
                       issue.severity === "error" &&
-                      !isWordBlockingIssue(issue, properties, wordRead, storyRootParts, observedContentTypeParts)
+                      !isWordBlockingIssue(issue, properties, wordRead, storyRootParts, observedContentTypeParts, {
+                          namedByNoRelationship: namedByNoRelationship(issue, relationshipNamedParts),
+                      })
                           ? { ...issue, severity: "warning" }
                           : issue,
                   ),
@@ -1008,7 +1011,9 @@ async function archiveFindings(
         );
         // The full run's reachability sets, so an XML error keeps the
         // severity the full run gives it (#437, #488), and the observed
-        // content-type reach keeps its verdict structural (#718).
+        // content-type reach keeps its verdict structural (#718), and the
+        // parts a relationship names keep the markup-compatibility verdict
+        // (#1116).
         const [properties, read, storyRoots, observedContentTypes] =
             profile === "word-valid" && format === "docx"
                 ? [
@@ -1018,6 +1023,7 @@ async function archiveFindings(
                       await wordObservedContentTypeParts(opened.context, profile),
                   ]
                 : [new Set<string>(), new Set<string>(), new Set<string>(), new Set<string>()];
+        const named = profile === "word-valid" && format === "docx" ? await wordRelationshipNamedParts(opened.context, profile) : undefined;
         const issues = findingsUnderProfile(
             { ...run, outcomes, issues: outcomes.flatMap((outcome) => outcome.issues) },
             registry,
@@ -1028,6 +1034,7 @@ async function archiveFindings(
             opened.context,
             storyRoots,
             observedContentTypes,
+            named,
         );
         return { issues, executed: [...run.executed] };
     } catch {
@@ -1199,7 +1206,8 @@ async function runSelectedChecks(
     // #437: the word-valid reachability sets are computed once per partial
     // run, as the full DOCX run computes them, so both agree; the observed
     // content-type reach keeps the unrecognized finding's verdict structural
-    // (#718).
+    // (#718), and the parts a relationship names keep the
+    // markup-compatibility verdict (#1116).
     const [properties, read, storyRoots, observedContentTypes] =
         mode.profile === "word-valid" && format === "docx"
             ? [
@@ -1209,6 +1217,8 @@ async function runSelectedChecks(
                   await wordObservedContentTypeParts(opened.context, mode.profile),
               ]
             : [new Set<string>(), new Set<string>(), new Set<string>(), new Set<string>()];
+    const named =
+        mode.profile === "word-valid" && format === "docx" ? await wordRelationshipNamedParts(opened.context, mode.profile) : undefined;
     const issues = findingsUnderProfile(
         { ...run, outcomes, issues: outcomes.flatMap((outcome) => outcome.issues) },
         registry,
@@ -1219,6 +1229,7 @@ async function runSelectedChecks(
         opened.context,
         storyRoots,
         observedContentTypes,
+        named,
     );
     return {
         valid: issues.every((issue) => issue.severity !== "error"),

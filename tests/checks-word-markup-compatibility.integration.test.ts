@@ -397,11 +397,13 @@ describe("markup compatibility judging of OPC-equivalent word/*.xml part names (
             part: "word/foo.%78ml",
             parts: withPart("word/foo.%78ml", MUST_UNDERSTAND_FOO),
             code: "mce-must-understand",
-            // mce-must-understand is Word-blocking in the XML parts under
-            // word/, keyed by the canonical name, so the finding is an error.
-            severity: "error",
+            // No relationship names the part, so word-valid warns in every
+            // spelling: Word session 84 (s84a, two runs, all readings agree)
+            // opened the unescaped specimen clean (#1116). The escaped
+            // spelling keeps its stored-name rejection.
+            severity: "warning",
             fullValid: false,
-            namedValid: false,
+            namedValid: true,
             quickValid: false,
             lenient: [
                 "error:ct-undeclared-part@word/foo.%78ml",
@@ -435,10 +437,10 @@ describe("markup compatibility judging of OPC-equivalent word/*.xml part names (
             part: "word/FOO.XML",
             parts: withPart("word/FOO.XML", MUST_UNDERSTAND_FOO),
             code: "mce-must-understand",
-            severity: "error",
-            fullValid: false,
-            namedValid: false,
-            quickValid: false,
+            severity: "warning",
+            fullValid: true,
+            namedValid: true,
+            quickValid: true,
             lenient: [
                 "error:ct-undeclared-part@word/FOO.XML",
                 "error:mce-must-understand@word/FOO.XML",
@@ -467,10 +469,10 @@ describe("markup compatibility judging of OPC-equivalent word/*.xml part names (
             part: "word/foo.xml",
             parts: withPart("word/foo.xml", MUST_UNDERSTAND_FOO),
             code: "mce-must-understand",
-            severity: "error",
-            fullValid: false,
-            namedValid: false,
-            quickValid: false,
+            severity: "warning",
+            fullValid: true,
+            namedValid: true,
+            quickValid: true,
             lenient: [
                 "error:ct-undeclared-part@word/foo.xml",
                 "error:mce-must-understand@word/foo.xml",

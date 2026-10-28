@@ -35,6 +35,7 @@ import {
     wordReadParts,
     wordReadStoryParts,
     wordReadTypedTargets,
+    wordRelationshipNamedParts,
     wordStoryRootParts,
     wordTypedRelationshipTargets,
     wordUnobservedRelationshipTargets,
@@ -2095,5 +2096,112 @@ describe("wordReadStoryParts (#1106, #1113)", () => {
         const ctx = ValidationContext.fromEntries(withHeaders(true));
         expect(wordReadStoryParts(ctx, "word-valid")).toBe(wordReadStoryParts(ctx, "word-valid"));
         expect(wordReadStoryParts(ctx, "strict")).not.toBe(wordReadStoryParts(ctx, "word-valid"));
+    });
+});
+
+describe("wordRelationshipNamedParts (#1116)", () => {
+    const HEADER_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml";
+    const HEADER = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:hdr xmlns:w="${W}"><w:p/></w:hdr>`;
+    const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+    const STRAY = "word/_rels/stray.xml.rels";
+    const relationships = (inner: string): string =>
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="${RELS_NS}">${inner}</Relationships>`;
+    const header = (id: string, target: string, mode = ""): string =>
+        `<Relationship Id="${id}" Type="${R}/header" Target="${target}"${mode}/>`;
+
+    /**
+     * The minimal package plus word/header1.xml, which the main document
+     * relates, and word/header9.xml, which no relationship names (session 83's
+     * word/header83.xml), with `extra` parts set over it.
+     */
+    const withHeaders = (extra: Parts = {}): Parts => ({
+        ...MINIMAL_PARTS,
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="/word/header1.xml" ContentType="${HEADER_TYPE}"/><Override PartName="/word/header9.xml" ContentType="${HEADER_TYPE}"/></Types>`,
+        ),
+        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `${header("rIdH", "header1.xml")}</Relationships>`,
+        ),
+        "word/header1.xml": HEADER,
+        "word/header9.xml": HEADER,
+        ...extra,
+    });
+
+    const named = async (parts: Parts): Promise<readonly string[] | undefined> => {
+        const set = await wordRelationshipNamedParts(ValidationContext.fromEntries(parts), "word-valid");
+        return set === undefined ? undefined : [...set].sort();
+    };
+    const HEADER9 = canonicalPartName("word/header9.xml");
+
+    it("lists every part a relationship names, canonically, and no part nothing names", async () => {
+        expect(await named(withHeaders())).toEqual(
+            ["word/document.xml", "word/header1.xml", "word/styles.xml"].map(canonicalPartName).sort(),
+        );
+    });
+
+    it("lists a part only a relationships part with no stored source names", async () => {
+        expect(await named(withHeaders({ [STRAY]: relationships(header("rId9", "header9.xml")) }))).toContain(HEADER9);
+    });
+
+    it.each([
+        ["an escaped spelling", STRAY, "header%39.xml"],
+        ["a climb past the package root", STRAY, "../../word/header9.xml"],
+        ["a package-absolute target", STRAY, "/word/header9.xml"],
+    ])("lists a part %s names", async (_label, part, target) => {
+        expect(await named(withHeaders({ [part]: relationships(header("rId9", target)) }))).toContain(HEADER9);
+    });
+
+    // Conservative: a relationship Word's markup-compatibility view drops
+    // still names its part, so no Choice can turn a finding into a warning.
+    it("lists a part only an unselected Choice of a relationships part names", async () => {
+        const choice =
+            `<mc:AlternateContent xmlns:mc="${MC}"><mc:Choice xmlns:foo="urn:foo" Requires="foo">` +
+            `${header("rId9", "header9.xml")}</mc:Choice></mc:AlternateContent>`;
+        expect(await named(withHeaders({ [STRAY]: relationships(choice) }))).toContain(HEADER9);
+    });
+
+    it("does not list a part only an External relationship names", async () => {
+        const external = relationships(header("rId9", "header9.xml", ' TargetMode="External"'));
+        expect(await named(withHeaders({ [STRAY]: external }))).not.toContain(HEADER9);
+    });
+
+    // The DOM parser decodes invalid UTF-8 with replacement characters and
+    // keeps the relationship; the byte-level checks reject the part.
+    it.each([
+        [
+            "an unclosed root",
+            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="${RELS_NS}">${header("rId9", "x.xml")}`,
+        ],
+        [
+            "invalid UTF-8 the DOM parser decodes",
+            new Uint8Array([
+                ...new TextEncoder().encode(relationships(header("rId9", "x.xml")).replace("/></Relationships>", ' Note="')),
+                0xff,
+                0xfe,
+                ...new TextEncoder().encode('"/></Relationships>'),
+            ]),
+        ],
+    ] as const)("knows nothing when a relationships part fails the byte-level XML checks: %s", async (_label, stray) => {
+        expect(await named(withHeaders({ [STRAY]: stray }))).toBeUndefined();
+    });
+
+    it("lists the canonical name of a part stored under another spelling", async () => {
+        const stored = "word/Header7.xml";
+        expect(canonicalPartName(stored)).not.toBe(stored);
+        const list = await named(withHeaders({ [stored]: HEADER, [STRAY]: relationships(header("rId7", "Header7.xml")) }));
+        expect(list).toContain(canonicalPartName(stored));
+    });
+
+    it("knows nothing without a package relationships part", async () => {
+        const { "_rels/.rels": _packageRels, ...rest } = withHeaders();
+        expect(await named(rest)).toBeUndefined();
+    });
+
+    it("knows nothing when the officeDocument relationship names no stored part (#816)", async () => {
+        const parts = withHeaders();
+        parts["_rels/.rels"] = (parts["_rels/.rels"] as string).replace('Target="word/document.xml"', 'Target="word/missing.xml"');
+        expect(await named(parts)).toBeUndefined();
     });
 });

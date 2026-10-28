@@ -30,6 +30,7 @@ import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { validate } from "../src/scripts/office/validate";
 import { MINIMAL_PARTS } from "./support/minimal-docx";
+import { buildRawZip } from "./support/raw-zip";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES = path.join(HERE, "fixtures");
@@ -128,13 +129,18 @@ const withUnrelatedHeader = (clean: Parts, broken: Parts): Parts => {
     return out;
 };
 
+/** `parts` packed as dir/specimen.docx. */
+const writeSpecimen = async (dir: string, parts: Parts): Promise<string> => {
+    const zip = new JSZip();
+    for (const [name, value] of parts) zip.file(name, value);
+    const file = path.join(dir, "specimen.docx");
+    writeFileSync(file, await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" }));
+    return file;
+};
+
 const run = async (parts: Parts, profile: "word-valid" | "strict", code: string) =>
     withTempDir(async (dir) => {
-        const zip = new JSZip();
-        for (const [name, value] of parts) zip.file(name, value);
-        const file = path.join(dir, "specimen.docx");
-        writeFileSync(file, await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" }));
-        const result = await validate(file, { profile });
+        const result = await validate(await writeSpecimen(dir, parts), { profile });
         return {
             valid: result.valid,
             paths: [...new Set(result.issues.filter((issue) => issue.code === code).map((issue) => issue.path))],
@@ -195,12 +201,9 @@ describe("the Word rules judge the story parts Word reads, session 83's rows (#1
         async (rule, profile, broken, clean) => {
             const found = await run(withUnrelatedHeader(await load(clean), await load(broken)), profile, rule);
             expect(found.paths).toEqual([]);
-            if (profile === "word-valid") {
-                // #1116: mce-malformed still judges every part under word/,
-                // so it alone rejects the undeclared Choice in the unread
-                // header, which Word opened clean.
-                expect(found.errors).toEqual(rule === "word-choice-requires-undeclared" ? [`mce-malformed@${UNRELATED}`] : []);
-            }
+            // #1116: mce-malformed, the undeclared Choice's other finding,
+            // warns in a part no relationship names.
+            if (profile === "word-valid") expect(found.errors).toEqual([]);
         },
     );
 
@@ -331,5 +334,141 @@ describe("a part read through two story segments is judged once (#1118)", { time
     it.each(PROFILES)("word-sdt-id-empty reports one empty id once in a part used as header and footer under %s", async (profile) => {
         const shape = `<w:sdt><w:sdtPr><w:id w:val=""/></w:sdtPr><w:sdtContent><w:p/></w:sdtContent></w:sdt><w:p/>`;
         expect((await run(headerAndFooterHolding(shape), profile, "word-sdt-id-empty")).found).toEqual(["word/hf1.xml"]);
+    });
+});
+
+const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const CHOICE_BROKEN = "broken/package.word-choice-requires-undeclared.docx";
+const CHOICE_CLEAN = "working/package.word-choice-requires-declared.docx";
+
+/** The run's verdict and each markup-compatibility finding as `code:severity@path`, from a full run or a `--checks` run. */
+const mceRun = async (parts: Parts, profile: "word-valid" | "strict", checks?: readonly string[]) =>
+    withTempDir(async (dir) => {
+        const file = await writeSpecimen(dir, parts);
+        const result = await validate(file, checks === undefined ? { profile } : { profile, checks });
+        return {
+            valid: result.valid,
+            mce: result.issues
+                .filter((issue) => issue.code?.startsWith("mce-"))
+                .map((issue) => `${issue.code}:${issue.severity}@${issue.path}`),
+        };
+    });
+
+/** `parts` with the main document relating word/header83.xml as a header, and its last w:sectPr referencing it when `used`. */
+const relateHeader = (parts: Parts, used: boolean): Parts => {
+    const out: Parts = new Map(parts);
+    out.set(
+        MAIN_RELS,
+        once(
+            textOf(parts, MAIN_RELS),
+            "</Relationships>",
+            `<Relationship Id="rId83" Type="${R}/header" Target="header83.xml"/></Relationships>`,
+        ),
+    );
+    if (used) {
+        const main = textOf(parts, MAIN);
+        const at = main.lastIndexOf("<w:sectPr");
+        const open = main.indexOf(">", at) + 1;
+        if (at < 0 || main[open - 2] === "/") throw new Error("no open w:sectPr");
+        out.set(MAIN, `${main.slice(0, open)}<w:headerReference xmlns:r="${R}" w:type="default" r:id="rId83"/>${main.slice(open)}`);
+    }
+    return out;
+};
+
+/** The minimal package plus word/header83.xml, typed header and named by no relationship, whose root requires `mc:MustUnderstand="foo"`. */
+const mustUnderstandHeader = (): Parts => {
+    const parts = minimal();
+    parts.set(CT, once(textOf(parts, CT), "</Types>", `<Override PartName="/${UNRELATED}" ContentType="${WML}.header+xml"/></Types>`));
+    parts.set(UNRELATED, `${DECL}<w:hdr xmlns:w="${W}" xmlns:mc="${MC}" xmlns:foo="urn:foo" mc:MustUnderstand="foo"><w:p/></w:hdr>`);
+    return parts;
+};
+
+const RUNS = [
+    ["a full", undefined],
+    ["a --checks", ["word-markup-compatibility"]],
+] as const;
+
+// #1116: Word opened clean the undeclared-Requires Choice (session 83 s83d) and
+// an unknown MustUnderstand (session 84 s84a) in a word/header83.xml no
+// relationship names, and refused each where it reads it. A related header Word
+// does not use keeps its verdict, though session 84 opened both clean there
+// (#1125).
+describe("markup compatibility in a word/ part no relationship names warns under word-valid (#1116)", { timeout: 120_000 }, () => {
+    it.each(RUNS)("%s run passes s83d's unrelated header, its mce-malformed a warning, as Word opened it clean", async (_label, checks) => {
+        const parts = withUnrelatedHeader(await load(CHOICE_CLEAN), await load(CHOICE_BROKEN));
+        expect(await mceRun(parts, "word-valid", checks)).toEqual({ valid: true, mce: [`mce-malformed:warning@${UNRELATED}`] });
+    });
+
+    it.each(RUNS)(
+        "%s run keeps mce-malformed an error in the main document stored as word/main.xml, as Word refused it",
+        async (_label, checks) => {
+            expect(await mceRun(renameMain(await load(CHOICE_BROKEN)), "word-valid", checks)).toEqual({
+                valid: false,
+                mce: [`mce-malformed:error@${RENAMED}`],
+            });
+        },
+    );
+
+    it("strict keeps mce-malformed an error in the unrelated header", async () => {
+        const parts = withUnrelatedHeader(await load(CHOICE_CLEAN), await load(CHOICE_BROKEN));
+        expect((await mceRun(parts, "strict")).mce).toContain(`mce-malformed:error@${UNRELATED}`);
+    });
+
+    it.each(
+        RUNS.flatMap(
+            ([label, checks]) =>
+                [
+                    ["a used header the main document relates", label, checks, (parts: Parts) => relateHeader(parts, true)],
+                    ["an unused header the main document relates", label, checks, (parts: Parts) => relateHeader(parts, false)],
+                    [
+                        "a part only a relationships part with no stored source names",
+                        label,
+                        checks,
+                        (parts: Parts) => {
+                            const out: Parts = new Map(parts);
+                            out.set(
+                                "word/_rels/stray.xml.rels",
+                                `${DECL}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${R}/header" Target="header83.xml"/></Relationships>`,
+                            );
+                            return out;
+                        },
+                    ],
+                ] as const,
+        ),
+    )("keeps mce-malformed an error in %s (%s run), a part a relationship names", async (_placement, _label, checks, place) => {
+        const parts = place(withUnrelatedHeader(await load(CHOICE_CLEAN), await load(CHOICE_BROKEN)));
+        expect((await mceRun(parts, "word-valid", checks)).mce).toContain(`mce-malformed:error@${UNRELATED}`);
+    });
+
+    // A packed file with a refused item name judges the rest through the
+    // archive (#629); its --checks run reads the findings there (#454).
+    it.each(RUNS)("%s run of a package with a refused item name warns there too", async (_label, checks) => {
+        const judge = async (parts: Parts) =>
+            withTempDir(async (dir) => {
+                const file = path.join(dir, "refused.docx");
+                writeFileSync(
+                    file,
+                    buildRawZip([...[...parts].map(([name, content]) => ({ name, content })), { name: "/abs/x.xml", content: "<x/>" }]),
+                );
+                const result = await validate(file, checks === undefined ? { profile: "word-valid" } : { profile: "word-valid", checks });
+                return result.issues
+                    .filter((issue) => issue.code?.startsWith("mce-"))
+                    .map((issue) => `${issue.code}:${issue.severity}@${issue.path}`);
+            });
+        expect(await judge(withUnrelatedHeader(await load(CHOICE_CLEAN), await load(CHOICE_BROKEN)))).toEqual([
+            `mce-malformed:warning@${UNRELATED}`,
+        ]);
+        expect(await judge(renameMain(await load(CHOICE_BROKEN)))).toEqual([`mce-malformed:error@${RENAMED}`]);
+    });
+
+    // Session 84 (s84a): Word opened the unrelated header clean and refused the used one.
+    it.each(RUNS)("%s run warns for mce-must-understand in the unrelated header too, as Word opened it clean", async (_label, checks) => {
+        expect(await mceRun(mustUnderstandHeader(), "word-valid", checks)).toEqual({
+            valid: true,
+            mce: [`mce-must-understand:warning@${UNRELATED}`],
+        });
+        expect((await mceRun(relateHeader(mustUnderstandHeader(), true), "word-valid", checks)).mce).toEqual([
+            `mce-must-understand:error@${UNRELATED}`,
+        ]);
     });
 });

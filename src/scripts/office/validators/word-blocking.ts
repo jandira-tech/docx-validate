@@ -37,7 +37,20 @@ export type WordBlockingFacts = {
      * reach-based verdict.
      */
     referenceLoadedReach?: "referenced" | "unreferenced";
+    /**
+     * `true` only when the caller read every relationships part and none
+     * names the issue's part ({@link namedByNoRelationship}, #1116).
+     */
+    namedByNoRelationship?: boolean;
 };
+
+/**
+ * Whether `named`, the parts `wordRelationshipNamedParts` lists, is known
+ * and holds no part OPC-equivalent to the issue's (#1116). An unknown list,
+ * or a finding with no part, gives `false`.
+ */
+export const namedByNoRelationship = (issue: ValidationIssue, named: ReadonlySet<string> | undefined): boolean =>
+    named !== undefined && issue.path !== undefined && !named.has(canonicalPartName(issue.path.replace(/\\/g, "/")));
 
 /**
  * Count non-empty id/embed/link in either relationships namespace in the
@@ -564,11 +577,21 @@ export const isWordBlockingIssue = (
             // settings/numbering/header (session 37) sidecars opened
             // clean, as did root MustUnderstand in stray (36) and
             // styles/footer (37) sidecars. Other sidecars/shapes are
-            // unobserved and keep their warning. XML parts under word/ keep
-            // their existing classification; relationship identity, rather
-            // than the stored default path, determines a story's sidecar.
+            // unobserved and keep their warning. Relationship identity,
+            // rather than the stored default path, determines a story's
+            // sidecar. An XML part under word/ blocks unless no relationship
+            // names it: session 83 (s83d) opened clean an undeclared
+            // Requires in a word/header83.xml no relationship names, and
+            // refused it in a main document stored as word/main.xml; session
+            // 84 (s84a) did the same for an unknown MustUnderstand (#1116). A
+            // related header Word does not use still blocks, though session
+            // 84 opened both findings clean there (#1125).
             const path = issue.path?.replace(/\\/g, "/");
-            return isWordXmlPart(path) || isPackageRelationshipsPart(path) || isDocumentRelationshipsPart(path, storyRootParts);
+            return (
+                (isWordXmlPart(path) && facts.namedByNoRelationship !== true) ||
+                isPackageRelationshipsPart(path) ||
+                isDocumentRelationshipsPart(path, storyRootParts)
+            );
         }
         default:
             return false;
