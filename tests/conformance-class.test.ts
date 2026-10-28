@@ -55,6 +55,13 @@ describe("citesWordSession (#1016)", () => {
         expect(cites(parts)).toBe(false);
     });
 
+    it("reads relationship types only in a relationships part (#1031)", () => {
+        const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
+        const holder = `<Relationships xmlns="${PR}"><Relationship Id="rId1" Type="${STRICT_R}/styles" Target="styles.xml"/></Relationships>`;
+        expect(cites({ ...P, "customXml/item1.xml": holder })).toBe(true);
+        expect(cites({ ...P, "customXml/_rels/item1.xml.rels": holder })).toBe(false);
+    });
+
     it("reads a root markup compatibility selects", () => {
         const parts = {
             ...P,

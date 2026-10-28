@@ -14,7 +14,7 @@
  * (#861).
  */
 
-import { canonicalPartName } from "./content-types";
+import { canonicalPartName, isRelationshipsPartName } from "./content-types";
 import { NS } from "./types";
 import type { ValidationContext } from "./validation-context";
 import { getElementsByTagNameNSAll } from "./xml-helpers";
@@ -59,8 +59,11 @@ const isStrictPart = (ctx: ValidationContext, part: string): boolean => {
     if (effective?.ok && isStrict(effective.document.documentElement?.namespaceURI)) {
         return true;
     }
-    return getElementsByTagNameNSAll(stored.document, NS.PR, "Relationship").some((relationship) =>
-        isStrict(relationship.getAttribute("Type")),
+    return (
+        isRelationshipsPartName(part) &&
+        getElementsByTagNameNSAll(stored.document, NS.PR, "Relationship").some((relationship) =>
+            isStrict(relationship.getAttribute("Type")),
+        )
     );
 };
 
