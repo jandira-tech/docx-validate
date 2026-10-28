@@ -670,32 +670,6 @@ describe("historical folders spelled with escaped unreserved characters (#1037)"
         });
     });
 
-    // #1038: the slide a sidecar belongs to is named by the stem of its stored
-    // name, `.rels` and `.xml` stripped ASCII case-insensitively, `\` read as `/`.
-    it.each([
-        ["slide1.xml.RELS", "slide2.xml.RELS"],
-        ["slide1.XML.rels", "slide2.Xml.Rels"],
-    ])("names the slides of %s and %s by their stems (#1038)", async (first, second) => {
-        await withTempDir(async (dir) => {
-            for (const name of [first, second]) {
-                await writeFile(path.join(dir, "ppt", "slides", "_rels", name), notesSidecar());
-            }
-            expect((await makeValidator(dir).validateNotesSlideReferences()).issues[0]?.message).toBe(
-                "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: slide1, slide2",
-            );
-        });
-    });
-
-    it("names the slide of a sidecar whose stored name spells its folders with backslashes (#1038)", async () => {
-        await withTempDir(async (dir) => {
-            await writeFile(path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"), notesSidecar());
-            await writeFile(path.join(dir, "ppt\\slides\\_rels\\slide2.xml.rels"), notesSidecar());
-            expect((await makeValidator(dir).validateNotesSlideReferences()).issues[0]?.message).toBe(
-                "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: slide1, slide2",
-            );
-        });
-    });
-
     it.each(["lenient", "word-valid"] as const)(
         "keeps a %s run invalid when two sidecars under ppt/slides/%5Frels share a notes slide",
         async (profile) => {
@@ -722,6 +696,43 @@ describe("historical folders spelled with escaped unreserved characters (#1037)"
                     "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: slide10, slide9",
                 ]);
                 expect(result.valid).toBe(false);
+            });
+        },
+    );
+});
+
+// #1038: the slide a sidecar belongs to is named by the stem of its stored
+// name, `.rels` and `.xml` stripped ASCII case-insensitively, `\` read as `/`.
+describe("the slide a notes-shared message names (#1038)", () => {
+    const relationship = (id: string, type: string, target: string) =>
+        `<Relationship Id="${id}" Type="${R_NS}/${type}" Target="${target}"/>`;
+    const notesSidecar = () => relsXml(relationship("rId1", "notesSlide", "../notesSlides/notesSlide1.xml"));
+
+    it.each([
+        ["slide1.xml.RELS", "slide2.xml.RELS"],
+        ["slide1.XML.rels", "slide2.Xml.Rels"],
+    ])("names the slides of %s and %s by their stems", async (first, second) => {
+        await withTempDir(async (dir) => {
+            for (const name of [first, second]) {
+                await writeFile(path.join(dir, "ppt", "slides", "_rels", name), notesSidecar());
+            }
+            expect((await makeValidator(dir).validateNotesSlideReferences()).issues[0]?.message).toBe(
+                "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: slide1, slide2",
+            );
+        });
+    });
+
+    // On Windows `\` is a path separator, so the file would land in the plain
+    // folder and the row would test nothing (#1042).
+    it.skipIf(process.platform === "win32")(
+        "names the slide of a sidecar whose stored name spells its folders with backslashes",
+        async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"), notesSidecar());
+                await writeFile(path.join(dir, "ppt\\slides\\_rels\\slide2.xml.rels"), notesSidecar());
+                expect((await makeValidator(dir).validateNotesSlideReferences()).issues[0]?.message).toBe(
+                    "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: slide1, slide2",
+                );
             });
         },
     );
