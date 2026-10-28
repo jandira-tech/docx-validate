@@ -1,9 +1,11 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import { isContentTypesStreamName } from "../../../lib/content-types";
+import { isContentTypesStreamName, canonicalPartName, normalizePartName } from "../../../lib/content-types";
 import type { Profile, ValidationIssue } from "../../../lib/types";
+import { glossaryTypedRelationshipTargets, wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
 import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXmlBytes } from "../../../lib/xml-helpers";
+import { contextFromDirectory } from "../package-context";
 
 const WORD_NAMESPACES = new Set([
     "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
@@ -81,6 +83,7 @@ interface RepairPlanGroup {
 export async function collectDocxSemanticInventory(unpackedDir: string, profile: Profile = "lenient"): Promise<DocxSemanticInventory> {
     const inventory: MutableDocxSemanticInventory = { counters: new Map() };
     const files = await walkFiles(unpackedDir);
+    const styleParts = await judgedStylePartNames(unpackedDir, files, profile);
     for (const file of files) {
         const rel = path.relative(unpackedDir, file).split(path.sep).join("/");
         if (!isContentTypesStreamName(rel) && !rel.endsWith(".xml") && !rel.endsWith(".rels")) {
@@ -93,7 +96,7 @@ export async function collectDocxSemanticInventory(unpackedDir: string, profile:
         } catch {
             continue;
         }
-        collectXmlPart(rel, dom, inventory, profile);
+        collectXmlPart(rel, dom, inventory, profile, styleParts);
     }
     return { counters: new Map([...inventory.counters].sort(([a], [b]) => a.localeCompare(b))) };
 }
@@ -195,7 +198,13 @@ async function collectPackageAsset(file: string, rel: string, inventory: Mutable
     addCounter(inventory, rel, "package asset", "part bytes", "byte(s)", stat.size);
 }
 
-function collectXmlPart(rel: string, dom: Document, inventory: MutableDocxSemanticInventory, profile: Profile): void {
+function collectXmlPart(
+    rel: string,
+    dom: Document,
+    inventory: MutableDocxSemanticInventory,
+    profile: Profile,
+    styleParts: ReadonlySet<string>,
+): void {
     if (rel.endsWith(".rels")) {
         collectRelationships(rel, dom, inventory);
         return;
@@ -206,12 +215,54 @@ function collectXmlPart(rel: string, dom: Document, inventory: MutableDocxSemant
     collectFormatting(rel, dom, inventory);
     collectInlineMarks(rel, dom, inventory);
     collectTableShape(rel, dom, inventory);
-    collectStyles(rel, dom, inventory);
+    collectStyles(rel, dom, inventory, styleParts);
     collectComments(rel, dom, inventory);
     collectTrackedChanges(rel, dom, inventory);
     if (profile === "strict") {
         collectSectionGeometry(rel, dom, inventory);
         collectImageShape(rel, dom, inventory);
+    }
+}
+
+/**
+ * Canonical names of the parts whose style definitions the inventory
+ * counts: the styles parts the main document and the reached glossaries
+ * relate, found by relationship exactly as the style checks find them
+ * (#688), so a related part stored under another name counts (#745). The
+ * main document's folder keeps the by-name fallback the checks keep, when
+ * no relationship names a stored part (#699), while a `styles.xml` that
+ * nothing relates counts nowhere — a glossary's unrelated `styles.xml`
+ * counted before, by name alone, although no style check judges it
+ * (#699). A package view that cannot be read keeps the historical name
+ * rule — counting every part named `styles.xml` — so a broken view never
+ * silences the counters on one side of a repair.
+ */
+async function judgedStylePartNames(unpackedDir: string, files: readonly string[], profile: Profile): Promise<ReadonlySet<string>> {
+    try {
+        const context = contextFromDirectory(unpackedDir);
+        const mainStyles = await wordTypedRelationshipTargets(context, new Set(["styles"]), profile);
+        const judged = new Set(mainStyles.map((target) => canonicalPartName(target.part)));
+        for (const target of await glossaryTypedRelationshipTargets(context, new Set(["styles"]), profile)) {
+            judged.add(canonicalPartName(target.part));
+        }
+        if (mainStyles.length === 0) {
+            const [firstMain] = await wordTypedRelationshipTargets(context, new Set(["officeDocument"]), profile);
+            const folder = firstMain === undefined ? "word" : canonicalPartName(path.posix.dirname(normalizePartName(firstMain.part)));
+            for (const file of files) {
+                const rel = path.relative(unpackedDir, file).split(path.sep).join("/");
+                if (path.posix.basename(rel) === "styles.xml" && canonicalPartName(path.posix.dirname(normalizePartName(rel))) === folder) {
+                    judged.add(canonicalPartName(rel));
+                }
+            }
+        }
+        return judged;
+    } catch {
+        const byName = new Set<string>();
+        for (const file of files) {
+            const rel = path.relative(unpackedDir, file).split(path.sep).join("/");
+            if (path.posix.basename(rel) === "styles.xml") byName.add(canonicalPartName(rel));
+        }
+        return byName;
     }
 }
 
@@ -486,8 +537,8 @@ function wordChildAttrSelf(elem: Element, attr: string): string | null {
     return elem.getAttributeNS(wordNamespace(elem), attr) ?? elem.getAttribute(`w:${attr}`) ?? elem.getAttribute(attr);
 }
 
-function collectStyles(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
-    if (!rel.endsWith("/styles.xml") && rel !== "word/styles.xml") return;
+function collectStyles(rel: string, dom: Document, inventory: MutableDocxSemanticInventory, styleParts: ReadonlySet<string>): void {
+    if (!styleParts.has(canonicalPartName(rel))) return;
     for (const ns of WORD_NAMESPACES) {
         const styles = getElementsByTagNameNSAll(dom, ns, "style");
         for (let i = 0; i < styles.length; i += 1) {
