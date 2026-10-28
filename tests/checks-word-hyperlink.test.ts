@@ -332,3 +332,96 @@ describe("a refused w:hyperlink in a read header is one report in a full run (#1
         });
     });
 });
+
+/**
+ * #1110: the same hand-off for every other story kind the rule judges. Since
+ * #1106 the rule judges only the parts Word reads, so each part is made one:
+ * a footer the body `w:sectPr` references, a comments part a
+ * `w:commentReference` uses, and footnotes and endnotes parts a note
+ * reference uses. Each hyperlink names nothing its part's own sidecar defines.
+ */
+describe("a refused w:hyperlink in a read footer, comments or notes part is one report in a full run (#1110)", () => {
+    const LEGACY = new Set(["rels-id-mismatch", "rels-id-missing"]);
+    const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+    const NS = `xmlns:w="${W}" xmlns:r="${R}" xmlns:rs="${RS}"`;
+    /** Each story kind: its part, relationship segment, the body or section markup that uses it, and its root around `p`. */
+    const STORIES = {
+        footer: {
+            part: "word/footer1.xml",
+            segment: "footer",
+            body: "",
+            section: '<w:footerReference w:type="default" r:id="rIdS"/>',
+            wrap: (p: string) => `<w:ftr ${NS}>${p}</w:ftr>`,
+        },
+        comments: {
+            part: "word/comments.xml",
+            segment: "comments",
+            body: '<w:p><w:r><w:commentReference w:id="0"/></w:r></w:p>',
+            section: "",
+            wrap: (p: string) => `<w:comments ${NS}><w:comment w:id="0" w:author="A">${p}</w:comment></w:comments>`,
+        },
+        footnotes: {
+            part: "word/footnotes.xml",
+            segment: "footnotes",
+            body: '<w:p><w:r><w:footnoteReference w:id="1"/></w:r></w:p>',
+            section: "",
+            wrap: (p: string) => `<w:footnotes ${NS}><w:footnote w:id="1">${p}</w:footnote></w:footnotes>`,
+        },
+        endnotes: {
+            part: "word/endnotes.xml",
+            segment: "endnotes",
+            body: '<w:p><w:r><w:endnoteReference w:id="1"/></w:r></w:p>',
+            section: "",
+            wrap: (p: string) => `<w:endnotes ${NS}><w:endnote w:id="1">${p}</w:endnote></w:endnotes>`,
+        },
+    } as const;
+    type Story = keyof typeof STORIES;
+    /** Session 28's accepted main document plus `story`, read by Word, whose hyperlink carries `ids`. */
+    const withStoryHyperlink = (story: Story, ids: string): Record<string, string> => {
+        const { part, segment, body, section, wrap } = STORIES[story];
+        const name = path.posix.basename(part);
+        const parts = hyperlinkRelTypeParts(`${R}/hyperlink`);
+        parts["[Content_Types].xml"] = parts["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="/${part}" ContentType="${WML}.${segment}+xml"/></Types>`,
+        );
+        parts["word/_rels/document.xml.rels"] = parts["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdS" Type="${R}/${segment}" Target="${name}"/></Relationships>`,
+        );
+        parts["word/document.xml"] = parts["word/document.xml"]!.replace("<w:sectPr>", `${body}<w:sectPr>${section}`);
+        parts[part] =
+            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+            wrap(`<w:p><w:hyperlink ${ids}><w:r><w:t>link</w:t></w:r></w:hyperlink></w:p>`);
+        parts[`word/_rels/${name}.rels`] = rels(relation("rIdL", "hyperlink", "External"));
+        return parts;
+    };
+    const STORY_ROWS = (Object.keys(STORIES) as Story[]).flatMap((story) =>
+        (["word-valid", "strict"] as const).flatMap((profile) =>
+            ['r:id="rIdX"', 'rs:id="rIdY"'].map((ids) => [story, profile, ids] as const),
+        ),
+    );
+
+    it.each(STORY_ROWS)("a %s part Word reads: reports it once under %s for %s", async (story, profile, ids) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "story-hyperlink.docx");
+            writeFileSync(file, await buildDocx(withStoryHyperlink(story, ids)));
+            const result = await validate(file, { profile });
+            expect(result.issues.filter((issue) => issue.code === "word-hyperlink-relationship").map((issue) => issue.path)).toEqual([
+                STORIES[story].part,
+            ]);
+            expect(result.issues.filter((issue) => LEGACY.has(issue.code ?? ""))).toEqual([]);
+        });
+    });
+
+    it.each(Object.keys(STORIES) as Story[])("a %s part Word reads: lenient keeps the legacy finding", async (story) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "story-hyperlink.docx");
+            writeFileSync(file, await buildDocx(withStoryHyperlink(story, 'r:id="rIdX"')));
+            const result = await validate(file, { profile: "lenient" });
+            expect(result.issues.filter((issue) => LEGACY.has(issue.code ?? "")).map((issue) => `${issue.code} ${issue.path}`)).toEqual([
+                `rels-id-missing ${STORIES[story].part}`,
+            ]);
+        });
+    });
+});
