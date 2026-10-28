@@ -527,10 +527,18 @@ export const isWordBlockingIssue = (
             // path spells — `officeDocument`, `footnotes`, `customXml`,
             // `styles`, `settings`, a used and an unused `header`, an unused
             // `image` and the core properties — and opened each plain target
-            // clean (sessions 70 to 73, #975).
+            // clean (sessions 70 to 73, #975). Each shape blocks only in a
+            // relationships part Word reads to reach the stories: `_rels/.rels`
+            // and a story root's own sidecar, the set the read model lists.
+            // Word opened clean a folder target and an absent escaping
+            // customXml target in the sidecar of an unreferenced part (session
+            // 79), of a used header whose text it rendered, of an unused
+            // header and of the styles part (session 80), two runs each, all
+            // readings agreeing (#987).
             const part = relsBrokenTarget(issue);
             return (
                 part !== undefined &&
+                (isPackageRelationshipsPart(issue.path) || isDocumentRelationshipsPart(issue.path, storyRootParts)) &&
                 (part.endsWith("/") || isOpcRelationshipsPart(part) || canonicalPartName(part).startsWith("customxml/"))
             );
         }

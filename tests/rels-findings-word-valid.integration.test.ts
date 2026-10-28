@@ -453,3 +453,118 @@ describe("a relative target that starts with http is resolved as a part (#988, s
         expect((await run(withBrokenTarget("http_item.xml", CUSTOM_XML), "lenient")).broken).toEqual([]);
     });
 });
+
+// #987: Word checks a relationship's target only in the relationships parts
+// it reads to reach the stories: `_rels/.rels` and a story root's own sidecar.
+// Sessions 79 and 80 (two runs each, all readings agree) opened clean a folder
+// target and an absent escaping customXml target in the sidecar of an
+// unreferenced part, of a used header (whose text Word rendered), of an
+// unused header and of the styles part, while the same folder target in the
+// main document's sidecar got the recovery offer (s79a, repeating s72a).
+describe("a target in a relationships part Word does not read never blocks word-valid (#987, sessions 79 and 80)", () => {
+    const PNG = Uint8Array.from(
+        Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64"),
+    );
+    const CT = "[Content_Types].xml";
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+    const sidecarHolding = (relationship: string) =>
+        `${DECL}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${relationship}</Relationships>`;
+    const image = (target: string) => `<Relationship Id="rId1" Type="${IMAGE}" Target="${target}"/>`;
+    const customXml = (target: string) => `<Relationship Id="rId1" Type="${CUSTOM_XML}" Target="${target}"/>`;
+    const withPng = (types: string, extra = "") =>
+        types.replace("</Types>", `<Default Extension="png" ContentType="image/png"/>${extra}</Types>`);
+
+    /** s79a: the stored unused word/media/image1.png, and an unreferenced word/stray.xml whose sidecar holds `relationship`. */
+    const strayHolding = (relationship: string) => ({
+        ...MINIMAL_PARTS,
+        "word/media/image1.png": PNG,
+        "word/stray.xml": `${DECL}<w:document xmlns:w="${W}"><w:body><w:p><w:r><w:t>Stray</w:t></w:r></w:p></w:body></w:document>`,
+        "word/_rels/stray.xml.rels": sidecarHolding(relationship),
+        [CT]: withPng(MINIMAL_PARTS[CT]!),
+    });
+    /**
+     * s80a: the stored unused image, and word/header1.xml related from the main
+     * document's sidecar, referenced by the section when `used`, whose own
+     * sidecar holds `relationship`.
+     */
+    const headerHolding = (relationship: string, used: boolean) => ({
+        ...withRelationship(`<Relationship Id="rIdH" Type="${RELATIONSHIPS}/header" Target="header1.xml"/>`),
+        ...(used
+            ? {
+                  "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+                      `xmlns:w="${W}"`,
+                      `xmlns:w="${W}" xmlns:r="${RELATIONSHIPS}"`,
+                  ).replace("<w:sectPr>", '<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>'),
+              }
+            : {}),
+        "word/media/image1.png": PNG,
+        "word/header1.xml": `${DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Head</w:t></w:r></w:p></w:hdr>`,
+        "word/_rels/header1.xml.rels": sidecarHolding(relationship),
+        [CT]: withPng(
+            MINIMAL_PARTS[CT]!,
+            '<Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/>',
+        ),
+    });
+    /** s80a: the stored unused image, and the styles part's sidecar holding `relationship`. */
+    const stylesHolding = (relationship: string) => ({
+        ...MINIMAL_PARTS,
+        "word/media/image1.png": PNG,
+        "word/_rels/styles.xml.rels": sidecarHolding(relationship),
+        [CT]: withPng(MINIMAL_PARTS[CT]!),
+    });
+
+    const OPENED_CLEAN: [string, string, Record<string, string | Uint8Array>][] = [
+        ["s79a stray media/image1.png/.", "word/_rels/stray.xml.rels", strayHolding(image("media/image1.png/."))],
+        ["s79a stray .", "word/_rels/stray.xml.rels", strayHolding(image("."))],
+        ["s79a stray absent ../customXml/item1.xml", "word/_rels/stray.xml.rels", strayHolding(customXml("../customXml/item1.xml"))],
+        ["s80a used header media/image1.png/.", "word/_rels/header1.xml.rels", headerHolding(image("media/image1.png/."), true)],
+        [
+            "s80a used header absent ../customXml/item1.xml",
+            "word/_rels/header1.xml.rels",
+            headerHolding(customXml("../customXml/item1.xml"), true),
+        ],
+        ["s80a unused header media/image1.png/.", "word/_rels/header1.xml.rels", headerHolding(image("media/image1.png/."), false)],
+        ["s80a styles media/image1.png/.", "word/_rels/styles.xml.rels", stylesHolding(image("media/image1.png/."))],
+    ];
+
+    it.each(OPENED_CLEAN)("accepts the %s row with a warning, as Word opened it clean", async (_row, relsPart, parts) => {
+        const { valid, broken } = await run(parts, "word-valid");
+        expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([[relsPart, "warning"]]);
+        expect(valid).toBe(true);
+    });
+
+    it.each(OPENED_CLEAN)("keeps the %s row an error under strict", async (_row, relsPart, parts) => {
+        const { valid, broken } = await run(parts, "strict");
+        expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([[relsPart, "error"]]);
+        expect(valid).toBe(false);
+    });
+
+    // The same targets in the main document's sidecar: Word refused the
+    // folder target (s79a, s72a) and the absent customXml target (session 54).
+    it("keeps blocking media/image1.png/. in the main document's sidecar", async () => {
+        const parts = {
+            ...withRelationship(`<Relationship Id="rIdI" Type="${IMAGE}" Target="media/image1.png/."/>`),
+            "word/media/image1.png": PNG,
+            [CT]: withPng(MINIMAL_PARTS[CT]!),
+        };
+        const { valid, broken } = await run(parts, "word-valid");
+        expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([[SIDECAR, "error"]]);
+        expect(valid).toBe(false);
+    });
+
+    it("keeps blocking an absent ../customXml/item1.xml in the main document's sidecar", async () => {
+        const { valid, broken } = await run(withBrokenTarget("../customXml/item1.xml", CUSTOM_XML), "word-valid");
+        expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([[SIDECAR, "error"]]);
+        expect(valid).toBe(false);
+    });
+
+    // A reached glossary's sidecar is a story root's, which the read model
+    // lists (sessions 17 and 36), so its targets keep the main document's
+    // verdict; a folder target there is unprobed.
+    it.each([["item1.xml/."], ["../../customXml/item1.xml"]])("keeps blocking %s in a reached glossary's sidecar", async (target) => {
+        const { valid, broken } = await run(withBrokenGlossaryTarget(target), "word-valid");
+        expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([["word/glossary/_rels/document.xml.rels", "error"]]);
+        expect(valid).toBe(false);
+    });
+});
