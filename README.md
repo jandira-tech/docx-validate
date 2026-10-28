@@ -2015,10 +2015,13 @@ when a part it would edit is not well-formed XML
 call wrote some parts and then threw, which could leave relationships naming
 comment parts that do not exist. The comment parts themselves are read and
 appended to by namespace, whatever prefix they bind, and a first or later
-comment is refused before any write when a stored comment part holds none of its
-expected root element; before, a part bound to another prefix made the call
-throw part way through, a used id was not refused, and a reply could not find
-its parent ([#930](https://github.com/jandira-tech/docx-validate/issues/930)).
+comment is refused before any write when a stored comment part's document
+element is not its expected root element; before, a part bound to another prefix
+made the call throw part way through, a used id was not refused, and a reply
+could not find its parent
+([#930](https://github.com/jandira-tech/docx-validate/issues/930)), and a root
+nested under another document element was appended to, the call reporting
+success ([#953](https://github.com/jandira-tech/docx-validate/issues/953)).
 
 ### Drive the CLIs programmatically
 
