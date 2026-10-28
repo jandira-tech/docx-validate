@@ -23224,3 +23224,365 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
 `````
 
 </details>
+
+### Session 68: 01:46Z–01:48Z on 2026-10-27, validator columns at f4cd929e
+
+A two-run repeat of session 39 ([#661](https://github.com/jandira-tech/docx-validate/issues/661), [#662](https://github.com/jandira-tech/docx-validate/issues/662)). Session 39 ran each chunk once, before the two-runs-with-logs rule, and its controls opened last in every chunk ([#671](https://github.com/jandira-tech/docx-validate/issues/671)). Here each chunk holds session 39's six specimens, copied byte for byte (the builder checks every SHA-256 against session 39's row), and its minimal control twice, named so the driver's name-ordered queue opens one copy first and the other last; every run's manifest shows the controls opened 1st and 8th of 8. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 24 of 24 rows agree. The two times in Observed are the ends of the first and second runs. Shape repeats session 39's description. The builder recorded the validator revision in every row (`f4cd929e9a4075e110eed09dbe70703cd94ed792`).
+
+- **Chart sources (s68a, #661).** The six unreferenced chart shapes, clean in session 39, open clean in both runs: a chart related from a referenced header's sidecar, from a reached glossary's footnotes part's sidecar and from the glossary document's sidecar, a chart whose only drawing sits in an unselected Fallback, a chart related twice and named by neither, and a chart related through an equivalent target spelling.
+- **Package-root wrappers (s68b, #662).** The six compound `_rels/.rels` root wrappers, clean in session 39, open clean in both runs.
+- **Referenced chart twins (s68c, #661).** Each of the six referenced twins gets the recovery offer in both runs, as in session 39.
+
+Session 39's verdicts stand, now from two runs whose controls bracket the specimens. Word-valid matches Word on all 24 rows.
+
+| Run    | Observed             | Specimen                                       | Shape                                                                                                         | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at f4cd929e          | strict at f4cd929e                                                                  |
+| ------ | -------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ------------------------------- | ----------------------------------------------------------------------------------- |
+| `s68a` | 01:46:57Z, 01:47:15Z | `00-s68a-control-first`                        | control                                                                                                       | `c6ed84a2f2856d73` | clean-open     | clean-open     | clean-open                 | valid                           | valid                                                                               |
+| `s68a` | 01:46:57Z, 01:47:15Z | `chart-header-unreferenced`                    | repeat of s39a: #661: chart related from a referenced header's sidecar, Id unused                             | `7d5241c17d9a533d` | clean-open     | clean-open     | clean-open                 | valid                           | invalid: `rels-missing-sidecar`, `paraid-missing-element`                           |
+| `s68a` | 01:46:57Z, 01:47:15Z | `chart-footnote-unreferenced`                  | repeat of s39a: #661: chart related from a reached glossary's footnotes sidecar, Id unused                    | `e7662793551bdd66` | clean-open     | clean-open     | clean-open                 | valid                           | invalid: `rels-missing-sidecar`, `paraid-missing-element`, `paraid-missing-element` |
+| `s68a` | 01:46:57Z, 01:47:15Z | `chart-glossary-unreferenced`                  | repeat of s39a: #661: chart related from a reached glossary document's sidecar, Id unused                     | `b618ee1dc9c9fb8e` | clean-open     | clean-open     | clean-open                 | valid                           | invalid: `rels-missing-sidecar`, `paraid-missing-element`, `paraid-missing-element` |
+| `s68a` | 01:46:57Z, 01:47:15Z | `chart-unselected-fallback`                    | repeat of s39a: #661: the drawing only in an unselected mc:Fallback (selected empty w14 Choice)               | `882d8c7da99a34eb` | clean-open     | clean-open     | clean-open                 | valid                           | invalid: `rels-missing-sidecar`                                                     |
+| `s68a` | 01:46:57Z, 01:47:15Z | `chart-two-relationships-no-references`        | repeat of s39a: #661: two chart relationships to one part, neither Id used                                    | `6284ceba197625d0` | clean-open     | clean-open     | clean-open                 | valid                           | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error`                         |
+| `s68a` | 01:46:57Z, 01:47:15Z | `chart-equivalent-target-unreferenced`         | repeat of s39a: #661: relationship targets CHARTS/%63hart1.xml, Id unused                                     | `1c081590957bc651` | clean-open     | clean-open     | clean-open                 | valid                           | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error`                         |
+| `s68a` | 01:46:57Z, 01:47:15Z | `zz-s68a-control-last`                         | control                                                                                                       | `c6ed84a2f2856d73` | clean-open     | clean-open     | clean-open                 | valid                           | valid                                                                               |
+| `s68b` | 01:47:21Z, 01:47:28Z | `00-s68b-control-first`                        | control                                                                                                       | `3159271c0d644744` | clean-open     | clean-open     | clean-open                 | valid                           | valid                                                                               |
+| `s68b` | 01:47:21Z, 01:47:28Z | `package-root-nested-fallback`                 | repeat of s39b: #662: Fallback holds a second wrapper whose Fallback holds Relationships                      | `9ccf796a2033f3fb` | clean-open     | clean-open     | clean-open                 | valid                           | invalid: `xsd-summary`, `xsd-error`                                                 |
+| `s68b` | 01:47:21Z, 01:47:28Z | `package-root-three-nested-fallback`           | repeat of s39b: #662: three nested Fallback wrappers                                                          | `f5f7164064cad9c4` | clean-open     | clean-open     | clean-open                 | valid                           | invalid: `xsd-summary`, `xsd-error`                                                 |
+| `s68b` | 01:47:21Z, 01:47:28Z | `package-root-multiple-choices`                | repeat of s39b: #662: unselected foo Choice, then a selected w14 Choice holding Relationships                 | `f04688ea800e34d4` | clean-open     | clean-open     | clean-open                 | valid                           | invalid: `xsd-summary`, `xsd-error`                                                 |
+| `s68b` | 01:47:21Z, 01:47:28Z | `package-root-first-of-two-understood-choices` | repeat of s39b: #662: two w14 Choices, the first holding Relationships, the second a foreign element          | `c1e962189097235f` | clean-open     | clean-open     | clean-open                 | valid                           | invalid: `xsd-summary`, `xsd-error`                                                 |
+| `s68b` | 01:47:21Z, 01:47:28Z | `package-root-mustunderstand-w14`              | repeat of s39b: #662: the Fallback wrapper with mc:MustUnderstand="w14"                                       | `5b068fd4eb0f6336` | clean-open     | clean-open     | clean-open                 | valid                           | invalid: `xsd-summary`, `xsd-error`                                                 |
+| `s68b` | 01:47:21Z, 01:47:28Z | `package-root-ignorable-child`                 | repeat of s39b: #662: the Fallback wrapper around a Relationships with mc:Ignorable="foo" and a foo:bad child | `2b8696a9abe9c303` | clean-open     | clean-open     | clean-open                 | valid                           | invalid: `xsd-summary`, `xsd-error`                                                 |
+| `s68b` | 01:47:21Z, 01:47:28Z | `zz-s68b-control-last`                         | control                                                                                                       | `3159271c0d644744` | clean-open     | clean-open     | clean-open                 | valid                           | valid                                                                               |
+| `s68c` | 01:48:04Z, 01:48:58Z | `00-s68c-control-first`                        | control                                                                                                       | `9f7a3eb4f36859a7` | clean-open     | clean-open     | clean-open                 | valid                           | valid                                                                               |
+| `s68c` | 01:48:04Z, 01:48:58Z | `chart-header-referenced`                      | repeat of s39c: #661 twin: the header's drawing names the chart                                               | `9295270440c6ce2a` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `paraid-missing-element`                           |
+| `s68c` | 01:48:04Z, 01:48:58Z | `chart-footnote-referenced`                    | repeat of s39c: #661 twin: the glossary footnotes' drawing names the chart                                    | `e6726a3858dad562` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `paraid-missing-element`, `paraid-missing-element` |
+| `s68c` | 01:48:04Z, 01:48:58Z | `chart-glossary-referenced`                    | repeat of s39c: #661 twin: the glossary document's drawing names the chart                                    | `68529f0b0e785513` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `paraid-missing-element`, `paraid-missing-element` |
+| `s68c` | 01:48:04Z, 01:48:58Z | `chart-selected-fallback`                      | repeat of s39c: #661 twin: the drawing in a selected mc:Fallback (unselected foo Choice)                      | `4151aa20fc393248` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`                                                     |
+| `s68c` | 01:48:04Z, 01:48:58Z | `chart-two-relationships-one-reference`        | repeat of s39c: #661 twin: two chart relationships, the drawing names rId9                                    | `38692fa07ce8d1fc` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`                                                     |
+| `s68c` | 01:48:04Z, 01:48:58Z | `chart-equivalent-target-referenced`           | repeat of s39c: #661 twin: equivalent target, the drawing names it                                            | `a56b728ca9a3ab7b` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`                                                     |
+| `s68c` | 01:48:04Z, 01:48:58Z | `zz-s68c-control-last`                         | control                                                                                                       | `9f7a3eb4f36859a7` | clean-open     | clean-open     | clean-open                 | valid                           | valid                                                                               |
+
+<details><summary>Raw records, session 68</summary>
+
+```jsonl
+{"run": "s68a", "pass": 1, "name": "00-s68a-control-first", "sha256": "c6ed84a2f2856d7308bce7899d502a7be65525743be85e9e451a3a1e4ddbecc7", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:46:57+00:00", "staged": "00000__wfv__00-s68a-control-first.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF 00-s68a-control-first_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68a", "pass": 2, "name": "00-s68a-control-first", "sha256": "c6ed84a2f2856d7308bce7899d502a7be65525743be85e9e451a3a1e4ddbecc7", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:15+00:00", "staged": "00000__wfv__00-s68a-control-first.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF 00-s68a-control-first_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68a", "pass": 1, "name": "chart-header-unreferenced", "sha256": "7d5241c17d9a533d31a0fda0375b529f889d2e329ecea72bce3b32d67384ab2c", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:46:57+00:00", "staged": "00004__wfv__chart-header-unreferenced.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-header-unreferenced_byword.pdf (15327 bytes), no dialog named the file"]}
+{"run": "s68a", "pass": 2, "name": "chart-header-unreferenced", "sha256": "7d5241c17d9a533d31a0fda0375b529f889d2e329ecea72bce3b32d67384ab2c", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:15+00:00", "staged": "00004__wfv__chart-header-unreferenced.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-header-unreferenced_byword.pdf (15327 bytes), no dialog named the file"]}
+{"run": "s68a", "pass": 1, "name": "chart-footnote-unreferenced", "sha256": "e7662793551bdd668fc097938c4cf34713dbed4449f129fd373da9d95239fb6e", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:46:57+00:00", "staged": "00002__wfv__chart-footnote-unreferenced.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-footnote-unreferenced_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68a", "pass": 2, "name": "chart-footnote-unreferenced", "sha256": "e7662793551bdd668fc097938c4cf34713dbed4449f129fd373da9d95239fb6e", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:15+00:00", "staged": "00002__wfv__chart-footnote-unreferenced.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-footnote-unreferenced_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68a", "pass": 1, "name": "chart-glossary-unreferenced", "sha256": "b618ee1dc9c9fb8e60fcf165c1d57b3ba35215a404e00b6127a412a81c07c8de", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:46:57+00:00", "staged": "00003__wfv__chart-glossary-unreferenced.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-glossary-unreferenced_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68a", "pass": 2, "name": "chart-glossary-unreferenced", "sha256": "b618ee1dc9c9fb8e60fcf165c1d57b3ba35215a404e00b6127a412a81c07c8de", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:15+00:00", "staged": "00003__wfv__chart-glossary-unreferenced.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-glossary-unreferenced_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68a", "pass": 1, "name": "chart-unselected-fallback", "sha256": "882d8c7da99a34eba8e901989d8b417c4734810cb8660177842d1e92d5f56bbc", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:46:57+00:00", "staged": "00006__wfv__chart-unselected-fallback.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-unselected-fallback_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68a", "pass": 2, "name": "chart-unselected-fallback", "sha256": "882d8c7da99a34eba8e901989d8b417c4734810cb8660177842d1e92d5f56bbc", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:15+00:00", "staged": "00006__wfv__chart-unselected-fallback.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-unselected-fallback_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68a", "pass": 1, "name": "chart-two-relationships-no-references", "sha256": "6284ceba197625d09663a2247a5e19fd3cc15052dec7b3ef97001b516cd2b2c8", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:46:57+00:00", "staged": "00005__wfv__chart-two-relationships-no-references.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-two-relationships-no-references_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68a", "pass": 2, "name": "chart-two-relationships-no-references", "sha256": "6284ceba197625d09663a2247a5e19fd3cc15052dec7b3ef97001b516cd2b2c8", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:15+00:00", "staged": "00005__wfv__chart-two-relationships-no-references.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-two-relationships-no-references_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68a", "pass": 1, "name": "chart-equivalent-target-unreferenced", "sha256": "1c081590957bc65116e942e2667f0b5aa46b1d1beae96d47360327fabc6077ab", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:46:57+00:00", "staged": "00001__wfv__chart-equivalent-target-unreferenced.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-equivalent-target-unreferenced_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68a", "pass": 2, "name": "chart-equivalent-target-unreferenced", "sha256": "1c081590957bc65116e942e2667f0b5aa46b1d1beae96d47360327fabc6077ab", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:15+00:00", "staged": "00001__wfv__chart-equivalent-target-unreferenced.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-equivalent-target-unreferenced_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68a", "pass": 1, "name": "zz-s68a-control-last", "sha256": "c6ed84a2f2856d7308bce7899d502a7be65525743be85e9e451a3a1e4ddbecc7", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:46:57+00:00", "staged": "00007__wfv__zz-s68a-control-last.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF zz-s68a-control-last_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68a", "pass": 2, "name": "zz-s68a-control-last", "sha256": "c6ed84a2f2856d7308bce7899d502a7be65525743be85e9e451a3a1e4ddbecc7", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:15+00:00", "staged": "00007__wfv__zz-s68a-control-last.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF zz-s68a-control-last_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68b", "pass": 1, "name": "00-s68b-control-first", "sha256": "3159271c0d644744ba221d3a30be7ca80fd4c6a3fac7797657a7732b84c876e7", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:21+00:00", "staged": "00000__wfv__00-s68b-control-first.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF 00-s68b-control-first_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68b", "pass": 2, "name": "00-s68b-control-first", "sha256": "3159271c0d644744ba221d3a30be7ca80fd4c6a3fac7797657a7732b84c876e7", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:28+00:00", "staged": "00000__wfv__00-s68b-control-first.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF 00-s68b-control-first_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68b", "pass": 1, "name": "package-root-nested-fallback", "sha256": "9ccf796a2033f3fbda906327851e7cc1d7740646a3f177305f4f48886a424432", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:21+00:00", "staged": "00005__wfv__package-root-nested-fallback.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF package-root-nested-fallback_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68b", "pass": 2, "name": "package-root-nested-fallback", "sha256": "9ccf796a2033f3fbda906327851e7cc1d7740646a3f177305f4f48886a424432", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:28+00:00", "staged": "00005__wfv__package-root-nested-fallback.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF package-root-nested-fallback_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68b", "pass": 1, "name": "package-root-three-nested-fallback", "sha256": "f5f7164064cad9c488545e4d5b47dcf96d6c199d463004f43945496479319860", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:21+00:00", "staged": "00006__wfv__package-root-three-nested-fallback.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF package-root-three-nested-fallback_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68b", "pass": 2, "name": "package-root-three-nested-fallback", "sha256": "f5f7164064cad9c488545e4d5b47dcf96d6c199d463004f43945496479319860", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:28+00:00", "staged": "00006__wfv__package-root-three-nested-fallback.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF package-root-three-nested-fallback_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68b", "pass": 1, "name": "package-root-multiple-choices", "sha256": "f04688ea800e34d49f20589b4f577dc8c3225bfb577485f32a3e329b499d9892", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:21+00:00", "staged": "00003__wfv__package-root-multiple-choices.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF package-root-multiple-choices_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68b", "pass": 2, "name": "package-root-multiple-choices", "sha256": "f04688ea800e34d49f20589b4f577dc8c3225bfb577485f32a3e329b499d9892", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:28+00:00", "staged": "00003__wfv__package-root-multiple-choices.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF package-root-multiple-choices_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68b", "pass": 1, "name": "package-root-first-of-two-understood-choices", "sha256": "c1e962189097235f640801e6fd9f9a485ac7b3953dc0b3a581d2606b3c06dfb0", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:21+00:00", "staged": "00001__wfv__package-root-first-of-two-understood-choices.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF package-root-first-of-two-understood-choices_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68b", "pass": 2, "name": "package-root-first-of-two-understood-choices", "sha256": "c1e962189097235f640801e6fd9f9a485ac7b3953dc0b3a581d2606b3c06dfb0", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:28+00:00", "staged": "00001__wfv__package-root-first-of-two-understood-choices.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF package-root-first-of-two-understood-choices_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68b", "pass": 1, "name": "package-root-mustunderstand-w14", "sha256": "5b068fd4eb0f6336922952e085197660700b5d61c4d172e3c8a74432c9ad2557", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:21+00:00", "staged": "00004__wfv__package-root-mustunderstand-w14.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF package-root-mustunderstand-w14_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68b", "pass": 2, "name": "package-root-mustunderstand-w14", "sha256": "5b068fd4eb0f6336922952e085197660700b5d61c4d172e3c8a74432c9ad2557", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:28+00:00", "staged": "00004__wfv__package-root-mustunderstand-w14.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF package-root-mustunderstand-w14_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68b", "pass": 1, "name": "package-root-ignorable-child", "sha256": "2b8696a9abe9c30392e71590d5960c28b57cf08f28bc7c8babc4a33184c3fe79", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:21+00:00", "staged": "00002__wfv__package-root-ignorable-child.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF package-root-ignorable-child_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68b", "pass": 2, "name": "package-root-ignorable-child", "sha256": "2b8696a9abe9c30392e71590d5960c28b57cf08f28bc7c8babc4a33184c3fe79", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:28+00:00", "staged": "00002__wfv__package-root-ignorable-child.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF package-root-ignorable-child_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68b", "pass": 1, "name": "zz-s68b-control-last", "sha256": "3159271c0d644744ba221d3a30be7ca80fd4c6a3fac7797657a7732b84c876e7", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:21+00:00", "staged": "00007__wfv__zz-s68b-control-last.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF zz-s68b-control-last_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68b", "pass": 2, "name": "zz-s68b-control-last", "sha256": "3159271c0d644744ba221d3a30be7ca80fd4c6a3fac7797657a7732b84c876e7", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:47:28+00:00", "staged": "00007__wfv__zz-s68b-control-last.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF zz-s68b-control-last_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68c", "pass": 1, "name": "00-s68c-control-first", "sha256": "9f7a3eb4f36859a7ac39d96ad28fe62f0d0aee8ee29682fe374b8bf3b5ec07ca", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:48:04+00:00", "staged": "00000__wfv__00-s68c-control-first.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF 00-s68c-control-first_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68c", "pass": 2, "name": "00-s68c-control-first", "sha256": "9f7a3eb4f36859a7ac39d96ad28fe62f0d0aee8ee29682fe374b8bf3b5ec07ca", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:48:58+00:00", "staged": "00000__wfv__00-s68c-control-first.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF 00-s68c-control-first_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68c", "pass": 1, "name": "chart-header-referenced", "sha256": "9295270440c6ce2a141667a75b8340f4a6e1b005b62dd7cf5ec7f7b67431435b", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:48:04+00:00", "staged": "00004__wfv__chart-header-referenced.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 21:47:54.691 'Word found unreadable content in 00004__wfv__chart-header-referenced.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.'", "2026-10-26 21:47:55.536 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__chart-header-referenced.docx)\""]}
+{"run": "s68c", "pass": 2, "name": "chart-header-referenced", "sha256": "9295270440c6ce2a141667a75b8340f4a6e1b005b62dd7cf5ec7f7b67431435b", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:48:58+00:00", "staged": "00004__wfv__chart-header-referenced.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 21:48:40.261 'Word found unreadable content in 00004__wfv__chart-header-referenced.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.'", "2026-10-26 21:48:41.246 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__chart-header-referenced.docx)\""]}
+{"run": "s68c", "pass": 1, "name": "chart-footnote-referenced", "sha256": "e6726a3858dad562b09603e6db5fe94663c562fc8cf98b3e885043d69de66c22", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:48:04+00:00", "staged": "00002__wfv__chart-footnote-referenced.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 21:47:46.089 'Word found unreadable content in 00002__wfv__chart-footnote-referenced.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 21:47:46.579 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__chart-footnote-referenced...)\""]}
+{"run": "s68c", "pass": 2, "name": "chart-footnote-referenced", "sha256": "e6726a3858dad562b09603e6db5fe94663c562fc8cf98b3e885043d69de66c22", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:48:58+00:00", "staged": "00002__wfv__chart-footnote-referenced.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 21:48:23.558 'Word found unreadable content in 00002__wfv__chart-footnote-referenced.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 21:48:24.446 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__chart-footnote-referenced...)\""]}
+{"run": "s68c", "pass": 1, "name": "chart-glossary-referenced", "sha256": "68529f0b0e785513f2edf004be2d70958e17e527cbe91f1b9fded7a142c6fb24", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:48:04+00:00", "staged": "00003__wfv__chart-glossary-referenced.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 21:47:50.342 'Word found unreadable content in 00003__wfv__chart-glossary-referenced.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 21:47:51.151 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__chart-glossary-referenced...)\""]}
+{"run": "s68c", "pass": 2, "name": "chart-glossary-referenced", "sha256": "68529f0b0e785513f2edf004be2d70958e17e527cbe91f1b9fded7a142c6fb24", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:48:58+00:00", "staged": "00003__wfv__chart-glossary-referenced.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 21:48:31.243 'Word found unreadable content in 00003__wfv__chart-glossary-referenced.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 21:48:32.147 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__chart-glossary-referenced...)\""]}
+{"run": "s68c", "pass": 1, "name": "chart-selected-fallback", "sha256": "4151aa20fc39324819fde0c2015fcf5f8252cc458f75c64474392c6a119834d6", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:48:04+00:00", "staged": "00005__wfv__chart-selected-fallback.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 21:47:58.973 'Word found unreadable content in 00005__wfv__chart-selected-fallback.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.'", "2026-10-26 21:47:59.780 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__chart-selected-fallback.docx)\""]}
+{"run": "s68c", "pass": 2, "name": "chart-selected-fallback", "sha256": "4151aa20fc39324819fde0c2015fcf5f8252cc458f75c64474392c6a119834d6", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:48:58+00:00", "staged": "00005__wfv__chart-selected-fallback.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 21:48:49.296 'Word found unreadable content in 00005__wfv__chart-selected-fallback.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.'", "2026-10-26 21:48:50.324 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__chart-selected-fallback.docx)\""]}
+{"run": "s68c", "pass": 1, "name": "chart-two-relationships-one-reference", "sha256": "38692fa07ce8d1fcfd4a72bcf8192e9a1876b1a28a0b77f3cf88888e52554048", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:48:04+00:00", "staged": "00006__wfv__chart-two-relationships-one-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 21:48:03.156 'Word found unreadable content in 00006__wfv__chart-two-relationships-one-reference.docx. Do you wan … ? If you trust the source of this document, click Yes.'", "2026-10-26 21:48:03.731 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__chart-two-relationships-o...)\""]}
+{"run": "s68c", "pass": 2, "name": "chart-two-relationships-one-reference", "sha256": "38692fa07ce8d1fcfd4a72bcf8192e9a1876b1a28a0b77f3cf88888e52554048", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:48:58+00:00", "staged": "00006__wfv__chart-two-relationships-one-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 21:48:56.976 'Word found unreadable content in 00006__wfv__chart-two-relationships-one-reference.docx. Do you wan … ? If you trust the source of this document, click Yes.'", "2026-10-26 21:48:57.872 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__chart-two-relationships-o...)\""]}
+{"run": "s68c", "pass": 1, "name": "chart-equivalent-target-referenced", "sha256": "a56b728ca9a3ab7bea131f935d4a156f04fd47b4d32678676539ea87750cb06e", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:48:04+00:00", "staged": "00001__wfv__chart-equivalent-target-referenced.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 21:47:41.507 'Word found unreadable content in 00001__wfv__chart-equivalent-target-referenced.docx. Do you want t … ? If you trust the source of this document, click Yes.'", "2026-10-26 21:47:42.291 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__chart-equivalent-target-r...)\""]}
+{"run": "s68c", "pass": 2, "name": "chart-equivalent-target-referenced", "sha256": "a56b728ca9a3ab7bea131f935d4a156f04fd47b4d32678676539ea87750cb06e", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:48:58+00:00", "staged": "00001__wfv__chart-equivalent-target-referenced.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 21:48:19.358 'Word found unreadable content in 00001__wfv__chart-equivalent-target-referenced.docx. Do you want t … ? If you trust the source of this document, click Yes.'", "2026-10-26 21:48:20.227 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__chart-equivalent-target-r...)\""]}
+{"run": "s68c", "pass": 1, "name": "zz-s68c-control-last", "sha256": "9f7a3eb4f36859a7ac39d96ad28fe62f0d0aee8ee29682fe374b8bf3b5ec07ca", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:48:04+00:00", "staged": "00007__wfv__zz-s68c-control-last.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF zz-s68c-control-last_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s68c", "pass": 2, "name": "zz-s68c-control-last", "sha256": "9f7a3eb4f36859a7ac39d96ad28fe62f0d0aee8ee29682fe374b8bf3b5ec07ca", "validatorRevision": "f4cd929e9a4075e110eed09dbe70703cd94ed792", "observedAt": "2026-10-27T01:48:58+00:00", "staged": "00007__wfv__zz-s68c-control-last.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF zz-s68c-control-last_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 68 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s68builder.mts`:
+
+```ts
+// Session 68: a two-run re-probe of session 39's three chunks (#661, #662), byte for byte, with the controls named so
+// the driver's name-ordered queue opens one first and one last in every chunk. Session 39 ran each chunk once, before
+// the two-runs-with-logs rule, and queued its controls last (#671).
+// Every row records the validator revision it was judged at (`validatorRevision`); the verdict helper is s67builder.mts's.
+// The builder empties the chunk's specimens.jsonl once before its row loop (promised on #825).
+// Run from a worktree root: CHUNK=s68a pnpm exec node --import tsx <this file>
+// (the imports are absolute, so the file needs no copy into the worktree; `git rev-parse` reads the cwd's worktree).
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const { validate } = await import(path.join(process.cwd(), "src/scripts/office/validate.ts"));
+const REVISION = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+// Each session 68 chunk repeats one session 39 chunk.
+const SOURCES: Record<string, string> = { s68a: "s39a", s68b: "s39b", s68c: "s39c" };
+
+const chunk = process.env.CHUNK ?? "";
+const source = SOURCES[chunk];
+if (!source) throw new Error(`CHUNK must be one of ${Object.keys(SOURCES).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+type SourceRow = { name: string; issue: string; file: string; sha256: string };
+const sourceRows: SourceRow[] = readFileSync(path.join(ROOT, source, "specimens.jsonl"), "utf8")
+    .trim()
+    .split("\n")
+    .map((line) => JSON.parse(line));
+const control = sourceRows.find((row) => row.name === `${source}-control-minimal`);
+if (!control) throw new Error(`${source} has no ${source}-control-minimal row`);
+const specimens = sourceRows.filter((row) => row.issue !== "control");
+if (specimens.length !== 6) throw new Error(`${source}: expected 6 specimens, found ${specimens.length}`);
+
+// [name, issue, the session 39 row whose bytes it copies]
+const rows: Array<[string, string, SourceRow]> = [
+    [`00-${chunk}-control-first`, "control", control],
+    ...specimens.map((row): [string, string, SourceRow] => [row.name, `repeat of ${source}: ${row.issue}`, row]),
+    [`zz-${chunk}-control-last`, "control", control],
+];
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+    }
+};
+
+for (const [name, issue, from] of rows) {
+    const bytes = readFileSync(path.join(ROOT, source, "src", from.file));
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    if (sha256 !== from.sha256) throw new Error(`${from.file}: stored bytes ${sha256} differ from session 39's ${from.sha256}`);
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: false,
+        copiedFrom: `${source}/src/${from.file}`,
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `copied ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-68 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s68a", "s68b", "s68c")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s68/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-68 parts of docs/plans/evidence/word-probes-2026-10-24.md into s68/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796).
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s68a", "s68b", "s68c")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s68/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                                   "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                                   "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+
+# Where each run opened its controls, from the driver's manifests (in open order, #671): the narrative states it, so
+# check it here rather than trust the names' sort order.
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        opened = [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()]
+        assert len(opened) == 8 and opened[0] == f"00-{label}-control-first.docx" and opened[-1] == f"zz-{label}-control-last.docx", (run, opened)
+# The narrative's claims about outcomes, checked against results.json.
+for (label, file), r in results.items():
+    if r["control"] or label != "s68c":
+        assert r["outcome"] == "clean-open", (label, file, r["outcome"])
+    else:
+        assert r["outcome"] == "unreadable-content-warning", (label, file, r["outcome"])
+    assert r["validatorMatchesWord"], (label, file)
+assert agreed == len(rows) == 24, (agreed, len(rows))
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}", (min(starts), max(ends))
+out = [
+    f"### Session 68: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {at}",
+    "",
+    "A two-run repeat of session 39 ([#661](https://github.com/jandira-tech/docx-validate/issues/661), "
+    "[#662](https://github.com/jandira-tech/docx-validate/issues/662)). Session 39 ran each chunk once, before the "
+    "two-runs-with-logs rule, and its controls opened last in every chunk ([#671](https://github.com/jandira-tech/docx-validate/issues/671)). "
+    "Here each chunk holds session 39's six specimens, copied byte for byte (the builder checks every SHA-256 against "
+    "session 39's row), and its minimal control twice, named so the driver's name-ordered queue opens one copy first and "
+    "the other last; every run's manifest shows the controls opened 1st and 8th of 8. Each chunk ran twice, as two separate "
+    "driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's "
+    "`logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, "
+    f"and `unknown` otherwise; {agreed} of {len(rows)} rows agree. The two times in Observed are the ends of the first and "
+    "second runs. Shape repeats session 39's description. The builder recorded the validator revision in every row "
+    f"(`{rev}`).",
+    "",
+    "- **Chart sources (s68a, #661).** The six unreferenced chart shapes, clean in session 39, open clean in both runs: "
+    "a chart related from a referenced header's sidecar, from a reached glossary's footnotes part's sidecar and from the "
+    "glossary document's sidecar, a chart whose only drawing sits in an unselected Fallback, a chart related twice and "
+    "named by neither, and a chart related through an equivalent target spelling.",
+    "- **Package-root wrappers (s68b, #662).** The six compound `_rels/.rels` root wrappers, clean in session 39, open "
+    "clean in both runs.",
+    "- **Referenced chart twins (s68c, #661).** Each of the six referenced twins gets the recovery offer in both runs, as "
+    "in session 39.",
+    "",
+    "Session 39's verdicts stand, now from two runs whose controls bracket the specimens. Word-valid matches Word on all "
+    "24 rows.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 68</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 68 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s68builder.mts", ROOT / "s68builder.mts", "ts"), ("compare.py", ROOT / "s68/compare.py", "python"),
+                         ("section.py", ROOT / "s68/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s68/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>

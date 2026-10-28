@@ -1345,7 +1345,8 @@ stored view there
 ([#646](https://github.com/jandira-tech/docx-validate/issues/646),
 [#640](https://github.com/jandira-tech/docx-validate/issues/640); Word probes
 sessions 36 and 38, `s36c` and `s38a`). Combinations resolve the same way:
-Word opened six clean in session 39 (`s39b`) — nested Fallback wrappers two
+Word opened six clean in session 39 (`s39b`), and again in both runs of
+session 68 (`s68b`) — nested Fallback wrappers two
 and three deep, an unselected Choice before a selected one, the first of two
 selected Choices, a wrapper carrying `mc:MustUnderstand="w14"`, and a wrapped
 `Relationships` element with an ignorable child
@@ -1591,7 +1592,9 @@ from a reached glossary's footnotes part or document, two unused chart
 relationships to one part, a relationship targeting an OPC-equivalent
 spelling of the chart's name, and a drawing only in an `mc:Fallback` Word
 does not select all opened clean, and each shape's referenced twin got the
-recovery offer ([#661](https://github.com/jandira-tech/docx-validate/issues/661)).
+recovery offer ([#661](https://github.com/jandira-tech/docx-validate/issues/661));
+session 68 (s68a, s68c) repeated every outcome in two runs, with a clean
+control opened first and last in each chunk.
 Session 35, chunks s35a/s35b, observed clean opens for ids in unreferenced
 `word/xtra.xml` (both relationships namespaces), unreferenced `docProps/app.xml`,
 an unreached glossary, on `w:name` in reached styles, and inside an unselected
