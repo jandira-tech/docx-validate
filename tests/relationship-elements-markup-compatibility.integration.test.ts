@@ -82,14 +82,9 @@ describe("PPTX relationships parts keep the stored view under every profile (#64
             await writeFile(file, await buildPptx(PPTX_SPECIMEN));
             const result = await validate(file, { profile: "lenient" });
             expect(result.valid).toBe(true);
-            expect(pinned(result.issues)).toEqual(
-                ["ppt/slideLayouts/slideLayout1.xml", "ppt/slideMasters/slideMaster1.xml", "ppt/slides/slide1.xml"].map((path) => ({
-                    severity: "info",
-                    code: "xsd-no-schema",
-                    path,
-                    message: "The bundled schemas map no schema to this part; XSD validation skipped for this part.",
-                })),
-            );
+            // #628 audited the three slide parts here; #864 routes them to
+            // pml.xsd, so nothing unmapped remains to audit.
+            expect(pinned(result.issues)).toEqual([]);
         });
     });
 

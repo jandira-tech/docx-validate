@@ -210,8 +210,13 @@ issue naming it, so the parts the walk skipped can be audited; validity,
 lenient skips and a part the run's deadline never reached draw none (#628).
 A direct `validateAgainstXsd()` call on a validator parses each unmapped part
 before auditing it, so a malformed one draws none there either (#867).
-In a PPTX the slides, slide layouts and slide masters are among these parts:
-no rule maps a PresentationML part below `ppt/` yet (#864). The CLI prints
+In a PPTX, the slides, slide layouts and masters, notes slides and masters,
+handout masters, legacy comments and tags one folder below `ppt/` use `pml.xsd`,
+matched by folder and file name (#864). PowerPoint's modern comments
+(`ppt/comments/modernComment_*.xml`), whose root `pml.xsd` does not declare,
+are among the unmapped parts. Every XML part directly in `ppt/` is still sent
+to `pml.xsd`, so `ppt/authors.xml` and `ppt/revisionInfo.xml`, whose Microsoft
+roots it cannot judge, fail the walk (#872). The CLI prints
 the finding with `--json`; its human output lists errors only.
 
 Full DOCX/DOCM validation reports duplicate relationship `Id` values as

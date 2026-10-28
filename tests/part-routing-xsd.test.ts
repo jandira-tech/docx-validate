@@ -18,6 +18,12 @@
 // the DrawingML diagram parts to dml-diagram.xsd. Both folders sit below a
 // main content folder, so the folder rule never reached them and their parts
 // were left out of the walk.
+//
+// #864: the same walk routes the PresentationML parts one folder below ppt/
+// to pml.xsd — the slides, slide layouts, slide masters, notes slides, notes
+// and handout masters, legacy comments and tags whose root element pml.xsd
+// declares — and keeps every other part there (PowerPoint's modern comments)
+// unmapped.
 
 import { promises as fs } from "node:fs";
 import path from "node:path";
@@ -143,6 +149,205 @@ describe("schema routing of glossary and diagram parts (#628)", { timeout: 120_0
         ])("reports a schema violation in the diagram part %s", async (base, root) => {
             const { errors } = await schemaWalk(profile, { [`word/diagrams/${base}`]: `${HEAD}${root}` });
             reportsOnly(errors, `word/diagrams/${base}`, "bogusDiagram");
+        });
+    });
+});
+
+describe("schema routing of PresentationML parts below ppt/ (#864)", { timeout: 120_000 }, () => {
+    const OFFICE_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const PML_CT = "application/vnd.openxmlformats-officedocument.presentationml";
+    const PPT_NS =
+        `xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" ` +
+        `xmlns:r="${OFFICE_REL}" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"`;
+    const STRICT_PPT_NS =
+        `xmlns:a="http://purl.oclc.org/ooxml/drawingml/main" ` +
+        `xmlns:r="http://purl.oclc.org/ooxml/officeDocument" ` +
+        `xmlns:p="http://purl.oclc.org/ooxml/presentationml/main"`;
+    // The same shape tree and colour map the minimal PPTX's slide parts hold.
+    const PPT_TREE =
+        `<p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>` +
+        `<p:grpSpPr/></p:spTree></p:cSld>`;
+    const PPT_CLR_MAP =
+        `<p:clrMap bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" ` +
+        `accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/>`;
+
+    // The five part kinds the minimal package lacks, each the smallest part
+    // pml.xsd accepts: `p:notes` and the legacy `p:cmLst` relate from the
+    // slide, the masters and the tags from the presentation, as the Open XML
+    // SDK part catalogue relates them (data/parts/NotesSlidePart.json,
+    // SlideCommentsPart.json, NotesMasterPart.json, HandoutMasterPart.json,
+    // UserDefinedTagsPart.json).
+    const NOTES_SLIDE = `${HEAD}<p:notes ${PPT_NS}>${PPT_TREE}<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:notes>`;
+    const NOTES_MASTER = `${HEAD}<p:notesMaster ${PPT_NS}>${PPT_TREE}${PPT_CLR_MAP}</p:notesMaster>`;
+    const HANDOUT_MASTER = `${HEAD}<p:handoutMaster ${PPT_NS}>${PPT_TREE}${PPT_CLR_MAP}</p:handoutMaster>`;
+    const LEGACY_COMMENTS = `${HEAD}<p:cmLst ${PPT_NS}></p:cmLst>`;
+    const TAGS = `${HEAD}<p:tagLst ${PPT_NS}></p:tagLst>`;
+
+    /** The eight part kinds one folder below `ppt/` whose root pml.xsd declares. */
+    const PPTX_PARTS = [
+        "ppt/slides/slide1.xml",
+        "ppt/slideLayouts/slideLayout1.xml",
+        "ppt/slideMasters/slideMaster1.xml",
+        "ppt/notesSlides/notesSlide1.xml",
+        "ppt/notesMasters/notesMaster1.xml",
+        "ppt/handoutMasters/handoutMaster1.xml",
+        "ppt/comments/comment1.xml",
+        "ppt/tags/tag1.xml",
+    ] as const;
+
+    /** The minimal PPTX holding all eight kinds, each with its relationship and content-type override. */
+    const pptxHoldingAllParts = (): Record<string, string> => ({
+        ...MINIMAL_PPTX_PARTS,
+        "ppt/notesSlides/notesSlide1.xml": NOTES_SLIDE,
+        "ppt/notesMasters/notesMaster1.xml": NOTES_MASTER,
+        "ppt/handoutMasters/handoutMaster1.xml": HANDOUT_MASTER,
+        "ppt/comments/comment1.xml": LEGACY_COMMENTS,
+        "ppt/tags/tag1.xml": TAGS,
+        "[Content_Types].xml": MINIMAL_PPTX_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="/ppt/notesSlides/notesSlide1.xml" ContentType="${PML_CT}.notesSlide+xml"/>` +
+                `<Override PartName="/ppt/notesMasters/notesMaster1.xml" ContentType="${PML_CT}.notesMaster+xml"/>` +
+                `<Override PartName="/ppt/handoutMasters/handoutMaster1.xml" ContentType="${PML_CT}.handoutMaster+xml"/>` +
+                `<Override PartName="/ppt/comments/comment1.xml" ContentType="${PML_CT}.comments+xml"/>` +
+                `<Override PartName="/ppt/tags/tag1.xml" ContentType="${PML_CT}.tags+xml"/></Types>`,
+        ),
+        "ppt/_rels/presentation.xml.rels": MINIMAL_PPTX_PARTS["ppt/_rels/presentation.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdNotesMaster" Type="${OFFICE_REL}/notesMaster" Target="notesMasters/notesMaster1.xml"/>` +
+                `<Relationship Id="rIdHandoutMaster" Type="${OFFICE_REL}/handoutMaster" Target="handoutMasters/handoutMaster1.xml"/>` +
+                `<Relationship Id="rIdTags" Type="${OFFICE_REL}/tags" Target="tags/tag1.xml"/></Relationships>`,
+        ),
+        "ppt/slides/_rels/slide1.xml.rels": MINIMAL_PPTX_PARTS["ppt/slides/_rels/slide1.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdNotesSlide" Type="${OFFICE_REL}/notesSlide" Target="../notesSlides/notesSlide1.xml"/>` +
+                `<Relationship Id="rIdComments" Type="${OFFICE_REL}/comments" Target="../comments/comment1.xml"/></Relationships>`,
+        ),
+    });
+
+    /** The part's XML with `<p:bogusDefect/>` as the root's first child. */
+    const withBogusDefect = (xml: string): string => {
+        const at = xml.indexOf(">", xml.indexOf("<p:")) + 1;
+        return xml.slice(0, at) + "<p:bogusDefect/>" + xml.slice(at);
+    };
+
+    const noSchemaAudit = (part: string) => ({
+        severity: "info",
+        message: "The bundled schemas map no schema to this part; XSD validation skipped for this part.",
+        path: part,
+        code: "xsd-no-schema",
+    });
+
+    it.each([...PPTX_PARTS.map((part) => [part, "ppt"] as const), ["PPT/Slides/Slide2.XML", "ppt"] as const])(
+        "maps %s to the ppt schema key",
+        (part, key) => {
+            expect(new KeyValidator({ unpackedDir: "/pkg" }).schemaMappingKey(part)).toBe(key);
+        },
+    );
+
+    it.each([
+        // PowerPoint's modern comments sit in the comments folder, but their
+        // root belongs to the Microsoft 2018/8 namespace pml.xsd never declares.
+        "ppt/comments/modernComment_1_0.xml",
+        // The folder and the file name must agree …
+        "ppt/slides/slideMaster1.xml",
+        // … and the part must sit exactly one folder below ppt/.
+        "ppt/slides/slide1.xml/extra.xml",
+        "ppt/notesSlides/notesSlide1.xml/extra.xml",
+        "word/slides/slide1.xml",
+        // A folder named like an Object.prototype key names no part kind.
+        "ppt/constructor/slide1.xml",
+        "ppt/__proto__/slide1.xml",
+    ])("leaves %s unmapped", (part) => {
+        expect(new KeyValidator({ unpackedDir: "/pkg" }).schemaMappingKey(part)).toBeNull();
+    });
+
+    it("routes a slide to the bundled PresentationML schema", () => {
+        expect(new KeyValidator({ unpackedDir: "/pkg" }).schemaFile("ppt/slides/slide1.xml")).toBe("ISO-IEC29500-4_2016/pml.xsd");
+    });
+
+    describe.each(["lenient", "strict"] as const)("under %s", (profile) => {
+        it.each(PPTX_PARTS)("reports a schema violation in %s", async (part) => {
+            await withTempDir(async (dir) => {
+                const parts = pptxHoldingAllParts();
+                const file = path.join(dir, "defect.pptx");
+                await fs.writeFile(file, await buildPptx({ ...parts, [part]: withBogusDefect(parts[part]!) }));
+                const result = await validate(file, { profile });
+                expect(result.valid).toBe(false);
+                const errors = result.issues.filter((issue) => issue.code === "xsd-error");
+                expect(errors.length).toBeGreaterThan(0);
+                expect(errors.every((issue) => issue.path === part)).toBe(true);
+                expect(errors.some((issue) => issue.message.includes("bogusDefect"))).toBe(true);
+                expect(result.xsdWalk.parts).toContain(part);
+            });
+        });
+
+        it.each(PPTX_PARTS)("walks a valid %s without findings", async (part) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "control.pptx");
+                await fs.writeFile(file, await buildPptx(pptxHoldingAllParts()));
+                const result = await validate(file, { profile });
+                expect(result.valid).toBe(true);
+                expect(result.xsdWalk.parts).toContain(part);
+                expect(result.issues.filter((issue) => issue.code === "xsd-no-schema" && issue.path === part)).toEqual([]);
+            });
+        });
+    });
+
+    it("keeps PowerPoint's modern comments unmapped and audited", async () => {
+        await withTempDir(async (dir) => {
+            const wired = pptxHoldingAllParts();
+            const parts = {
+                ...wired,
+                // The modern comments' root and relationship:
+                // PowerPointCommentPart (Open XML SDK data/parts/
+                // PowerPointCommentPart.json), whose p188 prefix is the
+                // Microsoft 2018/8 namespace.
+                "ppt/comments/modernComment_1_0.xml": `${HEAD}<p188:cmLst xmlns:p188="http://schemas.microsoft.com/office/powerpoint/2018/8/main"></p188:cmLst>`,
+                "[Content_Types].xml": wired["[Content_Types].xml"]!.replace(
+                    "</Types>",
+                    '<Override PartName="/ppt/comments/modernComment_1_0.xml" ContentType="application/vnd.ms-powerpoint.comments+xml"/></Types>',
+                ),
+                "ppt/slides/_rels/slide1.xml.rels": wired["ppt/slides/_rels/slide1.xml.rels"]!.replace(
+                    "</Relationships>",
+                    '<Relationship Id="rIdModern" Type="http://schemas.microsoft.com/office/2018/10/relationships/comments" ' +
+                        'Target="../comments/modernComment_1_0.xml"/></Relationships>',
+                ),
+            };
+            const file = path.join(dir, "modern-comment.pptx");
+            await fs.writeFile(file, await buildPptx(parts));
+            for (const profile of ["lenient", "strict"] as const) {
+                const result = await validate(file, { profile });
+                expect(result.valid).toBe(true);
+                expect(result.xsdWalk.parts).not.toContain("ppt/comments/modernComment_1_0.xml");
+                expect(result.issues.filter((issue) => issue.code === "xsd-no-schema")).toEqual([
+                    noSchemaAudit("ppt/comments/modernComment_1_0.xml"),
+                ]);
+            }
+        });
+    });
+
+    it("routes a Strict slide to the ISO Strict schema under strict, and skips it under lenient", async () => {
+        await withTempDir(async (dir) => {
+            const strictSlide = `${HEAD}<p:sld ${STRICT_PPT_NS}>${PPT_TREE}<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>`;
+            const parts = { ...pptxHoldingAllParts(), "ppt/slides/slide1.xml": withBogusDefect(strictSlide) };
+            const file = path.join(dir, "strict-slide.pptx");
+            await fs.writeFile(file, await buildPptx(parts));
+
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.valid).toBe(false);
+            expect(
+                strict.issues.some(
+                    (issue) =>
+                        issue.code === "xsd-error" && issue.path === "ppt/slides/slide1.xml" && issue.message.includes("bogusDefect"),
+                ),
+            ).toBe(true);
+            expect(strict.xsdWalk.parts).toContain("ppt/slides/slide1.xml");
+
+            const lenient = await validate(file, { profile: "lenient" });
+            expect(lenient.valid).toBe(true);
+            expect(lenient.issues.filter((issue) => issue.code === "xsd-error")).toEqual([]);
+            expect(lenient.issues.filter((issue) => issue.code === "xsd-strict-skipped")).toHaveLength(1);
+            expect(lenient.xsdWalk.parts).not.toContain("ppt/slides/slide1.xml");
         });
     });
 });
@@ -297,8 +502,9 @@ describe("schema audit of unmapped parts (#628)", { timeout: 120_000 }, () => {
         });
     });
 
-    // The minimal PPTX's slide, layout and master are unmapped too: no rule maps a
-    // PresentationML part below `ppt/` (#864), so they are audited beside the payload.
+    // The minimal PPTX's slide, layout and master map to pml.xsd since #864
+    // routed the PresentationML parts one folder below `ppt/`; only the customXml
+    // payload is unmapped, so it alone is audited.
     it.each([undefined, "lenient", "strict", "word-valid"] as const)("audits an unmapped PPTX part under profile %s", async (profile) => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "unmapped.pptx");
@@ -315,12 +521,7 @@ describe("schema audit of unmapped parts (#628)", { timeout: 120_000 }, () => {
             );
             const result = await validate(file, { profile });
             expect(result.valid).toBe(true);
-            expect(result.issues.filter((issue) => issue.code === "xsd-no-schema")).toEqual([
-                audit("customXml/item1.xml"),
-                audit("ppt/slideLayouts/slideLayout1.xml"),
-                audit("ppt/slideMasters/slideMaster1.xml"),
-                audit("ppt/slides/slide1.xml"),
-            ]);
+            expect(result.issues.filter((issue) => issue.code === "xsd-no-schema")).toEqual([audit("customXml/item1.xml")]);
             expect(result.xsdWalk.parts).not.toContain("customXml/item1.xml");
             expect(result.metadata?.schemaCompleted).toBe(true);
         });
