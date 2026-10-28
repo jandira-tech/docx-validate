@@ -22,6 +22,7 @@ import {
     MISMATCH_STORY_CASES,
     storyContentType,
     storyContentTypeParts,
+    uniformlyStrict,
 } from "./support/story-content-type-specimens";
 
 const ID = "word-part-content-type-mismatch";
@@ -71,6 +72,15 @@ describe("story content type mismatch (#600, session 24)", () => {
         expect(found[0]?.message).toContain("Word 16.115 offers to recover the package (sessions 53 and 57).");
         // The unread twin stays silent, as #516 observed for the header.
         expect(await diagnose(storyContentTypeParts("footer", storyContentType("styles"), "main", false))).toEqual([]);
+    });
+
+    // Sessions 53 and 57 stored Transitional main documents only (#861).
+    it("keeps the read footer typed styles without a citation in a uniformly Strict package", async () => {
+        const found = await diagnose(uniformlyStrict(storyContentTypeParts("footer", storyContentType("styles"))));
+        expect(found).toHaveLength(1);
+        expect(found[0]).toMatchObject({ code: ID, severity: "error", path: "word/footer9.xml" });
+        expect(found[0]?.message).toContain("the main document's footer relationship");
+        expect(found[0]?.message).not.toContain("session");
     });
 
     it.each(["comments", "footnotes", "endnotes"] as const)("keeps %s typed as each other notes/comment part silent", async (segment) => {
@@ -891,15 +901,6 @@ describe("a story part whose stored root is an AlternateContent (#818, session 6
 
     // Session 65 stored its Strict comments roots in a Transitional package
     // (s65c, s65d); a uniformly Strict package is unprobed (#857).
-    const STRICT_R = "http://purl.oclc.org/ooxml/officeDocument/relationships";
-    /** `parts` with a Strict main document and styles part, and Strict relationship types. */
-    const uniformlyStrict = (parts: Record<string, string>): Record<string, string> => ({
-        ...parts,
-        "word/document.xml": parts["word/document.xml"]!.replaceAll(W, STRICT_W),
-        "word/styles.xml": parts["word/styles.xml"]!.replaceAll(W, STRICT_W),
-        "_rels/.rels": parts["_rels/.rels"]!.replaceAll(R, STRICT_R),
-        "word/_rels/document.xml.rels": parts["word/_rels/document.xml.rels"]!.replaceAll(R, STRICT_R),
-    });
     const UNIFORMLY_STRICT_ROOTS = [
         ["stored directly", STORIES.comments.root("0").replace(W, STRICT_W)],
         ["in the Choice", alternateContent(STORIES.comments.root("0").replace(W, STRICT_W))],
@@ -934,6 +935,35 @@ describe("a story part whose stored root is an AlternateContent (#818, session 6
                         mode,
                     ).toEqual([]);
                     if (mode !== "strict") expect(result.valid, mode).toBe(true);
+                }
+            });
+        },
+        60_000,
+    );
+
+    // Sessions 58, 62, 63 and 65 stored every shape they cite in a package
+    // whose main document is Transitional, so a uniformly Strict package
+    // keeps the verdict without borrowing their citations (#861).
+    it.each([
+        ["s63b's AlternateContent root", "comments", alternateContent(STORIES.comments.root("0")), storyContentType("styles")],
+        ["text before the root in the Choice", "comments", SESSION_65_ROOTS[0][1], storyContentType("styles")],
+        ["text in the Fallback", "comments", SESSION_65_ROOTS[1][1], storyContentType("styles")],
+        ["a Choice requiring w", "comments", SESSION_65_ROOTS[2][1], storyContentType("styles")],
+        ["a Transitional comments root stored directly", "comments", STORIES.comments.root("0"), storyContentType("styles")],
+        ["a Transitional footnotes root stored directly", "footnotes", STORIES.footnotes.root("1"), storyContentType("styles")],
+        ["a Transitional comments root typed with the parameterized spelling", "comments", STORIES.comments.root("0"), STYLES_CHARSET],
+    ] as const)(
+        "keeps the verdict without a citation for %s in a uniformly Strict package",
+        async (_shape, story, stored, type) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "uniformly-strict-transitional-root.docx");
+                writeFileSync(file, await buildDocx(uniformlyStrict(usedStoryParts(story, type, stored))));
+                for (const [mode, options] of RUNS) {
+                    const result = await validate(file, options);
+                    expect(result.valid, mode).toBe(false);
+                    const found = result.issues.filter((issue) => issue.code === ID);
+                    expect(found, mode).toEqual([expect.objectContaining({ severity: "error", path: `word/${story}.xml` })]);
+                    expect(found[0]?.message, mode).not.toContain("session");
                 }
             });
         },

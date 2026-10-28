@@ -176,10 +176,11 @@ const segmentForMediaType = (mediaType: string): string | undefined =>
  * no type citation because Word refused its comments-typed twin too (#851).
  * Other Requires namespaces, a Strict root in the Fallback, other text
  * positions within the Choice or Fallback or combinations of these edits,
- * CDATA anywhere in the wrapper, a Strict comments root in a package whose
- * main document is not Transitional (#857), the endnotes and footnotes
- * twins and the new shapes' other spellings are unprobed and keep their
- * verdicts without a citation. Other effective-root wrappers remain unprobed for this type
+ * CDATA anywhere in the wrapper (#857), the endnotes and footnotes twins
+ * and the new shapes' other spellings are unprobed and keep their verdicts
+ * without a citation. Every session cited here stored a package whose main
+ * document is a Transitional w:document, so any other package keeps the
+ * co-reach's verdict without a citation (#857, #861). Other effective-root wrappers remain unprobed for this type
  * mismatch (#831, #837, #843). Main-document reaches only: a glossary's own
  * relationship co-reaches nothing here. A padded styles spelling with no
  * parameter, and the header and footer pairs' inexact spellings, stay
@@ -278,9 +279,9 @@ export const wordPartContentTypeMismatchFindings = async (
             isOwnRoot(parsed?.ok === true ? parsed.document.documentElement : null, segment);
         const childElements = (element: Element): Element[] =>
             Array.from(element.childNodes).filter((child): child is Element => child.nodeType === 1);
-        // Session 65 stored its Strict comments roots in a Transitional
+        // Every session behind a co-reach citation stored a Transitional
         // package, each main document's stored root a Transitional
-        // w:document (#857).
+        // w:document (#857, #861).
         const transitionalMain = (): boolean => {
             const mains = (readTargets ?? []).filter(({ segment, via }) => segment === "officeDocument" && via === undefined);
             return (
@@ -294,7 +295,7 @@ export const wordPartContentTypeMismatchFindings = async (
         };
         // Keep the verdict of an unprobed co-reach without borrowing a
         // session's citation (#847).
-        const readStoryCoreach = (entry: (typeof entries)[number]): { session?: string } | undefined => {
+        const storyCoreach = (entry: (typeof entries)[number]): { session?: string } | undefined => {
             const session = READ_STORY_COREACH_SESSIONS.get(`${entry.segment}\n${segmentForMediaType(mediaType)}`);
             if (
                 session === undefined ||
@@ -319,10 +320,7 @@ export const wordPartContentTypeMismatchFindings = async (
                             ? exactSpelling
                                 ? session
                                 : "session 62"
-                            : entry.segment === "comments" &&
-                                exactSpelling &&
-                                storedRoot?.namespaceURI === WORD_STRICT_NAMESPACE &&
-                                transitionalMain()
+                            : entry.segment === "comments" && exactSpelling && storedRoot?.namespaceURI === WORD_STRICT_NAMESPACE
                               ? "session 65"
                               : undefined,
                 };
@@ -366,7 +364,7 @@ export const wordPartContentTypeMismatchFindings = async (
             const transitionalRoot = storyRoot?.namespaceURI === WORD_2006_NAMESPACE;
             if (requiredNamespace === NS.W14) {
                 if (!choiceText && !fallbackText) {
-                    return { session: transitionalRoot ? "session 63" : transitionalMain() ? "session 65" : undefined };
+                    return { session: transitionalRoot ? "session 63" : "session 65" };
                 }
                 const trailingText = Array.from(choice.childNodes)
                     .slice(Array.from(choice.childNodes).indexOf(storyRoot) + 1)
@@ -379,6 +377,12 @@ export const wordPartContentTypeMismatchFindings = async (
                         ? "session 65"
                         : undefined,
             };
+        };
+        // A package whose main document is not Transitional keeps the
+        // co-reach and its verdict, but no session showed it (#861).
+        const readStoryCoreach = (entry: (typeof entries)[number]): { session?: string } | undefined => {
+            const coreach = storyCoreach(entry);
+            return coreach?.session !== undefined && !transitionalMain() ? {} : coreach;
         };
         const storyCoreachSession = (entry: (typeof entries)[number]): string | undefined => readStoryCoreach(entry)?.session;
         const isReadStoryCoreach = (entry: (typeof entries)[number]): boolean => readStoryCoreach(entry) !== undefined;
