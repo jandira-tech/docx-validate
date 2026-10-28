@@ -56,8 +56,9 @@ import {
 } from "../lib/content-types";
 import { commanderExitCode, runCli } from "../lib/run-cli";
 import { nextSecureLongHexNumber } from "../lib/secure-id";
+import { NS as XML_NS } from "../lib/types";
 import { readXmlPart, writeXmlPart, writeXmlText, type DecodedXmlPart } from "../lib/xml-part-io";
-import { getElementsByTagNameNSAll, parseXml, serializeXml, xmlDeclarationEncoding } from "../lib/xml-helpers";
+import { getElementsByTagNameNSAll, getRelationshipChildren, parseXml, serializeXml, xmlDeclarationEncoding } from "../lib/xml-helpers";
 
 const TEMPLATE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "templates");
 
@@ -242,11 +243,18 @@ function commentIdExists(commentsPart: DecodedXmlPart, commentId: number): boole
     return false;
 }
 
+/**
+ * The next free relationship id: one past the `rId<N>` id of every element
+ * whose local name is `Relationship`, whatever its namespace or prefix, so a
+ * new id never repeats one the part already holds — in a part whose
+ * relationships are prefixed, or one holding a `Relationship` element in
+ * another namespace, alike (#918).
+ */
 function getNextRid(dom: Document): number {
     let maxRid = 0;
-    const rels = dom.getElementsByTagName("Relationship");
+    const rels = getElementsByTagNameNSAll(dom, "*", "Relationship");
     for (let i = 0; i < rels.length; i += 1) {
-        const rel = rels.item(i)!;
+        const rel = rels[i]!;
         const rid = rel.getAttribute("Id");
         if (rid && rid.startsWith("rId")) {
             const n = Number.parseInt(rid.slice(3), 10);
@@ -261,16 +269,20 @@ function getNextRid(dom: Document): number {
 /**
  * Whether a relationship in `dom` relates `partName`: an internal
  * relationship of the comments type, Transitional or Strict, whose target
- * resolves to `partName` under OPC part-name equivalence (#906). An External
- * relationship, or one of another type, does not count; before, it stopped
- * addComment adding the comments relationships, so it reported success with
- * the comments parts related to nothing (#917).
+ * resolves to `partName` under OPC part-name equivalence (#906). The
+ * relationships are read through `getRelationshipChildren`, so a part whose
+ * root binds the package-relationships namespace to a prefix is read too,
+ * and an element in another namespace is not read as a relationship, even
+ * one named `Relationship` (#918). An External relationship, or one of
+ * another type, does not count; before, it stopped addComment adding the
+ * comments relationships, so it reported success with the comments parts
+ * related to nothing (#917).
  */
 function relatesCommentsPart(dom: Document, baseDir: string, partName: string): boolean {
     const key = canonicalPartName(partName);
-    const rels = dom.getElementsByTagName("Relationship");
+    const rels = getRelationshipChildren(dom);
     for (let i = 0; i < rels.length; i += 1) {
-        const rel = rels.item(i)!;
+        const rel = rels[i]!;
         if (!COMMENTS_PART_RELATIONSHIP_TYPES.has(rel.getAttribute("Type") ?? "")) {
             continue;
         }
@@ -309,8 +321,12 @@ function resolveTargetFrom(baseDir: string, target: string): string | undefined 
  * document `_rels/.rels` names. A missing `_rels/.rels`, or one naming the
  * conventional `word/document.xml` under any OPC-equivalent spelling, keeps
  * the wiring #895 established; a package naming another main document wires
- * through that document's own relationships part. What cannot be resolved is
- * refused, naming `_rels/.rels` or the missing part, before any write.
+ * through that document's own relationships part. The relationships are
+ * read through `getRelationshipChildren`, so a part whose root binds the
+ * package-relationships namespace to a prefix is read too, and an element
+ * in another namespace is not read as a relationship (#918). What cannot
+ * be resolved is refused, naming `_rels/.rels` or the missing part, before
+ * any write.
  */
 type CommentWiring = { kind: "conventional" } | { kind: "wired"; mainDocument: string } | { kind: "refused"; message: string };
 
@@ -330,11 +346,11 @@ async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring>
         const detail = err instanceof Error ? err.message : String(err);
         return { kind: "refused", message: `Error: ${packageRelsPath} is not well-formed XML: ${detail}` };
     }
-    const relationships = dom.getElementsByTagName("Relationship");
+    const relationships = getRelationshipChildren(dom);
     let mainRel: Element | undefined;
     let sawOfficeDocument = false;
     for (let i = 0; i < relationships.length; i += 1) {
-        const rel = relationships.item(i)!;
+        const rel = relationships[i]!;
         if (!OFFICE_DOCUMENT_RELATIONSHIP_TYPES.has(rel.getAttribute("Type") ?? "")) {
             continue;
         }
@@ -393,10 +409,14 @@ function hasContentType(dom: Document, partName: string): boolean {
 /**
  * Relate the comments parts from the main document's relationships part,
  * stored at `relsPath` with each part's `target` relative to the main
- * document's folder `baseDir` (#906). Returns whether it created that part:
- * a main document with no relationships part is legal, but the comments
- * parts are reached only through relationships, so it creates one rather
- * than leave them related to nothing (#895).
+ * document's folder `baseDir` (#906). New relationships are created in the
+ * package-relationships namespace under the root's prefix, so a prefixed
+ * part keeps its prefix on every element and an unprefixed one serializes
+ * as it always has, with no declaration of the new elements' own (#918).
+ * Returns whether it created that part: a main document with no
+ * relationships part is legal, but the comments parts are reached only
+ * through relationships, so it creates one rather than leave them related
+ * to nothing (#895).
  */
 async function ensureCommentRelationships(
     relsPath: string,
@@ -422,10 +442,13 @@ async function ensureCommentRelationships(
         return created;
     }
     const root = dom.documentElement;
+    // The root may bind the package-relationships namespace to a prefix; the
+    // new relationships carry that prefix, and no declaration of their own.
+    const qualifiedName = root.prefix ? `${root.prefix}:Relationship` : "Relationship";
     let nextRid = getNextRid(dom);
 
     for (let i = 0; i < COMMENT_RELATIONSHIP_TYPES.length; i += 1) {
-        const rel = dom.createElement("Relationship");
+        const rel = dom.createElementNS(XML_NS.PR, qualifiedName);
         rel.setAttribute("Id", `rId${nextRid}`);
         rel.setAttribute("Type", COMMENT_RELATIONSHIP_TYPES[i]!);
         rel.setAttribute("Target", targets[i]!);

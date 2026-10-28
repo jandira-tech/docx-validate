@@ -1937,7 +1937,15 @@ or from the package root, counts as already there; an External relationship, or
 one of another type, does not, and the four relationships are added beside it;
 before, it stopped them being added, so the comment's markers named a comment
 Word does not read
-([#917](https://github.com/jandira-tech/docx-validate/issues/917)). When the
+([#917](https://github.com/jandira-tech/docx-validate/issues/917)). The
+relationships parts are read and written in the package-relationships namespace,
+whatever prefix they bind it to: a prefixed `_rels/.rels` names its main
+document as an unprefixed one does, the new relationships are created under the
+root's prefix, and their ids are numbered past every `rId<N>` id the part holds,
+whatever its namespace; before, a prefixed `_rels/.rels` was refused as naming
+no `officeDocument` relationship, and a prefixed main-document relationships
+part got unnamespaced relationships with a repeated id
+([#918](https://github.com/jandira-tech/docx-validate/issues/918)). When the
 main document has no relationships part, `addComment` creates one; before, it
 reported success and left the comments parts related to nothing
 ([#895](https://github.com/jandira-tech/docx-validate/issues/895)). It types the
@@ -1946,13 +1954,13 @@ name: it adds an Override when nothing covers the part or a `.rels` Default
 names another type, which it leaves alone, and corrects an Override that names
 the part with another type, under any OPC-equivalent spelling; before, a `.rels`
 Default of another type left the part mistyped
-([#901](https://github.com/jandira-tech/docx-validate/issues/901)). It reads
-and writes `[Content_Types].xml` in its namespace, whatever prefix the stream
-binds it to (`<ct:Types xmlns:ct="…">`): each Override it adds is created in
-that namespace with the prefix the root uses, and an Override in another
-namespace is not read as typing a part; before, a prefixed stream got Overrides
-in no namespace, which left the comments parts typed `application/xml` and the
-created relationships part mistyped
+([#901](https://github.com/jandira-tech/docx-validate/issues/901)). It reads and
+writes `[Content_Types].xml` in its namespace, whatever prefix the stream binds
+it to (`<ct:Types xmlns:ct="…">`): each Override it adds is created in that
+namespace with the prefix the root uses, and an Override in another namespace is
+not read as typing a part; before, a prefixed stream got Overrides in no
+namespace, which left the comments parts typed `application/xml` and the created
+relationships part mistyped
 ([#923](https://github.com/jandira-tech/docx-validate/issues/923)).
 
 A first comment is refused with an error naming the part, changing nothing,
