@@ -74,7 +74,14 @@ import {
     unobservedReferenceAttributeValues,
     wordRelationshipReferenceIds,
 } from "./word-blocking";
-import { decodeXmlBytes, getElementsByTagNameAll, getElementsByTagNameNSAll, parseXml, parseXmlBytes } from "../../../lib/xml-helpers";
+import {
+    decodeXmlBytes,
+    decodeXmlPart,
+    getElementsByTagNameAll,
+    getElementsByTagNameNSAll,
+    parseXml,
+    parseXmlBytes,
+} from "../../../lib/xml-helpers";
 import { writeXmlPart } from "../../../lib/xml-part-io";
 import {
     BaseSchemaValidator,
@@ -2463,61 +2470,89 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         }
 
-        let repairs = 0;
-        let idsModified = false;
-        // Counted only after the write: a part whose encoding `writeXmlPart`
-        // refuses is left untouched (#880).
-        let idsRepairs = 0;
-        let canonicalDurableId: string | null = null;
+        // Work out, without mutating, which parts this repair would write and
+        // the durableIds commentsIds.xml would hold once its write lands: the
+        // extensible part is aligned to that in-memory result, so a part
+        // `writeXmlPart` would refuse must refuse the whole repair (#889).
         const commentIds = getElementsByTagNameNSAll(idsDom, W16CID_NAMESPACE, "commentId");
+        const commentId = commentIds[0];
+        let canonicalDurableId: string | null = null;
+        let retargetParaId = false;
+        let retargetDurableId = false;
         if (commentParaIds.size === 1 && commentIds.length === 1) {
             const targetParaId = [...commentParaIds][0];
             canonicalDurableId = targetParaId;
-            const commentId = commentIds[0];
             const currentParaId = commentId?.getAttributeNS(W16CID_NAMESPACE, "paraId");
-            if (commentId && currentParaId && currentParaId !== targetParaId && !commentParaIds.has(currentParaId)) {
-                commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:paraId", targetParaId);
-                idsRepairs += 1;
-                idsModified = true;
-            }
+            retargetParaId =
+                commentId !== undefined && !!currentParaId && currentParaId !== targetParaId && !commentParaIds.has(currentParaId);
             const currentDurableId = commentId?.getAttributeNS(W16CID_NAMESPACE, "durableId");
-            if (commentId && currentDurableId && currentDurableId !== canonicalDurableId) {
-                commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", canonicalDurableId);
-                idsRepairs += 1;
-                idsModified = true;
-            }
+            retargetDurableId = commentId !== undefined && !!currentDurableId && currentDurableId !== canonicalDurableId;
         }
 
         const durableIds = new Set<string>();
         for (let i = 0; i < commentIds.length; i += 1) {
-            const commentId = commentIds[i];
-            const durableId = commentId?.getAttributeNS(W16CID_NAMESPACE, "durableId");
+            const durableId = commentIds[i]?.getAttributeNS(W16CID_NAMESPACE, "durableId");
             if (durableId) durableIds.add(durableId);
         }
+        // The set the extensible part aligns to once the ids write lands: the
+        // same durableIds, with a retargeted single entry at the canonical
+        // value the write would leave there.
+        const writtenDurableIds = retargetDurableId && canonicalDurableId !== null ? new Set<string>([canonicalDurableId]) : durableIds;
+        const alignedDurableId = writtenDurableIds.size === 1 ? [...writtenDurableIds][0] : null;
 
-        if (idsModified && (await writeXmlPart(commentsIdsXml, idsDom))) {
+        let cexDom: Document | null = null;
+        let cexEntry: Element | null = null;
+        let retargetExtensible = false;
+        if (commentsExtensibleXml && alignedDurableId !== null) {
+            try {
+                cexDom = parseXmlBytes(await fs.readFile(commentsExtensibleXml));
+            } catch {
+                cexDom = null;
+            }
+            if (cexDom) {
+                const entries = getElementsByTagNameNSAll(cexDom, W16CEX_NAMESPACE, "commentExtensible");
+                cexEntry = entries.length === 1 ? (entries[0] ?? null) : null;
+                const currentDurableId = cexEntry?.getAttributeNS(W16CEX_NAMESPACE, "durableId");
+                retargetExtensible =
+                    cexEntry !== null &&
+                    !!currentDurableId &&
+                    currentDurableId !== alignedDurableId &&
+                    !writtenDurableIds.has(currentDurableId);
+            }
+        }
+
+        // Preflight: decode every part the repair would write before mutating
+        // any DOM, so one refused write cannot split references that agreed
+        // before it ran. A part the repair would leave alone does not block
+        // it (#889).
+        const writeSet: string[] = [];
+        if (retargetParaId || retargetDurableId) writeSet.push(commentsIdsXml);
+        if (retargetExtensible && commentsExtensibleXml) writeSet.push(commentsExtensibleXml);
+        for (const part of writeSet) {
+            if (decodeXmlPart(await fs.readFile(part)) === undefined) return 0;
+        }
+
+        // Counted only after the write: a part whose encoding `writeXmlPart`
+        // refuses is left untouched (#880).
+        let repairs = 0;
+        if (commentId && canonicalDurableId !== null) {
+            if (retargetParaId) {
+                commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:paraId", canonicalDurableId);
+            }
+            if (retargetDurableId) {
+                commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", canonicalDurableId);
+            }
+        }
+        const idsRepairs = (retargetParaId ? 1 : 0) + (retargetDurableId ? 1 : 0);
+        if (idsRepairs > 0 && (await writeXmlPart(commentsIdsXml, idsDom))) {
             repairs += idsRepairs;
         }
-
-        if (!commentsExtensibleXml || durableIds.size !== 1) return repairs;
-
-        try {
-            const cexDom = parseXmlBytes(await fs.readFile(commentsExtensibleXml));
-            const entries = getElementsByTagNameNSAll(cexDom, W16CEX_NAMESPACE, "commentExtensible");
-            if (entries.length !== 1) return repairs;
-            const targetDurableId = [...durableIds][0];
-            const entry = entries[0];
-            const currentDurableId = entry?.getAttributeNS(W16CEX_NAMESPACE, "durableId");
-            if (entry && currentDurableId && currentDurableId !== targetDurableId && !durableIds.has(currentDurableId)) {
-                entry.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", targetDurableId);
-                if (await writeXmlPart(commentsExtensibleXml, cexDom)) {
-                    repairs += 1;
-                }
+        if (retargetExtensible && cexDom && cexEntry && commentsExtensibleXml && alignedDurableId !== null) {
+            cexEntry.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", alignedDurableId);
+            if (await writeXmlPart(commentsExtensibleXml, cexDom)) {
+                repairs += 1;
             }
-        } catch {
-            return repairs;
         }
-
         return repairs;
     }
 
@@ -2994,6 +3029,31 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
 
         if (remap.size === 0 && textIdRemap.size === 0) return 0;
+
+        // Preflight: the same rename must land in every part that references
+        // it, so decode every part pass 2 would rewrite before mutating any
+        // DOM. A part the pass would leave alone does not block the repair;
+        // one it would write but cannot decode refuses all of it, rather than
+        // splitting references that agreed before it ran (#889).
+        for (const [xmlFile, dom] of parsedDoms) {
+            let wouldWrite = false;
+            const all = getElementsByTagNameAll(dom);
+            for (let i = 0; i < all.length; i += 1) {
+                const elem = all[i];
+                if (!elem) continue;
+                const w14Para = elem.getAttributeNS(W14_NAMESPACE, "paraId");
+                if (w14Para && remap.has(w14Para)) wouldWrite = true;
+                const w14Text = elem.getAttributeNS(W14_NAMESPACE, "textId");
+                if (w14Text && textIdRemap.has(w14Text)) wouldWrite = true;
+                const w15Para = elem.getAttributeNS(W15_NAMESPACE, "paraId");
+                if (w15Para && remap.has(w15Para)) wouldWrite = true;
+                const w15Parent = elem.getAttributeNS(W15_NAMESPACE, "paraIdParent");
+                if (w15Parent && remap.has(w15Parent)) wouldWrite = true;
+                if (wouldWrite) break;
+            }
+            if (!wouldWrite) continue;
+            if (decodeXmlPart(await fs.readFile(xmlFile)) === undefined) return 0;
+        }
 
         // Pass 2: rewrite all references.
         for (const [xmlFile, dom] of parsedDoms) {
