@@ -290,9 +290,9 @@ Choice, and one a `w:hyperlink` names; these are the targets Word-valid's
 `rels-broken` still blocked, so they no longer block (Word probes session 40,
 `s40a`/`s40b`). Lenient keeps its historical scan, which skips only `http…` and
 `mailto:` targets ([#665](https://github.com/jandira-tech/docx-validate/issues/665)).
-Word-valid and strict skip an `http` prefix only when it starts a URI scheme
-(`http:`, `https:`), so a relative target that merely starts with `http` resolves
-as a part: Word refused `httpimage1.png/.` as a folder and opened the plain
+Word-valid and strict skip only the `http:`, `https:` and `mailto:` schemes, so a
+relative target that merely starts with `http` resolves as a part, and so does
+another scheme that starts with `http` (`httpfoo:`), as `ftp:` does: Word refused `httpimage1.png/.` as a folder and opened the plain
 `httpimage1.png` clean (Word probes session 79), and word-valid used to accept the
 folder target
 ([#988](https://github.com/jandira-tech/docx-validate/issues/988)).

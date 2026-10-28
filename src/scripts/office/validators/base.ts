@@ -1047,19 +1047,19 @@ export class BaseSchemaValidator {
                 if (!rel) continue;
                 const target = rel.getAttribute("Target");
                 if (!target) continue;
-                // An `http…` or `mailto:` URI names no part. Word-valid and
-                // strict skip an `http` prefix only when it starts a URI
-                // scheme, so a relative target that merely starts with
-                // `http` resolves as a part: Word refused
-                // `httpimage1.png/.` as a folder (session 79, #988). A scheme
-                // is ASCII case-insensitive (RFC 3986 §3.1), so they read
-                // `HTTP:` and `MAILTO:` as `http:` and `mailto:` (#1008).
-                // Lenient keeps its historical case-sensitive prefix scan
-                // (#665).
+                // An `http:`, `https:` or `mailto:` URI names no part.
+                // Word-valid and strict skip only those schemes, so a relative
+                // target that merely starts with `http` resolves as a part:
+                // Word refused `httpimage1.png/.` as a folder (session 79,
+                // #988). Another scheme that starts with `http` (`httpfoo:`)
+                // resolves as a part too, as `ftp:` does. A scheme is ASCII
+                // case-insensitive (RFC 3986 §3.1), so they read `HTTP:` and
+                // `MAILTO:` as `http:` and `mailto:` (#1008). Lenient keeps
+                // its historical case-sensitive prefix scan (#665).
                 const uri =
                     this.profile === "lenient"
                         ? target.startsWith("http") || target.startsWith("mailto:")
-                        : (/^http/i.test(target) && /^[a-z][a-z\d+.-]*:/i.test(target)) || /^mailto:/i.test(target);
+                        : /^(?:https?|mailto):/i.test(target);
                 if (uri) continue;
                 // An External target names a resource outside the package, never
                 // a part (ECMA-376 Part 2 §9.3), so it is not resolved as one.
