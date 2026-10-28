@@ -53,11 +53,14 @@ export const resolveSafeZipEntry = (outputDir: string, entryName: string): strin
 };
 
 /**
- * Refuse a destination whose path below `root` runs through, or ends at, a
- * symbolic link already on disk: the write would follow it out of `root`
- * (#675). `root` itself may be a link; the caller chose it.
+ * The first symbolic link at or below `root` on the path to `destination`,
+ * or `undefined` when there is none: a write to `destination` would follow
+ * it, out of `root` when it points outside (#675, #939). Every segment
+ * below `root` is checked, and the destination itself. `root` itself may
+ * be a link; the caller chose it. A segment that does not exist yet ends
+ * the walk: nothing below it is on disk.
  */
-const assertNoLinkBelow = async (root: string, destination: string, entryName: string): Promise<void> => {
+export const findLinkBelow = async (root: string, destination: string): Promise<string | undefined> => {
     let current = root;
     for (const segment of path.relative(root, destination).split(path.sep)) {
         current = path.join(current, segment);
@@ -68,16 +71,15 @@ const assertNoLinkBelow = async (root: string, destination: string, entryName: s
             // Nothing on disk from here down, or a file where a folder is
             // needed, which the write itself then refuses.
             if ((err as NodeJS.ErrnoException).code === "ENOENT" || (err as NodeJS.ErrnoException).code === "ENOTDIR") {
-                return;
+                return undefined;
             }
             throw err;
         }
         if (stat.isSymbolicLink()) {
-            throw new Error(
-                `Refusing to extract ${escapeControlCharacters(entryName)}: ${escapeControlCharacters(path.relative(root, current).split(path.sep).join("/"))} is a symbolic link`,
-            );
+            return current;
         }
     }
+    return undefined;
 };
 
 /**
@@ -104,7 +106,12 @@ export const extractZipEntries = async (zip: JSZip, outputDir: string): Promise<
         entries.push({ name: relativePath, resolved: resolveSafeZipEntry(root, relativePath), file });
     });
     for (const { name, resolved } of entries) {
-        await assertNoLinkBelow(root, resolved, name);
+        const link = await findLinkBelow(root, resolved);
+        if (link !== undefined) {
+            throw new Error(
+                `Refusing to extract ${escapeControlCharacters(name)}: ${escapeControlCharacters(path.relative(root, link).split(path.sep).join("/"))} is a symbolic link`,
+            );
+        }
     }
     const created: string[] = [];
     try {

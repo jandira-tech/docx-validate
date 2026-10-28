@@ -62,6 +62,7 @@ import { nextSecureLongHexNumber } from "../lib/secure-id";
 import { NS as XML_NS } from "../lib/types";
 import { readXmlPart, writeXmlPart, writeXmlText, type DecodedXmlPart } from "../lib/xml-part-io";
 import { getElementsByTagNameNSAll, getRelationshipChildren, parseXml, serializeXml, xmlDeclarationEncoding } from "../lib/xml-helpers";
+import { findLinkBelow } from "../lib/zip-path";
 
 const TEMPLATE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "templates");
 
@@ -653,17 +654,17 @@ export interface AddCommentResult {
  * On success, returns the generated `paraId` and a human-readable status
  * message. On failure (missing `word/` directory, missing parent comment, a
  * part this edit would write that is stored in an encoding this tool cannot
- * decode (#879) or is not well-formed XML (#905), a stored comment part whose
- * document element is not its expected root element, by namespace and local
- * name — whatever prefix it binds (#930, #953), or, for a first comment,
- * missing `[Content_Types].xml`, an `_rels/.rels` that cannot be decoded or
- * parsed, an `_rels/.rels` naming no non-External `officeDocument`
- * relationship, or an `officeDocument` target that, resolved as the read
- * model resolves it (`\` as `/`, the query and fragment dropped, the
- * stored part matched under OPC part-name equivalence), is a URI, escapes
- * the package root or names no stored part — the conventional
- * `word/document.xml` included (#906, #919)), returns `paraId = ""`
- * and a message starting with `Error:`.
+ * decode (#879) or is not well-formed XML (#905), a part this edit would write
+ * whose path runs through, or ends at, a symbolic link (#939), a stored comment
+ * part whose document element is not its expected root element, by namespace
+ * and local name — whatever prefix it binds (#930, #953), or, for a first
+ * comment, missing `[Content_Types].xml`, an `_rels/.rels` that cannot be
+ * decoded or parsed, an `_rels/.rels` naming no non-External `officeDocument`
+ * relationship, or an `officeDocument` target that, resolved as the read model
+ * resolves it (`\` as `/`, the query and fragment dropped, the stored part
+ * matched under OPC part-name equivalence), is a URI, escapes the package root
+ * or names no stored part — the conventional `word/document.xml` included
+ * (#906, #919)), returns `paraId = ""` and a message starting with `Error:`.
  */
 export async function addComment(opts: AddCommentOptions): Promise<AddCommentResult> {
     const { unpackedDir, commentId, text, parent, author, initials, date } = opts;
@@ -720,6 +721,22 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
     const writtenParts = [comments, ext, ids, extensible];
     if (firstComment) {
         writtenParts.push(mainRelsPath, ctPath);
+    }
+    // Every part this edit may write or create must not run through, or end
+    // at, a symbolic link: the write would follow it, out of the unpacked
+    // tree when the link points outside (#939). `unpack` refuses the same
+    // before its first write (#675), and the validators' write-back never
+    // follows a link (#425). The check runs before the preflight below, so
+    // a link's target is not even read.
+    const root = path.resolve(unpackedDir);
+    for (const part of writtenParts) {
+        const link = await findLinkBelow(root, path.resolve(part));
+        if (link !== undefined) {
+            // Named under the caller's spelling of the tree, as every other
+            // refusal names its part.
+            const named = path.join(unpackedDir, path.relative(root, link));
+            return { paraId: "", message: `Error: ${named} is a symbolic link; addComment does not write through one` };
+        }
     }
     const decoded = new Map<string, DecodedXmlPart>();
     for (const part of writtenParts) {

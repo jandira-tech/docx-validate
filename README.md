@@ -2022,12 +2022,18 @@ comment reads no `_rels/.rels`. A first or later comment is refused the same way
 when a part it would edit is not well-formed XML
 ([#905](https://github.com/jandira-tech/docx-validate/issues/905)); before, the
 call wrote some parts and then threw, which could leave relationships naming
-comment parts that do not exist. The comment parts themselves are read and
-appended to by namespace, whatever prefix they bind, and a first or later
-comment is refused before any write when a stored comment part's document
-element is not its expected root element; before, a part bound to another prefix
-made the call throw part way through, a used id was not refused, and a reply
-could not find its parent
+comment parts that do not exist. A part it would write whose path runs through,
+or ends at, a symbolic link is refused before that part is read and before any
+write, as `unpack` and the validators' write-back refuse it
+([#425](https://github.com/jandira-tech/docx-validate/issues/425),
+[#675](https://github.com/jandira-tech/docx-validate/issues/675)); before, the
+write followed the link, out of the unpacked tree when it pointed outside
+([#939](https://github.com/jandira-tech/docx-validate/issues/939)). The comment
+parts themselves are read and appended to by namespace, whatever prefix they
+bind, and a first or later comment is refused before any write when a stored
+comment part's document element is not its expected root element; before, a part
+bound to another prefix made the call throw part way through, a used id was not
+refused, and a reply could not find its parent
 ([#930](https://github.com/jandira-tech/docx-validate/issues/930)), and a root
 nested under another document element was appended to, the call reporting
 success ([#953](https://github.com/jandira-tech/docx-validate/issues/953)).

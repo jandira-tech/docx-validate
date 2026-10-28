@@ -207,13 +207,19 @@ function utf16Part(text: string): Buffer {
     return Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(text, "utf16le")]);
 }
 
-/** Every file under `dir`, keyed by its relative path, with its bytes. */
+/**
+ * Every file under `dir`, keyed by its relative path, with its bytes. A
+ * symbolic link is recorded by the path it names, not read through, so the
+ * snapshot never reads a file outside the tree (#939).
+ */
 async function readTree(dir: string): Promise<Map<string, Buffer>> {
     const files = new Map<string, Buffer>();
     const walk = async (current: string): Promise<void> => {
         for (const entry of await fs.readdir(current, { withFileTypes: true })) {
             const full = path.join(current, entry.name);
-            if (entry.isDirectory()) {
+            if (entry.isSymbolicLink()) {
+                files.set(path.relative(dir, full), Buffer.from(await fs.readlink(full), "utf-8"));
+            } else if (entry.isDirectory()) {
                 await walk(full);
             } else {
                 files.set(path.relative(dir, full), await fs.readFile(full));
@@ -2729,4 +2735,255 @@ describe("addComment", () => {
             });
         },
     );
+
+    // #939: a part addComment would write must not run through, or end at, a
+    // symbolic link: the write would follow it, out of the unpacked tree
+    // when the link points outside. `unpack` refuses the same before its
+    // first write (#675), and the validators' write-back never follows a
+    // link (#425).
+
+    it("refuses a first comment whose relationships part runs through a symbolic link, writing nothing (#939)", async () => {
+        await withTempDir(async (dir) => {
+            const tree = path.join(dir, "unpacked");
+            const outside = path.join(dir, "outside");
+            await fs.mkdir(tree, { recursive: true });
+            await fs.mkdir(outside, { recursive: true });
+            await makePackageFixture(tree, officeDocumentRels("word/document.xml"), "word/document.xml");
+            // The package holds no relationships part of its own, so the one
+            // addComment creates would run through the link.
+            await fs.symlink(outside, path.join(tree, "word", "_rels"), "dir");
+
+            const before = await readTree(tree);
+            const call = addComment({ unpackedDir: tree, commentId: 0, text: "x", author: "Test", initials: "T" });
+            await expect(call).resolves.toMatchObject({ paraId: "" });
+            const result = await call;
+
+            // Before #939 the call reported success and wrote the
+            // relationships part through the link, out of the tree.
+            expect(result.message).toBe(
+                `Error: ${path.join(tree, "word", "_rels")} is a symbolic link; addComment does not write through one`,
+            );
+            expect(await readTree(tree)).toEqual(before);
+            expect(await fs.readdir(outside)).toEqual([]);
+        });
+    });
+
+    it("names the link as the caller spells the unpacked directory (#939)", async () => {
+        await withTempDir(async (dir) => {
+            const tree = path.join(dir, "unpacked");
+            const outside = path.join(dir, "outside");
+            await fs.mkdir(tree, { recursive: true });
+            await fs.mkdir(outside, { recursive: true });
+            await makePackageFixture(tree, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.symlink(outside, path.join(tree, "word", "_rels"), "dir");
+
+            // The other refusals name a part under the caller's spelling of
+            // the tree, a relative one included; the link is named the same way.
+            const relativeTree = path.relative(process.cwd(), tree);
+            expect(path.isAbsolute(relativeTree)).toBe(false);
+            const result = await addComment({ unpackedDir: relativeTree, commentId: 0, text: "x", author: "Test", initials: "T" });
+            expect(result).toEqual({
+                paraId: "",
+                message: `Error: ${path.join(relativeTree, "word", "_rels")} is a symbolic link; addComment does not write through one`,
+            });
+            expect(await fs.readdir(outside)).toEqual([]);
+        });
+    });
+
+    it("refuses a first comment whose relationships part runs through a symbolic link, under a renamed main document (#939)", async () => {
+        await withTempDir(async (dir) => {
+            const tree = path.join(dir, "unpacked");
+            const outside = path.join(dir, "outside");
+            await fs.mkdir(tree, { recursive: true });
+            await fs.mkdir(outside, { recursive: true });
+            await makePackageFixture(tree, officeDocumentRels("word/m%61in.xml"), "word/main.xml");
+            await fs.symlink(outside, path.join(tree, "word", "_rels"), "dir");
+
+            const before = await readTree(tree);
+            const call = addComment({ unpackedDir: tree, commentId: 0, text: "x", author: "Test", initials: "T" });
+            await expect(call).resolves.toMatchObject({ paraId: "" });
+            const result = await call;
+
+            // The wiring resolves the stored `word/main.xml`, so the part
+            // that would run through the link is `word/_rels/main.xml.rels`.
+            expect(result.message).toBe(
+                `Error: ${path.join(tree, "word", "_rels")} is a symbolic link; addComment does not write through one`,
+            );
+            expect(await readTree(tree)).toEqual(before);
+            expect(await fs.readdir(outside)).toEqual([]);
+        });
+    });
+
+    it("refuses a first comment whose relationships part runs through a symbolic link inside the tree (#939)", async () => {
+        await withTempDir(async (dir) => {
+            const tree = path.join(dir, "unpacked");
+            await fs.mkdir(tree, { recursive: true });
+            await makePackageFixture(tree, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.mkdir(path.join(tree, "word", "rels-real"), { recursive: true });
+            await fs.symlink(path.join(tree, "word", "rels-real"), path.join(tree, "word", "_rels"), "dir");
+
+            const before = await readTree(tree);
+            const call = addComment({ unpackedDir: tree, commentId: 0, text: "x", author: "Test", initials: "T" });
+            await expect(call).resolves.toMatchObject({ paraId: "" });
+            const result = await call;
+
+            // A link that stays inside the tree is refused too: the write
+            // would follow it wherever it names.
+            expect(result.message).toBe(
+                `Error: ${path.join(tree, "word", "_rels")} is a symbolic link; addComment does not write through one`,
+            );
+            expect(await readTree(tree)).toEqual(before);
+        });
+    });
+
+    it("refuses a later comment whose comments part is a symbolic link, changing nothing (#939)", async () => {
+        await withTempDir(async (dir) => {
+            const tree = path.join(dir, "unpacked");
+            await fs.mkdir(tree, { recursive: true });
+            await makePackageFixture(tree, officeDocumentRels("word/document.xml"), "word/document.xml");
+            const first = await addComment({
+                unpackedDir: tree,
+                commentId: 0,
+                text: "first",
+                author: "Test",
+                initials: "T",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(first.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The stored comments part becomes a link to a file elsewhere in
+            // the temporary directory.
+            const target = path.join(dir, "comments-elsewhere.xml");
+            const commentsPath = path.join(tree, "word", "comments.xml");
+            await fs.rename(commentsPath, target);
+            await fs.symlink(target, commentsPath, "file");
+            const targetBefore = await fs.readFile(target);
+
+            const before = await readTree(tree);
+            const call = addComment({ unpackedDir: tree, commentId: 1, text: "second", author: "Test", initials: "T" });
+            await expect(call).resolves.toMatchObject({ paraId: "" });
+            const result = await call;
+
+            // Before #939 the call appended the comment to the link's
+            // target, outside the tree.
+            expect(result.message).toBe(`Error: ${commentsPath} is a symbolic link; addComment does not write through one`);
+            expect(await readTree(tree)).toEqual(before);
+            expect(await fs.readFile(target)).toEqual(targetBefore);
+        });
+    });
+
+    it.each(["commentsExtended.xml", "commentsIds.xml", "commentsExtensible.xml"])(
+        "refuses a later comment whose %s is a symbolic link, changing nothing (#939)",
+        async (name) => {
+            await withTempDir(async (dir) => {
+                const tree = path.join(dir, "unpacked");
+                await fs.mkdir(tree, { recursive: true });
+                await makePackageFixture(tree, officeDocumentRels("word/document.xml"), "word/document.xml");
+                const first = await addComment({ unpackedDir: tree, commentId: 0, text: "first", author: "Test", initials: "T" });
+                expect(first.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // Every part a later comment appends to is checked, not only
+                // the comments part.
+                const target = path.join(dir, `${name}-elsewhere`);
+                const partPath = path.join(tree, "word", name);
+                await fs.rename(partPath, target);
+                await fs.symlink(target, partPath, "file");
+                const targetBefore = await fs.readFile(target);
+
+                const before = await readTree(tree);
+                const result = await addComment({ unpackedDir: tree, commentId: 1, text: "second", author: "Test", initials: "T" });
+                expect(result).toEqual({
+                    paraId: "",
+                    message: `Error: ${partPath} is a symbolic link; addComment does not write through one`,
+                });
+                expect(await readTree(tree)).toEqual(before);
+                expect(await fs.readFile(target)).toEqual(targetBefore);
+            });
+        },
+    );
+
+    it("refuses a first comment whose [Content_Types].xml is a symbolic link, changing nothing (#939)", async () => {
+        await withTempDir(async (dir) => {
+            const tree = path.join(dir, "unpacked");
+            await fs.mkdir(tree, { recursive: true });
+            await makePackageFixture(tree, officeDocumentRels("word/document.xml"), "word/document.xml");
+
+            // A first comment also writes the content-types stream.
+            const target = path.join(dir, "content-types-elsewhere.xml");
+            const ctPath = path.join(tree, "[Content_Types].xml");
+            await fs.rename(ctPath, target);
+            await fs.symlink(target, ctPath, "file");
+            const targetBefore = await fs.readFile(target);
+
+            const before = await readTree(tree);
+            const result = await addComment({ unpackedDir: tree, commentId: 0, text: "first", author: "Test", initials: "T" });
+            expect(result).toEqual({
+                paraId: "",
+                message: `Error: ${ctPath} is a symbolic link; addComment does not write through one`,
+            });
+            expect(await readTree(tree)).toEqual(before);
+            expect(await fs.readFile(target)).toEqual(targetBefore);
+        });
+    });
+
+    it("refuses a later comment whose comments part is a link to a part it cannot decode, naming the link (#939)", async () => {
+        await withTempDir(async (dir) => {
+            const tree = path.join(dir, "unpacked");
+            await fs.mkdir(tree, { recursive: true });
+            await makePackageFixture(tree, officeDocumentRels("word/document.xml"), "word/document.xml");
+            const first = await addComment({
+                unpackedDir: tree,
+                commentId: 0,
+                text: "first",
+                author: "Test",
+                initials: "T",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(first.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            const target = path.join(dir, "comments-elsewhere.xml");
+            const commentsPath = path.join(tree, "word", "comments.xml");
+            await fs.rename(commentsPath, target);
+            await declareUndecodable(target);
+            await fs.symlink(target, commentsPath, "file");
+
+            const before = await readTree(tree);
+            const call = addComment({ unpackedDir: tree, commentId: 1, text: "second", author: "Test", initials: "T" });
+            await expect(call).resolves.toMatchObject({ paraId: "" });
+            const result = await call;
+
+            // The link is refused before the preflight reads the target
+            // through it, so the link is named and not the encoding.
+            expect(result.message).toBe(`Error: ${commentsPath} is a symbolic link; addComment does not write through one`);
+            expect(await readTree(tree)).toEqual(before);
+        });
+    });
+
+    it("adds a comment to an unpacked directory reached through a symbolic link: the caller chose it (#939)", async () => {
+        await withTempDir(async (dir) => {
+            const real = path.join(dir, "real");
+            const link = path.join(dir, "link");
+            await fs.mkdir(real, { recursive: true });
+            await makePackageFixture(real, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.symlink(real, link, "dir");
+
+            const result = await addComment({
+                unpackedDir: link,
+                commentId: 0,
+                text: "x",
+                author: "Test",
+                initials: "T",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The parts land in the directory the link names.
+            const dom = parseXml(await fs.readFile(path.join(real, "word", "comments.xml"), "utf-8"));
+            expect(
+                getElementsByTagNameNSAll(dom, WORD_MAIN_NAMESPACE, "comment").map((comment) =>
+                    comment.getAttributeNS(WORD_MAIN_NAMESPACE, "id"),
+                ),
+            ).toEqual(["0"]);
+        });
+    });
 });
