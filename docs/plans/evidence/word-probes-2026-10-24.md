@@ -26529,7 +26529,8 @@ for label in CHUNKS:
         rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
                      "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
                      "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
-                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+                     # A match needs agreed readings: an unknown row matches nothing (CodeRabbit on #985).
+                     "validatorMatchesWord": agreed and ((all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True))})
 (ROOT / "s75/results.json").write_text(json.dumps(rows, indent=2) + "\n")
 for r in rows:
     print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
@@ -26925,7 +26926,8 @@ for label in CHUNKS:
         rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
                      "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
                      "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
-                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+                     # A match needs agreed readings: an unknown row matches nothing (CodeRabbit on #985).
+                     "validatorMatchesWord": agreed and ((all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True))})
 (ROOT / "s76/results.json").write_text(json.dumps(rows, indent=2) + "\n")
 for r in rows:
     print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")

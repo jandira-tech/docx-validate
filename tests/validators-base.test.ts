@@ -1494,6 +1494,30 @@ describe("BaseSchemaValidator", () => {
             });
         });
 
+        it("stops a climb at the package root before any file-system join, whatever the unpacked directory is called (CodeRabbit on #985)", async () => {
+            await withTempDir(async (dir) => {
+                // From word/, `../../pkg/word/styles.xml` climbs to the root
+                // and names `pkg/word/styles.xml`, as RFC 3986 resolves it.
+                // A file-system join first climbs above the unpacked
+                // directory and comes back into it through its own name,
+                // `pkg`, finding the stored word/styles.xml instead.
+                const unpacked = path.join(dir, "pkg");
+                await writeFile(path.join(unpacked, "word", "styles.xml"), "<styles/>");
+                const relsFile = path.join(unpacked, "word", "_rels", "document.xml.rels");
+                const content =
+                    `${RELS_HEADER}\n<Relationships ${PR_NS}>` +
+                    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="../../pkg/word/styles.xml"/>` +
+                    `</Relationships>`;
+                await writeFile(relsFile, content);
+                const v = new HarnessValidator({ unpackedDir: unpacked, profile: "strict" });
+                const result = await v.validateFileReferences();
+                expect(result.issues.map((i) => [i.code, i.message])).toEqual([
+                    ["rels-broken", "Broken reference to ../../pkg/word/styles.xml"],
+                    ["rels-unreferenced", "Unreferenced file: word/styles.xml"],
+                ]);
+            });
+        });
+
         it("rejects targets routed through a symlink that escapes the unpacked directory", async () => {
             await withTempDir(async (dir) => {
                 // outside/secret.txt exists beyond the unpacked root; the
