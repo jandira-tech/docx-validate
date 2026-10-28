@@ -32,8 +32,3 @@
 
 **Learning:** Parent traversal (`parentNode` loops) for every matched node in a deep document is O(N*D). Combining this with querying all elements leads to huge performance degradation.
 **Action:** Implement an integrated top-down DFS traversal instead of querying all elements and then checking their parent chains. This removes redundant parent tree traversals and prunes excluded subtrees. End-to-end timings can still be dominated by XML parsing and allocation; see `docs/performance/redlining-dfs.md` for mixed local measurements.
-
-## 2026-10-28 - Optimize repetitive ancestor resolution
-
-**Learning:** When classifying text elements in documents based on their ancestors (e.g. checking if they are inside a `<w:del>`, `<w:ins>`, etc.), calling `hasWordAncestor` repeatedly for each possible ancestor results in redundant walks up the DOM tree. If an element has N possible tags to check, the path to the root is walked N times.
-**Action:** Replace multiple `hasWordAncestor` calls with a single traversal that walks up the parent chain exactly once, setting boolean flags for all relevant target ancestors along the way. This replaces N loops with a single loop and provides a significant speedup on documents with many text runs.
