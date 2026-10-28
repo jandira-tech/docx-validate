@@ -25,13 +25,13 @@
  * shared between multiple slides.
  */
 
-import { existsSync, promises as fs } from "node:fs";
+import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import { canonicalPartName, findEquivalentPart, relationshipTargetFolder, relationshipTargetPartName } from "../../../lib/content-types";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
-import { officeRelationshipTypeSegment } from "../../../lib/word-read-parts";
+import { officeRelationshipTypeSegment, sidecarOf } from "../../../lib/word-read-parts";
 import { getElementsByTagNameNSAll, parseXmlBytes } from "../../../lib/xml-helpers";
 import type { BaseSchemaValidatorOptions } from "./base";
 import { BaseSchemaValidator, OFFICE_RELATIONSHIPS_NAMESPACE, packageEntries, withoutRestatedIgnorablePrefixes } from "./base";
@@ -181,13 +181,13 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
         // glob "ppt/slideMasters/*.xml" — one level only, no _rels subdir,
         // ASCII case-insensitively (#1017) — and every master the
         // presentation relates, wherever stored (#1013).
-        const slideMasters = (await this.judgedParts(/^ppt\/slideMasters\/[^/]+\.xml$/i, "slideMaster")).map((part) => part.file);
+        const slideMasters = await this.judgedParts(/^ppt\/slideMasters\/[^/]+\.xml$/i, "slideMaster");
 
         if (slideMasters.length === 0) {
             return { valid: true, issues: [] };
         }
 
-        for (const slideMaster of slideMasters) {
+        for (const { file: slideMaster, sidecar: relsFile } of slideMasters) {
             let masterDom: Document;
             try {
                 masterDom = parseXmlBytes(await fs.readFile(slideMaster));
@@ -201,14 +201,14 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
 
-            const masterDir = path.dirname(slideMaster);
-            const masterBase = path.basename(slideMaster);
-            const relsFile = path.join(masterDir, "_rels", `${masterBase}.rels`);
-
-            if (!existsSync(relsFile)) {
+            // The master's relationships part, found by OPC part-name
+            // equivalence as a slide's is (#1018), and reported missing under
+            // its plain spelling.
+            if (relsFile === undefined) {
+                const plain = path.join(path.dirname(slideMaster), "_rels", `${path.basename(slideMaster)}.rels`);
                 issues.push({
                     severity: "error",
-                    message: `Missing relationships file: ${this.relPath(relsFile)}`,
+                    message: `Missing relationships file: ${this.relPath(plain)}`,
                     path: this.relPath(slideMaster),
                     code: "sldlayout-missing-rels",
                 });
@@ -403,10 +403,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
         const names = [...entries.keys()];
         const judged = new Set(names.filter((name) => /^ppt\/slides\/_rels\/[^/]+\.xml\.rels$/i.test(name)));
         for (const slide of await this.presentationRelatedParts(names, "slide")) {
-            const name = findEquivalentPart(
-                names,
-                path.posix.join(path.posix.dirname(slide), "_rels", `${path.posix.basename(slide)}.rels`),
-            );
+            const name = sidecarOf(names, slide);
             if (name !== undefined) judged.add(name);
         }
         return [...judged]
@@ -418,14 +415,24 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
      * The stored parts a check judges, each stored name once, in code-unit
      * order: every one whose name matches `historical`, as the Python port
      * listed them (#1017), and those the presentation relates by a `segment`
-     * relationship, wherever stored (#1013).
+     * relationship, wherever stored (#1013). Each comes with the file of its
+     * relationships part, found by OPC part-name equivalence (#1018), when
+     * one is stored.
      */
-    private async judgedParts(historical: RegExp, segment: string): Promise<Array<{ name: string; file: string }>> {
+    private async judgedParts(
+        historical: RegExp,
+        segment: string,
+    ): Promise<Array<{ name: string; file: string; sidecar: string | undefined }>> {
         const entries = packageEntries(this.unpackedDir);
         const names = [...entries.keys()];
         const judged = new Set(names.filter((name) => historical.test(name)));
         for (const part of await this.presentationRelatedParts(names, segment)) judged.add(part);
-        return [...judged].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)).map((name) => ({ name, file: entries.get(name)! }));
+        return [...judged]
+            .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+            .map((name) => {
+                const sidecar = sidecarOf(names, name);
+                return { name, file: entries.get(name)!, sidecar: sidecar === undefined ? undefined : entries.get(sidecar) };
+            });
     }
 
     /**

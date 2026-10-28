@@ -621,6 +621,51 @@ describe("historical sidecars and masters under every stored spelling (#1017)", 
     });
 });
 
+// #1018: a master's relationships part is found by OPC part-name
+// equivalence, as the slide checks find a slide's, so a sidecar stored under
+// an escaped spelling is read, not reported missing.
+describe("a slide master's relationships part stored under an equivalent spelling (#1018)", () => {
+    const relationship = (id: string, type: string, target: string) =>
+        `<Relationship Id="${id}" Type="${R_NS}/${type}" Target="${target}"/>`;
+
+    /** A master in `ppt/<folder>/` naming `rId`, its sidecar stored as `slideMaster%31.xml.rels`; the presentation relates any master outside `ppt/slideMasters/`. */
+    async function storeMaster(dir: string, folder: string, rId: string): Promise<void> {
+        if (folder !== "slideMasters") {
+            await writeFile(path.join(dir, "_rels", ".rels"), relsXml(relationship("rId1", "officeDocument", "ppt/presentation.xml")));
+            await writeFile(path.join(dir, "ppt", "presentation.xml"), presentationXml(""));
+            await writeFile(
+                path.join(dir, "ppt", "_rels", "presentation.xml.rels"),
+                relsXml(relationship("rId1", "slideMaster", `${folder}/slideMaster1.xml`)),
+            );
+        }
+        await writeFile(
+            path.join(dir, "ppt", folder, "slideMaster1.xml"),
+            presentationXml(`<p:sldLayoutIdLst><p:sldLayoutId id="2147483649" r:id="${rId}"/></p:sldLayoutIdLst>`),
+        );
+        await writeFile(
+            path.join(dir, "ppt", folder, "_rels", "slideMaster%31.xml.rels"),
+            relsXml(relationship("rId9", "slideLayout", "../slideLayouts/slideLayout1.xml")),
+        );
+    }
+
+    const findings = async (dir: string) =>
+        (await makeValidator(dir).validateSlideLayoutIds()).issues.map((issue) => [issue.code, issue.path]);
+
+    it.each(["masters", "slideMasters"])("reads the escaped sidecar of a master in ppt/%s", async (folder) => {
+        await withTempDir(async (dir) => {
+            await storeMaster(dir, folder, "rId9");
+            expect(await findings(dir)).toEqual([]);
+        });
+    });
+
+    it.each(["masters", "slideMasters"])("flags a sldLayoutId the escaped sidecar of a master in ppt/%s lacks", async (folder) => {
+        await withTempDir(async (dir) => {
+            await storeMaster(dir, folder, "rId8");
+            expect(await findings(dir)).toEqual([["sldlayout-missing-rid", `ppt/${folder}/slideMaster1.xml`]]);
+        });
+    });
+});
+
 describe("PPTXSchemaValidator.validate", () => {
     it("aggregates validate_xml failure and short-circuits the suite", async () => {
         await withTempDir(async (dir) => {
