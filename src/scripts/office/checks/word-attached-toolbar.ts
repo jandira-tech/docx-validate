@@ -51,7 +51,7 @@ import {
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import path from "node:path";
-import { otherRelationshipIds, registerStoryReferenceIdentity } from "../story-reference-identity";
+import { otherRelationshipIds, registerStoryReferenceIdentity, relationshipAttributeName } from "../story-reference-identity";
 import { wordExactTypeTargets } from "../../../lib/word-read-parts";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
 import { isXmlPartName } from "./xml";
@@ -191,12 +191,13 @@ export const wordAttachedToolbarRelationshipCheck: CheckDefinition = {
                 relationship === undefined
                     ? `no Relationship with Id '${rid}'`
                     : `Relationship '${rid}' has Type '${relationship.getAttribute("Type") ?? "(none)"}'`;
+            const attribute = relationshipAttributeName(elem, ridNamespaceURI);
             const issue: ValidationIssue = {
                 severity: "error",
                 message:
-                    `<wne:toolbarData> r:id="${rid}" does not reference an attached toolbar relationship (${why}). ` +
+                    `<wne:toolbarData> ${attribute}="${rid}" does not reference an attached toolbar relationship (${why}). ` +
                     "Microsoft Word offers to recover the file. " +
-                    `Use a Relationship of Type ${ATTACHED_TOOLBARS_RELATIONSHIP_TYPE}, or point the r:id at one.`,
+                    `Use a Relationship of Type ${ATTACHED_TOOLBARS_RELATIONSHIP_TYPE}, or point the ${attribute} at one.`,
                 path: xmlFile,
                 code: WORD_ATTACHED_TOOLBAR_RELATIONSHIP,
             };

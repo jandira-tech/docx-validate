@@ -91,6 +91,16 @@ export interface StoryReferenceIdentity {
 export const otherRelationshipIds = (elem: Element, namespaces: readonly string[], rid: string): string[] =>
     namespaces.map((ns) => elem.getAttributeNS(ns, "id")).filter((value): value is string => !!value && value !== rid);
 
+/**
+ * The qualified name `elem` spells its `localName` attribute with in the
+ * relationships namespace `namespaceURI`, so a Word rule's message names the
+ * attribute the part holds, as `rels-id-missing` does (#1090, #1101): `rs:id`
+ * for the Strict namespace bound to `rs`, `r:id` for it bound to `r`. An empty
+ * `namespaceURI` names a literal `r:` attribute.
+ */
+export const relationshipAttributeName = (elem: Element, namespaceURI: string, localName = "id"): string =>
+    (namespaceURI ? elem.getAttributeNodeNS(namespaceURI, localName)?.name : undefined) ?? `r:${localName}`;
+
 /** Identity by issue object, so a copied issue is an unregistered issue (#616). */
 const identities = new WeakMap<ValidationIssue, StoryReferenceIdentity>();
 

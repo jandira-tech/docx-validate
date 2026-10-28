@@ -71,7 +71,7 @@ import path from "node:path";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
-import { otherRelationshipIds, registerStoryReferenceIdentity } from "../story-reference-identity";
+import { otherRelationshipIds, registerStoryReferenceIdentity, relationshipAttributeName } from "../story-reference-identity";
 
 const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
@@ -192,6 +192,7 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                         }
                         if (types === null || types === undefined) continue;
                         const type = types.get(rid);
+                        const attribute = relationshipAttributeName(elem, ridNamespaceURI);
                         // An r:id naming no Relationship of a part whose
                         // sidecar exists and parses: this check's finding
                         // (#619). A part with no sidecar is
@@ -200,9 +201,9 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                             const issue: ValidationIssue = {
                                 severity: "error",
                                 message:
-                                    `<w:${localName}> r:id="${rid}" names no Relationship with Id '${rid}'; ` +
+                                    `<w:${localName}> ${attribute}="${rid}" names no Relationship with Id '${rid}'; ` +
                                     `a w:${localName} needs a Relationship of Type ${transitionalType} (or the ISO Strict ${strictType}). ` +
-                                    "Microsoft Word offers to recover the file. Point the r:id at such a Relationship, or add one with that Id and Type.",
+                                    `Microsoft Word offers to recover the file. Point the ${attribute} at such a Relationship, or add one with that Id and Type.`,
                                 path: root.part,
                                 code: WORD_HEADER_FOOTER_RELATIONSHIP,
                             };
@@ -226,9 +227,9 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                         const issue: ValidationIssue = {
                             severity: "error",
                             message:
-                                `<w:${localName}> r:id="${rid}" names Relationship '${rid}' of Type '${type || "(none)"}'; ` +
+                                `<w:${localName}> ${attribute}="${rid}" names Relationship '${rid}' of Type '${type || "(none)"}'; ` +
                                 `a w:${localName} needs a Relationship of Type ${transitionalType} (or the ISO Strict ${strictType}). ` +
-                                "Microsoft Word offers to recover the file. Point the r:id at such a Relationship, or retype that Relationship.",
+                                `Microsoft Word offers to recover the file. Point the ${attribute} at such a Relationship, or retype that Relationship.`,
                             path: root.part,
                             code: WORD_HEADER_FOOTER_RELATIONSHIP,
                         };

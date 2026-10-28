@@ -119,7 +119,7 @@ import { canonicalPartName } from "../../../lib/content-types";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { sidecarOf, wordReadTypedTargets } from "../../../lib/word-read-parts";
-import { otherRelationshipIds, registerStoryReferenceIdentity } from "../story-reference-identity";
+import { otherRelationshipIds, registerStoryReferenceIdentity, relationshipAttributeName } from "../story-reference-identity";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
 
 const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
@@ -302,13 +302,14 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
                               : ACCEPTED_CHART_RELATIONSHIP_TYPES.includes(rel.type)
                                 ? `Relationship '${id.rid}' has TargetMode '${rel.targetMode || "(none)"}'`
                                 : `Relationship '${id.rid}' has Type '${rel.type || "(none)"}'`;
+                    const attribute = relationshipAttributeName(elem, id.namespaceURI);
                     const issue: ValidationIssue = {
                         severity: "error",
                         message:
-                            `<c:chart> r:id="${id.rid}" does not reference an internal chart relationship (${why}). ` +
+                            `<c:chart> ${attribute}="${id.rid}" does not reference an internal chart relationship (${why}). ` +
                             "Microsoft Word offers to recover the file. " +
                             `Use a Relationship of Type ${ACCEPTED_CHART_RELATIONSHIP_TYPES[0]} ` +
-                            `(or the ISO Strict ${ACCEPTED_CHART_RELATIONSHIP_TYPES[1]}) internal to the package, or point the r:id at one.`,
+                            `(or the ISO Strict ${ACCEPTED_CHART_RELATIONSHIP_TYPES[1]}) internal to the package, or point the ${attribute} at one.`,
                         path: xmlFile,
                         code: WORD_PART_REFERENCE_RELATIONSHIP,
                     };
@@ -348,10 +349,11 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
                               : ACCEPTED_DIAGRAM_DATA_RELATIONSHIP_TYPES.includes(rel.type)
                                 ? `Relationship '${id.rid}' has TargetMode '${rel.targetMode || "(none)"}'`
                                 : `Relationship '${id.rid}' has Type '${rel.type || "(none)"}'`;
+                    const attribute = relationshipAttributeName(elem, id.namespaceURI, "dm");
                     issues.push({
                         severity: "error",
                         message:
-                            `<dgm:relIds> r:dm="${id.rid}" does not reference an internal diagramData relationship (${why}). ` +
+                            `<dgm:relIds> ${attribute}="${id.rid}" does not reference an internal diagramData relationship (${why}). ` +
                             // Session 52: an open error for the empty r:dm
                             // on the minimal shape (s52b), the recovery
                             // offer for it on the strict01 SmartArt (s52d);
@@ -360,7 +362,7 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
                                 ? "Microsoft Word reported an open error on one specimen and offered to recover another. "
                                 : "Microsoft Word offers to recover the file. ") +
                             `Use a Relationship of Type ${ACCEPTED_DIAGRAM_DATA_RELATIONSHIP_TYPES[0]} ` +
-                            `(or the ISO Strict ${ACCEPTED_DIAGRAM_DATA_RELATIONSHIP_TYPES[1]}) internal to the package, or point the r:dm at one.`,
+                            `(or the ISO Strict ${ACCEPTED_DIAGRAM_DATA_RELATIONSHIP_TYPES[1]}) internal to the package, or point the ${attribute} at one.`,
                         path: xmlFile,
                         code: WORD_PART_REFERENCE_RELATIONSHIP,
                     });
@@ -384,13 +386,14 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
                         : !rel
                           ? `no Relationship with Id '${id.rid}'`
                           : `Relationship '${id.rid}' has Type '${rel.type || "(none)"}'`;
+                const attribute = relationshipAttributeName(elem, id.namespaceURI);
                 const issue: ValidationIssue = {
                     severity: "error",
                     message:
-                        `<o:OLEObject> r:id="${id.rid}" does not reference an OLE object relationship (${why}). ` +
+                        `<o:OLEObject> ${attribute}="${id.rid}" does not reference an OLE object relationship (${why}). ` +
                         "Microsoft Word offers to recover the file. " +
                         `Use a Relationship of Type ${OFFICE_RELATIONSHIPS_NAMESPACE}/package or ${OFFICE_RELATIONSHIPS_NAMESPACE}/oleObject ` +
-                        `(or the ISO Strict ${OFFICE_RELATIONSHIPS_STRICT_NAMESPACE}/package and ${OFFICE_RELATIONSHIPS_STRICT_NAMESPACE}/oleObject), or point the r:id at one.`,
+                        `(or the ISO Strict ${OFFICE_RELATIONSHIPS_STRICT_NAMESPACE}/package and ${OFFICE_RELATIONSHIPS_STRICT_NAMESPACE}/oleObject), or point the ${attribute} at one.`,
                     path: xmlFile,
                     code: WORD_PART_REFERENCE_RELATIONSHIP,
                 };
