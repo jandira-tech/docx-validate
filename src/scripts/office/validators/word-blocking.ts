@@ -155,12 +155,14 @@ const isDocumentRelationshipsPart = (partName: string | undefined, storyRootPart
 
 /**
  * Whether `issue` stays an error under `word-valid`: `true` when Word 16.115
- * is observed to refuse or offer to recover a file carrying it. The three sets
+ * is observed to refuse or offer to recover a file carrying it. The four sets
  * hold canonical part names, computed once per run by the caller:
  * `propertiesParts` (the core, app and custom properties parts the package
  * relationships name, `propertiesParts()`), `wordReadParts` (the parts Word
- * reads at open, `wordReadParts()`) and `storyRootParts` (every main document
- * plus every reached glossary document, `wordStoryRootParts()`). An empty set
+ * reads at open, `wordReadParts()`), `storyRootParts` (every main document
+ * plus every reached glossary document, `wordStoryRootParts()`) and
+ * `observedContentTypeParts` (the reach `wordObservedContentTypeParts()`
+ * resolves for the unrecognized content-type check, #718). An empty set
  * makes the findings that depend on it non-blocking.
  */
 export const isWordBlockingIssue = (
@@ -168,6 +170,7 @@ export const isWordBlockingIssue = (
     propertiesParts: ReadonlySet<string> = new Set(),
     wordReadParts: ReadonlySet<string> = new Set(),
     storyRootParts: ReadonlySet<string> = new Set(),
+    observedContentTypeParts: ReadonlySet<string> = new Set(),
     facts: WordBlockingFacts = {},
 ): boolean => {
     switch (issue.code) {
@@ -350,10 +353,13 @@ export const isWordBlockingIssue = (
             // Session 46 (s46e, #707): Word 16.115 offers recovery for the
             // main document's styles part typed `application/octet-stream` —
             // non-XML bytes or styles XML alike — and opens the styles-typed
-            // control clean. Only that reach is observed, and its finding
-            // alone carries the recovery sentence; every other segment keeps
-            // its warning.
-            return issue.message.includes("Word 16.115 offers to recover the package");
+            // control clean. Only that reach is observed; every other segment
+            // keeps its warning. The verdict reads the reach the caller
+            // resolved once per run (`wordObservedContentTypeParts`, #718),
+            // never the message: it embeds the declared content type and the
+            // stored part name verbatim, so a package could carry the
+            // recovery sentence itself and flip an unobserved finding.
+            return issue.path !== undefined && observedContentTypeParts.has(canonicalPartName(issue.path));
         }
         case "rels-id-duplicate": {
             // #615, #617: Word 16.115 offers recovery for duplicate Ids in

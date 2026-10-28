@@ -11,6 +11,7 @@ import { describe, expect, it } from "vitest";
 import { ValidationContext } from "../src/lib/validation-context";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
 import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
+import { wordObservedContentTypeParts } from "../src/scripts/office/checks/word-part-content-type-unrecognized";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 const ID = "word-part-content-type-unrecognized";
@@ -91,6 +92,9 @@ const diagnose = async (parts: Record<string, string | Uint8Array>) => {
     return (await check?.run(ValidationContext.fromEntries(parts))) ?? [];
 };
 
+/** The observed reach a word-valid caller resolves for `isWordBlockingIssue` (#718). */
+const observedParts = (parts: Record<string, string | Uint8Array>) => wordObservedContentTypeParts(ValidationContext.fromEntries(parts));
+
 // Session 46 (s46e): both refused shapes, their clean control, and the disjointness boundary.
 describe("unrecognized part content type (#707, session 46)", () => {
     it("registers a DOCX content-types check behind xml-syntax", () => {
@@ -106,14 +110,15 @@ describe("unrecognized part content type (#707, session 46)", () => {
         ["non-XML bytes", "this is not XML"],
         ["styles XML", STYLES_XML],
     ] as const)("rejects word/styles.bin holding %s typed application/octet-stream", async (_label, bytes) => {
-        const found = await diagnose(stylesBin(bytes, false));
+        const parts = stylesBin(bytes, false);
+        const found = await diagnose(parts);
         expect(found).toHaveLength(1);
         expect(found[0]).toMatchObject({ code: ID, severity: "error", path: "word/styles.bin" });
         expect(found[0]?.message).toContain("the main document's styles relationship");
         expect(found[0]?.message).toContain(OCTET_STREAM);
         expect(found[0]?.message).toContain(STYLES_CT);
         expect(found[0]?.message).toContain("Word 16.115 offers to recover the package (session 46)");
-        expect(isWordBlockingIssue(found[0]!)).toBe(true);
+        expect(isWordBlockingIssue(found[0]!, new Set(), new Set(), new Set(), await observedParts(parts))).toBe(true);
         // The styles-typed control opens clean.
         expect(await diagnose(stylesBin(STYLES_XML, true))).toEqual([]);
     });
@@ -149,13 +154,16 @@ describe("unrecognized part content type (#707, session 46)", () => {
     });
 
     it("blocks only the observed reach: a related settings part is an error without the recovery claim", async () => {
-        const found = await diagnose(settingsBin());
+        const parts = settingsBin();
+        const found = await diagnose(parts);
         expect(found).toHaveLength(1);
         expect(found[0]).toMatchObject({ code: ID, severity: "error", path: "word/settings.bin" });
         expect(found[0]?.message).toContain("the main document's settings relationship");
         expect(found[0]?.message).toContain("clause 11.3");
         expect(found[0]?.message).not.toContain("Word 16.115");
-        expect(isWordBlockingIssue(found[0]!)).toBe(false);
+        // The observed set holds only the styles reach, so the finding stays a
+        // word-valid warning even though its message could carry any text.
+        expect(isWordBlockingIssue(found[0]!, new Set(), new Set(), new Set(), await observedParts(parts))).toBe(false);
     });
 });
 
@@ -217,4 +225,45 @@ describe("unrecognized profile scope (#707)", () => {
             }
         });
     }, 60_000);
+});
+
+// #718: the message embeds the declared content type and the stored part name
+// verbatim, so a package can carry the recovery sentence itself; the verdict
+// must read the reach structurally, never that text.
+describe("unrecognized blocking verdict is structural (#718)", () => {
+    const SENTENCE = "Word 16.115 offers to recover the package";
+
+    /** The minimal package plus a related webSettings part — an unobserved reach — stored as `part`, its Override carrying `type`. */
+    const webSettingsTyped = (part: string, type: string): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        [part]: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:webSettings xmlns:w="${W}"/>`,
+        [SIDECAR]: replaceOnce(
+            MINIMAL_PARTS[SIDECAR]!,
+            "</Relationships>",
+            `<Relationship Id="rId2" Type="${R}/webSettings" Target="${part.slice("word/".length)}"/></Relationships>`,
+        ),
+        [CT]: replaceOnce(MINIMAL_PARTS[CT]!, "</Types>", `<Override PartName="/${part}" ContentType="${type}"/></Types>`),
+    });
+
+    it.each([
+        ["the declared content type", `application/x-${SENTENCE}`, "word/webSettings.xml"],
+        ["the stored part name", OCTET_STREAM, `word/${SENTENCE}.bin`],
+    ] as const)(
+        "keeps an unobserved webSettings reach a word-valid warning when the sentence rides %s",
+        async (_label, declared, part) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "crafted.docx");
+                writeFileSync(file, await buildDocx(webSettingsTyped(part, declared)));
+                const full = await validate(file);
+                const found = full.issues.filter((issue) => issue.code === ID);
+                expect(found).toHaveLength(1);
+                expect(found[0]?.severity).toBe("warning");
+                expect(found[0]?.message).toContain(SENTENCE);
+                // A named run reaches the same verdict (#381).
+                const partial = await validate(file, { checks: [ID] });
+                expect(partial.issues.filter((issue) => issue.code === ID)).toEqual(found);
+            });
+        },
+        60_000,
+    );
 });

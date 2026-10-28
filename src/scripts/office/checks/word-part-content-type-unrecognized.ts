@@ -32,7 +32,11 @@
  * edition, clause 11.3 gives every WordprocessingML part its own content
  * type, clause 14.2.7 the theme's, and clause 11.3.10 the Main Document's),
  * and warns under lenient. Word-valid blocks only the observed reach: the
- * main document's `styles` relationship. One finding per part; when several
+ * main document's `styles` relationship. That verdict is structural —
+ * `wordObservedContentTypeParts` resolves the reach once per run for
+ * `isWordBlockingIssue` — because the message embeds the declared content
+ * type and the stored part name verbatim, so a package could carry the
+ * recovery sentence itself (#718). One finding per part; when several
  * relationship types reach it, the observed one names the finding whenever
  * it exists, and the shared reporting order ranks the rest (#593).
  */
@@ -47,15 +51,37 @@ import {
 } from "../../../lib/content-types";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
-import type { WordTypedTarget } from "../../../lib/word-read-parts";
+import { wordTypedRelationshipTargets, type WordTypedTarget } from "../../../lib/word-read-parts";
 import { GENERIC_CONTENT_TYPES, REPORTING_SEGMENT_ORDER } from "./word-part-content-type-generic";
 import { expectedContentTypesFor, wordContentTypeTargets, type WordPartContentTypeFinding } from "./word-part-content-type-inexact";
 import { MAPPED_MEDIA_TYPES } from "./word-part-content-type-mismatch";
 
 export const WORD_PART_CONTENT_TYPE_UNRECOGNIZED = "word-part-content-type-unrecognized";
 
-/** The reach session 46 observed (s46e): the main document's `styles` relationship. */
-const isObserved = (target: WordTypedTarget): boolean => target.via !== "glossary" && target.segment === "styles";
+/**
+ * The reach session 46 observed (s46e): the main document's `styles`
+ * relationship. One source for the check's own `isObserved` and for
+ * `wordObservedContentTypeParts`, which carries the fact to
+ * `isWordBlockingIssue` (#718).
+ */
+export const UNRECOGNIZED_OBSERVED_SEGMENTS: ReadonlySet<string> = new Set(["styles"]);
+
+/** The reach {@link UNRECOGNIZED_OBSERVED_SEGMENTS} names; a glossary's own relationship never reaches it (#579). */
+const isObserved = (target: WordTypedTarget): boolean => target.via !== "glossary" && UNRECOGNIZED_OBSERVED_SEGMENTS.has(target.segment);
+
+/**
+ * Canonical names of the parts the observed reach names, computed once per
+ * run and passed to `isWordBlockingIssue` as `observedContentTypeParts`:
+ * the structural fact that decides a `word-part-content-type-unrecognized`
+ * finding's word-valid severity (#718), the same shape of per-run fact the
+ * properties, Word-read and story-root sets are. The message cannot carry
+ * it — it embeds the declared content type and the stored part name
+ * verbatim, so a package controls every substring of it.
+ */
+export const wordObservedContentTypeParts = async (ctx: ValidationContext, profile?: Profile): Promise<ReadonlySet<string>> =>
+    new Set(
+        (await wordTypedRelationshipTargets(ctx, UNRECOGNIZED_OBSERVED_SEGMENTS, profile)).map((target) => canonicalPartName(target.part)),
+    );
 
 /**
  * The parts {@link wordPartContentTypeUnrecognizedCheck} reports, one finding
