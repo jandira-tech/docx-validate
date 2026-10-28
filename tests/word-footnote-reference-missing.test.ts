@@ -128,6 +128,113 @@ describe("notes parts stored under another name (#793, session 60 s60a)", { time
     });
 });
 
+describe("standard-name notes parts no relationship names (#797, session 61 s61a/s61b)", { timeout: 30000 }, () => {
+    /** The s61 builder's `notesXml`: a notes part holding the note `held`. */
+    const notesXml = (kind: "footnote" | "endnote", held: string): string =>
+        `<w:${kind}s xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+        `<w:${kind} w:id="${held}"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:${kind}></w:${kind}s>`;
+
+    /** The s61 builder's `mainWith`: `parts` with a `w:<kind>Reference w:id="1"` run appended in the main document's only paragraph. */
+    const mainWith = (kind: "footnote" | "endnote", parts: Record<string, string>): Promise<Buffer> =>
+        buildDocx({
+            ...parts,
+            "word/document.xml": parts["word/document.xml"]!.replace(
+                "</w:r></w:p>",
+                `</w:r><w:r><w:${kind}Reference w:id="1"/></w:r></w:p>`,
+            ),
+        });
+
+    /** The s61a builder's `unrelatedStandard`: `word/<name>` holding note 1, typed by its Override but named by no relationship; the body references note 1. */
+    const unrelatedStandard = (kind: "footnote" | "endnote", name: string): Promise<Buffer> =>
+        mainWith(kind, {
+            ...MINIMAL_PARTS,
+            [`word/${name}`]: notesXml(kind, "1"),
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/word/${name}" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${kind}s+xml"/></Types>`,
+            ),
+        });
+
+    /** The s61a builder's `relatedOtherIdPlusUnrelatedStandard`: the `<kind>s` relationship names `word/<renamed>` holding note 5, and an unrelated `word/<kind>s.xml` holds note 1; the body references note 1. */
+    const relatedOtherIdPlusUnrelatedStandard = (kind: "footnote" | "endnote", renamed: string): Promise<Buffer> =>
+        mainWith(kind, {
+            ...MINIMAL_PARTS,
+            [`word/${renamed}`]: notesXml(kind, "5"),
+            [`word/${kind}s.xml`]: notesXml(kind, "1"),
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdN" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/${kind}s" Target="${renamed}"/></Relationships>`,
+            ),
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/word/${renamed}" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${kind}s+xml"/>` +
+                    `<Override PartName="/word/${kind}s.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${kind}s+xml"/></Types>`,
+            ),
+        });
+
+    /** The s61b builder's `unrelatedStandardNoReference`: the unrelated `word/<kind>s.xml` of s61a, with nothing in the body referencing it. */
+    const unrelatedStandardNoReference = (kind: "footnote" | "endnote"): Promise<Buffer> =>
+        buildDocx({
+            ...MINIMAL_PARTS,
+            [`word/${kind}s.xml`]: notesXml(kind, "1"),
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/word/${kind}s.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${kind}s+xml"/></Types>`,
+            ),
+        });
+
+    it.each([
+        ["footnote", "footnotes.xml", "word-footnote-reference-missing", "footnote reference uses id 1"],
+        ["endnote", "endnotes.xml", "word-endnote-reference-missing", "endnote reference uses id 1"],
+    ] as const)("rejects the %s reference the unrelated word/%s alone holds", async (kind, name, code, message) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "unrelated-standard.docx");
+            await writeFile(file, await unrelatedStandard(kind, name));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            const errors = result.issues.filter((issue) => issue.severity === "error");
+            expect(errors).toEqual([
+                expect.objectContaining({ code, path: "word/document.xml", message: expect.stringContaining(message) }),
+            ]);
+            const selected = await validate(file, { profile: "word-valid", checks: [code] });
+            expect(selected.valid).toBe(result.valid);
+            expect(selected.issues.filter((issue) => issue.severity === "error")).toEqual(errors);
+        });
+    });
+
+    it.each([
+        ["footnote", "notes-foot.xml", "word-footnote-reference-missing", "footnote reference uses id 1"],
+        ["endnote", "notes-end.xml", "word-endnote-reference-missing", "endnote reference uses id 1"],
+    ] as const)("rejects the %s reference the unrelated part holds beside word/%s holding note 5", async (kind, renamed, code, message) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "related-other-id-plus-unrelated-standard.docx");
+            await writeFile(file, await relatedOtherIdPlusUnrelatedStandard(kind, renamed));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            const errors = result.issues.filter((issue) => issue.severity === "error");
+            expect(errors).toEqual([
+                expect.objectContaining({ code, path: "word/document.xml", message: expect.stringContaining(message) }),
+            ]);
+            const selected = await validate(file, { profile: "word-valid", checks: [code] });
+            expect(selected.valid).toBe(result.valid);
+            expect(selected.issues.filter((issue) => issue.severity === "error")).toEqual(errors);
+        });
+    });
+
+    it.each([["footnote"], ["endnote"]] as const)(
+        "accepts the unrelated word/%ss.xml nothing references (s61b calibration)",
+        async (kind) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "unrelated-standard-no-reference.docx");
+                await writeFile(file, await unrelatedStandardNoReference(kind));
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.valid).toBe(true);
+                expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+            });
+        },
+    );
+});
+
 describe("word-valid dangling footnote reference", { timeout: 30000 }, () => {
     it("rejects a footnote reference whose id is not a footnote id", async () => {
         const result = await validate(BROKEN, { profile: "word-valid" });

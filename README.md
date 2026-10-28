@@ -958,14 +958,18 @@ references and clean opens for their matching-id calibrations
 ([#784](https://github.com/jandira-tech/docx-validate/issues/784)).
 Endnote references inside a footnotes part stay unjudged, matching session 16's
 clean open: Word does not follow those references. The defined notes are read
-from every part named `footnotes.xml` (respectively `endnotes.xml`) and from
-every part a `footnotes` / `endnotes` relationship of the main document or of
-a reached glossary names, whatever the part is called: session 60 (s60a in
-`docs/plans/evidence/word-probes-2026-10-24.md`, two runs, all readings agree)
-opened clean a used notes part stored as `word/notes-foot.xml` and
-`word/notes-end.xml` and related by its relationship, a shape the name-only
-reading rejected
-([#793](https://github.com/jandira-tech/docx-validate/issues/793)).
+only from the parts a `footnotes` / `endnotes` relationship of the main
+document or of a reached glossary names, whatever the part is called: session
+60 (s60a in `docs/plans/evidence/word-probes-2026-10-24.md`, two runs, all
+readings agree) opened clean a used notes part stored as `word/notes-foot.xml`
+and `word/notes-end.xml` and related by its relationship, a shape the
+name-only reading rejected
+([#793](https://github.com/jandira-tech/docx-validate/issues/793)), and
+session 61 (s61a/s61b, same evidence, two runs, all readings agree) offered
+recovery for a body reference whose note sat only in a `word/footnotes.xml` or
+`word/endnotes.xml` no relationship names, while the same part with nothing
+referencing it opened clean
+([#797](https://github.com/jandira-tech/docx-validate/issues/797)).
 
 Named `word-math-parse` runs and full runs that cannot stage the archive retain
 the positioned XML diagnostics without repeating `word-math-parse` for the same

@@ -18928,3 +18928,366 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
 `````
 
 </details>
+
+### Session 61: 19:14Z–19:18Z on 2026-10-26, validator columns at f0d42f3d
+
+The open question of [#793](https://github.com/jandira-tech/docx-validate/issues/793): whether a notes part named `footnotes.xml` or `endnotes.xml` that no relationship names defines the note the body references. After #793 the note checks collect definitions from those names as well as from the parts a `footnotes` or `endnotes` relationship names. Two chunks, each opening and closing with the minimal control. Each ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 10 of 10 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen.
+
+- A `word/footnotes.xml` or `word/endnotes.xml` holding note 1, typed by its Override but named by no relationship, gets the recovery offer when the body references note 1, and so does the same part beside a related renamed part that holds note 5. Word-valid at f0d42f3d accepts all four: four false negatives, from the name-based definitions.
+- The same unrelated parts with nothing referencing them open clean (s61b), so the refusals come from the dangling reference, not from the unrelated part: Word defines notes only from the parts their relationships name.
+
+| Run    | Observed             | Specimen                                                     | Shape                                                                                                                                                               | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at f0d42f3d | strict at f0d42f3d                                     |
+| ------ | -------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ---------------------- | ------------------------------------------------------ |
+| `s61a` | 19:14:09Z, 19:17:30Z | `s61a-control-minimal`                                       | control                                                                                                                                                             | `4b8082cd2501ebde` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                  |
+| `s61a` | 19:14:09Z, 19:17:30Z | `footnotes-unrelated-standard-name`                          | #793: word/footnotes.xml holding footnote 1, typed by its Override, named by no relationship; the body references footnote 1                                        | `cfbc6f977786af24` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `rels-unreferenced`, `paraid-missing-element` |
+| `s61a` | 19:14:09Z, 19:17:30Z | `endnotes-unrelated-standard-name`                           | #793: word/endnotes.xml holding endnote 1, typed by its Override, named by no relationship; the body references endnote 1                                           | `92c61408cd64848a` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `rels-unreferenced`, `paraid-missing-element` |
+| `s61a` | 19:14:09Z, 19:17:30Z | `footnotes-related-other-id-plus-unrelated-standard`         | #793: the footnotes relationship names word/notes-foot.xml holding footnote 5, and an unrelated word/footnotes.xml holds footnote 1; the body references footnote 1 | `92decd70f9265394` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `rels-unreferenced`, `paraid-missing-element` |
+| `s61a` | 19:14:09Z, 19:17:30Z | `endnotes-related-other-id-plus-unrelated-standard`          | #793: the endnotes relationship names word/notes-end.xml holding endnote 5, and an unrelated word/endnotes.xml holds endnote 1; the body references endnote 1       | `ce93ce3b0347b1d1` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `rels-unreferenced`, `paraid-missing-element` |
+| `s61a` | 19:14:09Z, 19:17:30Z | `s61a-control-minimal-end`                                   | control                                                                                                                                                             | `4b8082cd2501ebde` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                  |
+| `s61b` | 19:18:16Z, 19:18:30Z | `s61b-control-minimal`                                       | control                                                                                                                                                             | `7ca654a6991f57f1` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                  |
+| `s61b` | 19:18:16Z, 19:18:30Z | `footnotes-unrelated-standard-name-no-reference-calibration` | calibration: the unrelated word/footnotes.xml of s61a, with no footnote reference in the body                                                                       | `1295d80d03ec2549` | clean-open     | clean-open     | clean-open                 | valid                  | invalid: `rels-unreferenced`, `paraid-missing-element` |
+| `s61b` | 19:18:16Z, 19:18:30Z | `endnotes-unrelated-standard-name-no-reference-calibration`  | calibration: the unrelated word/endnotes.xml of s61a, with no endnote reference in the body                                                                         | `d6154c8c9d53dd3c` | clean-open     | clean-open     | clean-open                 | valid                  | invalid: `rels-unreferenced`, `paraid-missing-element` |
+| `s61b` | 19:18:16Z, 19:18:30Z | `s61b-control-minimal-end`                                   | control                                                                                                                                                             | `7ca654a6991f57f1` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                  |
+
+<details><summary>Raw records, session 61</summary>
+
+```jsonl
+{"run": "s61a", "pass": 1, "name": "s61a-control-minimal", "sha256": "4b8082cd2501ebde01700cef89bc69970675a595d8721313e1f90f5317b97140", "observedAt": "2026-10-26T19:14:09+00:00", "staged": "00005__wfv__s61a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s61a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s61a", "pass": 2, "name": "s61a-control-minimal", "sha256": "4b8082cd2501ebde01700cef89bc69970675a595d8721313e1f90f5317b97140", "observedAt": "2026-10-26T19:17:30+00:00", "staged": "00005__wfv__s61a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s61a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s61a", "pass": 1, "name": "footnotes-unrelated-standard-name", "sha256": "cfbc6f977786af2496549fee4bfd6522915c5f22298cfa04e567fded052f5a48", "observedAt": "2026-10-26T19:14:09+00:00", "staged": "00003__wfv__footnotes-unrelated-standard-name.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 15:12:46.887 'Word found unreadable content in 00003__wfv__footnotes-unrelated-standard-name.docx. Do you want to … ? If you trust the source of this document, click Yes.'", "2026-10-26 15:12:47.700 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__footnotes-unrelated-stand...)\""]}
+{"run": "s61a", "pass": 2, "name": "footnotes-unrelated-standard-name", "sha256": "cfbc6f977786af2496549fee4bfd6522915c5f22298cfa04e567fded052f5a48", "observedAt": "2026-10-26T19:17:30+00:00", "staged": "00003__wfv__footnotes-unrelated-standard-name.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 15:16:20.445 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00003__wfv__footnotes-unrelated-stand...)'", "2026-10-26 15:17:29.452 'Word found unreadable content in 00003__wfv__footnotes-unrelated-standard-name.docx. Do you want to … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s61a", "pass": 1, "name": "endnotes-unrelated-standard-name", "sha256": "92c61408cd64848aeb63bc20351af05543746227af5d81de02d6326e48715030", "observedAt": "2026-10-26T19:14:09+00:00", "staged": "00001__wfv__endnotes-unrelated-standard-name.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 15:12:38.506 'Word found unreadable content in 00001__wfv__endnotes-unrelated-standard-name.docx. Do you want to  … ? If you trust the source of this document, click Yes.'", "2026-10-26 15:12:39.019 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__endnotes-unrelated-standa...)\""]}
+{"run": "s61a", "pass": 2, "name": "endnotes-unrelated-standard-name", "sha256": "92c61408cd64848aeb63bc20351af05543746227af5d81de02d6326e48715030", "observedAt": "2026-10-26T19:17:30+00:00", "staged": "00001__wfv__endnotes-unrelated-standard-name.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 15:15:14.412 'Word found unreadable content in 00001__wfv__endnotes-unrelated-standard-name.docx. Do you want to  … ? If you trust the source of this document, click Yes.'", "2026-10-26 15:15:14.970 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__endnotes-unrelated-standa...)\""]}
+{"run": "s61a", "pass": 1, "name": "footnotes-related-other-id-plus-unrelated-standard", "sha256": "92decd70f9265394e3b1633f83285ecccf535df465b184542ff43312d5b7ecbf", "observedAt": "2026-10-26T19:14:09+00:00", "staged": "00002__wfv__footnotes-related-other-id-plus-unrelated-standard.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 15:12:42.735 'Word found unreadable content in 00002__wfv__footnotes-related-other-id-plus-unrelated-standa.... D … ? If you trust the source of this document, click Yes.'", "2026-10-26 15:12:43.551 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__footnotes-related-other-i...)\""]}
+{"run": "s61a", "pass": 2, "name": "footnotes-related-other-id-plus-unrelated-standard", "sha256": "92decd70f9265394e3b1633f83285ecccf535df465b184542ff43312d5b7ecbf", "observedAt": "2026-10-26T19:17:30+00:00", "staged": "00002__wfv__footnotes-related-other-id-plus-unrelated-standard.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 15:16:03.001 Microsoft Word, Word found unreadable content in 00002__wfv__footnotes-related-other-id-plus-unrelat … t? If you trust the source of this document, click Yes.", "2026-10-26 15:16:03.736 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__footnotes-related-other-i...)\""]}
+{"run": "s61a", "pass": 1, "name": "endnotes-related-other-id-plus-unrelated-standard", "sha256": "ce93ce3b0347b1d1d1b55e1a3b05b111fc6b0ce5222157e63f70d0d5d6b61d12", "observedAt": "2026-10-26T19:14:09+00:00", "staged": "00000__wfv__endnotes-related-other-id-plus-unrelated-standard.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 15:12:33.963 'Word found unreadable content in 00000__wfv__endnotes-related-other-id-plus-unrelated-standar.... D … ? If you trust the source of this document, click Yes.'", "2026-10-26 15:12:34.551 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__endnotes-related-other-id...)\""]}
+{"run": "s61a", "pass": 2, "name": "endnotes-related-other-id-plus-unrelated-standard", "sha256": "ce93ce3b0347b1d1d1b55e1a3b05b111fc6b0ce5222157e63f70d0d5d6b61d12", "observedAt": "2026-10-26T19:17:30+00:00", "staged": "00000__wfv__endnotes-related-other-id-plus-unrelated-standard.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 15:14:26.019 'Word found unreadable content in 00000__wfv__endnotes-related-other-id-plus-unrelated-standar.... D … ? If you trust the source of this document, click Yes.'", "2026-10-26 15:14:26.588 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__endnotes-related-other-id...)\""]}
+{"run": "s61a", "pass": 1, "name": "s61a-control-minimal-end", "sha256": "4b8082cd2501ebde01700cef89bc69970675a595d8721313e1f90f5317b97140", "observedAt": "2026-10-26T19:14:09+00:00", "staged": "00004__wfv__s61a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s61a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s61a", "pass": 2, "name": "s61a-control-minimal-end", "sha256": "4b8082cd2501ebde01700cef89bc69970675a595d8721313e1f90f5317b97140", "observedAt": "2026-10-26T19:17:30+00:00", "staged": "00004__wfv__s61a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s61a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s61b", "pass": 1, "name": "s61b-control-minimal", "sha256": "7ca654a6991f57f145cc5829ddd72abf7ebcff448ce81334e3d9fae877ce5326", "observedAt": "2026-10-26T19:18:16+00:00", "staged": "00003__wfv__s61b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s61b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s61b", "pass": 2, "name": "s61b-control-minimal", "sha256": "7ca654a6991f57f145cc5829ddd72abf7ebcff448ce81334e3d9fae877ce5326", "observedAt": "2026-10-26T19:18:30+00:00", "staged": "00003__wfv__s61b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s61b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s61b", "pass": 1, "name": "footnotes-unrelated-standard-name-no-reference-calibration", "sha256": "1295d80d03ec25496f2f1cf7850a3aa3cd0031f4ed94c2aa6ce5593f49e716ec", "observedAt": "2026-10-26T19:18:16+00:00", "staged": "00001__wfv__footnotes-unrelated-standard-name-no-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-unrelated-standard-name-no-reference-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s61b", "pass": 2, "name": "footnotes-unrelated-standard-name-no-reference-calibration", "sha256": "1295d80d03ec25496f2f1cf7850a3aa3cd0031f4ed94c2aa6ce5593f49e716ec", "observedAt": "2026-10-26T19:18:30+00:00", "staged": "00001__wfv__footnotes-unrelated-standard-name-no-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-unrelated-standard-name-no-reference-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s61b", "pass": 1, "name": "endnotes-unrelated-standard-name-no-reference-calibration", "sha256": "d6154c8c9d53dd3ce51415bb85249e45a0b90e30ccb5d3c867c47174d3723fff", "observedAt": "2026-10-26T19:18:16+00:00", "staged": "00000__wfv__endnotes-unrelated-standard-name-no-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-unrelated-standard-name-no-reference-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s61b", "pass": 2, "name": "endnotes-unrelated-standard-name-no-reference-calibration", "sha256": "d6154c8c9d53dd3ce51415bb85249e45a0b90e30ccb5d3c867c47174d3723fff", "observedAt": "2026-10-26T19:18:30+00:00", "staged": "00000__wfv__endnotes-unrelated-standard-name-no-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-unrelated-standard-name-no-reference-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s61b", "pass": 1, "name": "s61b-control-minimal-end", "sha256": "7ca654a6991f57f145cc5829ddd72abf7ebcff448ce81334e3d9fae877ce5326", "observedAt": "2026-10-26T19:18:16+00:00", "staged": "00002__wfv__s61b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s61b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s61b", "pass": 2, "name": "s61b-control-minimal-end", "sha256": "7ca654a6991f57f145cc5829ddd72abf7ebcff448ce81334e3d9fae877ce5326", "observedAt": "2026-10-26T19:18:30+00:00", "staged": "00002__wfv__s61b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s61b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 61 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s61builder.mts`:
+
+```ts
+// Session 61 (2026-10-26): the open question of #793. The note checks still collect definitions from any part named
+// `footnotes.xml` / `endnotes.xml`, related or not, beside the parts a footnotes/endnotes relationship names. This
+// session asks Word whether a standard-named notes part that no relationship names defines the note the body references:
+// alone (no notes relationship at all), and beside a related renamed part that holds another id. Chunk s61b
+// calibrates: the same unrelated parts with nothing referencing them.
+// Helpers are copied from s60builder.mts.
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s61a pnpm exec node --import tsx s61builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+const control = () => buildDocx({ ...P });
+/** `parts` with `run` appended inside the main document's only paragraph. */
+const mainWith = (parts: Record<string, string>, run: string): Record<string, string> => ({
+    ...parts,
+    [MAIN]: replaceOnce(parts[MAIN]!, "</w:r></w:p>", `</w:r>${run}</w:p>`),
+});
+
+type Kind = "footnote" | "endnote";
+const NOTE_P = "<w:p><w:r><w:t>Note</w:t></w:r></w:p>";
+const notesXml = (kind: Kind, held: string) =>
+    `${XML_DECL}<w:${kind}s xmlns:w="${W}"><w:${kind} w:id="${held}">${NOTE_P}</w:${kind}></w:${kind}s>`;
+const reference = (kind: Kind) => `<w:r><w:${kind}Reference w:id="1"/></w:r>`;
+
+/** word/<kind>s.xml holding note 1, typed by its Override, but named by no relationship; the body references note 1. */
+const unrelatedStandard = (kind: Kind) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [`word/${kind}s.xml`]: notesXml(kind, "1"),
+                [CT]: overrides(P[CT]!, [`word/${kind}s.xml`, `${WML}.${kind}s+xml`]),
+            },
+            reference(kind),
+        ),
+    );
+
+/** A related word/<renamed> holding note 5, plus an unrelated word/<kind>s.xml holding note 1; the body references note 1. */
+const relatedOtherIdPlusUnrelatedStandard = (kind: Kind, renamed: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [`word/${renamed}`]: notesXml(kind, "5"),
+                [`word/${kind}s.xml`]: notesXml(kind, "1"),
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", `${kind}s`, renamed)),
+                [CT]: overrides(P[CT]!, [`word/${renamed}`, `${WML}.${kind}s+xml`], [`word/${kind}s.xml`, `${WML}.${kind}s+xml`]),
+            },
+            reference(kind),
+        ),
+    );
+
+/** The same unrelated word/<kind>s.xml holding note 1, typed by its Override, with nothing in the body referencing it. */
+const unrelatedStandardNoReference = (kind: Kind) =>
+    buildDocx({
+        ...P,
+        [`word/${kind}s.xml`]: notesXml(kind, "1"),
+        [CT]: overrides(P[CT]!, [`word/${kind}s.xml`, `${WML}.${kind}s+xml`]),
+    });
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+
+const chunks: Record<string, Row[]> = {
+    s61a: withControls("s61a", [
+        [
+            "footnotes-unrelated-standard-name",
+            "#793: word/footnotes.xml holding footnote 1, typed by its Override, named by no relationship; the body references footnote 1",
+            () => unrelatedStandard("footnote"),
+        ],
+        [
+            "endnotes-unrelated-standard-name",
+            "#793: word/endnotes.xml holding endnote 1, typed by its Override, named by no relationship; the body references endnote 1",
+            () => unrelatedStandard("endnote"),
+        ],
+        [
+            "footnotes-related-other-id-plus-unrelated-standard",
+            "#793: the footnotes relationship names word/notes-foot.xml holding footnote 5, and an unrelated word/footnotes.xml holds footnote 1; the body references footnote 1",
+            () => relatedOtherIdPlusUnrelatedStandard("footnote", "notes-foot.xml"),
+        ],
+        [
+            "endnotes-related-other-id-plus-unrelated-standard",
+            "#793: the endnotes relationship names word/notes-end.xml holding endnote 5, and an unrelated word/endnotes.xml holds endnote 1; the body references endnote 1",
+            () => relatedOtherIdPlusUnrelatedStandard("endnote", "notes-end.xml"),
+        ],
+    ]),
+    s61b: withControls("s61b", [
+        [
+            "footnotes-unrelated-standard-name-no-reference-calibration",
+            "calibration: the unrelated word/footnotes.xml of s61a, with no footnote reference in the body",
+            () => unrelatedStandardNoReference("footnote"),
+        ],
+        [
+            "endnotes-unrelated-standard-name-no-reference-calibration",
+            "calibration: the unrelated word/endnotes.xml of s61a, with no endnote reference in the body",
+            () => unrelatedStandardNoReference("endnote"),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-61 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s61a", "s61b")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s61/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-61 parts of docs/plans/evidence/word-probes-2026-10-24.md into s61/section.md.
+
+Reads the chunk's specimens.jsonl (validator columns at f0d42f3d, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s61/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s61a", "s61b")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s61/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends = [], [], [], []
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    f"### Session 61: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at f0d42f3d",
+    "",
+    "The open question of [#793](https://github.com/jandira-tech/docx-validate/issues/793): whether a notes part named "
+    "`footnotes.xml` or `endnotes.xml` that no relationship names defines the note the body references. After #793 the note checks "
+    "collect definitions from those names as well as from the parts a `footnotes` or `endnotes` relationship names. Two chunks, "
+    "each opening and closing with the minimal control. Each ran twice, as two separate driver runs of byte-identical copies, and "
+    "each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome "
+    f"is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; {agreed} of {len(rows)} rows agree. "
+    "The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen.",
+    "",
+    "- A `word/footnotes.xml` or `word/endnotes.xml` holding note 1, typed by its Override but named by no relationship, gets "
+    "the recovery offer when the body references note 1, and so does the same part beside a related renamed part that holds "
+    "note 5. Word-valid at f0d42f3d accepts all four: four false negatives, from the name-based definitions.",
+    "- The same unrelated parts with nothing referencing them open clean (s61b), so the refusals come from the dangling "
+    "reference, not from the unrelated part: Word defines notes only from the parts their relationships name.",
+    "",
+    "| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at f0d42f3d | strict at f0d42f3d |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 61</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 61 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s61builder.mts", ROOT / "s61builder.mts", "ts"), ("compare.py", ROOT / "s61/compare.py", "python"),
+                         ("section.py", ROOT / "s61/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s61/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>
