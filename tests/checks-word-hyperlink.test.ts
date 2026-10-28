@@ -196,6 +196,20 @@ describe("hyperlink TargetMode scope (#773)", () => {
         expect(await wordHyperlinkRelationshipCheck.run(ValidationContext.fromEntries(parts))).toEqual([]);
     });
 
+    it("leaves a reached glossary's misspelled mode to the target-mode check (#775)", async () => {
+        const parts = { ...MINIMAL_PARTS };
+        parts["word/_rels/document.xml.rels"] = parts["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/></Relationships>`,
+        );
+        parts["word/glossary/document.xml"] =
+            `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}"><w:docParts><w:docPart><w:docPartBody><w:p>` +
+            '<w:hyperlink r:id="rId2"><w:r><w:t>link</w:t></w:r></w:hyperlink>' +
+            "</w:p></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>";
+        parts["word/glossary/_rels/document.xml.rels"] = rels(relation("rId2", "hyperlink", "external"));
+        expect(await wordHyperlinkRelationshipCheck.run(ValidationContext.fromEntries(parts))).toEqual([]);
+    });
+
     it("keeps the hyperlink finding when the package does not name its owner as a main document", async () => {
         const parts = hyperlinkRelTypeParts(`${R}/hyperlink`);
         parts["word/_rels/document.xml.rels"] = parts["word/_rels/document.xml.rels"]!.replace(

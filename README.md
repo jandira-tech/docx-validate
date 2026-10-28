@@ -1080,18 +1080,23 @@ cannot type a single part and 16.115 offers to recover it (same evidence file),
 so that finding is Word-blocking too (#435).
 
 `opc-relationships-target-mode` requires a present `TargetMode` to be exactly
-`Internal` or `External` in the package relationships part (`_rels/.rels`) and
-the main document's relationships part, found by relationship wherever the
-main document is stored, with OPC part-name comparison. Word 16.115 offered
+`Internal` or `External` in the package relationships part (`_rels/.rels`),
+the main document's relationships part and a reached glossary's sidecar,
+found by relationship wherever the story root is stored, with OPC part-name
+comparison. Word 16.115 offered
 recovery for `external` on a referenced chart or diagramData relationship,
 `external`, `External ` (trailing space) or an empty value on an unreferenced
 hyperlink in the main sidecar, and `external` on that hyperlink in the package
 relationships part. The `Internal` chart and diagramData calibrations and
 `External` hyperlinks opened clean. The same hyperlink with `external` in a
 referenced header's own sidecar also opened clean; headers keep their verdict.
-Other relationships parts (glossary, footnotes, comments and so on) are unshown
-and keep their verdict too ([#753](https://github.com/jandira-tech/docx-validate/issues/753);
-session 55, `s55b`–`s55e` in `docs/plans/evidence/word-probes-2026-10-24.md`).
+Those rows are from [#753](https://github.com/jandira-tech/docx-validate/issues/753),
+session 55, `s55b`–`s55e` in `docs/plans/evidence/word-probes-2026-10-24.md`.
+Session 57 (`s57f`) refused the same unreferenced hyperlink with `external`
+in a reached glossary's sidecar, while its `External` calibration opened clean
+([#775](https://github.com/jandira-tech/docx-validate/issues/775)). Other
+relationships parts (footnotes, comments and so on) are unshown and keep their
+verdict.
 Full word-valid and named runs block the same findings; strict reports errors,
 and lenient runs no Word rule. An absent `TargetMode` is not this check's finding.
 A hyperlink naming a relationship with a misspelled present mode in this scope
@@ -1194,8 +1199,10 @@ otherwise accepted hyperlink relationship is left to
 part. This also applies to a named `word-hyperlink-relationship` run: select
 `opc-relationships-target-mode` too to report that shape. An exactly `Internal`
 or absent mode, another Type, an unresolved id, and a misspelled mode in a
-header's or reached glossary's sidecar still receive the hyperlink finding
-([#773](https://github.com/jandira-tech/docx-validate/issues/773)).
+header's sidecar still receive the hyperlink finding
+([#773](https://github.com/jandira-tech/docx-validate/issues/773)). A reached
+glossary's misspelled mode now belongs to the target-mode check (session 57,
+`s57f`; [#775](https://github.com/jandira-tech/docx-validate/issues/775)).
 The finding is an error, and Word-blocking, under word-valid and strict;
 lenient runs no Word rule.
 
@@ -1287,12 +1294,19 @@ relationships part is judged
 like one whose relationships part lacks the id — session 55 (s55a) saw
 Word refuse a referenced `word/header1.xml` with no relationships part
 holding each of the three references, as it does one whose relationships
-part lacks the id, and open clean the same header with no `r:` reference —
-while `rels-missing-sidecar` still reports the absent sidecar where its
+part lacks the id, and open clean the same header with no `r:` reference.
+Session 57 confirms the recovery offer for `c:chart r:id="rId1"` with no
+relationships part in used footnotes and comments (`s57f`
+`footnotes-nosidecar-chart`, `comments-nosidecar-chart`), a reached glossary
+and the main document (`s57g` `glossary-nosidecar-chart`, `main-nosidecar-chart`);
+all four text-only calibrations opened clean (`s57g`, two runs, all readings
+agree; [#775](https://github.com/jandira-tech/docx-validate/issues/775)). Endnotes
+with no relationships part were not shown and keep the same rule.
+`rels-missing-sidecar` still reports the absent sidecar where its
 walk fires — an `r:id`, `r:embed` or `r:link` attribute in a relationships
 namespace, which the `dgm:relIds` shape's `r:dm`, `r:lo`, `r:qs` and
 `r:cs` are not, so that shape's only finding is this rule's; an
-unparseable one is skipped for `xml-syntax` to report. The finding is an
+unparseable sidecar is skipped for `xml-syntax` to report. The finding is an
 error, and Word-blocking, under word-valid and strict; lenient runs no Word
 rule. In a full word-valid or strict run, a dangling Transitional `r:id` on a
 `c:chart` or an `o:OLEObject` is reported once, through this rule: every
