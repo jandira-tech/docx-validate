@@ -36,7 +36,7 @@ import { getElementsByTagNameNSAll, parseXmlBytes } from "../../../lib/xml-helpe
 import type { BaseSchemaValidatorOptions } from "./base";
 import { BaseSchemaValidator, OFFICE_RELATIONSHIPS_NAMESPACE, packageEntries, withoutRestatedIgnorablePrefixes } from "./base";
 import { openDirectoryContext, packageExtractFailedIssue, storedNamesRun } from "../package-context";
-import { registerStoryReferenceIdentity, withoutHandedOffCopies } from "../story-reference-identity";
+import { registerStoryReferenceIdentity, relationshipAttributeName, withoutHandedOffCopies } from "../story-reference-identity";
 
 export const PRESENTATIONML_NAMESPACE = "http://schemas.openxmlformats.org/presentationml/2006/main";
 /** The ISO Strict PresentationML namespace, `PRESENTATIONML_NAMESPACE`'s Strict counterpart. */
@@ -274,10 +274,14 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
                 const rId = sli.getAttributeNS(OFFICE_RELATIONSHIPS_NAMESPACE, "id");
                 const layoutId = sli.getAttribute("id");
                 if (rId && !validLayoutRids.has(rId)) {
+                    // #1109: outside lenient the attribute is named as the
+                    // master spells it, as rels-id-missing does (#1090);
+                    // lenient keeps the Python validator's literal r:id.
+                    const attribute = this.profile === "lenient" ? "r:id" : relationshipAttributeName(sli, OFFICE_RELATIONSHIPS_NAMESPACE);
                     const issue: ValidationIssue = {
                         severity: "error",
                         message:
-                            `sldLayoutId with id='${layoutId}' references r:id='${rId}' ` +
+                            `sldLayoutId with id='${layoutId}' references ${attribute}='${rId}' ` +
                             `which is not found in slide layout relationships`,
                         path: this.relPath(slideMaster),
                         code: "sldlayout-missing-rid",

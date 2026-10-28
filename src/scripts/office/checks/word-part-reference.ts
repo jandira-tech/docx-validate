@@ -267,10 +267,18 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
                         elem.hasAttributeNS(OFFICE_RELATIONSHIPS_NAMESPACE, "id") &&
                         elem.hasAttributeNS(OFFICE_RELATIONSHIPS_STRICT_NAMESPACE, "id")
                     ) {
+                        // #1109: each value under the name the part spells
+                        // its attribute with, whatever the prefixes are bound to.
+                        const both = [OFFICE_RELATIONSHIPS_NAMESPACE, OFFICE_RELATIONSHIPS_STRICT_NAMESPACE]
+                            .map(
+                                (namespaceURI) =>
+                                    `${relationshipAttributeName(elem, namespaceURI)}="${elem.getAttributeNS(namespaceURI, "id")}"`,
+                            )
+                            .join(" ");
                         const issue: ValidationIssue = {
                             severity: "error",
                             message:
-                                `<c:chart> carries an id attribute in both relationships namespaces (r:id="${elem.getAttributeNS(OFFICE_RELATIONSHIPS_NAMESPACE, "id")}" rs:id="${elem.getAttributeNS(OFFICE_RELATIONSHIPS_STRICT_NAMESPACE, "id")}"). ` +
+                                `<c:chart> carries an id attribute in both relationships namespaces (${both}). ` +
                                 "Microsoft Word cannot open the file. " +
                                 "Keep only one id attribute, naming an internal chart relationship.",
                             path: xmlFile,

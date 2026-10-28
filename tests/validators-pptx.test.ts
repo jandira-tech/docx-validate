@@ -1423,6 +1423,22 @@ describe("a sldLayoutId naming no slideLayout relationship is one report outside
             ]);
         },
     );
+
+    // #1109: outside lenient the message names the attribute as the master
+    // spells it, as rels-id-missing does (#1090); lenient keeps the Python
+    // validator's literal r:id.
+    it.each(["word-valid", "strict"] as const)("names an id spelled foo:id as the master spells it under %s", async (profile) => {
+        expect(await layoutFindings(await deck(`xmlns:foo="${REL}" foo:id="rId9"`), profile)).toEqual([
+            "sldlayout-missing-rid: sldLayoutId with id='2147483649' references foo:id='rId9' which is not found in slide layout relationships",
+        ]);
+    });
+
+    it("lenient keeps the literal r:id for an id spelled foo:id", async () => {
+        expect(await layoutFindings(await deck(`xmlns:foo="${REL}" foo:id="rId9"`), "lenient")).toEqual([
+            MISSING("rId9"),
+            "rels-id-missing: <sldLayoutId> r:id references non-existent relationship 'rId9' (valid IDs: rId1)",
+        ]);
+    });
 });
 
 // #1100: the #1093 hand-off covers every master validateSlideLayoutIds

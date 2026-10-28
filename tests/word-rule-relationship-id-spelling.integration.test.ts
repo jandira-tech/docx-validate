@@ -142,3 +142,136 @@ describe("a Word rule names the refused id attribute as the part spells it (#110
         if (attribute !== `r:${localName}`) expect(found[0]).not.toContain(`r:${localName}`);
     });
 });
+
+/**
+ * #1109: the messages #1101 left alone. The header/footer rule names an empty
+ * id as the part spells it, and keeps the conventional `r:id` for a missing
+ * one. The chart's dual-namespace message names each value with the attribute
+ * that holds it, whatever the prefixes are bound to. And where an element
+ * carries an id in both namespaces, the label names the attribute the rule
+ * judged (the first non-empty id in the order it reads them, Transitional
+ * first), not the first one in document order.
+ */
+describe("the remaining relationship-id messages name the attribute as the part spells it (#1109)", () => {
+    const PROFILES = ["word-valid", "strict"] as const;
+    /** The messages `code` reports in a full run of `bytes`. */
+    const reported = async (bytes: Buffer, code: string, profile: "word-valid" | "strict") =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            writeFileSync(file, bytes);
+            const result = await validate(file, { profile });
+            return result.issues.filter((issue) => issue.code === code).map((issue) => issue.message);
+        });
+
+    const EMPTY_ROWS = (Object.keys(SPELLINGS) as (keyof typeof SPELLINGS)[]).flatMap((spelling) =>
+        PROFILES.map((profile) => [spelling, profile] as const),
+    );
+    it.each(EMPTY_ROWS)("an empty w:headerReference id, %s, under %s", async (spelling, profile) => {
+        const { declaration, prefix } = SPELLINGS[spelling];
+        const attribute = `${prefix}:id`;
+        const found = await reported(
+            await docx("", `<w:headerReference${declaration} w:type="default" ${attribute}=""/>`),
+            "word-header-footer-relationship",
+            profile,
+        );
+        expect(found).toHaveLength(1);
+        expect(found[0]).toContain(`<w:headerReference> has an empty ${attribute}; `);
+        expect(found[0]).toContain(`Set a non-empty ${attribute} naming such a Relationship`);
+        expect(found[0]!.split(attribute)).toHaveLength(3);
+        if (attribute !== "r:id") expect(found[0]).not.toContain("r:id");
+    });
+
+    it.each(PROFILES)("an empty id in both namespaces, the Strict one first, is named as the one read first under %s", async (profile) => {
+        const found = await reported(
+            await docx("", '<w:headerReference w:type="default" rs:id="" r:id=""/>'),
+            "word-header-footer-relationship",
+            profile,
+        );
+        expect(found).toHaveLength(1);
+        expect(found[0]).toContain("<w:headerReference> has an empty r:id; ");
+        expect(found[0]).not.toContain("rs:id");
+    });
+
+    it.each(PROFILES)("a missing w:headerReference id keeps the conventional r:id under %s", async (profile) => {
+        const found = await reported(await docx("", '<w:headerReference w:type="default"/>'), "word-header-footer-relationship", profile);
+        expect(found).toHaveLength(1);
+        expect(found[0]).toContain("<w:headerReference> has a missing r:id; ");
+        expect(found[0]).toContain("Set a non-empty r:id naming such a Relationship");
+    });
+
+    /** `declaration` and `ids` on a `c:chart` carrying an id in both namespaces; `named` is what the message must say. */
+    const DUAL = {
+        "r Transitional, rs Strict": { declaration: "", ids: 'r:id="rIdA" rs:id="rIdB"', named: 'r:id="rIdA" rs:id="rIdB"' },
+        "r Strict, rs Transitional": {
+            declaration: ` xmlns:r="${RS}" xmlns:rs="${R}"`,
+            ids: 'r:id="rIdB" rs:id="rIdA"',
+            named: 'rs:id="rIdA" r:id="rIdB"',
+        },
+        "foo Transitional, bar Strict": {
+            declaration: ` xmlns:foo="${R}" xmlns:bar="${RS}"`,
+            ids: 'foo:id="rIdA" bar:id="rIdB"',
+            named: 'foo:id="rIdA" bar:id="rIdB"',
+        },
+    } as const;
+    const DUAL_ROWS = (Object.keys(DUAL) as (keyof typeof DUAL)[]).flatMap((binding) =>
+        PROFILES.map((profile) => [binding, profile] as const),
+    );
+    it.each(DUAL_ROWS)("a c:chart with an id in both namespaces, %s, names each value's attribute under %s", async (binding, profile) => {
+        const { declaration, ids, named } = DUAL[binding];
+        const found = await reported(
+            await docx(drawing(`<a:graphicData uri="${C}"><c:chart xmlns:c="${C}"${declaration} ${ids}/></a:graphicData>`)),
+            "word-part-reference-relationship",
+            profile,
+        );
+        expect(found).toHaveLength(1);
+        expect(found[0]).toContain(`<c:chart> carries an id attribute in both relationships namespaces (${named}). `);
+    });
+
+    /** An element carrying a dangling id in both namespaces, the Strict one first in document order. */
+    const BOTH_IDS = {
+        "a w:hyperlink": {
+            code: "word-hyperlink-relationship",
+            build: (declaration: string, ids: string) =>
+                docx(`<w:p><w:hyperlink${declaration} ${ids}><w:r><w:t>link</w:t></w:r></w:hyperlink></w:p>`),
+            label: (attribute: string) => `<w:hyperlink> ${attribute}="rIdTrans" does not reference`,
+        },
+        "a w:headerReference": {
+            code: "word-header-footer-relationship",
+            build: (declaration: string, ids: string) => docx("", `<w:headerReference${declaration} w:type="default" ${ids}/>`),
+            label: (attribute: string) => `<w:headerReference> ${attribute}="rIdTrans" names no Relationship`,
+        },
+        "an o:OLEObject": {
+            code: "word-part-reference-relationship",
+            build: (declaration: string, ids: string) =>
+                docx(
+                    `<w:p><w:r><w:object><o:OLEObject xmlns:o="${O}"${declaration} Type="Embed" ProgID="Package" ShapeID="_x0000_i1025" ` +
+                        `DrawAspect="Icon" ObjectID="_1" ${ids}/></w:object></w:r></w:p>`,
+                ),
+            label: (attribute: string) => `<o:OLEObject> ${attribute}="rIdTrans" does not reference`,
+        },
+    } as const;
+    /** Each binding's declaration, its ids with the Strict one first, and the name the Transitional id is spelled with. */
+    const BOTH_BINDINGS = {
+        "r Transitional, rs Strict": { declaration: "", ids: 'rs:id="rIdStrict" r:id="rIdTrans"', attribute: "r:id" },
+        "r Strict, rs Transitional": {
+            declaration: ` xmlns:r="${RS}" xmlns:rs="${R}"`,
+            ids: 'r:id="rIdStrict" rs:id="rIdTrans"',
+            attribute: "rs:id",
+        },
+    } as const;
+    const BOTH_ROWS = (Object.keys(BOTH_IDS) as (keyof typeof BOTH_IDS)[]).flatMap((shape) =>
+        (Object.keys(BOTH_BINDINGS) as (keyof typeof BOTH_BINDINGS)[]).flatMap((binding) =>
+            PROFILES.map((profile) => [shape, binding, profile] as const),
+        ),
+    );
+    it.each(BOTH_ROWS)(
+        "%s with an id in both namespaces, %s, names the judged Transitional id under %s",
+        async (shape, binding, profile) => {
+            const { code, build, label } = BOTH_IDS[shape];
+            const { declaration, ids, attribute } = BOTH_BINDINGS[binding];
+            const found = await reported(await build(declaration, ids), code, profile);
+            expect(found).toHaveLength(1);
+            expect(found[0]).toContain(label(attribute));
+        },
+    );
+});

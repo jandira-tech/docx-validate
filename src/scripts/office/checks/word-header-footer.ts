@@ -164,7 +164,7 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                     for (const elem of getElementsByTagNameNSAll(parsed.document, ns, localName)) {
                         let rid: string | null = null;
                         let ridNamespaceURI = "";
-                        let hasEmptyId = false;
+                        let emptyIdNamespaceURI = "";
                         for (const relNs of relationshipNamespaces) {
                             const value = elem.getAttributeNS(relNs, "id");
                             if (value) {
@@ -172,19 +172,23 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                                 ridNamespaceURI = relNs;
                                 break;
                             }
-                            if (elem.hasAttributeNS(relNs, "id")) hasEmptyId = true;
+                            if (!emptyIdNamespaceURI && elem.hasAttributeNS(relNs, "id")) emptyIdNamespaceURI = relNs;
                         }
                         // #623: the attribute is wrong before any lookup.
                         // The legacy walk skips empty/missing ids, so these
                         // findings have no copy to pair by identity.
                         if (rid === null) {
+                            const hasEmptyId = emptyIdNamespaceURI !== "";
+                            // #1109: an empty id is named as the part spells
+                            // it, the first read; a missing one keeps r:id.
+                            const attribute = relationshipAttributeName(elem, emptyIdNamespaceURI);
                             issues.push({
                                 severity: "error",
                                 message:
-                                    `<w:${localName}> has ${hasEmptyId ? "an empty" : "a missing"} r:id; ` +
+                                    `<w:${localName}> has ${hasEmptyId ? "an empty" : "a missing"} ${attribute}; ` +
                                     `a w:${localName} needs a Relationship of Type ${transitionalType} (or the ISO Strict ${strictType}). ` +
                                     (hasEmptyId ? "Microsoft Word offers to recover the file. " : "Microsoft Word cannot open the file. ") +
-                                    "Set a non-empty r:id naming such a Relationship, adding one with that Id and Type when the part has none.",
+                                    `Set a non-empty ${attribute} naming such a Relationship, adding one with that Id and Type when the part has none.`,
                                 path: root.part,
                                 code: WORD_HEADER_FOOTER_RELATIONSHIP,
                             });

@@ -1282,14 +1282,21 @@ const foreignReferenceIdParts = (realRelationship: boolean): Record<string, stri
     return parts;
 };
 
-/** Exact repair guidance, including the two relationship Types and the observed dialog. */
-const invalidReferenceIdMessage = (reference: "headerReference" | "footerReference", kind: "empty" | "missing"): string => {
+/**
+ * Exact repair guidance, including the two relationship Types and the observed
+ * dialog. `attribute` is the empty id's spelling (#1109); a missing id keeps `r:id`.
+ */
+const invalidReferenceIdMessage = (
+    reference: "headerReference" | "footerReference",
+    kind: "empty" | "missing",
+    attribute = "r:id",
+): string => {
     const segment = reference === "headerReference" ? "header" : "footer";
     return (
-        `<w:${reference}> has ${kind === "empty" ? "an empty" : "a missing"} r:id; ` +
+        `<w:${reference}> has ${kind === "empty" ? "an empty" : "a missing"} ${attribute}; ` +
         `a w:${reference} needs a Relationship of Type ${REL}/${segment} (or the ISO Strict ${STRICT_REL}/${segment}). ` +
         (kind === "empty" ? "Microsoft Word offers to recover the file. " : "Microsoft Word cannot open the file. ") +
-        "Set a non-empty r:id naming such a Relationship, adding one with that Id and Type when the part has none."
+        `Set a non-empty ${attribute} naming such a Relationship, adding one with that Id and Type when the part has none.`
     );
 };
 
@@ -1468,7 +1475,12 @@ describe("#623: empty and missing story reference ids (Word 16.115 session 33)",
                 severity: "error",
                 code: CODE,
                 path: "word/document.xml",
-                message: invalidReferenceIdMessage("headerReference", attributes ? "empty" : "missing"),
+                // #1109: an empty id only in the Strict namespace is named rs:id.
+                message: invalidReferenceIdMessage(
+                    "headerReference",
+                    attributes ? "empty" : "missing",
+                    attributes === 'rs:id=""' ? "rs:id" : "r:id",
+                ),
             },
         ]);
         expect(storyReferenceIdentity(issues[0]!)).toBeUndefined();
