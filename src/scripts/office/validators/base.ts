@@ -1668,8 +1668,15 @@ export class BaseSchemaValidator {
         // Each walk reads roots into a map of its own: a part rewritten
         // between walks is routed by the root it holds now (#902), and a walk
         // nested in another neither empties nor fills the outer walk's (#949).
+        // The scope serves reads only until the walk has settled; a task it
+        // started then reads afresh (#964).
         const roots = new Map<string, RootQName | null>();
-        return rootQNameStore.run({ validator: this, roots }, () => this.walkAgainstXsd(roots));
+        const scope: RootQNameScope = { validator: this, roots, active: true };
+        try {
+            return await rootQNameStore.run(scope, () => this.walkAgainstXsd(roots));
+        } finally {
+            scope.active = false;
+        }
     }
 
     /** The schema walk {@link validateAgainstXsd} runs in the scope of its own `roots` (#949). */
@@ -1812,14 +1819,16 @@ export class BaseSchemaValidator {
     /**
      * The root element's identity of `xmlFile`, read once per file in the
      * current walk or call's scope (#902, #949). Only a scope belonging to
-     * this validator keeps the answer; without one, read afresh and store
-     * nothing. `null` means the part cannot be read or parsed, or its root
-     * is not namespaced, as Strict sniffing read it before #887 shared the
-     * answer with the `ppt/` root route.
+     * this validator keeps the answer, and only while its walk or call is
+     * still running: once that has settled, even a task it started reads
+     * afresh and stores nothing (#964). Without a scope, read afresh and
+     * store nothing. `null` means the part cannot be read or parsed, or its
+     * root is not namespaced, as Strict sniffing read it before #887 shared
+     * the answer with the `ppt/` root route.
      */
     private rootQName(xmlFile: string): RootQName | null {
         const scope = rootQNameStore.getStore();
-        const roots = scope?.validator === this ? scope.roots : undefined;
+        const roots = scope?.validator === this && scope.active ? scope.roots : undefined;
         const cached = roots?.get(xmlFile);
         if (cached !== undefined) return cached;
         let root: RootQName | null = null;
@@ -1842,7 +1851,10 @@ export class BaseSchemaValidator {
      * read, once (#902, #941). Each call owns its roots: the claiming call
      * takes that one entry from its walk at claim time, while every other
      * call starts empty and reads afresh (#910, #926). A nested call or walk
-     * cannot replace the root the claiming call routes by (#949).
+     * cannot replace the root the claiming call routes by (#949). The call's
+     * scope stops serving reads once the call is done — after
+     * `_validateSingleFileXsd` and the `--original` baseline read — so a
+     * task that outlives it reads afresh (#964).
      */
     async validateFileAgainstXsd(xmlFile: string): Promise<XsdValidationOutcome> {
         const token = xsdWalkStore.getStore();
@@ -1852,7 +1864,16 @@ export class BaseSchemaValidator {
             const root = token.state.roots.get(xmlFile);
             if (root !== undefined) roots.set(xmlFile, root);
         }
-        const scope: RootQNameScope = { validator: this, roots };
+        const scope: RootQNameScope = { validator: this, roots, active: true };
+        try {
+            return await this.validateFileInScope(xmlFile, scope);
+        } finally {
+            scope.active = false;
+        }
+    }
+
+    /** {@link validateFileAgainstXsd}'s work, run in its call's root scope (#949, #964). */
+    private async validateFileInScope(xmlFile: string, scope: RootQNameScope): Promise<XsdValidationOutcome> {
         const single = await rootQNameStore.run(scope, () => this._validateSingleFileXsd(xmlFile));
         if (single.valid === null) {
             return { valid: null, errors: new Set() };
@@ -2812,11 +2833,15 @@ const xsdWalkStore = new AsyncLocalStorage<XsdWalkCall>();
  * Strict sniffing, schema dispatch, preprocessing and the `ppt/` root route
  * share these reads. Each scope owns its map; the claiming call copies only
  * its part's entry from its walk, so nested calls and walks never replace
- * each other's roots (#902, #910, #926, #941, #949).
+ * each other's roots (#902, #910, #926, #941, #949). A scope serves reads
+ * only while its walk or call is still running; once that has settled, the
+ * tasks it started read afresh and store nothing, as outside any scope
+ * (#964).
  */
 type RootQNameScope = {
     validator: BaseSchemaValidator;
     roots: Map<string, RootQName | null>;
+    active: boolean;
 };
 
 /** Per-walk or per-call roots; see {@link RootQNameScope} (#949). */
