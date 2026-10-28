@@ -207,6 +207,17 @@ describe("the Word rules judge the story parts Word reads, session 83's rows (#1
         },
     );
 
+    // #1123 (review 1117 F2): a rule that judged only the main document passed
+    // every row above. A header the main document relates and its w:sectPr
+    // references is a part Word reads; these shapes are unprobed there.
+    it.each(SESSION_83.flatMap(([rule, broken, clean]) => PROFILES.map((profile) => [rule, profile, broken, clean] as const)))(
+        "%s judges the shape in a header the main document uses under %s (#1123)",
+        async (rule, profile, broken, clean) => {
+            const found = await run(relateHeader(withUnrelatedHeader(await load(clean), await load(broken)), true), profile, rule);
+            expect(found.paths).toEqual([UNRELATED]);
+        },
+    );
+
     it.each(SESSION_83.map(([rule, , clean]) => [rule, clean] as const))(
         "the %s calibration renamed to word/main.xml passes word-valid, as Word opened it clean",
         async (rule, clean) => {
@@ -298,6 +309,14 @@ describe("the rules no session probed in these placements follow the read model 
         "%s leaves its shape in an unrelated word/header83.xml unjudged under %s",
         async (rule, profile, shape) => {
             expect((await run(headerHolding(shape), profile, rule)).paths).toEqual([]);
+        },
+    );
+
+    // #1123: the same header, related and referenced by the body's w:sectPr.
+    it.each(UNPROBED.flatMap(([rule, shape]) => PROFILES.map((profile) => [rule, profile, shape] as const)))(
+        "%s judges its shape in a header the main document uses under %s (#1123)",
+        async (rule, profile, shape) => {
+            expect((await run(relateHeader(headerHolding(shape), true), profile, rule)).paths).toEqual([UNRELATED]);
         },
     );
 });
