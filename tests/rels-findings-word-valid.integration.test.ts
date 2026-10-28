@@ -406,3 +406,50 @@ describe("an escaping target names the part its climb stops at (#984, sessions 7
         ]);
     });
 });
+
+describe("a relative target that starts with http is resolved as a part (#988, session 79)", () => {
+    const PNG = Uint8Array.from(
+        Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64"),
+    );
+    /** s79a: an unused image stored as word/httpimage1.png, related from the main document's sidecar by `target`. */
+    const httpImageAt = (target: string) => ({
+        ...withRelationship(`<Relationship Id="rIdI" Type="${IMAGE}" Target="${target}"/>`),
+        "word/httpimage1.png": PNG,
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            '<Default Extension="png" ContentType="image/png"/></Types>',
+        ),
+    });
+
+    // Word offered recovery for `httpimage1.png/.` in both runs, as for
+    // every other folder target, and opened the plain `httpimage1.png`
+    // clean: the `http` prefix makes no URI.
+    it("blocks the folder target httpimage1.png/. under word-valid, as Word refused it", async () => {
+        const { valid, broken } = await run(httpImageAt("httpimage1.png/."), "word-valid");
+        expect(valid).toBe(false);
+        expect(broken.map((issue) => [issue.severity, issue.message])).toEqual([
+            ["error", "Broken reference to httpimage1.png/.: it names a folder, not a part"],
+        ]);
+    });
+
+    it("accepts the plain httpimage1.png under word-valid, as Word opened it clean", async () => {
+        const { valid, broken } = await run(httpImageAt("httpimage1.png"), "word-valid");
+        expect(broken).toEqual([]);
+        expect(valid).toBe(true);
+    });
+
+    it.each(["word-valid", "strict"] as const)("reports an absent http_item.xml as broken (%s)", async (profile) => {
+        const { broken } = await run(withBrokenTarget("http_item.xml", CUSTOM_XML), profile);
+        expect(broken.map((issue) => issue.message)).toEqual(["Broken reference to http_item.xml"]);
+    });
+
+    it.each(["word-valid", "strict", "lenient"] as const)("still skips an http URI, internal or not (%s)", async (profile) => {
+        expect((await run(withBrokenTarget("http://example.com/x.png"), profile)).broken).toEqual([]);
+        expect((await run(withBrokenTarget("https://example.com/x.png"), profile)).broken).toEqual([]);
+    });
+
+    // Lenient keeps its historical prefix scan, byte for byte (#665).
+    it("keeps lenient's historical prefix scan", async () => {
+        expect((await run(withBrokenTarget("http_item.xml", CUSTOM_XML), "lenient")).broken).toEqual([]);
+    });
+});
