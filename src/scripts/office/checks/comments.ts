@@ -37,7 +37,8 @@ const commentXml = (ctx: ValidationContext, part: string): Document => {
  * package's `officeDocument` relationship names, wherever it is stored, so
  * a reached glossary's own `document.xml` never stands in for it. When no
  * relationship names a stored part, or the package view cannot be read,
- * today's by-name pick, unchanged.
+ * `word/document.xml` or its OPC-equivalent spelling (#711), never a
+ * `document.xml` in another folder.
  */
 const mainDocumentPart = async (ctx: ValidationContext, profile?: Profile): Promise<string | null> => {
     try {
@@ -48,13 +49,7 @@ const mainDocumentPart = async (ctx: ValidationContext, profile?: Profile): Prom
     } catch {
         // An unreadable package view is reported by its own checks.
     }
-    let byName: string | null = null;
-    for (const part of ctx.partNames) {
-        if (path.posix.basename(part) === "document.xml" && part.includes("word")) {
-            byName = part;
-        }
-    }
-    return byName ?? findEquivalentPart(ctx.partNames, "word/document.xml") ?? null;
+    return inFolderByName(ctx, "word", "document.xml");
 };
 
 /**
