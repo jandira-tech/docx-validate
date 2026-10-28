@@ -1366,10 +1366,18 @@ export class BaseSchemaValidator {
                         if (!ridToType.has(ridAttr)) {
                             const valid = [...ridToType.keys()].sort().slice(0, 5).join(", ");
                             const ellipsis = ridToType.size > 5 ? "..." : "";
+                            // #1090: outside lenient the message names the
+                            // attribute as the part spells it, so a Strict
+                            // rs:id is not reported as r:id; lenient keeps the
+                            // Python validator's literal r: prefix.
+                            const spelled =
+                                this.profile === "lenient"
+                                    ? `r:${attrName}`
+                                    : (elem.getAttributeNodeNS(rNs, attrName)?.name ?? `r:${attrName}`);
                             const issue: ValidationIssue = {
                                 severity: "error",
                                 message:
-                                    `<${elemName}> r:${attrName} references non-existent relationship '${ridAttr}' ` +
+                                    `<${elemName}> ${spelled} references non-existent relationship '${ridAttr}' ` +
                                     `(valid IDs: ${valid}${ellipsis})`,
                                 path: this.relPath(xmlFile),
                                 code: "rels-id-missing",

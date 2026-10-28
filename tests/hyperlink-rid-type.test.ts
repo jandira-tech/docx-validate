@@ -203,3 +203,32 @@ describe("validateAllRelationshipIds — a dangling r:link draws rels-id-missing
         });
     });
 });
+
+// #1090: outside lenient rels-id-missing names the attribute as the part
+// spells it, so a Strict rs:id reads rs:id and a Word-saved Strict package's
+// r:id reads r:id; lenient keeps the Python validator's literal r: prefix.
+describe("validateAllRelationshipIds — rels-id-missing names the attribute as the part spells it (#1090)", () => {
+    const STRICT_R = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+    it.each([
+        [`xmlns:rs="${STRICT_R}"`, "rs:id", "word-valid", "rs:id"],
+        [`xmlns:rs="${STRICT_R}"`, "rs:id", "strict", "rs:id"],
+        [`xmlns:rs="${STRICT_R}"`, "rs:embed", "word-valid", "rs:embed"],
+        [`xmlns:rs="${STRICT_R}"`, "rs:link", "strict", "rs:link"],
+        [`xmlns:r="${STRICT_R}"`, "r:id", "word-valid", "r:id"],
+        [`xmlns:r="${STRICT_R}"`, "r:id", "strict", "r:id"],
+        [`xmlns:rel="${R}"`, "rel:id", "word-valid", "rel:id"],
+        [`xmlns:rel="${R}"`, "rel:id", "strict", "rel:id"],
+        [`xmlns:rel="${R}"`, "rel:id", "lenient", "r:id"],
+        ["", "r:id", "lenient", "r:id"],
+    ] as const)("%s %s naming no relationship under %s is reported as %s", async (declaration, attribute, profile, spelled) => {
+        await withTempDir(async (dir) => {
+            await buildDocx(dir, `<w:p><w:hyperlink ${declaration} ${attribute}="rId8"><w:r><w:t>link</w:t></w:r></w:hyperlink></w:p>`, [
+                { id: "rId7", type: `${RT}/header`, target: "header1.xml" },
+            ]);
+            const result = await new DOCXSchemaValidator({ unpackedDir: dir, profile }).validateAllRelationshipIds();
+            expect(result.issues.filter((i) => i.code === "rels-id-missing").map((i) => i.message)).toEqual([
+                `<hyperlink> ${spelled} references non-existent relationship 'rId8' (valid IDs: rId7)`,
+            ]);
+        });
+    });
+});
