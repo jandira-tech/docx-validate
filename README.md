@@ -1627,7 +1627,7 @@ appended to `word/_rels/document.xml.rels` got recovery too (`e7dae629d3e792a1`,
 session 4), beside a clean control (`f67e18fa7a50dae1`).
 
 `word-hyperlink-relationship` requires every `w:hyperlink` with an `r:id` in
-a story part to name a relationship whose Type is exactly the Transitional or
+a part Word reads to name a relationship whose Type is exactly the Transitional or
 the ISO Strict hyperlink relationship URI, with TargetMode `External`. Word
 16.115 accepts exactly those two Types, byte for byte, and offers recovery for
 `http://example.com/hyperlink`, `…/relationships/custom/hyperlink` and
@@ -1652,6 +1652,21 @@ this rule refuses is reported once, through this rule: the legacy
 `rels-id-mismatch` or `rels-id-missing` copy of its id, or of its id in the
 other relationships namespace, is handed off as the header/footer rule's is
 ([#1089](https://github.com/jandira-tech/docx-validate/issues/1089)).
+The parts Word reads are the read model's, as for
+`word-part-reference-relationship`: every main document and every glossary a
+main-document relationship reaches, wherever stored, and the headers,
+footers, comments, footnotes and endnotes their references make Word read
+([#1106](https://github.com/jandira-tech/docx-validate/issues/1106)). Word
+session 82 (s82a–s82c, two runs each, all readings agree) offered recovery
+for a hyperlink whose relationship has the Type `…/relationships/HYPERLINK`
+in a main document stored as `word/main.xml`, a used header stored as
+`word/hdr.xml`, a reached glossary and a used footnotes part, which the rule
+missed or judged by name, and opened the same shape clean in an unrelated
+`word/header9.xml`, a glossary no relationship reaches, a header no section
+references and a footnotes part nothing references, which it rejected. When
+the package names no stored main document, the read model reads nothing and
+the rule keeps the parts named like a story, as the note checks do (#816);
+that reading is unprobed.
 
 `word-header-footer-relationship` requires every `w:headerReference` and
 `w:footerReference` in a story root's `w:sectPr` to name a relationship whose
@@ -1889,13 +1904,12 @@ spelling), never by message text — while `validateAllRelationshipIds()` called
 still reports every `rels-id-mismatch` and `rels-id-missing` (#612, #616,
 #619). Empty/missing-id findings register no such identity, because the
 legacy walk reads only truthy ids and reports neither shape.
-A glossary no main-document relationship reaches is not a story root, so it
-keeps the `rels-id-mismatch` or `rels-id-missing` of each header and footer
-reference under strict (Word does not read it, so word-valid stays silent),
-and lenient keeps every one of them. `word-hyperlink-relationship` judges story
-parts by name, an unreached glossary included, so a `w:hyperlink` it refuses
-there is reported once under word-valid and strict, its copy handed off as
-anywhere else
+A glossary no main-document relationship reaches is not a story root, and
+Word does not read it, so neither this check nor `word-hyperlink-relationship`
+judges it ([#1106](https://github.com/jandira-tech/docx-validate/issues/1106)):
+the `rels-id-mismatch` or `rels-id-missing` of a header or footer reference or
+a `w:hyperlink` there stays, an error under strict and a warning under
+word-valid, and lenient keeps every one of them
 ([#1102](https://github.com/jandira-tech/docx-validate/issues/1102)).
 Full, quick and named Word-valid runs judge the findings they report alike
 (#381).

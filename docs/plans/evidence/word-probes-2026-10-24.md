@@ -29301,3 +29301,641 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed,", matches, 
 `````
 
 </details>
+
+### Session 82: 12:21Z–12:25Z on 2026-10-28, validator columns at 1661e12f
+
+Which parts Word judges a hyperlink's relationship in ([#1106](https://github.com/jandira-tech/docx-validate/issues/1106)). `word-hyperlink-relationship` judged the parts named like a story wherever stored, not the parts Word reads. Each row holds session 28's refused shape in one placement: a `w:hyperlink` holding `Link` whose relationship has the Type `…/relationships/HYPERLINK`, TargetMode External, a URL target (s28a refused it in `word/document.xml`); its calibration uses the exact Transitional Type. Chunk s82a places it in `word/document.xml` (s28a repeated), in a main document stored as `word/main.xml`, in a used header stored as `word/header1.xml` and in a used header stored as `word/hdr.xml`. Chunk s82b places it in `word/header9.xml`, typed header by its Override, which no relationship names; in a glossary stored as `word/glossary/document.xml` that no relationship reaches; and in the same glossary reached by the main document's `glossaryDocument` relationship. Chunk s82c places it in `word/header1.xml`, which the main document relates but no section references, and in footnote 1 of `word/footnotes.xml`, which the main document relates and does not reference, then does. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 26 of 26 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`1661e12f488567cd6a8abef2403329eae336bc54`).
+
+Every calibration and control opened clean. Word rendered `Link` where it read the part holding the hyperlink: after `Hello` in both main documents, before it in both used headers, and after the body's `Hello1` as the used note's text; every other clean row's PDF holds `Hello` alone (`pdftotext`, both runs). No refused row left a PDF.
+
+- **Word judges the hyperlink in the parts it reads, whatever their names.** It offered recovery for the refused Type in `word/document.xml`, in the main document stored as `word/main.xml`, in both used headers, in the reached glossary and in the used footnotes part.
+- **It does not judge a part it does not read.** It opened the refused Type clean in the unrelated `word/header9.xml`, in the unreached glossary, in the header no section references and in the footnotes part nothing references, as the read model says it reads none of them (session 17 for the glossary, #726 and #800 for the stories).
+
+Word-valid at 1661e12f judged by name, so it matches Word on 20 of 26 rows: it passes the refused Type in the renamed main document and the renamed header, and rejects it in the four parts Word does not read. [#1106](https://github.com/jandira-tech/docx-validate/issues/1106) moves the rule onto the read model and pins every row in `tests/word-hyperlink-relationship.test.ts`.
+
+| Run    | Observed             | Specimen                               | Shape                                                                                                                 | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at 1661e12f                 | strict at 1661e12f                                                                    |
+| ------ | -------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------- |
+| `s82a` | 12:21:33Z, 12:22:49Z | `s82a-control-minimal`                 | control                                                                                                               | `5ddc836d0a28a1d8` | clean-open     | clean-open     | clean-open                 | valid                                  | valid                                                                                 |
+| `s82a` | 12:21:33Z, 12:22:49Z | `main-link-refused-type`               | #1106: s28a repeated, a hyperlink in word/document.xml whose relationship has the Type …/HYPERLINK                    | `929f15051169c551` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-hyperlink-relationship` | invalid: `paraid-missing-element`, `word-hyperlink-relationship`                      |
+| `s82a` | 12:21:33Z, 12:22:49Z | `main-link-calibration`                | calibration: the same with the exact hyperlink Type                                                                   | `e8e4272bfb9987db` | clean-open     | clean-open     | clean-open                 | valid                                  | invalid: `paraid-missing-element`                                                     |
+| `s82a` | 12:21:33Z, 12:22:49Z | `renamed-main-link-refused-type`       | #1106: the same hyperlink in a main document stored as word/main.xml                                                  | `cfd6c8b2134877fa` | repair-warning | repair-warning | unreadable-content-warning | valid                                  | valid                                                                                 |
+| `s82a` | 12:21:33Z, 12:22:49Z | `renamed-main-link-calibration`        | calibration: the same with the exact hyperlink Type                                                                   | `5827651f38f6d353` | clean-open     | clean-open     | clean-open                 | valid                                  | valid                                                                                 |
+| `s82a` | 12:21:33Z, 12:22:49Z | `header1-link-refused-type`            | #1106: the same hyperlink in a used header stored as word/header1.xml                                                 | `38a88b8cab0783a0` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-hyperlink-relationship` | invalid: `paraid-missing-element`, `word-hyperlink-relationship`                      |
+| `s82a` | 12:21:33Z, 12:22:49Z | `header1-link-calibration`             | calibration: the same with the exact hyperlink Type                                                                   | `de0d5d1ac9e56e47` | clean-open     | clean-open     | clean-open                 | valid                                  | invalid: `paraid-missing-element`                                                     |
+| `s82a` | 12:21:33Z, 12:22:49Z | `renamed-header-link-refused-type`     | #1106: the same hyperlink in a used header stored as word/hdr.xml                                                     | `5a7f9abc2fc1e261` | repair-warning | repair-warning | unreadable-content-warning | valid                                  | valid                                                                                 |
+| `s82a` | 12:21:33Z, 12:22:49Z | `renamed-header-link-calibration`      | calibration: the same with the exact hyperlink Type                                                                   | `495ea92d63f34101` | clean-open     | clean-open     | clean-open                 | valid                                  | valid                                                                                 |
+| `s82a` | 12:21:33Z, 12:22:49Z | `s82a-control-minimal-end`             | control                                                                                                               | `5ddc836d0a28a1d8` | clean-open     | clean-open     | clean-open                 | valid                                  | valid                                                                                 |
+| `s82b` | 12:23:14Z, 12:23:42Z | `s82b-control-minimal`                 | control                                                                                                               | `5ddc836d0a28a1d8` | clean-open     | clean-open     | clean-open                 | valid                                  | valid                                                                                 |
+| `s82b` | 12:23:14Z, 12:23:42Z | `unrelated-header9-link-refused-type`  | #1106: the same hyperlink in word/header9.xml, typed header, which no relationship names                              | `ec535fbd5f5eb440` | clean-open     | clean-open     | clean-open                 | invalid: `word-hyperlink-relationship` | invalid: `rels-unreferenced`, `paraid-missing-element`, `word-hyperlink-relationship` |
+| `s82b` | 12:23:14Z, 12:23:42Z | `unrelated-header9-link-calibration`   | calibration: the same with the exact hyperlink Type                                                                   | `f60243cde0f4ee6d` | clean-open     | clean-open     | clean-open                 | valid                                  | invalid: `rels-unreferenced`, `paraid-missing-element`                                |
+| `s82b` | 12:23:14Z, 12:23:42Z | `unreached-glossary-link-refused-type` | #1106: the same hyperlink in word/glossary/document.xml, which no relationship reaches                                | `d1eb0c6e21afaf6c` | clean-open     | clean-open     | clean-open                 | invalid: `word-hyperlink-relationship` | invalid: `rels-unreferenced`, `paraid-missing-element`, `word-hyperlink-relationship` |
+| `s82b` | 12:23:14Z, 12:23:42Z | `unreached-glossary-link-calibration`  | calibration: the same with the exact hyperlink Type                                                                   | `bebd00ed81439b2f` | clean-open     | clean-open     | clean-open                 | valid                                  | invalid: `rels-unreferenced`, `paraid-missing-element`                                |
+| `s82b` | 12:23:14Z, 12:23:42Z | `reached-glossary-link-refused-type`   | #1106: the same hyperlink in a glossary the main document relates                                                     | `0a884513de8ab561` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-hyperlink-relationship` | invalid: `paraid-missing-element`, `word-hyperlink-relationship`                      |
+| `s82b` | 12:23:14Z, 12:23:42Z | `reached-glossary-link-calibration`    | calibration: the same with the exact hyperlink Type                                                                   | `4f2c657c2d57d183` | clean-open     | clean-open     | clean-open                 | valid                                  | invalid: `paraid-missing-element`                                                     |
+| `s82b` | 12:23:14Z, 12:23:42Z | `s82b-control-minimal-end`             | control                                                                                                               | `5ddc836d0a28a1d8` | clean-open     | clean-open     | clean-open                 | valid                                  | valid                                                                                 |
+| `s82c` | 12:25:19Z, 12:25:44Z | `s82c-control-minimal`                 | control                                                                                                               | `c8f2e5acd1898557` | clean-open     | clean-open     | clean-open                 | valid                                  | valid                                                                                 |
+| `s82c` | 12:25:19Z, 12:25:44Z | `unused-header1-link-refused-type`     | #1106: the same hyperlink in word/header1.xml, which the main document relates but no section references              | `0a347eea94861f59` | clean-open     | clean-open     | clean-open                 | invalid: `word-hyperlink-relationship` | invalid: `paraid-missing-element`, `word-hyperlink-relationship`                      |
+| `s82c` | 12:25:19Z, 12:25:44Z | `unused-header1-link-calibration`      | calibration: the same with the exact hyperlink Type                                                                   | `561c4e4b2297aaad` | clean-open     | clean-open     | clean-open                 | valid                                  | invalid: `paraid-missing-element`                                                     |
+| `s82c` | 12:25:19Z, 12:25:44Z | `unused-footnotes-link-refused-type`   | #1106: the same hyperlink in footnote 1 of word/footnotes.xml, which the main document relates but does not reference | `0aca6a4133892f17` | clean-open     | clean-open     | clean-open                 | invalid: `word-hyperlink-relationship` | invalid: `paraid-missing-element`, `word-hyperlink-relationship`                      |
+| `s82c` | 12:25:19Z, 12:25:44Z | `unused-footnotes-link-calibration`    | calibration: the same with the exact hyperlink Type                                                                   | `828f7845e2d92958` | clean-open     | clean-open     | clean-open                 | valid                                  | invalid: `paraid-missing-element`                                                     |
+| `s82c` | 12:25:19Z, 12:25:44Z | `used-footnotes-link-refused-type`     | #1106: the same, the body referencing footnote 1                                                                      | `18c64afcf355ec94` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-hyperlink-relationship` | invalid: `paraid-missing-element`, `word-hyperlink-relationship`                      |
+| `s82c` | 12:25:19Z, 12:25:44Z | `used-footnotes-link-calibration`      | calibration: the same with the exact hyperlink Type                                                                   | `78c5a2413d032e8b` | clean-open     | clean-open     | clean-open                 | valid                                  | invalid: `paraid-missing-element`                                                     |
+| `s82c` | 12:25:19Z, 12:25:44Z | `s82c-control-minimal-end`             | control                                                                                                               | `c8f2e5acd1898557` | clean-open     | clean-open     | clean-open                 | valid                                  | valid                                                                                 |
+
+<details><summary>Raw records, session 82</summary>
+
+```jsonl
+{"run": "s82a", "pass": 1, "name": "s82a-control-minimal", "sha256": "5ddc836d0a28a1d8fe097bb0463cdda84a03c18d4ee04e960e37a6dc4fbcd515", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:21:33+00:00", "staged": "00009__wfv__s82a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s82a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82a", "pass": 2, "name": "s82a-control-minimal", "sha256": "5ddc836d0a28a1d8fe097bb0463cdda84a03c18d4ee04e960e37a6dc4fbcd515", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:22:49+00:00", "staged": "00009__wfv__s82a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s82a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82a", "pass": 1, "name": "main-link-refused-type", "sha256": "929f15051169c551ec5877d66353c46497807a0f6f9b19c9bd1ac35b0a2a7735", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:21:33+00:00", "staged": "00003__wfv__main-link-refused-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 08:21:03.244 \"Word found unreadable content in 00003__wfv__main-link-refused-type.docx. Do you want to recover th … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00003__wfv__main-link-refused-type.docx; refusing to guess"}
+{"run": "s82a", "pass": 2, "name": "main-link-refused-type", "sha256": "929f15051169c551ec5877d66353c46497807a0f6f9b19c9bd1ac35b0a2a7735", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:22:49+00:00", "staged": "00003__wfv__main-link-refused-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 08:22:19.333 \"Word found unreadable content in 00003__wfv__main-link-refused-type.docx. Do you want to recover th … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s82a", "pass": 1, "name": "main-link-calibration", "sha256": "e8e4272bfb9987db4a36641353e16173f3510ddb93f76d17c5ed2e430be08a85", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:21:33+00:00", "staged": "00002__wfv__main-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-link-calibration_byword.pdf (16092 bytes), no dialog named the file"]}
+{"run": "s82a", "pass": 2, "name": "main-link-calibration", "sha256": "e8e4272bfb9987db4a36641353e16173f3510ddb93f76d17c5ed2e430be08a85", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:22:49+00:00", "staged": "00002__wfv__main-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-link-calibration_byword.pdf (16092 bytes), no dialog named the file"]}
+{"run": "s82a", "pass": 1, "name": "renamed-main-link-refused-type", "sha256": "cfd6c8b2134877fabb02e0c0e7ba592f7cfea2d7689e48ef8458411e0917741e", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:21:33+00:00", "staged": "00007__wfv__renamed-main-link-refused-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 08:21:32.440 \"Word found unreadable content in 00007__wfv__renamed-main-link-refused-type.docx. Do you want to re … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00007__wfv__renamed-main-link-refused-type.docx; refusing to guess"}
+{"run": "s82a", "pass": 2, "name": "renamed-main-link-refused-type", "sha256": "cfd6c8b2134877fabb02e0c0e7ba592f7cfea2d7689e48ef8458411e0917741e", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:22:49+00:00", "staged": "00007__wfv__renamed-main-link-refused-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 08:22:48.568 \"Word found unreadable content in 00007__wfv__renamed-main-link-refused-type.docx. Do you want to re … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s82a", "pass": 1, "name": "renamed-main-link-calibration", "sha256": "5827651f38f6d35392f58ff1f36f927a3b60874a03c5e6d6f3715aaf244204a6", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:21:33+00:00", "staged": "00006__wfv__renamed-main-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF renamed-main-link-calibration_byword.pdf (16092 bytes), no dialog named the file"]}
+{"run": "s82a", "pass": 2, "name": "renamed-main-link-calibration", "sha256": "5827651f38f6d35392f58ff1f36f927a3b60874a03c5e6d6f3715aaf244204a6", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:22:49+00:00", "staged": "00006__wfv__renamed-main-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF renamed-main-link-calibration_byword.pdf (16092 bytes), no dialog named the file"]}
+{"run": "s82a", "pass": 1, "name": "header1-link-refused-type", "sha256": "38a88b8cab0783a05f0bd442ab7e32212dcf914143938f9169ded463a4128057", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:21:33+00:00", "staged": "00001__wfv__header1-link-refused-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 08:20:46.064 'Word found unreadable content in 00001__wfv__header1-link-refused-type.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-28 08:20:46.906 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__header1-link-refused-type...)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__header1-link-refused-type.docx; refusing to guess"}
+{"run": "s82a", "pass": 2, "name": "header1-link-refused-type", "sha256": "38a88b8cab0783a05f0bd442ab7e32212dcf914143938f9169ded463a4128057", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:22:49+00:00", "staged": "00001__wfv__header1-link-refused-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 08:22:02.197 'Word found unreadable content in 00001__wfv__header1-link-refused-type.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-28 08:22:02.820 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__header1-link-refused-type...)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__header1-link-refused-type.docx; refusing to guess"}
+{"run": "s82a", "pass": 1, "name": "header1-link-calibration", "sha256": "de0d5d1ac9e56e47722d666835b87f1ba7cb636e5ce78705a29b3e8aa77189eb", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:21:33+00:00", "staged": "00000__wfv__header1-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header1-link-calibration_byword.pdf (16084 bytes), no dialog named the file"]}
+{"run": "s82a", "pass": 2, "name": "header1-link-calibration", "sha256": "de0d5d1ac9e56e47722d666835b87f1ba7cb636e5ce78705a29b3e8aa77189eb", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:22:49+00:00", "staged": "00000__wfv__header1-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header1-link-calibration_byword.pdf (16084 bytes), no dialog named the file"]}
+{"run": "s82a", "pass": 1, "name": "renamed-header-link-refused-type", "sha256": "5a7f9abc2fc1e261d4fa128bc4899b8242118223902d5da9a9eb4758bfb2cb74", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:21:33+00:00", "staged": "00005__wfv__renamed-header-link-refused-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 08:21:15.749 \"Word found unreadable content in 00005__wfv__renamed-header-link-refused-type.docx. Do you want to  … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00005__wfv__renamed-header-link-refused-type.docx; refusing to guess"}
+{"run": "s82a", "pass": 2, "name": "renamed-header-link-refused-type", "sha256": "5a7f9abc2fc1e261d4fa128bc4899b8242118223902d5da9a9eb4758bfb2cb74", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:22:49+00:00", "staged": "00005__wfv__renamed-header-link-refused-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 08:22:31.868 \"Word found unreadable content in 00005__wfv__renamed-header-link-refused-type.docx. Do you want to  … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00005__wfv__renamed-header-link-refused-type.docx; refusing to guess"}
+{"run": "s82a", "pass": 1, "name": "renamed-header-link-calibration", "sha256": "495ea92d63f34101e03061061e5fd8471304d5b38afb0eb248b528c114c390b1", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:21:33+00:00", "staged": "00004__wfv__renamed-header-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF renamed-header-link-calibration_byword.pdf (16084 bytes), no dialog named the file"]}
+{"run": "s82a", "pass": 2, "name": "renamed-header-link-calibration", "sha256": "495ea92d63f34101e03061061e5fd8471304d5b38afb0eb248b528c114c390b1", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:22:49+00:00", "staged": "00004__wfv__renamed-header-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF renamed-header-link-calibration_byword.pdf (16084 bytes), no dialog named the file"]}
+{"run": "s82a", "pass": 1, "name": "s82a-control-minimal-end", "sha256": "5ddc836d0a28a1d8fe097bb0463cdda84a03c18d4ee04e960e37a6dc4fbcd515", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:21:33+00:00", "staged": "00008__wfv__s82a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s82a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82a", "pass": 2, "name": "s82a-control-minimal-end", "sha256": "5ddc836d0a28a1d8fe097bb0463cdda84a03c18d4ee04e960e37a6dc4fbcd515", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:22:49+00:00", "staged": "00008__wfv__s82a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s82a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82b", "pass": 1, "name": "s82b-control-minimal", "sha256": "5ddc836d0a28a1d8fe097bb0463cdda84a03c18d4ee04e960e37a6dc4fbcd515", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:23:14+00:00", "staged": "00003__wfv__s82b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s82b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82b", "pass": 2, "name": "s82b-control-minimal", "sha256": "5ddc836d0a28a1d8fe097bb0463cdda84a03c18d4ee04e960e37a6dc4fbcd515", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:23:42+00:00", "staged": "00003__wfv__s82b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s82b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82b", "pass": 1, "name": "unrelated-header9-link-refused-type", "sha256": "ec535fbd5f5eb4406399303844d677b81cc4d9377b8f7e66b8f60b9b23b45937", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:23:14+00:00", "staged": "00007__wfv__unrelated-header9-link-refused-type.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unrelated-header9-link-refused-type_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82b", "pass": 2, "name": "unrelated-header9-link-refused-type", "sha256": "ec535fbd5f5eb4406399303844d677b81cc4d9377b8f7e66b8f60b9b23b45937", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:23:42+00:00", "staged": "00007__wfv__unrelated-header9-link-refused-type.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unrelated-header9-link-refused-type_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82b", "pass": 1, "name": "unrelated-header9-link-calibration", "sha256": "f60243cde0f4ee6d8b822f4b766fd36097c61f6916f20bf35c250b3178bddcda", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:23:14+00:00", "staged": "00006__wfv__unrelated-header9-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unrelated-header9-link-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82b", "pass": 2, "name": "unrelated-header9-link-calibration", "sha256": "f60243cde0f4ee6d8b822f4b766fd36097c61f6916f20bf35c250b3178bddcda", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:23:42+00:00", "staged": "00006__wfv__unrelated-header9-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unrelated-header9-link-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82b", "pass": 1, "name": "unreached-glossary-link-refused-type", "sha256": "d1eb0c6e21afaf6c50c8b07951c2259af97ff927c5b191c95959d74caa047525", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:23:14+00:00", "staged": "00005__wfv__unreached-glossary-link-refused-type.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unreached-glossary-link-refused-type_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82b", "pass": 2, "name": "unreached-glossary-link-refused-type", "sha256": "d1eb0c6e21afaf6c50c8b07951c2259af97ff927c5b191c95959d74caa047525", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:23:42+00:00", "staged": "00005__wfv__unreached-glossary-link-refused-type.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unreached-glossary-link-refused-type_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82b", "pass": 1, "name": "unreached-glossary-link-calibration", "sha256": "bebd00ed81439b2fcf4f0ddd2e10725622a97363921691bc8a24a2047bb4ff55", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:23:14+00:00", "staged": "00004__wfv__unreached-glossary-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unreached-glossary-link-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82b", "pass": 2, "name": "unreached-glossary-link-calibration", "sha256": "bebd00ed81439b2fcf4f0ddd2e10725622a97363921691bc8a24a2047bb4ff55", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:23:42+00:00", "staged": "00004__wfv__unreached-glossary-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unreached-glossary-link-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82b", "pass": 1, "name": "reached-glossary-link-refused-type", "sha256": "0a884513de8ab5612612f0a23f6bb123ec0f13ae1b89bd3e4bc32b7edab16b95", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:23:14+00:00", "staged": "00001__wfv__reached-glossary-link-refused-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 08:23:11.734 \"Word found unreadable content in 00001__wfv__reached-glossary-link-refused-type.docx. Do you want t … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s82b", "pass": 2, "name": "reached-glossary-link-refused-type", "sha256": "0a884513de8ab5612612f0a23f6bb123ec0f13ae1b89bd3e4bc32b7edab16b95", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:23:42+00:00", "staged": "00001__wfv__reached-glossary-link-refused-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 08:23:40.167 \"Word found unreadable content in 00001__wfv__reached-glossary-link-refused-type.docx. Do you want t … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__reached-glossary-link-refused-type.docx; refusing to guess"}
+{"run": "s82b", "pass": 1, "name": "reached-glossary-link-calibration", "sha256": "4f2c657c2d57d18329fee1b31bb27a62083f3e8f1767eff03713e1b467fe150e", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:23:14+00:00", "staged": "00000__wfv__reached-glossary-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF reached-glossary-link-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82b", "pass": 2, "name": "reached-glossary-link-calibration", "sha256": "4f2c657c2d57d18329fee1b31bb27a62083f3e8f1767eff03713e1b467fe150e", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:23:42+00:00", "staged": "00000__wfv__reached-glossary-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF reached-glossary-link-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82b", "pass": 1, "name": "s82b-control-minimal-end", "sha256": "5ddc836d0a28a1d8fe097bb0463cdda84a03c18d4ee04e960e37a6dc4fbcd515", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:23:14+00:00", "staged": "00002__wfv__s82b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s82b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82b", "pass": 2, "name": "s82b-control-minimal-end", "sha256": "5ddc836d0a28a1d8fe097bb0463cdda84a03c18d4ee04e960e37a6dc4fbcd515", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:23:42+00:00", "staged": "00002__wfv__s82b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s82b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82c", "pass": 1, "name": "s82c-control-minimal", "sha256": "c8f2e5acd1898557d70774560dad71d0073f5f0496f6cc9c7210448e6e6f1504", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:25:19+00:00", "staged": "00001__wfv__s82c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s82c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82c", "pass": 2, "name": "s82c-control-minimal", "sha256": "c8f2e5acd1898557d70774560dad71d0073f5f0496f6cc9c7210448e6e6f1504", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:25:44+00:00", "staged": "00001__wfv__s82c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s82c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82c", "pass": 1, "name": "unused-header1-link-refused-type", "sha256": "0a347eea94861f595cf2ae03ebdd27da6671c06c97b575c2c05138b16aea3276", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:25:19+00:00", "staged": "00005__wfv__unused-header1-link-refused-type.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unused-header1-link-refused-type_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82c", "pass": 2, "name": "unused-header1-link-refused-type", "sha256": "0a347eea94861f595cf2ae03ebdd27da6671c06c97b575c2c05138b16aea3276", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:25:44+00:00", "staged": "00005__wfv__unused-header1-link-refused-type.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unused-header1-link-refused-type_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82c", "pass": 1, "name": "unused-header1-link-calibration", "sha256": "561c4e4b2297aaade1efc6284e0b1b27928e1e382de2fac2ff5472bc2dc76b80", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:25:19+00:00", "staged": "00004__wfv__unused-header1-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unused-header1-link-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82c", "pass": 2, "name": "unused-header1-link-calibration", "sha256": "561c4e4b2297aaade1efc6284e0b1b27928e1e382de2fac2ff5472bc2dc76b80", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:25:44+00:00", "staged": "00004__wfv__unused-header1-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unused-header1-link-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82c", "pass": 1, "name": "unused-footnotes-link-refused-type", "sha256": "0aca6a4133892f1745ff2a36337c3c1a766a49d3166a658908c0f048b5bb5d18", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:25:19+00:00", "staged": "00003__wfv__unused-footnotes-link-refused-type.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unused-footnotes-link-refused-type_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82c", "pass": 2, "name": "unused-footnotes-link-refused-type", "sha256": "0aca6a4133892f1745ff2a36337c3c1a766a49d3166a658908c0f048b5bb5d18", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:25:44+00:00", "staged": "00003__wfv__unused-footnotes-link-refused-type.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unused-footnotes-link-refused-type_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82c", "pass": 1, "name": "unused-footnotes-link-calibration", "sha256": "828f7845e2d92958ce06096f8a2071fee8013dc6540614744e682ef1c7013a4f", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:25:19+00:00", "staged": "00002__wfv__unused-footnotes-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unused-footnotes-link-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82c", "pass": 2, "name": "unused-footnotes-link-calibration", "sha256": "828f7845e2d92958ce06096f8a2071fee8013dc6540614744e682ef1c7013a4f", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:25:44+00:00", "staged": "00002__wfv__unused-footnotes-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unused-footnotes-link-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82c", "pass": 1, "name": "used-footnotes-link-refused-type", "sha256": "18c64afcf355ec94c59b2ad0af4f20ea115e4f528ca66613eef42d3f650c49bb", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:25:19+00:00", "staged": "00007__wfv__used-footnotes-link-refused-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 08:25:19.514 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00007__wfv__used-footnotes-link-refus...)'", "2026-10-28 08:25:19.665 \"Word found unreadable content in 00007__wfv__used-footnotes-link-refused-type.docx. Do you want to  … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s82c", "pass": 2, "name": "used-footnotes-link-refused-type", "sha256": "18c64afcf355ec94c59b2ad0af4f20ea115e4f528ca66613eef42d3f650c49bb", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:25:44+00:00", "staged": "00007__wfv__used-footnotes-link-refused-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 08:25:44.700 \"Word found unreadable content in 00007__wfv__used-footnotes-link-refused-type.docx. Do you want to  … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00007__wfv__used-footnotes-link-refused-type.docx; refusing to guess"}
+{"run": "s82c", "pass": 1, "name": "used-footnotes-link-calibration", "sha256": "78c5a2413d032e8b4112cc08fd95d934cbe446940a93161cb35fb4a7b975ea01", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:25:19+00:00", "staged": "00006__wfv__used-footnotes-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF used-footnotes-link-calibration_byword.pdf (16365 bytes), no dialog named the file"]}
+{"run": "s82c", "pass": 2, "name": "used-footnotes-link-calibration", "sha256": "78c5a2413d032e8b4112cc08fd95d934cbe446940a93161cb35fb4a7b975ea01", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:25:44+00:00", "staged": "00006__wfv__used-footnotes-link-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF used-footnotes-link-calibration_byword.pdf (16365 bytes), no dialog named the file"]}
+{"run": "s82c", "pass": 1, "name": "s82c-control-minimal-end", "sha256": "c8f2e5acd1898557d70774560dad71d0073f5f0496f6cc9c7210448e6e6f1504", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:25:19+00:00", "staged": "00000__wfv__s82c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s82c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s82c", "pass": 2, "name": "s82c-control-minimal-end", "sha256": "c8f2e5acd1898557d70774560dad71d0073f5f0496f6cc9c7210448e6e6f1504", "validatorRevision": "1661e12f488567cd6a8abef2403329eae336bc54", "observedAt": "2026-10-28T12:25:44+00:00", "staged": "00000__wfv__s82c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s82c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 82 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s82builder.mts`:
+
+```ts
+// Session 82 (2026-10-28): which parts Word judges a hyperlink's relationship in (#1106).
+// `word-hyperlink-relationship` walks `ctx.storyParts()`, the parts named like a story wherever stored, not the parts Word
+// reads. Session 28 (s28a) showed Word refuse a `w:hyperlink` whose relationship has the Type `…/relationships/HYPERLINK`
+// in word/document.xml and open the exact Transitional Type clean. Each row here puts that shape (refused Type, TargetMode
+// External, a URL target) in one placement, beside its calibration with the exact Type:
+// s82a: the main document stored as word/document.xml (s28a repeated), the main document stored as word/main.xml, a used
+// header stored as word/header1.xml, and a used header stored as word/hdr.xml.
+// s82b: an unrelated word/header9.xml typed header by its Override (no relationship names it), a glossary stored as
+// word/glossary/document.xml that no relationship reaches, and the same glossary reached by the main document's
+// glossaryDocument relationship.
+// Every row records the validator revision it was judged at (`validatorRevision`); the verdict helper and the glossary are
+// s81builder.mts's.
+// The builder empties the chunk's specimens.jsonl once before its row loop (promised on #825), and its src (#985).
+// Run from a worktree root: CHUNK=s82a pnpm exec node --import tsx <this file>
+// (the imports are absolute, so the file needs no copy into the worktree; `git rev-parse` reads the cwd's worktree).
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const WT = process.cwd();
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const { MINIMAL_PARTS, buildDocx } = await import(path.join(WT, "tests/support/minimal-docx.ts"));
+const REVISION = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
+const CT = "[Content_Types].xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const relsPart = (body: string) => `${XML_DECL}<Relationships xmlns="${PR}">${body}</Relationships>`;
+
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const MAIN = P["word/document.xml"]!;
+const overrides = (ct: string, ...pairs: [string, string][]) =>
+    pairs.reduce(
+        (types, [part, type]) => replaceOnce(types, "</Types>", `<Override PartName="/${part}" ContentType="${type}"/></Types>`),
+        ct,
+    );
+const withR = (doc: string) => replaceOnce(doc, `<w:document xmlns:w="${W}"`, `<w:document xmlns:w="${W}" xmlns:r="${R}"`);
+
+/** Session 28's refused Type, and the exact Transitional Type its calibration uses. */
+const REFUSED = "HYPERLINK";
+const EXACT = "hyperlink";
+/** The hyperlink relationship rIdL of Type segment `segment`, External, to a URL. */
+const linkRelationship = (segment: string) =>
+    `<Relationship Id="rIdL" Type="${R}/${segment}" Target="https://example.com/" TargetMode="External"/>`;
+const LINK_PARAGRAPH = '<w:p><w:hyperlink r:id="rIdL"><w:r><w:t>Link</w:t></w:r></w:hyperlink></w:p>';
+
+/** The main document stored at `mainPart` holding the hyperlink, its sidecar relating the styles part and rIdL. */
+const mainWithLink = (mainPart: string, segment: string): Record<string, string> => {
+    const parts: Record<string, string> = { ...P };
+    const doc = replaceOnce(withR(MAIN), "<w:sectPr>", `${LINK_PARAGRAPH}<w:sectPr>`);
+    const sidecar = appendRels(P[SIDECAR]!, linkRelationship(segment));
+    if (mainPart === "word/document.xml") return { ...parts, "word/document.xml": doc, [SIDECAR]: sidecar };
+    delete parts["word/document.xml"];
+    delete parts[SIDECAR];
+    const name = path.posix.basename(mainPart);
+    return {
+        ...parts,
+        [mainPart]: doc,
+        [`word/_rels/${name}.rels`]: sidecar,
+        "_rels/.rels": replaceOnce(P["_rels/.rels"]!, 'Target="word/document.xml"', `Target="${mainPart}"`),
+        [CT]: replaceOnce(P[CT]!, 'PartName="/word/document.xml"', `PartName="/${mainPart}"`),
+    };
+};
+
+const HEADER_WITH_LINK = `${XML_DECL}<w:hdr xmlns:w="${W}" xmlns:r="${R}">${LINK_PARAGRAPH}</w:hdr>`;
+/** A header stored at word/`headerName` holding the hyperlink, its sidecar relating rIdL, referenced by the section. */
+const usedHeaderWithLink = (headerName: string, segment: string): Record<string, string> => ({
+    ...P,
+    "word/document.xml": replaceOnce(withR(MAIN), "<w:sectPr>", '<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>'),
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", headerName)),
+    [`word/${headerName}`]: HEADER_WITH_LINK,
+    [`word/_rels/${headerName}.rels`]: relsPart(linkRelationship(segment)),
+    [CT]: overrides(P[CT]!, [`word/${headerName}`, `${WML}.header+xml`]),
+});
+/** The same header stored as word/header9.xml and typed header, which no relationship names. */
+const unrelatedHeaderWithLink = (segment: string): Record<string, string> => ({
+    ...P,
+    "word/header9.xml": HEADER_WITH_LINK,
+    "word/_rels/header9.xml.rels": relsPart(linkRelationship(segment)),
+    [CT]: overrides(P[CT]!, ["word/header9.xml", `${WML}.header+xml`]),
+});
+
+const glossaryWithLink =
+    `${XML_DECL}<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+    `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+    `<w:docPartBody>${LINK_PARAGRAPH}</w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`;
+/** A glossary stored as word/glossary/document.xml holding the hyperlink; the main document relates it when `reached`. */
+const glossaryLink = (reached: boolean, segment: string): Record<string, string> => ({
+    ...P,
+    "word/glossary/document.xml": glossaryWithLink,
+    "word/glossary/_rels/document.xml.rels": relsPart(linkRelationship(segment)),
+    ...(reached ? { [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdG", "glossaryDocument", "glossary/document.xml")) } : {}),
+    [CT]: overrides(P[CT]!, ["word/glossary/document.xml", `${WML}.document.glossary+xml`]),
+});
+
+/** A header stored as word/header1.xml holding the hyperlink, which the main document relates but no section references. */
+const unusedHeaderWithLink = (segment: string): Record<string, string> => ({
+    ...P,
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
+    "word/header1.xml": HEADER_WITH_LINK,
+    "word/_rels/header1.xml.rels": relsPart(linkRelationship(segment)),
+    [CT]: overrides(P[CT]!, ["word/header1.xml", `${WML}.header+xml`]),
+});
+const FOOTNOTES_WITH_LINK = `${XML_DECL}<w:footnotes xmlns:w="${W}" xmlns:r="${R}"><w:footnote w:id="1">${LINK_PARAGRAPH}</w:footnote></w:footnotes>`;
+/** word/footnotes.xml whose footnote 1 holds the hyperlink, related by the main document, which references it when `used`. */
+const footnotesWithLink = (used: boolean, segment: string): Record<string, string> => ({
+    ...P,
+    ...(used
+        ? {
+              "word/document.xml": replaceOnce(
+                  MAIN,
+                  "<w:r><w:t>Hello</w:t></w:r>",
+                  '<w:r><w:t>Hello</w:t></w:r><w:r><w:footnoteReference w:id="1"/></w:r>',
+              ),
+          }
+        : {}),
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", "footnotes", "footnotes.xml")),
+    "word/footnotes.xml": FOOTNOTES_WITH_LINK,
+    "word/_rels/footnotes.xml.rels": relsPart(linkRelationship(segment)),
+    [CT]: overrides(P[CT]!, ["word/footnotes.xml", `${WML}.footnotes+xml`]),
+});
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const control = () => buildDocx({ ...P });
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+
+const chunks: Record<string, Row[]> = {
+    s82a: withControls("s82a", [
+        [
+            "main-link-refused-type",
+            "#1106: s28a repeated, a hyperlink in word/document.xml whose relationship has the Type …/HYPERLINK",
+            () => buildDocx(mainWithLink("word/document.xml", REFUSED)),
+        ],
+        [
+            "main-link-calibration",
+            "calibration: the same with the exact hyperlink Type",
+            () => buildDocx(mainWithLink("word/document.xml", EXACT)),
+        ],
+        [
+            "renamed-main-link-refused-type",
+            "#1106: the same hyperlink in a main document stored as word/main.xml",
+            () => buildDocx(mainWithLink("word/main.xml", REFUSED)),
+        ],
+        [
+            "renamed-main-link-calibration",
+            "calibration: the same with the exact hyperlink Type",
+            () => buildDocx(mainWithLink("word/main.xml", EXACT)),
+        ],
+        [
+            "header1-link-refused-type",
+            "#1106: the same hyperlink in a used header stored as word/header1.xml",
+            () => buildDocx(usedHeaderWithLink("header1.xml", REFUSED)),
+        ],
+        [
+            "header1-link-calibration",
+            "calibration: the same with the exact hyperlink Type",
+            () => buildDocx(usedHeaderWithLink("header1.xml", EXACT)),
+        ],
+        [
+            "renamed-header-link-refused-type",
+            "#1106: the same hyperlink in a used header stored as word/hdr.xml",
+            () => buildDocx(usedHeaderWithLink("hdr.xml", REFUSED)),
+        ],
+        [
+            "renamed-header-link-calibration",
+            "calibration: the same with the exact hyperlink Type",
+            () => buildDocx(usedHeaderWithLink("hdr.xml", EXACT)),
+        ],
+    ]),
+    s82b: withControls("s82b", [
+        [
+            "unrelated-header9-link-refused-type",
+            "#1106: the same hyperlink in word/header9.xml, typed header, which no relationship names",
+            () => buildDocx(unrelatedHeaderWithLink(REFUSED)),
+        ],
+        [
+            "unrelated-header9-link-calibration",
+            "calibration: the same with the exact hyperlink Type",
+            () => buildDocx(unrelatedHeaderWithLink(EXACT)),
+        ],
+        [
+            "unreached-glossary-link-refused-type",
+            "#1106: the same hyperlink in word/glossary/document.xml, which no relationship reaches",
+            () => buildDocx(glossaryLink(false, REFUSED)),
+        ],
+        [
+            "unreached-glossary-link-calibration",
+            "calibration: the same with the exact hyperlink Type",
+            () => buildDocx(glossaryLink(false, EXACT)),
+        ],
+        [
+            "reached-glossary-link-refused-type",
+            "#1106: the same hyperlink in a glossary the main document relates",
+            () => buildDocx(glossaryLink(true, REFUSED)),
+        ],
+        [
+            "reached-glossary-link-calibration",
+            "calibration: the same with the exact hyperlink Type",
+            () => buildDocx(glossaryLink(true, EXACT)),
+        ],
+    ]),
+    // s82c: the stories the read model leaves out because their root does not use them, beside a used notes part.
+    s82c: withControls("s82c", [
+        [
+            "unused-header1-link-refused-type",
+            "#1106: the same hyperlink in word/header1.xml, which the main document relates but no section references",
+            () => buildDocx(unusedHeaderWithLink(REFUSED)),
+        ],
+        [
+            "unused-header1-link-calibration",
+            "calibration: the same with the exact hyperlink Type",
+            () => buildDocx(unusedHeaderWithLink(EXACT)),
+        ],
+        [
+            "unused-footnotes-link-refused-type",
+            "#1106: the same hyperlink in footnote 1 of word/footnotes.xml, which the main document relates but does not reference",
+            () => buildDocx(footnotesWithLink(false, REFUSED)),
+        ],
+        [
+            "unused-footnotes-link-calibration",
+            "calibration: the same with the exact hyperlink Type",
+            () => buildDocx(footnotesWithLink(false, EXACT)),
+        ],
+        [
+            "used-footnotes-link-refused-type",
+            "#1106: the same, the body referencing footnote 1",
+            () => buildDocx(footnotesWithLink(true, REFUSED)),
+        ],
+        [
+            "used-footnotes-link-calibration",
+            "calibration: the same with the exact hyperlink Type",
+            () => buildDocx(footnotesWithLink(true, EXACT)),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+// A rerun starts from an empty src, so a removed or renamed row leaves no stale specimen for the staging and log-check
+// scripts to pick up (CodeRabbit on #985).
+rmSync(dir, { recursive: true, force: true });
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+    }
+};
+
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-82 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s82a", "s82b", "s82c")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0], "unknown") if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
+                     # A match needs agreed readings: an unknown row matches nothing (CodeRabbit on #985).
+                     "validatorMatchesWord": agreed and ((all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True))})
+(ROOT / "s82/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-82 parts of docs/plans/evidence/word-probes-2026-10-24.md into s82/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796). The text Word rendered is read from its own
+PDFs with pdftotext, so the narrative's "rendered" claims are checked here.
+"""
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s82a", "s82b", "s82c")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s82/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def manifest(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return row
+    raise KeyError(file)
+
+
+def run_at(run, file):
+    return datetime.fromisoformat(manifest(run, file)["run_at"]).astimezone(timezone.utc)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+def rendered(run, file):
+    pdf = run / "pdf" / (Path(file).stem + "_byword.pdf")
+    if not pdf.exists():
+        return None
+    return " ".join(subprocess.run(["pdftotext", str(pdf), "-"], check=True, capture_output=True, text=True).stdout.split())
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            record = {"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                      "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                      "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                      "pdf": row["pdf"], "evidence": row["evidence"]}
+            error = manifest(r, s["file"]).get("error")
+            if error:
+                record["error"] = error
+            raw.append(json.dumps(record, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+
+# The rows Word refused: the refused Type in a part Word reads.
+REFUSED = {"main-link-refused-type.docx", "renamed-main-link-refused-type.docx", "header1-link-refused-type.docx",
+           "renamed-header-link-refused-type.docx", "reached-glossary-link-refused-type.docx",
+           "used-footnotes-link-refused-type.docx"}
+# The rows word-valid at the probed revision gets wrong: two misses, four rejections of a part Word does not read.
+MISSED = {"renamed-main-link-refused-type.docx", "renamed-header-link-refused-type.docx"}
+OVERREACH = {"unrelated-header9-link-refused-type.docx", "unreached-glossary-link-refused-type.docx",
+             "unused-header1-link-refused-type.docx", "unused-footnotes-link-refused-type.docx"}
+# The narrative's claims about outcomes, checked against results.json: every row's four readings agree, the refused
+# rows were refused and every other row opened clean, and word-valid at the probed revision gets exactly MISSED and
+# OVERREACH wrong.
+for (label, file), r in results.items():
+    assert r["agreed"], (label, file, r)
+    assert set(r["readings"]) == ({"repair-warning"} if file in REFUSED else {"clean-open"}), (label, file, r)
+    assert r["wordValid"] is ((file not in REFUSED or file in MISSED) and file not in OVERREACH), (label, file, r)
+    assert r["validatorMatchesWord"] is (file not in MISSED | OVERREACH), (label, file, r)
+assert agreed == len(rows) == 26, (agreed, len(rows))
+# The driver opens files in name order (#671).
+for label in CHUNKS:
+    files = sorted(json.loads(l)["file"] for l in (ROOT / label / "specimens.jsonl").read_text().splitlines())
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        opened = [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()]
+        assert opened == files, (run, opened)
+# The text Word rendered in each clean row, both runs: the hyperlink's "Link" after "Hello" in a main document, before
+# it in a header, and as the used note's text after the body's "Hello1"; "Hello" alone where Word did not read the part
+# holding it. A refused row left no PDF.
+RENDERED = {"main-link-calibration.docx": "Hello Link", "renamed-main-link-calibration.docx": "Hello Link",
+            "header1-link-calibration.docx": "Link Hello", "renamed-header-link-calibration.docx": "Link Hello",
+            "used-footnotes-link-calibration.docx": "Hello1 Link"}
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+            file = json.loads(line)["original_filename"]
+            text = rendered(run, file)
+            assert text == (None if file in REFUSED else RENDERED.get(file, "Hello")), (run, file, text)
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}", (min(starts), max(ends))
+matches = sum(r["validatorMatchesWord"] for r in results.values())
+out = [
+    f"### Session 82: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {at}",
+    "",
+    "Which parts Word judges a hyperlink's relationship in "
+    "([#1106](https://github.com/jandira-tech/docx-validate/issues/1106)). `word-hyperlink-relationship` judged the "
+    "parts named like a story wherever stored, not the parts Word reads. Each row holds session 28's refused shape in one "
+    "placement: a `w:hyperlink` holding `Link` whose relationship has the Type `…/relationships/HYPERLINK`, TargetMode "
+    "External, a URL target (s28a refused it in `word/document.xml`); its calibration uses the exact Transitional Type. "
+    "Chunk s82a places it in `word/document.xml` (s28a repeated), in a main document stored as `word/main.xml`, in a used "
+    "header stored as `word/header1.xml` and in a used header stored as `word/hdr.xml`. Chunk s82b places it in "
+    "`word/header9.xml`, typed header by its Override, which no relationship names; in a glossary stored as "
+    "`word/glossary/document.xml` that no relationship reaches; and in the same glossary reached by the main document's "
+    "`glossaryDocument` relationship. Chunk s82c places it in `word/header1.xml`, which the main document relates but no "
+    "section references, and in footnote 1 of `word/footnotes.xml`, which the main document relates and does not "
+    "reference, then does. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's "
+    "rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is "
+    f"the manifest spelling when both runs and both readings agree, and `unknown` otherwise; {agreed} of {len(rows)} rows "
+    "agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of "
+    f"the specimen. The builder recorded the validator revision in every row (`{rev}`).",
+    "",
+    "Every calibration and control opened clean. Word rendered `Link` where it read the part holding the hyperlink: "
+    "after `Hello` in both main documents, before it in both used headers, and after the body's `Hello1` as the used "
+    "note's text; every other clean row's PDF holds `Hello` alone (`pdftotext`, both runs). No refused row left a PDF.",
+    "",
+    "- **Word judges the hyperlink in the parts it reads, whatever their names.** It offered recovery for the refused "
+    "Type in `word/document.xml`, in the main document stored as `word/main.xml`, in both used headers, in the reached "
+    "glossary and in the used footnotes part.",
+    "- **It does not judge a part it does not read.** It opened the refused Type clean in the unrelated "
+    "`word/header9.xml`, in the unreached glossary, in the header no section references and in the footnotes part "
+    "nothing references, as the read model says it reads none of them (session 17 for the glossary, #726 and #800 for "
+    "the stories).",
+    "",
+    f"Word-valid at {at} judged by name, so it matches Word on {matches} of {len(rows)} rows: it passes the refused Type "
+    "in the renamed main document and the renamed header, and rejects it in the four parts Word does not read. "
+    "[#1106](https://github.com/jandira-tech/docx-validate/issues/1106) moves the rule onto the read model and pins "
+    "every row in `tests/word-hyperlink-relationship.test.ts`.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 82</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 82 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s82builder.mts", ROOT / "s82builder.mts", "ts"), ("compare.py", ROOT / "s82/compare.py", "python"),
+                         ("section.py", ROOT / "s82/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s82/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed,", matches, "match")
+`````
+
+</details>
