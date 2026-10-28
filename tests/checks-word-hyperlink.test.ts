@@ -273,3 +273,62 @@ describe("a refused w:hyperlink is one report in a full run (#1089)", () => {
         });
     });
 });
+
+/**
+ * #1099: the #1089 hand-off covers every story part the rule judges, not
+ * only the main document. Session 28's shape gains a read header
+ * (`word/header1.xml`, related and referenced by the body `w:sectPr`) whose
+ * hyperlink names nothing its own sidecar defines.
+ */
+describe("a refused w:hyperlink in a read header is one report in a full run (#1099)", () => {
+    const LEGACY = new Set(["rels-id-mismatch", "rels-id-missing"]);
+    const withHeaderHyperlink = (ids: string): Record<string, string> => {
+        const parts = hyperlinkRelTypeParts(`${R}/hyperlink`);
+        parts["[Content_Types].xml"] = parts["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/></Types>`,
+        );
+        parts["word/_rels/document.xml.rels"] = parts["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdHdr" Type="${R}/header" Target="header1.xml"/></Relationships>`,
+        );
+        parts["word/document.xml"] = parts["word/document.xml"]!.replace(
+            "<w:sectPr>",
+            `<w:sectPr><w:headerReference w:type="default" r:id="rIdHdr"/>`,
+        );
+        parts["word/header1.xml"] =
+            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+            `<w:hdr xmlns:w="${W}" xmlns:r="${R}" xmlns:rs="${RS}">` +
+            `<w:p><w:hyperlink ${ids}><w:r><w:t>link</w:t></w:r></w:hyperlink></w:p></w:hdr>`;
+        parts["word/_rels/header1.xml.rels"] = rels(relation("rIdL", "hyperlink", "External"));
+        return parts;
+    };
+
+    it.each([
+        ["word-valid", 'r:id="rIdX"'],
+        ["strict", 'r:id="rIdX"'],
+        ["word-valid", 'rs:id="rIdY"'],
+        ["strict", 'rs:id="rIdY"'],
+    ] as const)("reports it once under %s for %s", async (profile, ids) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "header-hyperlink.docx");
+            writeFileSync(file, await buildDocx(withHeaderHyperlink(ids)));
+            const result = await validate(file, { profile });
+            expect(result.issues.filter((issue) => issue.code === "word-hyperlink-relationship").map((issue) => issue.path)).toEqual([
+                "word/header1.xml",
+            ]);
+            expect(result.issues.filter((issue) => LEGACY.has(issue.code ?? ""))).toEqual([]);
+        });
+    });
+
+    it("lenient keeps the legacy finding", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "header-hyperlink.docx");
+            writeFileSync(file, await buildDocx(withHeaderHyperlink('r:id="rIdX"')));
+            const result = await validate(file, { profile: "lenient" });
+            expect(result.issues.filter((issue) => LEGACY.has(issue.code ?? "")).map((issue) => `${issue.code} ${issue.path}`)).toEqual([
+                "rels-id-missing word/header1.xml",
+            ]);
+        });
+    });
+});
