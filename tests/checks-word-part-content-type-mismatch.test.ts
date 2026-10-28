@@ -685,6 +685,102 @@ describe("a story part whose stored root is an AlternateContent (#818, session 6
         });
     }, 60_000);
 
+    it("keeps session 63 for XML whitespace, comments and processing instructions around the roots", async () => {
+        const padding = " \t\r\n<!-- comment --><?probe content?>";
+        const stored = alternateContent(`${padding}${STORIES.comments.root("0")}${padding}`)
+            .replace("<mc:Choice", `${padding}<mc:Choice`)
+            .replace("<mc:Fallback/>", `${padding}<mc:Fallback>${padding}</mc:Fallback>${padding}`);
+        const found = await diagnose(usedStoryParts("comments", storyContentType("styles"), stored));
+        expect(found).toEqual([
+            expect.objectContaining({
+                severity: "error",
+                path: "word/comments.xml",
+                message: expect.stringContaining("Word 16.115 offers to recover the package (session 63)."),
+            }),
+        ]);
+    });
+
+    // Session 65 (s65b–s65d) refused these styles-typed shapes and opened
+    // each matching comments-typed calibration clean (#847).
+    const STRICT_W = "http://purl.oclc.org/ooxml/wordprocessingml/main";
+    const SESSION_65_ROOTS = [
+        ["text before the root in the Choice", alternateContent(`NOT-A-ROOT${STORIES.comments.root("0")}`)],
+        [
+            "text in the Fallback",
+            alternateContent(STORIES.comments.root("0")).replace("<mc:Fallback/>", "<mc:Fallback>NOT-EMPTY</mc:Fallback>"),
+        ],
+        ["a Choice requiring w", alternateContent(STORIES.comments.root("0")).replace('Requires="w14"', 'Requires="w"')],
+        ["a Strict root in the Choice", alternateContent(STORIES.comments.root("0").replace(W, STRICT_W))],
+        ["a Strict root stored directly", STORIES.comments.root("0").replace(W, STRICT_W)],
+    ] as const;
+    const RUNS = [
+        ["full word-valid", {}],
+        ["selected word-valid", { checks: [ID] }],
+        ["strict", { profile: "strict" }],
+    ] as const;
+    describe.each(RUNS)("session 65 citations in %s", (_mode, options) => {
+        it.each(SESSION_65_ROOTS)(
+            "cites session 65 for %s",
+            async (_shape, stored) => {
+                await withTempDir(async (dir) => {
+                    const file = path.join(dir, "session-65.docx");
+                    writeFileSync(file, await buildDocx(usedStoryParts("comments", storyContentType("styles"), stored)));
+                    const result = await validate(file, options);
+                    expect(result.valid).toBe(false);
+                    expect(result.issues.filter((issue) => issue.code === ID)).toEqual([
+                        expect.objectContaining({
+                            severity: "error",
+                            path: "word/comments.xml",
+                            message: expect.stringContaining("Word 16.115 offers to recover the package (session 65)."),
+                        }),
+                    ]);
+                });
+            },
+            60_000,
+        );
+    });
+    it.each(SESSION_65_ROOTS)(
+        "keeps the comments-typed calibration for %s without a mismatch",
+        async (_shape, stored) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "session-65-calibration.docx");
+                writeFileSync(file, await buildDocx(usedStoryParts("comments", storyContentType("comments"), stored)));
+                for (const [mode, options] of RUNS) {
+                    const result = await validate(file, options);
+                    expect(
+                        result.issues.filter((issue) => issue.code === ID),
+                        mode,
+                    ).toEqual([]);
+                    if (mode !== "strict") expect(result.valid, mode).toBe(true);
+                }
+            });
+        },
+        60_000,
+    );
+
+    it("cites no content-type session for text between the Choice and the Fallback (#851)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "between-text.docx");
+            const stored = alternateContent(STORIES.comments.root("0")).replace("</mc:Choice>", "</mc:Choice>NOT-A-BRANCH");
+            writeFileSync(file, await buildDocx(usedStoryParts("comments", storyContentType("styles"), stored)));
+            for (const [mode, options] of RUNS) {
+                const found = (await validate(file, options)).issues.filter((issue) => issue.code === ID);
+                if (mode === "strict") {
+                    expect(found).toEqual([
+                        expect.objectContaining({
+                            severity: "error",
+                            path: "word/comments.xml",
+                            message: expect.stringContaining("ECMA-376 Part 1 (4th edition), clause 11.3"),
+                        }),
+                    ]);
+                    expect(found[0]?.message).not.toContain("session");
+                } else {
+                    expect(found, mode).toEqual([]);
+                }
+            }
+        });
+    }, 60_000);
+
     it.each(["endnotes", "footnotes"] as const)(
         "reports no mismatch for a used %s part whose stored root is an AlternateContent under word-valid",
         async (story) => {
@@ -741,6 +837,40 @@ describe("a story part whose stored root is an AlternateContent (#818, session 6
                     }),
                 ]);
                 expect(strict[0]?.message).not.toContain("session");
+            });
+        },
+        60_000,
+    );
+
+    // The rescope preserves verdicts for shapes no session stored. They
+    // retain the existing finding, without borrowing an observation (#847).
+    it.each([
+        ["a Strict root with the parameterized styles spelling", STORIES.comments.root("0").replace(W, STRICT_W), STYLES_CHARSET],
+        [
+            "an AlternateContent whose Choice requires the relationships namespace",
+            alternateContent(STORIES.comments.root("0"))
+                .replace("xmlns:w14=", `xmlns:r="${R}" xmlns:w14=`)
+                .replace('Requires="w14"', 'Requires="r"'),
+        ],
+        ["an AlternateContent whose Choice has text after the root", alternateContent(`${STORIES.comments.root("0")}UNPROBED`)],
+        [
+            "an AlternateContent whose Choice and Fallback both hold text",
+            alternateContent(`NOT-A-ROOT${STORIES.comments.root("0")}`).replace("<mc:Fallback/>", "<mc:Fallback>NOT-EMPTY</mc:Fallback>"),
+        ],
+    ])(
+        "keeps the verdict without a citation for %s",
+        async (_shape, stored, type = storyContentType("styles")) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "unprobed-root.docx");
+                writeFileSync(file, await buildDocx(usedStoryParts("comments", type, stored)));
+                for (const [mode, options] of RUNS) {
+                    const result = await validate(file, options);
+                    expect(result.valid, mode).toBe(false);
+                    const found = result.issues.filter((issue) => issue.code === ID);
+                    expect(found, mode).toEqual([expect.objectContaining({ severity: "error", path: "word/comments.xml" })]);
+                    expect(found[0]?.message, mode).not.toContain("session");
+                    if (mode === "strict") expect(found[0]?.message).toContain("ECMA-376 Part 1 (4th edition), clause 11.3");
+                }
             });
         },
         60_000,

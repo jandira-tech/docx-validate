@@ -34,7 +34,7 @@
  * reached glossary's styles part a main footer relationship also reaches,
  * while typings no session showed on a header or footer keep their
  * verdict. Session 58 (s58b) showed the other read stories: a used
- * comments, endnotes or footnotes part — its own root, the body's
+ * comments, endnotes or footnotes part — its own Transitional root, the body's
  * reference matching — typed with the styles type gets the recovery
  * offer, while the exact-typed styles part a comments, endnotes or
  * footnotes relationship nothing references also targets opens clean
@@ -63,7 +63,7 @@ import {
 import { NS, type Profile, type ValidationIssue } from "../../../lib/types";
 import type { ValidationContext, XmlPart } from "../../../lib/validation-context";
 import { wordReadTypedTargets } from "../../../lib/word-read-parts";
-import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
+import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 import { REPORTING_SEGMENT_ORDER } from "./word-part-content-type-generic";
 import {
     expectedContentTypesFor,
@@ -164,22 +164,25 @@ const segmentForMediaType = (mediaType: string): string | undefined =>
  * while the exact-typed styles part a comments, endnotes or footnotes
  * relationship nothing references also targets opens clean (s58a/s58b)
  * — the observed shape is the read story typed styles, not the styles
- * part co-reached. Session 58's rows were own-root parts, so its pairs
- * co-reach only a part whose effective root is the story's own (#803).
- * Session 63 (s63b) also refused a comments part whose stored root is an
- * mc:AlternateContent unwrapping to the comments root, typed with the
- * styles type exactly; that shape cites session 63, and the endnotes and
- * footnotes parts in it, or any inexact spelling of it, are unprobed and
- * keep the verdict they had before #785 (#818). Word refused
- * every shape whatever the Override says, so a matching reach on the
- * same part exempts none of it, and typings
- * no session showed keep their verdict. Main-document reaches only: a
- * glossary's own relationship co-reaches nothing here. The session-58
- * pairs also take the styles media type with a parameter, which session
- * 62 (s62c) refused; their finding cites that session instead of
- * session 58 (#802); session 62's rows stored the story's own root. A
- * padded spelling with no parameter, and any inexact spelling on the
- * header and footer pairs, stay unprobed and keep their verdict.
+ * part co-reached. Sessions 58 and 62 stored Transitional story roots
+ * (#803, #802); session 62 (s62c) showed the parameterized styles spelling.
+ * Session 63 (s63b) showed a stored mc:AlternateContent with one w14 Choice
+ * holding only the Transitional comments root, then an empty Fallback,
+ * typed styles exactly (#818). Session 65 (s65b–s65d) changed one thing at
+ * a time: text before that root in the Choice, text in the Fallback,
+ * Requires naming the Transitional Word namespace, or a Strict comments
+ * root in that Choice or stored directly in a Transitional package (#847).
+ * Those shapes cite session 65; text directly between branches supports
+ * no type citation because Word refused its comments-typed twin too (#851).
+ * Other Requires namespaces, a Strict root in the Fallback, other text
+ * positions within the Choice or Fallback or combinations of these edits,
+ * the endnotes and footnotes twins and the new
+ * shapes' other spellings are unprobed and keep their verdicts without a
+ * citation. Other effective-root wrappers remain unprobed for this type
+ * mismatch (#831, #837, #843). Main-document reaches only: a glossary's own
+ * relationship co-reaches nothing here. A padded styles spelling with no
+ * parameter, and the header and footer pairs' inexact spellings, stay
+ * unprobed and keep their verdict.
  */
 const READ_STORY_COREACH_SESSIONS: ReadonlyMap<string, string> = new Map([
     ["footer\nofficeDocument", "sessions 53 and 57"],
@@ -274,9 +277,9 @@ export const wordPartContentTypeMismatchFindings = async (
             isOwnRoot(parsed?.ok === true ? parsed.document.documentElement : null, segment);
         const childElements = (element: Element): Element[] =>
             Array.from(element.childNodes).filter((child): child is Element => child.nodeType === 1);
-        // The session a read story co-reach cites, or undefined when `entry`
-        // is none.
-        const storyCoreachSession = (entry: (typeof entries)[number]): string | undefined => {
+        // Keep the verdict of an unprobed co-reach without borrowing a
+        // session's citation (#847).
+        const readStoryCoreach = (entry: (typeof entries)[number]): { session?: string } | undefined => {
             const session = READ_STORY_COREACH_SESSIONS.get(`${entry.segment}\n${segmentForMediaType(mediaType)}`);
             if (
                 session === undefined ||
@@ -286,40 +289,77 @@ export const wordPartContentTypeMismatchFindings = async (
             ) {
                 return undefined;
             }
-            if (session !== "session 58") return exactSpelling ? session : undefined;
+            if (session !== "session 58") return exactSpelling ? { session } : undefined;
             if (!rootIsOwn(ctx.effectiveXml(part), entry.segment)) return undefined;
-            // Sessions 58 and 62 stored the story's own root: the exact
-            // spelling cites session 58, and the styles media type with a
-            // parameter session 62 (s62c), while a padded spelling with no
-            // parameter is unprobed (#802).
+            // Sessions 58 and 62 stored Transitional story roots. Session
+            // 65 (s65d) refused the exact-typed comments part with a Strict
+            // root directly stored in a Transitional package (#847).
             const stored = ctx.xml(part);
-            if (rootIsOwn(stored, entry.segment)) {
-                return exactSpelling ? session : declared.includes(";") ? "session 62" : undefined;
-            }
-            // A stored mc:AlternateContent root holding one Choice with
-            // nothing but the story's root, then one empty Fallback, so the
-            // selected branch is that Choice: session 63 (s63b) refused the
-            // comments part typed styles exactly. The other stories and
-            // spellings, and other stored roots the effective view unwraps
-            // to the story's root, such as an ignorable wrapper that
-            // processes its content, alone or inside a branch, a selected
-            // Fallback holding the root, or a Choice with no Fallback or
-            // beside another Choice, are unprobed (#818, #831, #837, #843).
             const storedRoot = stored?.ok === true ? stored.document.documentElement : null;
+            if (rootIsOwn(stored, entry.segment)) {
+                if (!exactSpelling && !declared.includes(";")) return undefined;
+                return {
+                    session:
+                        storedRoot?.namespaceURI === WORD_2006_NAMESPACE
+                            ? exactSpelling
+                                ? session
+                                : "session 62"
+                            : entry.segment === "comments" && exactSpelling && storedRoot?.namespaceURI === WORD_STRICT_NAMESPACE
+                              ? "session 65"
+                              : undefined,
+                };
+            }
+            // Session 63 (s63b) stored one w14 Choice holding only the
+            // Transitional comments root, then an empty Fallback. Session
+            // 65 (s65b/s65c) changed one thing at a time: text before that
+            // root, text in the Fallback, Requires naming w, or a Strict
+            // root in the Choice. Text between branches is refused even
+            // typed comments (#851), so it supports no type citation.
             const [choice, fallback, ...rest] = storedRoot ? childElements(storedRoot) : [];
-            const choiceHoldsOwnRoot =
-                storedRoot?.localName === "AlternateContent" &&
-                storedRoot.namespaceURI === NS.MC &&
-                rest.length === 0 &&
-                choice?.namespaceURI === NS.MC &&
-                choice.localName === "Choice" &&
-                childElements(choice).every((child) => isOwnRoot(child, entry.segment)) &&
-                fallback?.namespaceURI === NS.MC &&
-                fallback.localName === "Fallback" &&
-                childElements(fallback).length === 0;
-            return entry.segment === "comments" && exactSpelling && choiceHoldsOwnRoot ? "session 63" : undefined;
+            if (
+                entry.segment !== "comments" ||
+                !exactSpelling ||
+                storedRoot?.localName !== "AlternateContent" ||
+                storedRoot.namespaceURI !== NS.MC ||
+                rest.length !== 0 ||
+                choice?.namespaceURI !== NS.MC ||
+                choice.localName !== "Choice" ||
+                !childElements(choice).every((child) => isOwnRoot(child, entry.segment)) ||
+                fallback?.namespaceURI !== NS.MC ||
+                fallback.localName !== "Fallback" ||
+                childElements(fallback).length !== 0
+            ) {
+                return undefined;
+            }
+            const [storyRoot, ...otherRoots] = childElements(choice);
+            const isCharacterData = (node: Node): boolean =>
+                (node.nodeType === 3 || node.nodeType === 4) && /[^ \t\r\n]/.test(node.nodeValue ?? "");
+            if (Array.from(storedRoot.childNodes).some(isCharacterData)) return undefined;
+            if (storyRoot === undefined || otherRoots.length !== 0) return {};
+            const required = (choice.getAttribute("Requires") ?? "").trim().split(/[ \t\r\n]+/);
+            if (required.length !== 1) return {};
+            const requiredNamespace = choice.lookupNamespaceURI(required[0]!);
+            const choiceText = Array.from(choice.childNodes).some(isCharacterData);
+            const fallbackText = Array.from(fallback.childNodes).some(isCharacterData);
+            const transitionalRoot = storyRoot?.namespaceURI === WORD_2006_NAMESPACE;
+            if (requiredNamespace === NS.W14) {
+                if (!choiceText && !fallbackText) {
+                    return { session: transitionalRoot ? "session 63" : "session 65" };
+                }
+                const trailingText = Array.from(choice.childNodes)
+                    .slice(Array.from(choice.childNodes).indexOf(storyRoot) + 1)
+                    .some(isCharacterData);
+                return { session: transitionalRoot && !trailingText && choiceText !== fallbackText ? "session 65" : undefined };
+            }
+            return {
+                session:
+                    requiredNamespace === WORD_2006_NAMESPACE && transitionalRoot && !choiceText && !fallbackText
+                        ? "session 65"
+                        : undefined,
+            };
         };
-        const isReadStoryCoreach = (entry: (typeof entries)[number]): boolean => storyCoreachSession(entry) !== undefined;
+        const storyCoreachSession = (entry: (typeof entries)[number]): string | undefined => readStoryCoreach(entry)?.session;
+        const isReadStoryCoreach = (entry: (typeof entries)[number]): boolean => readStoryCoreach(entry) !== undefined;
         // The observed set covers the read header/footer swaps, the eagerly
         // parsed reaches — the main document and the main document's own
         // styles, settings and numbering relationships, which need no usage

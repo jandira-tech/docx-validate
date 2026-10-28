@@ -750,17 +750,33 @@ reached glossary's own styles part a main footer relationship also reaches
 (s57d); and session 58 (s58b,
 [#785](https://github.com/jandira-tech/docx-validate/issues/785)) the
 other read stories: a used comments, endnotes or footnotes part the body
-references holding its own root
-([#803](https://github.com/jandira-tech/docx-validate/issues/803); a comments
-part whose stored root is an `mc:AlternateContent` holding one Choice with
-only its own root, then one empty Fallback, typed styles exactly, session 63
-s63b, [#818](https://github.com/jandira-tech/docx-validate/issues/818),
-[#837](https://github.com/jandira-tech/docx-validate/issues/837),
-[#843](https://github.com/jandira-tech/docx-validate/issues/843)) and
+references holding its own Transitional root
+([#803](https://github.com/jandira-tech/docx-validate/issues/803)) and
 typed with the styles type, a spelling with a parameter included (session
-62 s62c, [#802](https://github.com/jandira-tech/docx-validate/issues/802)),
-while the exact-typed styles part
-a comments, endnotes or footnotes relationship nothing references also
+62 s62c, [#802](https://github.com/jandira-tech/docx-validate/issues/802)).
+Session 63 (s63b) showed a comments part whose stored root is an
+`mc:AlternateContent` holding one Choice requiring the w14 namespace with
+only its own Transitional root, then one empty Fallback, typed styles exactly
+([#818](https://github.com/jandira-tech/docx-validate/issues/818)); XML
+whitespace, comments and processing instructions preserve that citation.
+Session 65 (s65b–s65d, two runs, all readings agree) showed five more shapes:
+text before the root inside that Choice, text in the Fallback, a Choice
+requiring the Transitional Word namespace instead of w14, a Strict comments
+root inside the w14 Choice, and a Strict root stored directly in a
+Transitional package. Each was refused typed styles exactly and opened clean
+typed comments, so these findings cite session 65
+([#847](https://github.com/jandira-tech/docx-validate/issues/847)). Text
+directly between the branches was refused typed comments too, so it supports
+no content-type citation; #851 owns its `mce-malformed` finding. Other
+Requires namespaces, a Strict root in the Fallback, text elsewhere inside the Choice or Fallback, or combinations of these edits, the endnotes and footnotes twins, and other spellings of
+the new shapes are unprobed and keep their previous verdicts without
+borrowing a citation. Other stored roots that the effective view unwraps to
+the story's root, including a selected Fallback and a Choice with no Fallback
+or beside another Choice, remain unprobed for this type mismatch
+([#837](https://github.com/jandira-tech/docx-validate/issues/837),
+[#843](https://github.com/jandira-tech/docx-validate/issues/843)). The
+exact-typed styles part that a comments, endnotes or footnotes relationship
+nothing references also
 targets opens clean (s58a/s58b) — the observed shape is the read story
 typed styles, not the styles part co-reached. Word refused every co-reach
 shape whatever the Override
@@ -792,8 +808,10 @@ the numbering reach typed footnotes or endnotes (s59a)
 that showed its pair; the
 footer co-reach pairs cite sessions 53 and 57, the header co-reach session
 57 (#739, #778), and the comments, endnotes and footnotes pairs typed
-styles session 58, or session 62 when the styles type carries a
-parameter (#785, #802). The finding names
+styles session 58 for a directly stored Transitional root, or session 62
+when that type carries a parameter (#785, #802); the observed comments
+AlternateContent and Strict-root shapes cite sessions 63 and 65 as described
+above. The finding names
 the relationship, declared
 type and expected type, errors and blocks Word-valid; lenient warns. Unread
 stories, a related fontTable or webSettings part, the glossary's reaches,
