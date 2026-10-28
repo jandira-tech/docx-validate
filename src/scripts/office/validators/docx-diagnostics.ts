@@ -526,12 +526,33 @@ function collectTrackedChanges(rel: string, dom: Document, inventory: MutableDoc
 function textLabel(elem: Element, local: string): string {
     if (local === "delText") return "deleted text";
     if (local === "delInstrText") return "deleted field instruction";
-    if (local === "instrText") return hasWordAncestor(elem, "del") ? "deleted field instruction" : "field instruction";
-    if (hasWordAncestor(elem, "ins")) return "inserted text";
-    if (hasWordAncestor(elem, "del")) return "deleted text";
-    if (hasWordAncestor(elem, "moveFrom")) return "moved-from text";
-    if (hasWordAncestor(elem, "moveTo")) return "moved-to text";
-    if (hasWordAncestor(elem, "comment")) return "comment text";
+
+    let hasDel = false;
+    let hasIns = false;
+    let hasMoveFrom = false;
+    let hasMoveTo = false;
+    let hasComment = false;
+
+    for (let node = elem.parentNode; node; node = node.parentNode) {
+        if (node.nodeType !== 1) continue;
+        const parent = node as Element;
+        if (isWordElement(parent)) {
+            const parentLocal = localName(parent);
+            if (parentLocal === "del") hasDel = true;
+            else if (parentLocal === "ins") hasIns = true;
+            else if (parentLocal === "moveFrom") hasMoveFrom = true;
+            else if (parentLocal === "moveTo") hasMoveTo = true;
+            else if (parentLocal === "comment") hasComment = true;
+        }
+    }
+
+    if (local === "instrText") return hasDel ? "deleted field instruction" : "field instruction";
+    if (hasIns) return "inserted text";
+    if (hasDel) return "deleted text";
+    if (hasMoveFrom) return "moved-from text";
+    if (hasMoveTo) return "moved-to text";
+    if (hasComment) return "comment text";
+
     return "visible text";
 }
 
