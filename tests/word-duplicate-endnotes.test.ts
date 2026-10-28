@@ -14,7 +14,10 @@
  * unprobed, so the rule judges only the main document's sidecar. Two
  * unreferenced footnotes relationships opened clean (session 45 s45g);
  * the referenced pair, which session 63 s63d showed Word refusing, has
- * its own rule (#827). Specimens are built from MINIMAL_PARTS the way
+ * its own rule (#827). The octet-stream row also draws
+ * `word-endnote-reference-missing`: such a part defines no note whatever
+ * its name (session 64 s64b, #829), so the body reference to the note only
+ * it holds dangles. Specimens are built from MINIMAL_PARTS the way
  * the session 62 builder built its rows.
  */
 
@@ -186,7 +189,6 @@ describe("word-valid duplicate endnotes relationship (#807; session 62)", { time
     });
 
     it.each([
-        ["s62c endnotes-second-relationship-octet-stream", secondRelationshipOctetStream],
         ["s62c endnotes-second-relationship-xml-calibration", secondRelationshipXmlCalibration],
         ["s62e two-endnotes-relationships-first-holds-1", () => twoEndnotes("1", "5", true)],
         ["s62e two-endnotes-relationships-both-hold-1", () => twoEndnotes("1", "1", true)],
@@ -195,6 +197,32 @@ describe("word-valid duplicate endnotes relationship (#807; session 62)", { time
             const result = await validate(await write(dir, name, make), { profile: "word-valid" });
             expect(result.valid).toBe(false);
             expect(errorIssues(result)).toEqual([duplicateEndnotesFinding()]);
+        });
+    });
+
+    it("rejects s62c's octet-stream second part with the duplicate finding and the dangling reference", async () => {
+        await withTempDir(async (dir) => {
+            const result = await validate(
+                await write(dir, "s62c endnotes-second-relationship-octet-stream", secondRelationshipOctetStream),
+                {
+                    profile: "word-valid",
+                },
+            );
+            expect(result.valid).toBe(false);
+            // The note only the octet-stream part holds defines nothing
+            // (session 64 s64b, #829), so the body reference dangles too.
+            expect(errorIssues(result)).toEqual([
+                {
+                    severity: "error",
+                    code: "word-endnote-reference-missing",
+                    path: "word/document.xml",
+                    message:
+                        "An endnote reference uses id 1, and this package has no w:endnote with that id. " +
+                        "Microsoft Word offers to recover the file. " +
+                        "Remove the w:endnoteReference, or add the matching endnote.",
+                },
+                duplicateEndnotesFinding(),
+            ]);
         });
     });
 

@@ -995,7 +995,15 @@ session 61 (s61a/s61b, same evidence, two runs, all readings agree) offered
 recovery for a body reference whose note sat only in a `word/footnotes.xml` or
 `word/endnotes.xml` no relationship names, while the same part with nothing
 referencing it opened clean
-([#797](https://github.com/jandira-tech/docx-validate/issues/797)). References
+([#797](https://github.com/jandira-tech/docx-validate/issues/797)). A notes
+part the content-types stream types `application/octet-stream` defines no
+note, whatever it is called: session 63 (s63c, same evidence, two runs, all
+readings agree) offered recovery for a body footnote reference whose note sat
+in `word/notes.bin` typed octet-stream by its Override, and session 64 (s64b,
+same evidence, two runs, all readings agree) repeated that refusal for the
+same row and for `word/notes.xml` and `word/footnotes.xml` alike, so the
+type, not the name, makes Word refuse the part
+([#829](https://github.com/jandira-tech/docx-validate/issues/829)). References
 read through the main document (the main document and the stories it makes
 Word read) use only the notes parts its own relationships name: session 63
 (s63c, same evidence, two runs, all readings agree) offered recovery for a
