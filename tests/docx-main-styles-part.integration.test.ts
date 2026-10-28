@@ -18,6 +18,8 @@ import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const W14 = "http://schemas.microsoft.com/office/word/2010/wordml";
+const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
 const REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 const STYLES_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml";
 const BORDERS = ["top", "left", "bottom", "right"]
@@ -117,6 +119,83 @@ const nonXmlStyles = (document = DOCUMENT): Record<string, string> => ({
     "word/glossary/styles.xml": OTHER_STYLES,
 });
 
+/**
+ * The #699 shapes: a reached glossary at `word/zglossary/` relating its own
+ * `OTHER_STYLES`, beside an unrelated `word/styles.xml` that defines both
+ * styles the main document uses. `mainRels` names the main document's own
+ * relationships, so only the by-name fallback can choose the styles part.
+ */
+const glossaryStylesUnrelated = (mainRels: string, document = DOCUMENT): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    "[Content_Types].xml": withOverrides(
+        override("word/zglossary/document.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml"),
+        override("word/zglossary/styles.xml", STYLES_TYPE),
+    ),
+    "word/_rels/document.xml.rels": mainRels,
+    "word/document.xml": document,
+    "word/styles.xml": MAIN_STYLES,
+    "word/zglossary/document.xml": GLOSSARY_DOCUMENT,
+    "word/zglossary/_rels/document.xml.rels": relationships(relationship("rId1", "styles", "styles.xml")),
+    "word/zglossary/styles.xml": OTHER_STYLES,
+});
+
+/** Shape a: no styles relationship at all. */
+const NO_STYLES_RELATIONSHIP = glossaryStylesUnrelated(relationships(relationship("rId9", "glossaryDocument", "zglossary/document.xml")));
+
+/** Shape b: the styles relationship names a part the package does not hold. */
+const MISSING_STYLES_TARGET = glossaryStylesUnrelated(
+    relationships(relationship("rId1", "styles", "missing-styles.xml"), relationship("rId9", "glossaryDocument", "zglossary/document.xml")),
+);
+
+/** Shape c: the styles relationship is External. */
+const EXTERNAL_STYLES_TARGET = glossaryStylesUnrelated(
+    relationships(
+        `<Relationship Id="rId1" Type="${REL}/styles" Target="https://example.invalid/styles.xml" TargetMode="External"/>`,
+        relationship("rId9", "glossaryDocument", "zglossary/document.xml"),
+    ),
+);
+
+/** Shape e: `_rels/.rels` is malformed, so no main document is known. */
+const MALFORMED_PACKAGE_RELS: Record<string, string> = {
+    ...glossaryStylesUnrelated(
+        relationships(relationship("rId1", "styles", "styles.xml"), relationship("rId9", "glossaryDocument", "zglossary/document.xml")),
+    ),
+    "_rels/.rels": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships><Relationship Id="rId1"`,
+};
+
+/**
+ * Finding 3: the styles relationship sits inside `mc:AlternateContent`, so
+ * lenient's stored view reads no direct styles relationship and only the
+ * by-name fallback can choose the styles part.
+ */
+const STYLES_RELATIONSHIP_IN_ALTERNATE_CONTENT: Record<string, string> = {
+    ...glossaryStylesUnrelated(relationships(relationship("rId9", "glossaryDocument", "zglossary/document.xml"))),
+    "word/_rels/document.xml.rels":
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships" xmlns:mc="${MC}">` +
+        `<mc:AlternateContent><mc:Choice Requires="x">${relationship("rId1", "styles", "styles.xml")}</mc:Choice>` +
+        `<mc:Fallback>${relationship("rId1", "styles", "styles.xml")}</mc:Fallback></mc:AlternateContent>` +
+        `${relationship("rId9", "glossaryDocument", "zglossary/document.xml")}</Relationships>`,
+};
+
+/**
+ * Finding 11, pinned: the styles relationship sits inside an understood
+ * `mc:Choice` and names `word/MyStyles.xml`, a name the by-name fallback
+ * never matches. Word-valid and strict follow it through the markup-
+ * compatibility view; lenient's stored view reads no direct relationship
+ * and runs no style check — the known lenient split.
+ */
+const STYLES_RELATIONSHIP_IN_CHOICE_ONLY: Record<string, string> = {
+    ...Object.fromEntries(Object.entries(MINIMAL_PARTS).filter(([name]) => name !== "word/styles.xml")),
+    "[Content_Types].xml": withOverrides(override("word/MyStyles.xml", STYLES_TYPE)),
+    "word/_rels/document.xml.rels":
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships" xmlns:mc="${MC}" xmlns:w14="${W14}" mc:Ignorable="w14">` +
+        `<mc:AlternateContent><mc:Choice Requires="w14">${relationship("rId1", "styles", "MyStyles.xml")}</mc:Choice>` +
+        `<mc:Fallback/></mc:AlternateContent></Relationships>`,
+    "word/MyStyles.xml": OTHER_STYLES,
+};
+
 const validated = async (
     parts: Record<string, string>,
     profile: "strict" | "lenient" | "word-valid",
@@ -204,5 +283,88 @@ describe("a styles relationship naming a stored non-XML part judges nothing by n
             expect(await fs.readFile(path.join(dir, "word/glossary/styles.xml"), "utf-8")).toBe(OTHER_STYLES);
             expect(await fs.readFile(path.join(dir, "word/xstyles.bin"), "utf-8")).toBe(MAIN_STYLES);
         });
+    });
+});
+
+describe("the by-name fallback judges only the main document's folder (#699)", () => {
+    it.each(PROFILES)("without a styles relationship, word/styles.xml is judged, never the glossary's (%s)", async (profile) => {
+        const issues = await validated(NO_STYLES_RELATIONSHIP, profile);
+        expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
+        expect(codesAt(issues, "latent-styles-missing")).toEqual(["word/styles.xml"]);
+        expect(codesAt(issues, "cell-borders-redundant")).toEqual(["word/document.xml"]);
+        expect(issues.filter((issue) => issue.path === "word/zglossary/styles.xml")).toEqual([]);
+    });
+
+    it.each(PROFILES)(
+        "a styles relationship naming a missing part falls back to word/styles.xml, never the glossary's (%s)",
+        async (profile) => {
+            const issues = await validated(MISSING_STYLES_TARGET, profile);
+            expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
+            expect(codesAt(issues, "latent-styles-missing")).toEqual(["word/styles.xml"]);
+            expect(codesAt(issues, "cell-borders-redundant")).toEqual(["word/document.xml"]);
+            expect(issues.filter((issue) => issue.path === "word/zglossary/styles.xml")).toEqual([]);
+        },
+    );
+
+    it.each(PROFILES)("an External styles relationship falls back to word/styles.xml, never the glossary's (%s)", async (profile) => {
+        const issues = await validated(EXTERNAL_STYLES_TARGET, profile);
+        expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
+        expect(codesAt(issues, "latent-styles-missing")).toEqual(["word/styles.xml"]);
+        expect(codesAt(issues, "cell-borders-redundant")).toEqual(["word/document.xml"]);
+        expect(issues.filter((issue) => issue.path === "word/zglossary/styles.xml")).toEqual([]);
+    });
+
+    it.each(["strict", "word-valid"] as const)(
+        "a malformed package rels still falls back to word/styles.xml, never the glossary's (%s)",
+        async (profile) => {
+            const issues = await validated(MALFORMED_PACKAGE_RELS, profile);
+            expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
+            expect(codesAt(issues, "latent-styles-missing")).toEqual(["word/styles.xml"]);
+            expect(issues.filter((issue) => issue.path === "word/zglossary/styles.xml")).toEqual([]);
+        },
+    );
+
+    it("lenient stops at the malformed package rels before any style check", async () => {
+        const issues = await validated(MALFORMED_PACKAGE_RELS, "lenient");
+        expect(codesAt(issues, "xml-syntax")).toEqual(["_rels/.rels", "_rels/.rels"]);
+        expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
+        expect(codesAt(issues, "latent-styles-missing")).toEqual([]);
+    });
+
+    it.each(PROFILES)("a styles relationship inside mc:AlternateContent still judges word/styles.xml (%s)", async (profile) => {
+        const issues = await validated(STYLES_RELATIONSHIP_IN_ALTERNATE_CONTENT, profile);
+        expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
+        expect(codesAt(issues, "latent-styles-missing")).toEqual(["word/styles.xml"]);
+        expect(issues.filter((issue) => issue.path === "word/zglossary/styles.xml")).toEqual([]);
+    });
+
+    it("repair defines a missing well-known style in word/styles.xml when no relationship names one, never the glossary's", async () => {
+        await withTempDir(async (dir) => {
+            const document = DOCUMENT.replace("<w:t>Title</w:t>", `<w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:t>Title</w:t>`);
+            for (const [name, content] of Object.entries(
+                glossaryStylesUnrelated(relationships(relationship("rId9", "glossaryDocument", "zglossary/document.xml")), document),
+            )) {
+                await fs.mkdir(path.dirname(path.join(dir, name)), { recursive: true });
+                await fs.writeFile(path.join(dir, name), content, "utf-8");
+            }
+            const repairs = await new DOCXSchemaValidator({ unpackedDir: dir }).repairMissingStyleDefinitions();
+            expect(repairs).toBe(1);
+            expect(await fs.readFile(path.join(dir, "word/styles.xml"), "utf-8")).toContain(`w:styleId="CommentReference"`);
+            expect(await fs.readFile(path.join(dir, "word/zglossary/styles.xml"), "utf-8")).toBe(OTHER_STYLES);
+        });
+    });
+});
+
+describe("a styles relationship only an understood mc:Choice carries (#699 finding 11, pinned)", () => {
+    it.each(["strict", "word-valid"] as const)("the named styles part is judged (%s)", async (profile) => {
+        const issues = await validated(STYLES_RELATIONSHIP_IN_CHOICE_ONLY, profile);
+        expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
+        expect(codesAt(issues, "latent-styles-missing")).toEqual(["word/MyStyles.xml"]);
+    });
+
+    it("lenient's stored view reads no direct relationship and runs no style check", async () => {
+        const issues = await validated(STYLES_RELATIONSHIP_IN_CHOICE_ONLY, "lenient");
+        expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
+        expect(codesAt(issues, "latent-styles-missing")).toEqual([]);
     });
 });
