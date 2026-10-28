@@ -621,6 +621,86 @@ describe("historical sidecars and masters under every stored spelling (#1017)", 
     });
 });
 
+// #1037: the historical folders are matched as OPC compares part names, so a
+// folder segment spelled with an escaped unreserved character (`%5Frels`,
+// `%73lides`, `slide%4Dasters`) is inside them, as `canonicalPartName` reads it.
+describe("historical folders spelled with escaped unreserved characters (#1037)", () => {
+    const relationship = (id: string, type: string, target: string) =>
+        `<Relationship Id="${id}" Type="${R_NS}/${type}" Target="${target}"/>`;
+    const notesSidecar = () => relsXml(relationship("rId1", "notesSlide", "../notesSlides/notesSlide1.xml"));
+
+    it("judges an orphan sidecar pair under ppt/slides/%5Frels", async () => {
+        await withTempDir(async (dir) => {
+            for (const n of [1, 2]) {
+                await writeFile(path.join(dir, "ppt", "slides", "%5Frels", `slide${n}.xml.rels`), notesSidecar());
+            }
+            expect((await makeValidator(dir).validateNotesSlideReferences()).issues.map((issue) => [issue.code, issue.message])).toEqual([
+                ["notes-shared", "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: slide1, slide2"],
+                ["notes-shared-detail", "    - ppt/slides/%5Frels/slide1.xml.rels"],
+                ["notes-shared-detail", "    - ppt/slides/%5Frels/slide2.xml.rels"],
+            ]);
+        });
+    });
+
+    it("judges a sidecar under ppt/%73lides/_rels beside its plain twin", async () => {
+        await withTempDir(async (dir) => {
+            const twoLayouts = relsXml(
+                relationship("rId1", "slideLayout", "../slideLayouts/slideLayout1.xml") +
+                    relationship("rId2", "slideLayout", "../slideLayouts/slideLayout2.xml"),
+            );
+            await writeFile(path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"), twoLayouts);
+            await writeFile(path.join(dir, "ppt", "%73lides", "_rels", "slide1.xml.rels"), twoLayouts);
+            expect((await makeValidator(dir).validateNoDuplicateSlideLayouts()).issues.map((issue) => issue.path)).toEqual([
+                "ppt/%73lides/_rels/slide1.xml.rels",
+                "ppt/slides/_rels/slide1.xml.rels",
+            ]);
+        });
+    });
+
+    it("judges a master under ppt/slide%4Dasters", async () => {
+        await withTempDir(async (dir) => {
+            await writeFile(
+                path.join(dir, "ppt", "slide%4Dasters", "slideMaster1.xml"),
+                presentationXml('<p:sldLayoutIdLst><p:sldLayoutId id="2147483649" r:id="rId9"/></p:sldLayoutIdLst>'),
+            );
+            await writeFile(path.join(dir, "ppt", "slide%4Dasters", "_rels", "slideMaster1.xml.rels"), relsXml(""));
+            expect((await makeValidator(dir).validateSlideLayoutIds()).issues.map((issue) => [issue.code, issue.path])).toEqual([
+                ["sldlayout-missing-rid", "ppt/slide%4Dasters/slideMaster1.xml"],
+            ]);
+        });
+    });
+
+    it.each(["lenient", "word-valid"] as const)(
+        "keeps a %s run invalid when two sidecars under ppt/slides/%5Frels share a notes slide",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "deck.pptx");
+                await fs.writeFile(
+                    file,
+                    await buildPptx({
+                        ...MINIMAL_PPTX_PARTS,
+                        "ppt/slides/%5Frels/slide9.xml.rels": notesSidecar(),
+                        "ppt/slides/%5Frels/slide10.xml.rels": notesSidecar(),
+                        "ppt/notesSlides/notesSlide1.xml":
+                            `<?xml version="1.0" encoding="UTF-8"?>\n` +
+                            `<p:notes xmlns:p="${PRESENTATIONML_NAMESPACE}" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="${R_NS}">` +
+                            `<p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/></p:spTree></p:cSld></p:notes>`,
+                        "[Content_Types].xml": (MINIMAL_PPTX_PARTS["[Content_Types].xml"] ?? "").replace(
+                            "</Types>",
+                            '<Override PartName="/ppt/notesSlides/notesSlide1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.notesSlide+xml"/></Types>',
+                        ),
+                    }),
+                );
+                const result = await validate(file, { profile });
+                expect(result.issues.filter((issue) => issue.code === "notes-shared").map((issue) => issue.message)).toEqual([
+                    "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: slide10, slide9",
+                ]);
+                expect(result.valid).toBe(false);
+            });
+        },
+    );
+});
+
 // #1018: a master's relationships part is found by OPC part-name
 // equivalence, as the slide checks find a slide's, so a sidecar stored under
 // an escaped spelling is read, not reported missing.

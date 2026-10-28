@@ -158,8 +158,10 @@ relationship), `sldlayout-missing-rid` (a master's `sldLayoutId` naming no
 relationships part). The presentation is the part the package's
 `officeDocument` relationship names
 ([#1013](https://github.com/jandira-tech/docx-validate/issues/1013)). The two
-historical folders match ASCII case-insensitively, and every stored spelling of
-two equivalent part names in them is judged
+historical folders match as OPC compares part names, ASCII case-insensitively
+and with escaped unreserved characters decoded, so `ppt/slides/%5Frels/` is one
+of them ([#1037](https://github.com/jandira-tech/docx-validate/issues/1037)), and
+every stored spelling of two equivalent part names in them is judged
 ([#1017](https://github.com/jandira-tech/docx-validate/issues/1017)). A
 master's relationships part is found under any equivalent spelling
 ([#1018](https://github.com/jandira-tech/docx-validate/issues/1018)). Outside

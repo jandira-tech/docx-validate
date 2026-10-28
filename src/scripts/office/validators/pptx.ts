@@ -181,7 +181,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
         // glob "ppt/slideMasters/*.xml" — one level only, no _rels subdir,
         // ASCII case-insensitively (#1017) — and every master the
         // presentation relates, wherever stored (#1013).
-        const slideMasters = await this.judgedParts(/^ppt\/slideMasters\/[^/]+\.xml$/i, "slideMaster");
+        const slideMasters = await this.judgedParts(/^ppt\/slidemasters\/[^/]+\.xml$/, "slideMaster");
 
         if (slideMasters.length === 0) {
             return { valid: true, issues: [] };
@@ -393,15 +393,17 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
      * whose targets they hold: every stored `ppt/slides/_rels/*.xml.rels`, as
      * the Python port listed them, and the sidecar of every slide the
      * presentation relates, wherever stored (#1013). The historical pattern
-     * matches ASCII case-insensitively, as OPC compares part names, and every
-     * stored spelling of two equivalent names is judged, as the file-system
-     * walk before #1013 judged them (#1017). A sidecar's folder is the parent
-     * of its `_rels` folder, as its stored name spells it.
+     * matches each stored name's canonical form, ASCII-lowercased with its
+     * escaped unreserved characters decoded, as OPC compares part names, so
+     * `ppt/slides/%5Frels/` is inside it (#1037); every stored spelling of two
+     * equivalent names is judged, as the file-system walk before #1013 judged
+     * them (#1017). A sidecar's folder is the parent of its `_rels` folder, as
+     * its stored name spells it.
      */
     private async slideRelationshipsParts(): Promise<Array<{ file: string; folder: string }>> {
         const entries = packageEntries(this.unpackedDir);
         const names = [...entries.keys()];
-        const judged = new Set(names.filter((name) => /^ppt\/slides\/_rels\/[^/]+\.xml\.rels$/i.test(name)));
+        const judged = new Set(names.filter((name) => /^ppt\/slides\/_rels\/[^/]+\.xml\.rels$/.test(canonicalPartName(name))));
         for (const slide of await this.presentationRelatedParts(names, "slide")) {
             const name = sidecarOf(names, slide);
             if (name !== undefined) judged.add(name);
@@ -413,8 +415,9 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
 
     /**
      * The stored parts a check judges, each stored name once, in code-unit
-     * order: every one whose name matches `historical`, as the Python port
-     * listed them (#1017), and those the presentation relates by a `segment`
+     * order: every one whose canonical name (`canonicalPartName`, ASCII
+     * lowercase) matches `historical`, as the Python port listed them (#1017,
+     * #1037), and those the presentation relates by a `segment`
      * relationship, wherever stored (#1013). Each comes with the file of its
      * relationships part, found by OPC part-name equivalence (#1018), when
      * one is stored.
@@ -425,7 +428,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
     ): Promise<Array<{ name: string; file: string; sidecar: string | undefined }>> {
         const entries = packageEntries(this.unpackedDir);
         const names = [...entries.keys()];
-        const judged = new Set(names.filter((name) => historical.test(name)));
+        const judged = new Set(names.filter((name) => historical.test(canonicalPartName(name))));
         for (const part of await this.presentationRelatedParts(names, segment)) judged.add(part);
         return [...judged]
             .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
