@@ -309,6 +309,11 @@ export const isWordBlockingIssue = (
         // references an endnote; the same pair with no reference opens
         // clean (#807).
         case "word-duplicate-endnotes-relationship":
+        // Word session 63 (s63d) offers recovery for two footnotes
+        // relationships in the main document's sidecar when the body
+        // references a footnote; the unreferenced pair opened clean
+        // (session 45 s45g, #827).
+        case "word-duplicate-footnotes-relationship":
         case "word-numbering-picture-bullet":
         case "word-footnote-reference-missing":
         // Word session 58 (s58a) offers recovery for a dangling endnote

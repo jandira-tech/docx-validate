@@ -824,6 +824,8 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "keep a single numbering relationship in the part's .rels file";
         case "word-duplicate-endnotes-relationship":
             return "keep a single endnotes relationship in the part's .rels file";
+        case "word-duplicate-footnotes-relationship":
+            return "keep a single footnotes relationship in the part's .rels file";
         default:
             return xsdRepairAction(issue);
     }

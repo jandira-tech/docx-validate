@@ -55,6 +55,7 @@ import {
     wordDuplicateStylesRelationshipCheck,
     wordDuplicateNumberingRelationshipCheck,
     wordDuplicateEndnotesRelationshipCheck,
+    wordDuplicateFootnotesRelationshipCheck,
 } from "./word-duplicate-relationships";
 import { wordChoiceRequiresUndeclaredCheck } from "./word-choice-requires";
 import { wordSdtIdEmptyCheck } from "./word-sdt-id";
@@ -121,6 +122,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordDuplicateStylesRelationshipCheck,
     wordDuplicateNumberingRelationshipCheck,
     wordDuplicateEndnotesRelationshipCheck,
+    wordDuplicateFootnotesRelationshipCheck,
     wordHyperlinkRelationshipCheck,
     wordHeaderFooterRelationshipCheck,
     wordPartReferenceRelationshipCheck,

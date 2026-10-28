@@ -45,7 +45,7 @@
  * Types. Two `numbering` relationships make Word offer to
  * recover the file the same way; one opens clean.
  * Two unreferenced `footnotes` relationships open clean
- * (session 45 s45g); a referenced pair is unprobed.
+ * (session 45 s45g).
  *
  * Two `endnotes` relationships in the main document's relationships
  * part make Word offer to recover the file when the body references
@@ -59,6 +59,16 @@
  * effective content: a reference only in a header, a footnote or a
  * comment is unprobed and does not count.
  *
+ * Two `footnotes` relationships in the main document's relationships
+ * part make Word offer to recover the file when the body references
+ * a footnote (#827; session 63, s63d, two runs, all readings agree):
+ * Word offered recovery whether the second part held another id or
+ * the same footnote 1, while the unreferenced pair opened clean
+ * (session 45 s45g). The footnotes rule judges like the endnotes
+ * rule — only the main document's sidecar, gated on the main
+ * document's own effective content holding a `w:footnoteReference`;
+ * a reached glossary's own pair is unprobed.
+ *
  * Scope (#717; sessions 49, 50 and 54, Word 16.115): two of one kind in
  * a reached glossary's own relationships part — to two parts in its
  * folder — is refused for styles, numbering, settings and fontTable
@@ -71,11 +81,11 @@
  * document a main-document `glossaryDocument` relationship reaches,
  * found by relationship as `wordStoryRootParts` finds them — and a
  * relationships part no story root owns is not judged. The endnotes
- * rule is narrower still (#807): it judges only the main document's
- * sidecar — a reached glossary's own pair is unprobed — and only when
- * that main document's own effective content holds a
- * `w:endnoteReference`. Lenient output
- * is unchanged.
+ * and footnotes rules are narrower still (#807, #827): each judges
+ * only the main document's sidecar — a reached glossary's own pair is
+ * unprobed — and only when that main document's own effective content
+ * holds a `w:endnoteReference` / `w:footnoteReference`. Lenient
+ * output is unchanged.
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
@@ -217,7 +227,7 @@ export const wordDuplicateNumberingRelationshipCheck: CheckDefinition = {
  * The main documents with their own relationships parts: the
  * `officeDocument` story roots that are not glossaries — a reached
  * glossary's entries carry `via: "glossary"` (#593) — so a glossary's
- * own endnotes pair stays unjudged (#807).
+ * own endnotes or footnotes pair stays unjudged (#807, #827).
  */
 const mainDocumentRelsParts = async (
     ctx: ValidationContext,
@@ -239,12 +249,14 @@ const mainDocumentRelsParts = async (
     return pairs;
 };
 
-/** Whether the main document's own effective content holds a `w:endnoteReference`, in either WordprocessingML namespace. */
-const referencesEndnote = (ctx: ValidationContext, main: string): boolean => {
+/**
+ * Whether the main document's own effective content holds a
+ * `w:<localName>` reference, in either WordprocessingML namespace.
+ */
+const referencesNote = (ctx: ValidationContext, main: string, localName: "endnoteReference" | "footnoteReference"): boolean => {
     const parsed = ctx.effectiveXml(main);
     return (
-        parsed?.ok === true &&
-        WORD_PARAGRAPH_NAMESPACES.some((ns) => getElementsByTagNameNSAll(parsed.document, ns, "endnoteReference").length > 0)
+        parsed?.ok === true && WORD_PARAGRAPH_NAMESPACES.some((ns) => getElementsByTagNameNSAll(parsed.document, ns, localName).length > 0)
     );
 };
 
@@ -258,10 +270,32 @@ export const wordDuplicateEndnotesRelationshipCheck: CheckDefinition = {
     run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> =>
         duplicateFindings(
             ctx,
-            (await mainDocumentRelsParts(ctx, profile)).filter(({ main }) => referencesEndnote(ctx, main)).map(({ rels }) => rels),
+            (await mainDocumentRelsParts(ctx, profile))
+                .filter(({ main }) => referencesNote(ctx, main, "endnoteReference"))
+                .map(({ rels }) => rels),
             "endnotes",
             "endnotes",
             "word-duplicate-endnotes-relationship",
             " and the main document references an endnote",
+        ),
+};
+
+export const wordDuplicateFootnotesRelationshipCheck: CheckDefinition = {
+    id: "word-duplicate-footnotes-relationship",
+    description:
+        "The main document's relationships part contains at most one footnotes relationship when the document references a footnote.",
+    groups: ["relationships"],
+    formats: ["docx"],
+    requires: ["xml-syntax"],
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> =>
+        duplicateFindings(
+            ctx,
+            (await mainDocumentRelsParts(ctx, profile))
+                .filter(({ main }) => referencesNote(ctx, main, "footnoteReference"))
+                .map(({ rels }) => rels),
+            "footnotes",
+            "footnotes",
+            "word-duplicate-footnotes-relationship",
+            " and the main document references a footnote",
         ),
 };
