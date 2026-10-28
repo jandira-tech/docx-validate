@@ -370,18 +370,24 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
 
         for (const { partName, references } of notesReferences.values()) {
             if (references.length <= 1) continue;
+            // The count is of relationships, so one sidecar can give several
+            // references: the message and the detail lines name each
+            // relationships part once (#1045).
+            const sidecars = [...new Map(references.map((r) => [r.relsFile, r])).values()];
             // Two equivalent spellings of one sidecar give one stem twice:
-            // name each reference by its stored relationships part then, so
-            // the message never names one slide twice (#1041).
-            const stems = references.map((r) => r.slideName);
-            const names = new Set(stems).size === stems.length ? stems : references.map((r) => this.relPath(r.relsFile));
-            const slideNames = names.join(", ");
+            // name each sidecar by its stored relationships part then (#1041).
+            const stems = sidecars.map((r) => r.slideName);
+            const names = new Set(stems).size === stems.length ? stems : sidecars.map((r) => this.relPath(r.relsFile));
+            const [only] = sidecars;
             issues.push({
                 severity: "error",
-                message: `Notes slide '${partName}' is referenced by multiple slides: ${slideNames}`,
+                message:
+                    sidecars.length === 1 && only
+                        ? `Notes slide '${partName}' is referenced ${references.length} times by ${this.relPath(only.relsFile)}`
+                        : `Notes slide '${partName}' is referenced by multiple slides: ${names.join(", ")}`,
                 code: "notes-shared",
             });
-            for (const ref of references) {
+            for (const ref of sidecars) {
                 issues.push({
                     severity: "error",
                     message: `    - ${this.relPath(ref.relsFile)}`,

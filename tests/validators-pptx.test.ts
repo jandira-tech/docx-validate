@@ -761,6 +761,97 @@ describe("the relationships parts a notes-shared message names (#1041)", () => {
     });
 });
 
+// #1045: the check counts relationships, so one sidecar relating its notes
+// slide twice drew "multiple slides" naming that sidecar twice. Each
+// relationships part is named once; the verdict is unchanged.
+describe("a notes-shared message names each relationships part once (#1045)", () => {
+    const relationship = (id: string, type: string, target: string) =>
+        `<Relationship Id="${id}" Type="${R_NS}/${type}" Target="${target}"/>`;
+    const notesSidecar = () => relsXml(relationship("rId1", "notesSlide", "../notesSlides/notesSlide1.xml"));
+    const twiceSidecar = (second: string) =>
+        relsXml(
+            relationship("rId1", "notesSlide", "../notesSlides/notesSlide1.xml") +
+                relationship("rId2", "notesSlide", `../notesSlides/${second}`),
+        );
+    const reported = async (dir: string) =>
+        (await makeValidator(dir).validateNotesSlideReferences()).issues.map((issue) => [issue.severity, issue.code, issue.message]);
+
+    it.each(["notesSlide1.xml", "notesSlide%31.xml"])(
+        "says how often one sidecar relates its notes slide, targets notesSlide1.xml and %s",
+        async (second) => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"), twiceSidecar(second));
+                expect(await reported(dir)).toEqual([
+                    [
+                        "error",
+                        "notes-shared",
+                        "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced 2 times by ppt/slides/_rels/slide1.xml.rels",
+                    ],
+                    ["error", "notes-shared-detail", "    - ppt/slides/_rels/slide1.xml.rels"],
+                ]);
+            });
+        },
+    );
+
+    it("names a sidecar relating the notes slide twice once beside another slide's", async () => {
+        await withTempDir(async (dir) => {
+            await writeFile(path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"), twiceSidecar("notesSlide1.xml"));
+            await writeFile(path.join(dir, "ppt", "slides", "_rels", "slide2.xml.rels"), notesSidecar());
+            expect(await reported(dir)).toEqual([
+                ["error", "notes-shared", "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: slide1, slide2"],
+                ["error", "notes-shared-detail", "    - ppt/slides/_rels/slide1.xml.rels"],
+                ["error", "notes-shared-detail", "    - ppt/slides/_rels/slide2.xml.rels"],
+            ]);
+        });
+    });
+
+    it("names each of two equivalent spellings once when one relates the notes slide twice", async () => {
+        await withTempDir(async (dir) => {
+            await writeFile(path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"), twiceSidecar("notesSlide1.xml"));
+            await writeFile(path.join(dir, "ppt", "slides", "%5Frels", "slide1.xml.rels"), notesSidecar());
+            expect(await reported(dir)).toEqual([
+                [
+                    "error",
+                    "notes-shared",
+                    "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: ppt/slides/%5Frels/slide1.xml.rels, ppt/slides/_rels/slide1.xml.rels",
+                ],
+                ["error", "notes-shared-detail", "    - ppt/slides/%5Frels/slide1.xml.rels"],
+                ["error", "notes-shared-detail", "    - ppt/slides/_rels/slide1.xml.rels"],
+            ]);
+        });
+    });
+
+    it("keeps a lenient run invalid", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "deck.pptx");
+            await fs.writeFile(
+                file,
+                await buildPptx({
+                    ...MINIMAL_PPTX_PARTS,
+                    "ppt/slides/_rels/slide1.xml.rels": relsXml(
+                        relationship("rId1", "slideLayout", "../slideLayouts/slideLayout1.xml") +
+                            relationship("rId2", "notesSlide", "../notesSlides/notesSlide1.xml") +
+                            relationship("rId3", "notesSlide", "../notesSlides/notesSlide1.xml"),
+                    ),
+                    "ppt/notesSlides/notesSlide1.xml":
+                        `<?xml version="1.0" encoding="UTF-8"?>\n` +
+                        `<p:notes xmlns:p="${PRESENTATIONML_NAMESPACE}" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="${R_NS}">` +
+                        `<p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/></p:spTree></p:cSld></p:notes>`,
+                    "[Content_Types].xml": (MINIMAL_PPTX_PARTS["[Content_Types].xml"] ?? "").replace(
+                        "</Types>",
+                        '<Override PartName="/ppt/notesSlides/notesSlide1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.notesSlide+xml"/></Types>',
+                    ),
+                }),
+            );
+            const result = await validate(file, { profile: "lenient" });
+            expect(result.issues.filter((issue) => issue.code === "notes-shared").map((issue) => issue.message)).toEqual([
+                "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced 2 times by ppt/slides/_rels/slide1.xml.rels",
+            ]);
+            expect(result.valid).toBe(false);
+        });
+    });
+});
+
 // #1018: a master's relationships part is found by OPC part-name
 // equivalence, as the slide checks find a slide's, so a sidecar stored under
 // an escaped spelling is read, not reported missing.
