@@ -30,6 +30,7 @@ import { DOCXSchemaValidator } from "./scripts/office/validators/docx";
 import { unpack } from "./scripts/office/unpack";
 import { pack } from "./scripts/office/pack";
 import { withTempDir } from "./lib/run-cli";
+import { assertStepOk } from "./lib/package-step-error";
 
 export type RepairOptions = {
     /**
@@ -58,7 +59,7 @@ export class Repair {
             await writeFile(inputPath, bytes);
 
             const unpackedDir = path.join(dir, "unpacked");
-            await unpack(inputPath, unpackedDir);
+            assertStepOk("Repair", "unpack", await unpack(inputPath, unpackedDir), dir);
 
             const validator = new DOCXSchemaValidator({
                 unpackedDir,
@@ -69,7 +70,7 @@ export class Repair {
             const repairs = await validator.repair();
 
             const outPath = path.join(dir, "out.docx");
-            await pack(unpackedDir, outPath);
+            assertStepOk("Repair", "pack", await pack(unpackedDir, outPath), dir);
             const out = await readFile(outPath);
 
             return {

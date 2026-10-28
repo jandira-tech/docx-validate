@@ -2570,6 +2570,14 @@ carries the plan
 findings from before repair are grouped by path and code, then compared with
 the same group from that run's post-repair validation
 ([#648](https://github.com/jandira-tech/docx-validate/issues/648)).
+
+`new Repair().run(bytes)` and `new Normalize().run(bytes)` (`jubarte.repair`,
+`jubarte.normalize`) return bytes only for a package that packs. When `unpack`
+cannot extract the bytes, or the package still fails `pack`'s validation, they
+reject with a `PackageStepError`: `step` is `"unpack"` or `"pack"`, and `issues`
+holds the issues the validation failed on
+([#1157](https://github.com/jandira-tech/docx-validate/issues/1157)). `pack`'s
+`PackResult` carries the same `issues` when it refuses.
 Each info-severity plan line gives the original count and says
 "Auto-repair cleared N; M remain": `repair-plan` means none remain,
 `repair-plan-partial` means some cleared and some remain, and

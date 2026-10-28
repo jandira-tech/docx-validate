@@ -6,6 +6,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- Make `Repair` and `Normalize` reject a package a step refuses with a `PackageStepError`, not a bare `ENOENT` ([#1157](https://github.com/jandira-tech/docx-validate/issues/1157)). Review 1144 F3 found it.
+    - Both classes called `unpack` and `pack` without checking either result. `pack` validates by default and writes nothing when validation fails, so reading its output threw `ENOENT` and named the temp directory. That happened for any package the repairs leave invalid, and for bytes that are not a package.
+    - The error's `step` is `"unpack"` or `"pack"`. Its message elides the temp directory, and its `issues` are the failing validators' issues. `PackResult` gains the same `issues`.
+    - The semantics are otherwise unchanged: both classes still return bytes only for a package that packs.
 - Let `mce-malformed` and `mce-must-understand` warn again in a comments or notes part the main document relates when its only reference sits in a used header or footer ([#1155](https://github.com/jandira-tech/docx-validate/issues/1155)), undoing #1145. Session 85 (s85a, s85b) showed Word such a footnotes, endnotes or comments part with an unknown root `mc:MustUnderstand`: it opened all three clean, and offered recovery for the same parts referenced from the body. `wordPossiblyReadParts` no longer reads the headers and footers for references, so the lazy-story exception again follows the read model alone.
     - The same session showed Word the unused footer, comments and notes parts #1146 named unprobed, each clean. The README rows, both `explainWordError` texts, note 29 and the markup-compatibility paragraph in `CLAUDE.md` and `AGENTS.md`, and `MIGRATION.md` now cite it. A reference only a footer holds, and malformed compatibility in these parts, remain unprobed.
     - Session 85's evidence is recorded in `docs/plans/evidence/word-probes-2026-10-24.md`.

@@ -36,6 +36,8 @@ export { Repair } from "./repair";
 export type { RepairOptions, RepairResult } from "./repair";
 export { Normalize } from "./normalize";
 export type { NormalizeResult } from "./normalize";
+export { PackageStepError } from "./lib/package-step-error";
+export type { PackageStep } from "./lib/package-step-error";
 export { Measure } from "./measure";
 export type { MeasureOptions, MeasureResult, MeasureClassification, MeasureMetrics, AstAdapter } from "./measure";
 
