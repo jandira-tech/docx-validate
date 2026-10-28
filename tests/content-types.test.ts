@@ -251,6 +251,19 @@ describe("resolvePartName (#349)", () => {
         expect(resolvePartName(names, target)).toBe(entry);
     });
 
+    // Word refused a main document named through a final `.` or `..`
+    // segment (session 70 s70a/s70c): the folder it leaves names no entry.
+    it.each([
+        ["word/document.xml/.", "word/document.xml/"],
+        ["/word/document.xml/.", "word/document.xml/"],
+        ["word/document.xml/x/..", "word/document.xml/"],
+        ["word\\document.xml\\.", "word/document.xml/"],
+        ["word/document.xml/.?x=1", "word/document.xml/"],
+        ["word/document.xml/", "word/document.xml/"],
+    ])("keeps the final / of %j, which names a folder and no entry (#962)", (target, folder) => {
+        expect(resolvePartName(names, target)).toBe(folder);
+    });
+
     it.each(["#frag", "?x=1", "/#frag"])("names no part for %j, which has no path (#361)", (target) => {
         expect(resolvePartName(names, target)).toBeUndefined();
     });
@@ -287,25 +300,41 @@ describe("relationshipTargetPartName (#947)", () => {
     });
 
     it.each([
-        ["word", "../..", ".", ".."],
-        ["word", "../../..", ".", "../.."],
-        [".", "/..", "/", "/.."],
-        ["word", "/word/../..", "/", "/.."],
-        [".", "/../..", "/", "/../.."],
+        ["word", "../..", ".", "../"],
+        ["word", "../../..", ".", "../../"],
+        [".", "/..", "/", "/../"],
+        ["word", "/word/../..", "/", "/../"],
+        [".", "/../..", "/", "/../../"],
     ])("clamps a climb that ends in a bare .. at the package root: from %s, %s (#962)", (baseDir, target, clamped, unclamped) => {
         expect(relationshipTargetPartName(baseDir, target, true)).toBe(clamped);
         expect(relationshipTargetPartName(baseDir, target)).toBe(unclamped);
     });
 
-    // path.posix.join, not RFC 3986: Word has not been probed with either
-    // spelling, so these rows pin the reading until it is (#962).
+    // Word read the part through each of these (session 70 s70a/s70b/s70c),
+    // so an empty segment collapses, as path.posix.join collapses it and
+    // RFC 3986 would not (#962).
     it.each([
         [".", "word//main.xml", "word/main.xml"],
         ["word", "/word//main.xml", "/word/main.xml"],
-        [".", "word/main.xml/.", "word/main.xml"],
-        ["word", "/word/main.xml/.", "/word/main.xml"],
-    ])("collapses an empty segment and a final /. as path.posix.join does: from %s, %s (#962)", (baseDir, target, expected) => {
+        ["word", "notes//footnotes.xml", "word/notes/footnotes.xml"],
+        [".", "word/./main.xml", "word/main.xml"],
+    ])("collapses an empty segment and resolves an inner . : from %s, %s (#962)", (baseDir, target, expected) => {
         expect(relationshipTargetPartName(baseDir, target)).toBe(expected);
+    });
+
+    // Word refused each of these (session 70 s70a/s70b/s70c): a final `.` or
+    // `..` segment leaves a folder, as RFC 3986's remove_dot_segments leaves
+    // it with a final `/`, which path.posix.join would drop (#962).
+    it.each([
+        [".", "word/main.xml/.", "word/main.xml/"],
+        ["word", "/word/main.xml/.", "/word/main.xml/"],
+        [".", "word/main.xml/x/..", "word/main.xml/"],
+        ["word", "notes/footnotes.xml/.", "word/notes/footnotes.xml/"],
+        ["word", "notes/footnotes.xml/x/..", "word/notes/footnotes.xml/"],
+        [".", "word/main.xml/", "word/main.xml/"],
+    ])("keeps the final / of a target naming a folder: from %s, %s (#962)", (baseDir, target, expected) => {
+        expect(relationshipTargetPartName(baseDir, target)).toBe(expected);
+        expect(relationshipTargetPartName(baseDir, target, true)).toBe(expected);
     });
 });
 
@@ -325,6 +354,37 @@ describe("resolveTarget: the root and a climb past it name no part (#970)", () =
 
     it("still finds the part a clamped climb stops at", () => {
         expect(resolveTarget(lookup, "word", "../../footnotes.xml", true)).toBe("footnotes.xml");
+    });
+});
+
+describe("resolveTarget: a target naming a folder names no part (#962, session 70)", () => {
+    const lookup = equivalentPartLookup(["word/main.xml", "word/notes/footnotes.xml"]);
+
+    it.each([
+        [".", "word/main.xml/."],
+        ["word", "/word/main.xml/."],
+        [".", "word/main.xml/x/.."],
+        [".", "word/main.xml/"],
+        ["word", "notes/footnotes.xml/."],
+        ["word", "notes/footnotes.xml/x/.."],
+    ])("from %s, %s finds no part", (baseDir, target) => {
+        expect(resolveTarget(lookup, baseDir, target)).toBeUndefined();
+        expect(resolveTarget(lookup, baseDir, target, true)).toBeUndefined();
+    });
+
+    it.each([
+        [".", "word//main.xml", "word/main.xml"],
+        ["word", "/word//main.xml", "word/main.xml"],
+        [".", "word/./main.xml", "word/main.xml"],
+        ["word", "notes//footnotes.xml", "word/notes/footnotes.xml"],
+    ])("from %s, %s still finds %s", (baseDir, target, expected) => {
+        expect(resolveTarget(lookup, baseDir, target)).toBe(expected);
+    });
+
+    it("finds no part for a folder even through a lookup that lists one", () => {
+        const folders = equivalentPartLookup(["word/main.xml/"]);
+        expect(resolveTarget(folders, ".", "word/main.xml/.")).toBeUndefined();
+        expect(resolveTarget(folders, ".", "word/main.xml/")).toBeUndefined();
     });
 });
 

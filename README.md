@@ -1992,10 +1992,15 @@ before, `/word/../word/main.xml` named no part, so the read model found no main
 document and `addComment` refused it or added a second set of comment
 relationships
 ([#947](https://github.com/jandira-tech/docx-validate/issues/947)); Word has not
-been probed with such a target. Either kind also collapses an empty segment and
-drops a final `/.`, as `path.posix.join` does, so `word//main.xml` and
-`/word/main.xml/.` name `word/main.xml`; Word has not been probed with either
-spelling ([#962](https://github.com/jandira-tech/docx-validate/issues/962)).
+been probed with such a target, though it read the package-absolute
+`/word//main.xml` from the root (session 70). Either kind also collapses an empty segment, as
+`path.posix.join` does, so `word//main.xml` and `/word//main.xml` name
+`word/main.xml`, as Word read them (session 70); a final `.` or `..` segment
+leaves a folder, as RFC 3986 does, so `word/main.xml/.` and
+`word/main.xml/x/..` name no part: the checks find no main document or notes
+part there, matching Word's recovery offer (session 70), and `addComment`
+refuses such a main-document target; before, they named `word/main.xml`
+([#962](https://github.com/jandira-tech/docx-validate/issues/962)).
 The relationships parts are read and written in
 the package-relationships namespace, whatever prefix they bind it to: a prefixed
 `_rels/.rels` names its main document as an unprefixed one does, the new

@@ -137,3 +137,54 @@ describe("a quick run judges a missing main part as the full run does (#380, #38
         });
     });
 });
+
+describe("an officeDocument target naming a folder (#962, Word session 70 s70a/s70c)", () => {
+    /** The minimal parts with the main document stored as word/main.xml (its sidecar renamed, its Override moved), named by `target`. */
+    const mainAt = (target: string): Record<string, string> => {
+        const parts: Record<string, string> = {
+            ...MINIMAL_PARTS,
+            "word/main.xml": MINIMAL_PARTS["word/document.xml"]!,
+            "word/_rels/main.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!,
+            "_rels/.rels": MINIMAL_PARTS["_rels/.rels"]!.replace('Target="word/document.xml"', `Target="${target}"`),
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                'PartName="/word/document.xml"',
+                'PartName="/word/main.xml"',
+            ),
+        };
+        delete parts["word/document.xml"];
+        delete parts["word/_rels/document.xml.rels"];
+        return parts;
+    };
+
+    // Word offered recovery for each, in both runs: a final `.` or `..`
+    // segment leaves a folder, which names no main document.
+    it.each(["word/main.xml/.", "/word/main.xml/.", "word/main.xml/x/..", "word/main.xml/"])(
+        "rejects the main document the target %s names no part for",
+        async (target) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "folder-target.docx");
+                await writeFile(file, await buildDocx(mainAt(target)));
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.valid).toBe(false);
+                expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([
+                    expect.objectContaining({ code: CODE, path: "_rels/.rels" }),
+                ]);
+            });
+        },
+    );
+
+    // Word opened each clean, in both runs, and rendered the main
+    // document's text: an empty segment collapses and an inner `.` resolves.
+    it.each(["word/main.xml", "word//main.xml", "/word//main.xml", "word/./main.xml"])(
+        "accepts the main document the target %s names",
+        async (target) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "main-target.docx");
+                await writeFile(file, await buildDocx(mainAt(target)));
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+                expect(result.valid).toBe(true);
+            });
+        },
+    );
+});

@@ -1031,7 +1031,8 @@ describe("a notes relationship target escaping the package (#830, sessions 63 s6
 
     // Unprobed: since #947 a package-absolute target's dot segments resolve
     // as a relative target's do, so its climb stops at the package root the
-    // same way. Word has not been probed with a package-absolute target.
+    // same way. Word has not been probed with a package-absolute climb;
+    // session 70 probed package-absolute officeDocument targets only (#962).
     it.each([
         ["footnote", "/../footnotes.xml"],
         ["endnote", "/../endnotes.xml"],
@@ -1108,6 +1109,64 @@ describe("a notes relationship target escaping the package (#830, sessions 63 s6
             expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
         });
     });
+});
+
+describe("a notes relationship target naming a folder (#962, session 70 s70b/s70c)", { timeout: 30000 }, () => {
+    /** The s70 builder's `notesAt`: footnote 1 stored in word/notes/footnotes.xml, typed by its Override and named by the footnotes target `target`; the body references footnote 1. */
+    const notesAt = (target: string): Promise<Buffer> =>
+        buildDocx({
+            ...MINIMAL_PARTS,
+            "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+                "</w:r></w:p>",
+                `</w:r><w:r><w:footnoteReference w:id="1"/></w:r></w:p>`,
+            ),
+            "word/notes/footnotes.xml":
+                `<w:footnotes xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+                `<w:footnote w:id="1"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:footnote></w:footnotes>`,
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdN" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes" Target="${target}"/></Relationships>`,
+            ),
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/word/notes/footnotes.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml"/></Types>`,
+            ),
+        });
+
+    // Word offered recovery for both, in both runs: a final `.` or `..`
+    // segment leaves a folder, so no notes part defines footnote 1.
+    it.each(["notes/footnotes.xml/.", "notes/footnotes.xml/x/.."])(
+        "rejects the footnote reference whose target %s names a folder",
+        async (target) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "folder-target.docx");
+                await writeFile(file, await notesAt(target));
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.valid).toBe(false);
+                expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([
+                    expect.objectContaining({
+                        code: "word-footnote-reference-missing",
+                        path: "word/document.xml",
+                        message: expect.stringContaining("footnote reference uses id 1"),
+                    }),
+                ]);
+            });
+        },
+    );
+
+    // Word opened both clean, in both runs, with the note rendered.
+    it.each(["notes/footnotes.xml", "notes//footnotes.xml"])(
+        "accepts the footnote reference whose target %s names the notes part",
+        async (target) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "notes-target.docx");
+                await writeFile(file, await notesAt(target));
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+                expect(result.valid).toBe(true);
+            });
+        },
+    );
 });
 
 describe("note references inside a notes or comments part (#852, sessions 65 s65a and 66 s66a)", { timeout: 30000 }, () => {
