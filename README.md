@@ -290,6 +290,12 @@ Choice, and one a `w:hyperlink` names; these are the targets Word-valid's
 `rels-broken` still blocked, so they no longer block (Word probes session 40,
 `s40a`/`s40b`). Lenient keeps its historical scan, which skips only `http…` and
 `mailto:` targets ([#665](https://github.com/jandira-tech/docx-validate/issues/665)).
+Word-valid and strict skip an `http` prefix only when it starts a URI scheme
+(`http:`, `https:`), so a relative target that merely starts with `http` resolves
+as a part: Word refused `httpimage1.png/.` as a folder and opened the plain
+`httpimage1.png` clean (Word probes session 79), and word-valid used to accept the
+folder target
+([#988](https://github.com/jandira-tech/docx-validate/issues/988)).
 An internal broken target blocks Word-valid when the part it resolves to is a
 relationships part or a `customXml` part outside `word/`, whatever the Target's
 spelling: Word 16.115 refused an absent package-root `customXml/item1.xml` spelled
