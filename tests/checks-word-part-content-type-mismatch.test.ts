@@ -445,6 +445,141 @@ describe("session 58 pairs need the story's own root (#803)", () => {
     );
 });
 
+// Session 62 (s62c) refused the session-58 pairs' shape with a
+// parameterized styles spelling: a used own-root `word/comments.xml`,
+// `word/endnotes.xml` and `word/footnotes.xml` typed
+// `…styles+xml; charset=utf-8` each got the recovery offer, while
+// word-valid passed all three — three false negatives. Those pairs now
+// also co-reach the styles media type with a parameter, citing session 62,
+// while the exact spelling keeps session 58. A padded spelling with no
+// parameter, and the header and footer pairs' inexact spellings, are
+// unprobed and keep their verdict (#802).
+describe("parameterized styles spelling on the session 58 pairs (#802, session 62)", () => {
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const TEXT_P = "<w:p><w:r><w:t>x</w:t></w:r></w:p>";
+    /** Session 62's parameterized spelling of the styles type (s62c). */
+    const STYLES_CHARSET = `${storyContentType("styles")}; charset=utf-8`;
+    /** Each story's own root holding the item the body references, and that reference run. */
+    const STORIES = {
+        comments: {
+            root: `<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="a">${TEXT_P}</w:comment></w:comments>`,
+            ref: `<w:r><w:commentReference w:id="0"/></w:r>`,
+        },
+        endnotes: {
+            root: `<w:endnotes xmlns:w="${W}"><w:endnote w:id="1">${TEXT_P}</w:endnote></w:endnotes>`,
+            ref: `<w:r><w:endnoteReference w:id="1"/></w:r>`,
+        },
+        footnotes: {
+            root: `<w:footnotes xmlns:w="${W}"><w:footnote w:id="1">${TEXT_P}</w:footnote></w:footnotes>`,
+            ref: `<w:r><w:footnoteReference w:id="1"/></w:r>`,
+        },
+    } as const;
+    type Story = keyof typeof STORIES;
+    /** A `word/<story>.xml`, its own root holding the referenced item when `referenced`, related by the main document and typed `type`. */
+    const storyParts = (story: Story, type: string, referenced = true): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(`xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`).replace(
+            "</w:r></w:p>",
+            `</w:r>${referenced ? STORIES[story].ref : ""}</w:p>`,
+        ),
+        [`word/${story}.xml`]: STORIES[story].root,
+        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdS" Type="${R}/${story}" Target="${story}.xml"/></Relationships>`,
+        ),
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"].replace(
+            "</Types>",
+            `<Override PartName="/word/${story}.xml" ContentType="${type}"/></Types>`,
+        ),
+    });
+    /** The same part holding a `w:styles` root instead, as #803's foreign-root specimens do. */
+    const foreignRootStoryParts = (story: Story, type: string): Record<string, string> => ({
+        ...storyParts(story, type),
+        [`word/${story}.xml`]: MINIMAL_PARTS["word/styles.xml"]!,
+    });
+
+    it.each(["comments", "endnotes", "footnotes"] as const)(
+        "rejects a used %s part typed styles with a charset parameter, citing session 62",
+        async (story) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "typed-styles-charset.docx");
+                writeFileSync(file, await buildDocx(storyParts(story, STYLES_CHARSET)));
+                const runs: [string, Awaited<ReturnType<typeof validate>>][] = [
+                    ["the full word-valid run", await validate(file)],
+                    ["the selected run", await validate(file, { checks: [ID] })],
+                ];
+                for (const [label, result] of runs) {
+                    expect(result.valid, `${label} fails`).toBe(false);
+                    const found = result.issues.filter((issue) => issue.code === ID && issue.severity === "error");
+                    expect(found, label).toHaveLength(1);
+                    expect(found[0]).toMatchObject({ path: `word/${story}.xml` });
+                    expect(found[0]?.message).toContain(`the main document's ${story} relationship`);
+                    expect(found[0]?.message).toContain(`is typed "${STYLES_CHARSET}" by an Override`);
+                    expect(found[0]?.message).toContain("Word 16.115 offers to recover the package (session 62).");
+                    expect(isWordBlockingIssue(found[0]!)).toBe(true);
+                }
+                // The inexact check reports nothing: the part's reaches expect
+                // its own type, so the parameterized spelling is the mismatch's
+                // finding alone and nothing is reported twice.
+                expect(runs[0]![1].issues.filter((issue) => issue.code === "word-part-content-type-inexact")).toEqual([]);
+            });
+        },
+        60_000,
+    );
+
+    it.each(["comments", "endnotes", "footnotes"] as const)(
+        "still cites session 58 for a used %s part typed with the exact styles spelling",
+        async (story) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "typed-styles.docx");
+                writeFileSync(file, await buildDocx(storyParts(story, storyContentType("styles"))));
+                const result = await validate(file);
+                expect(result.valid, "the full word-valid run fails").toBe(false);
+                const found = result.issues.filter((issue) => issue.code === ID && issue.severity === "error");
+                expect(found).toHaveLength(1);
+                expect(found[0]).toMatchObject({ path: `word/${story}.xml` });
+                expect(found[0]?.message).toContain("Word 16.115 offers to recover the package (session 58).");
+            });
+        },
+        60_000,
+    );
+
+    it.each(["comments", "endnotes", "footnotes"] as const)(
+        "reports no mismatch for a used %s part holding a w:styles root typed with the charset parameter",
+        async (story) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "foreign-root-charset.docx");
+                writeFileSync(file, await buildDocx(foreignRootStoryParts(story, STYLES_CHARSET)));
+                const partial = await validate(file, { checks: [ID] });
+                expect(partial.valid).toBe(true);
+                const result = await validate(file);
+                expect(result.valid, "the reference dangles, so the full word-valid run fails").toBe(false);
+                expect(result.issues.filter((issue) => issue.code === ID)).toEqual([]);
+            });
+        },
+        60_000,
+    );
+
+    it("keeps a used own-root comments part typed with a padded styles spelling and no parameter without a mismatch", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "padded-styles.docx");
+            writeFileSync(file, await buildDocx(storyParts("comments", `${storyContentType("styles")} `)));
+            expect((await validate(file, { checks: [ID] })).valid).toBe(true);
+            expect((await validate(file)).issues.filter((issue) => issue.code === ID)).toEqual([]);
+        });
+    }, 60_000);
+
+    it("keeps an own-root comments part typed with the charset parameter that nothing references without a mismatch", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "unreferenced-charset.docx");
+            writeFileSync(file, await buildDocx(storyParts("comments", STYLES_CHARSET, false)));
+            expect((await validate(file, { checks: [ID] })).valid).toBe(true);
+            expect((await validate(file)).issues.filter((issue) => issue.code === ID)).toEqual([]);
+        });
+    }, 60_000);
+});
+
 // Sessions 49 and 50 (2026-10-26): Word 16.115 offered recovery for the main
 // styles part typed with the settings type (s49b), and for a related settings
 // part typed with the styles type, a related numbering part typed with the
