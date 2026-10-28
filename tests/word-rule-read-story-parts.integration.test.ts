@@ -539,6 +539,35 @@ describe("markup compatibility in a word/ part Word does not read warns under wo
         },
     );
 
+    // #1158 (review 1144 F1, F2): the exception follows the view the read
+    // model reads, so a header relationship inside a selected Fallback is
+    // read like its direct twin: unused, the header warns; used, it blocks.
+    it.each(RUNS)(
+        "%s run warns in an unused header related through a selected Fallback, and blocks used (#1158)",
+        async (_label, checks) => {
+            const wrap = (parts: Parts): Parts => {
+                const out: Parts = new Map(parts);
+                const rels = once(textOf(parts, MAIN_RELS), "<Relationships ", `<Relationships xmlns:mc="${MC}" xmlns:foo="urn:foo" `);
+                out.set(
+                    MAIN_RELS,
+                    once(
+                        rels,
+                        /<Relationship Id="rId83"[^>]*\/>/,
+                        '<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>$&</mc:Fallback></mc:AlternateContent>',
+                    ),
+                );
+                return out;
+            };
+            expect(await mceRun(wrap(relateHeader(mustUnderstandHeader(), false)), "word-valid", checks)).toEqual({
+                valid: true,
+                mce: [`mce-must-understand:warning@${UNRELATED}`],
+            });
+            expect((await mceRun(wrap(relateHeader(mustUnderstandHeader(), true)), "word-valid", checks)).mce).toEqual([
+                `mce-must-understand:error@${UNRELATED}`,
+            ]);
+        },
+    );
+
     // #1134 (review 1126 F8): the blocking half keys the finding's part
     // canonically. A used header stored as word/Hdr7.XML and named hdr7.xml
     // is the part the relationship names, so its finding blocks.

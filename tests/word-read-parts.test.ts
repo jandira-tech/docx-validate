@@ -27,6 +27,7 @@ import { describe, expect, it } from "vitest";
 
 import { canonicalPartName } from "../src/lib/content-types";
 import { withTempDir } from "../src/lib/run-cli";
+import type { Profile } from "../src/lib/types";
 import { ValidationContext } from "../src/lib/validation-context";
 import {
     glossaryTypedRelationshipTargets,
@@ -46,7 +47,13 @@ import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 import { BYTE_REJECTED_MAIN_PARTS } from "./support/word-profile-regression-specimens";
 import { STORY_FOOTER_XML, storyContentType, storyReferenceParts } from "./support/story-content-type-specimens";
-import { DOCUMENT_RELS, fallback, PACKAGE_RELS, wrapRelationship } from "./support/relationships-markup-compatibility-specimens";
+import {
+    DOCUMENT_RELS,
+    fallback,
+    PACKAGE_RELS,
+    rootMceXml,
+    wrapRelationship,
+} from "./support/relationships-markup-compatibility-specimens";
 import { BARE_CHART_XML, referencedChartSpecimenParts } from "./support/chart-specimens";
 
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
@@ -2148,8 +2155,8 @@ describe("wordPossiblyReadParts (#1116, #1125)", () => {
         ...extra,
     });
 
-    const named = async (parts: Parts): Promise<readonly string[] | undefined> => {
-        const set = await wordPossiblyReadParts(ValidationContext.fromEntries(parts), "word-valid");
+    const named = async (parts: Parts, profile: Profile = "word-valid"): Promise<readonly string[] | undefined> => {
+        const set = await wordPossiblyReadParts(ValidationContext.fromEntries(parts), profile);
         return set === undefined ? undefined : [...set].sort();
     };
     const HEADER1 = canonicalPartName("word/header1.xml");
@@ -2397,6 +2404,89 @@ describe("wordPossiblyReadParts (#1116, #1125)", () => {
             expect(parts["word/_rels/document.xml.rels"]).not.toBe(withHeaders()["word/_rels/document.xml.rels"]);
             expect(await named(parts)).toContain(HEADER1);
         }
+    });
+
+    // #1158 (review 1144 F1, F2): the exception follows the view the read
+    // model reads (#634). A lazy relationship that markup compatibility
+    // lifts to a direct child is read like its direct twin, so the header it
+    // relates stays out unused (#1125) and is listed used.
+    const understoodChoice = (relationship: string): string =>
+        `<mc:AlternateContent><mc:Choice Requires="w14">${relationship}</mc:Choice><mc:Fallback/></mc:AlternateContent>`;
+    const processContent = (relationship: string): string => `<x:Wrap mc:Ignorable="x" mc:ProcessContent="x:Wrap">${relationship}</x:Wrap>`;
+    it.each([
+        ["inside a selected Fallback", fallback],
+        ["inside an understood Choice", understoodChoice],
+        ["inside an ignorable wrapper whose content is processed", processContent],
+    ])("lists a header whose relationship sits %s only when the main document uses it (#1158)", async (_label, wrap) => {
+        const unused = wrapRelationship(withHeaders() as Record<string, string>, DOCUMENT_RELS, "rIdH", wrap);
+        expect(unused[DOCUMENT_RELS]).not.toBe(withHeaders()[DOCUMENT_RELS]);
+        expect(await named(unused)).toEqual(READ.map(canonicalPartName).sort());
+        const used = wrapRelationship(
+            withHeaders({ "word/document.xml": documentUsingHeader("rIdH") }) as Record<string, string>,
+            DOCUMENT_RELS,
+            "rIdH",
+            wrap,
+        );
+        expect(await named(used)).toContain(HEADER1);
+    });
+
+    // Lenient's read model reads the stored relationships (#634), so there
+    // the lifted relationship is not read and names its part.
+    it("lists an unused header whose relationship sits inside a selected Fallback under lenient (#1158)", async () => {
+        const parts = wrapRelationship(withHeaders() as Record<string, string>, DOCUMENT_RELS, "rIdH", fallback);
+        expect(await named(parts, "lenient")).toContain(HEADER1);
+    });
+
+    it("lists a header a sidecar stored under a root AlternateContent relates only when the main document uses it (#1158)", async () => {
+        const sidecar = (parts: Parts): Parts => ({
+            ...parts,
+            [DOCUMENT_RELS]: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${rootMceXml(
+                "fallback",
+                (parts[DOCUMENT_RELS] as string).replace(/^<\?xml[^>]*\?>\n/, ""),
+            )}`,
+        });
+        expect(await named(sidecar(withHeaders()))).toEqual(READ.map(canonicalPartName).sort());
+        expect(await named(sidecar(withHeaders({ "word/document.xml": documentUsingHeader("rIdH") })))).toContain(HEADER1);
+    });
+
+    // An unselected Choice twin of the read relationship names its part
+    // unless its Id, Type and Target all match: only then is it the
+    // relationship the read model judged.
+    const unselectedTwin = (relationship: string): string =>
+        `<mc:AlternateContent><mc:Choice Requires="foo">${relationship}</mc:Choice></mc:AlternateContent>`;
+    it.each([
+        ["Id", header("rIdT", "header1.xml"), HEADER1],
+        ["Type", `<Relationship Id="rIdH" Type="${R}/footer" Target="header1.xml"/>`, HEADER1],
+        ["Target", header("rIdH", "header9.xml"), HEADER9],
+    ])("lists the part an unselected Choice twin of a read relationship names when its %s differs (#1158)", async (_label, twin, part) => {
+        const parts = wrapRelationship(
+            withHeaders() as Record<string, string>,
+            DOCUMENT_RELS,
+            "rIdH",
+            (read) => `${read}${unselectedTwin(twin)}`,
+        );
+        expect(await named(parts)).toContain(part);
+    });
+
+    it("does not list an unused header an identical unselected Choice twin of the read relationship names (#1158)", async () => {
+        const parts = wrapRelationship(
+            withHeaders() as Record<string, string>,
+            DOCUMENT_RELS,
+            "rIdH",
+            (read) => `${read}${unselectedTwin(read)}`,
+        );
+        expect(await named(parts)).toEqual(READ.map(canonicalPartName).sort());
+    });
+
+    // The match is by attributes in the package-relationships namespace: a
+    // foreign twin of a read relationship still names its part (#1135).
+    it("lists an unused header a foreign-namespace twin of a read relationship names (#1135, #1158)", async () => {
+        const parts = withHeaders();
+        parts[DOCUMENT_RELS] = (parts[DOCUMENT_RELS] as string).replace(
+            "</Relationships>",
+            `<x:Relationship xmlns:x="urn:x" Id="rIdH" Type="${R}/header" Target="header1.xml"/></Relationships>`,
+        );
+        expect(await named(parts)).toContain(HEADER1);
     });
 
     it.each([

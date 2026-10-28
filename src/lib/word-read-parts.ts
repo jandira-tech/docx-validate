@@ -103,7 +103,7 @@ import {
     isRelationshipsPartName,
     resolveTarget,
 } from "./content-types";
-import type { Profile } from "./types";
+import { NS, type Profile } from "./types";
 import type { ValidationContext, XmlPart } from "./validation-context";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "./xml-helpers";
 import { checkXmlSyntax } from "./xml-syntax";
@@ -727,10 +727,15 @@ export const wordReadTypedTargets = async (context: ValidationContext, profile?:
  * Canonical names of the parts Word may read (#1116, #1125): every part the
  * read model reads, and every part an internal relationship names, from any
  * relationships part, wherever it is stored and whether or not Word reads its
- * source — except a header, footer, comments or notes relationship that is a
- * direct child of a story root's own relationships part, which names its part
- * only through the read model, so a story the root relates but does not use
- * stays out (session 84 s84a). The read model decides a root's comments and
+ * source — except a header, footer, comments or notes relationship of a story
+ * root's own relationships part that the read model reads, which names its
+ * part only through the read model, so a story the root relates but does not
+ * use stays out (session 84 s84a). The read model reads a relationships part
+ * as the profile does (`relationshipsXml`): outside lenient, through the
+ * markup-compatibility view, where a relationship inside a selected Fallback
+ * or Choice, or a processed wrapper, is a direct child (#634). A stored
+ * relationship is the one it reads when it is in the package-relationships
+ * namespace and its `Id`, `Type` and `Target` match (#1158). The read model decides a root's comments and
  * notes use from the root alone, and so does Word: session 85 (s85a, s85b)
  * opened clean a related comments, footnotes or endnotes part holding an
  * unknown `mc:MustUnderstand` whose only reference sat in a read header, and
@@ -740,11 +745,11 @@ export const wordReadTypedTargets = async (context: ValidationContext, profile?:
  * as session 16 (s16a) opened clean a malformed endnotes part only a footnote
  * referenced. Every other `Relationship` element of the stored DOM counts,
  * nested ones included, so a relationship inside a Choice Word does not
- * select still names its part: the scan errs wide, and only the exception
+ * select still names its part unless it repeats a read one: the scan errs wide, and only the exception
  * narrows the list, where the read model decides that a part is unused. That
  * holds in any namespace: the read model reads only the
  * package-relationships `Relationship` children of a `Relationships` root in
- * that namespace, so it decides nothing about one in no namespace, in
+ * that namespace, in its view, so it decides nothing about one in no namespace, in
  * another, or under a root outside it, and that one names its part (#1135). A
  * target spelling a URI scheme names the part word-valid's
  * file-reference walk resolves it to: every scheme but `http:`, `https:` and
@@ -776,7 +781,11 @@ export const wordPossiblyReadParts = async (context: ValidationContext, profile?
         }
         const rootSidecar = rootSidecars.has(canonicalPartName(name));
         const baseDir = relationshipsBaseDir(name);
-        const readable = new Set(getRelationshipChildren(parsed.document));
+        // The read model's own relationships, matched by attributes: its view
+        // is a markup-compatibility clone, which lifts a relationship inside a
+        // selected branch or a processed wrapper to a direct child (#1158).
+        const view = relationshipsXml(context, name, profile);
+        const readable = new Set(view?.ok ? getRelationshipChildren(view.document).map(relationshipKey) : []);
         for (const relationship of getElementsByTagNameNSAll(parsed.document, "*", "Relationship")) {
             if (relationship.getAttribute("TargetMode") === "External") {
                 continue;
@@ -784,7 +793,14 @@ export const wordPossiblyReadParts = async (context: ValidationContext, profile?
             const reference = relationship.getAttribute("Target") ?? "";
             const target = resolveTarget(lookup, baseDir, reference);
             const segment = officeRelationshipTypeSegment(relationship.getAttribute("Type") ?? "");
-            if (target !== undefined && rootSidecar && segment !== undefined && LAZY_TYPES.has(segment) && readable.has(relationship)) {
+            if (
+                target !== undefined &&
+                rootSidecar &&
+                segment !== undefined &&
+                LAZY_TYPES.has(segment) &&
+                relationship.namespaceURI === NS.PR &&
+                readable.has(relationshipKey(relationship))
+            ) {
                 continue;
             }
             const part = target ?? schemeTargetPart(lookup, baseDir, reference);
@@ -805,6 +821,13 @@ export const wordPossiblyReadParts = async (context: ValidationContext, profile?
  */
 const schemeTargetPart = (lookup: (partName: string) => string | undefined, baseDir: string, target: string): string | undefined =>
     hasUriScheme(target) && !/^(?:https?|mailto):/i.test(target) ? resolveTarget(lookup, baseDir, `./${target}`) : undefined;
+
+/**
+ * A relationship's identity across a stored part and its markup-compatibility
+ * clone. `TargetMode` is left out: an external relationship names nothing.
+ */
+const relationshipKey = (relationship: Element): string =>
+    JSON.stringify(["Id", "Type", "Target"].map((attribute) => relationship.getAttribute(attribute)));
 
 /** The lazily read stories, beside the story roots' own `officeDocument` entries. */
 const STORY_SEGMENTS: ReadonlySet<string> = new Set(["header", "footer", "comments", "footnotes", "endnotes"]);

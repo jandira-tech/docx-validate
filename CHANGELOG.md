@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- Apply #1125's exception to the relationships the read model reads, in the view it reads ([#1158](https://github.com/jandira-tech/docx-validate/issues/1158)). Review 1144 F1 and F2 found the gap.
+    - `wordPossiblyReadParts` took the exception's relationships from the stored sidecar's direct children. Outside lenient, the read model reads the sidecar through the markup-compatibility view (#634), where a relationship inside a selected `mc:Fallback`, an understood `mc:Choice` or a processed wrapper is a direct child. A sidecar stored under a root `mc:AlternateContent` is read that way too.
+    - An unused header related only through such a relationship therefore counted as named, and its `mce-must-understand` blocked, while its direct twin warned. It now warns as well, and a used one still blocks.
+    - A stored relationship counts as the read one when it is in the package-relationships namespace and its `Id`, `Type` and `Target` match. A twin in an unselected Choice that differs in any of the three, or a foreign-namespace twin (#1135), still names its part. Lenient keeps the stored view.
+    - Word was not shown the lifted shapes directly. Session 34 shows that Word follows a relationship inside a selected Fallback, and session 84 shows that it does not read an unused header.
+    - The six mutations of the sweep each fail a new row: the stored view, the effective view under lenient, no namespace check, and the key without `Id`, `Type` or `Target`.
 - Make `Repair` and `Normalize` reject a package a step refuses with a `PackageStepError`, not a bare `ENOENT` ([#1157](https://github.com/jandira-tech/docx-validate/issues/1157)). Review 1144 F3 found it.
     - Both classes called `unpack` and `pack` without checking either result. `pack` validates by default and writes nothing when validation fails, so reading its output threw `ENOENT` and named the temp directory. That happened for any package the repairs leave invalid, and for bytes that are not a package.
     - The error's `step` is `"unpack"` or `"pack"`. Its message elides the temp directory, and its `issues` are the failing validators' issues. `PackResult` gains the same `issues`.
