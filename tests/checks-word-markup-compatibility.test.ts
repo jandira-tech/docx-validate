@@ -109,3 +109,74 @@ describe("markup compatibility as Word processes it", () => {
         expect(await check.run(ctx)).toEqual([]);
     });
 });
+
+// Word 16.115 offered recovery for character data directly inside an
+// mc:AlternateContent — before the Choice, between the Choice and the
+// Fallback (session 65 s65c), after the Fallback, after a Choice with no
+// Fallback, and between two Choices (session 67 s67b; every chunk two
+// runs, all readings agreeing) — in a used comments part's stored root and
+// in a run-level body AlternateContent alike, while the same roots open
+// clean with the text inside the Choice or the Fallback (session 65 s65b),
+// with whitespace only between the branches, and without the text (session
+// 67 s67b). mc.xsd declares none of AlternateContent, Choice and Fallback
+// mixed, so the schema view forbids all three positions alike and cannot
+// draw Word's line; whitespace is note 8's [ \t\n\r], which pretty-printed
+// parts carry. AlternateContent in parts other than the main document and
+// comments, and in relationships parts, is unprobed (#851).
+describe("character data directly inside AlternateContent (#851, sessions 65 and 67)", () => {
+    const COMMENT = `<w:comment w:id="0" w:author="a"><w:p><w:r><w:t>x</w:t></w:r></w:p></w:comment>`;
+    const CHOICE = `<mc:Choice Requires="w14"><w:comments xmlns:w="${W}">${COMMENT}</w:comments></mc:Choice>`;
+    const UNKNOWN_CHOICE = `<mc:Choice Requires="u"><w:comments xmlns:w="${W}">${COMMENT}</w:comments></mc:Choice>`;
+    const FALLBACK = "<mc:Fallback/>";
+    /** A `word/comments.xml` whose stored root is an AlternateContent holding `inner`, with the body referencing comment 0. */
+    const commentsRoot = (inner: string): Record<string, string> => ({
+        "word/document.xml": document(`<w:r><w:commentReference w:id="0"/></w:r>`),
+        "word/comments.xml": `<mc:AlternateContent ${ROOT} xmlns:u="urn:example:unknown">${inner}</mc:AlternateContent>`,
+    });
+    /** The main document's paragraph holding a run-level AlternateContent with `between` between its Choice run and its Fallback run. */
+    const bodyRun = (between: string): Record<string, string> => ({
+        "word/document.xml": document(
+            `<mc:AlternateContent><mc:Choice Requires="w14"><w:r><w:t>Chosen</w:t></w:r></mc:Choice>${between}` +
+                `<mc:Fallback><w:r><w:t>Fallback</w:t></w:r></mc:Fallback></mc:AlternateContent>`,
+        ),
+    });
+    const malformed = async (parts: Record<string, string>, part: string) =>
+        (await check.run(ValidationContext.fromEntries(parts))).filter((issue) => issue.code === "mce-malformed" && issue.path === part);
+
+    // Every position session 65 (s65c) and session 67 (s67b) showed Word
+    // refusing, in the comments part's stored root and in a body run alike.
+    it.each([
+        ["text before the Choice", `Stray${CHOICE}${FALLBACK}`],
+        ["text between the Choice and the Fallback", `${CHOICE}Stray${FALLBACK}`],
+        ["text after the Fallback", `${CHOICE}${FALLBACK}Stray`],
+        ["text after a Choice with no Fallback", `${CHOICE}Stray`],
+        ["text between two Choices", `${CHOICE}Stray${UNKNOWN_CHOICE}${FALLBACK}`],
+    ] as const)("rejects a comments root AlternateContent holding %s", async (_shape, inner) => {
+        expect(await malformed(commentsRoot(inner), "word/comments.xml")).toEqual([
+            expect.objectContaining({ severity: "error", path: "word/comments.xml" }),
+        ]);
+    });
+
+    it("rejects a body run-level AlternateContent holding text between its Choice and its Fallback (session 67 s67b)", async () => {
+        expect(await malformed(bodyRun("Stray"), "word/document.xml")).toEqual([
+            expect.objectContaining({ severity: "error", path: "word/document.xml" }),
+        ]);
+    });
+
+    // The calibrations the same sessions opened clean: the text inside a
+    // branch (session 65 s65b), whitespace only between the branches, and
+    // the same roots without any text (session 67 s67b).
+    it.each([
+        ["text inside the Choice before the root", CHOICE.replace("<w:comments", "Stray<w:comments") + FALLBACK],
+        ["text inside the Fallback", `${CHOICE}<mc:Fallback>Stray</mc:Fallback>`],
+        ["whitespace only between the branches", `${CHOICE}\n  ${FALLBACK}`],
+        ["a Choice with no Fallback and no text", CHOICE],
+        ["two Choices and no text", `${CHOICE}${UNKNOWN_CHOICE}${FALLBACK}`],
+    ] as const)("accepts a comments root AlternateContent holding %s", async (_shape, inner) => {
+        expect(await check.run(ValidationContext.fromEntries(commentsRoot(inner)))).toEqual([]);
+    });
+
+    it("accepts the body calibration without the text (session 67 s67b)", async () => {
+        expect(await check.run(ValidationContext.fromEntries(bodyRun("")))).toEqual([]);
+    });
+});

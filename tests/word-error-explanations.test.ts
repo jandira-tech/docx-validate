@@ -24,6 +24,18 @@ describe("word error explanations", () => {
         expect(explanation).toContain("opened clean roots that unwrap to the Relationships element, which word-valid accepts (#646)");
         expect(explanation).toContain("unwraps to none");
     });
+    it("explains character data directly inside AlternateContent (#851, sessions 65 and 67)", () => {
+        const explanation = explainWordError("mce-malformed");
+        expect(explanation).toContain("must not hold character data directly inside it");
+        expect(explanation).toContain(
+            "before the Choice, between the branches, after the Fallback, after a Choice with no Fallback and between two Choices",
+        );
+        expect(explanation).toContain(
+            "opened the same roots clean with the text inside a Choice or the Fallback or with whitespace only between the branches",
+        );
+        expect(explanation).toContain("(sessions 65 and 67)");
+        expect(explanation).toContain("other parts and relationships parts are unprobed");
+    });
     it("explains relationships markup compatibility with the observed Word behaviour (#632)", () => {
         const explanation = explainWordError("opc-relationships-markup-compatibility");
         expect(explanation).toContain("Word");
