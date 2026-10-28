@@ -63,6 +63,7 @@ import { NS as XML_NS } from "../lib/types";
 import { readXmlPart, writeXmlPart, writeXmlText, type DecodedXmlPart } from "../lib/xml-part-io";
 import { getElementsByTagNameNSAll, getRelationshipChildren, parseXml, serializeXml, xmlDeclarationEncoding } from "../lib/xml-helpers";
 import { findLinkBelow } from "../lib/zip-path";
+import { walkDirectory } from "./office/validators/base";
 
 const TEMPLATE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "templates");
 
@@ -385,22 +386,20 @@ function climbsPastPackageRoot(reference: string): boolean {
 }
 
 /**
- * Every file under `unpackedDir`, as a forward-slash part name relative to
- * it — the stored part names a relationship target is looked up among.
+ * The stored part names a relationship target is looked up among: every
+ * file `walkDirectory` reports under `unpackedDir`, each as a
+ * forward-slash part name relative to it. `walkDirectory` is the walk the
+ * package view reads, so a file or directory symbolic link whose target
+ * resolves inside the unpacked root counts under its own stored name, and
+ * an entry that walk cannot read — a link that resolves outside the root,
+ * a broken link, a loop, a FIFO — is no stored name at all. Before, a
+ * private dirents walker dropped every link, so a main document stored as
+ * a link inside the tree was refused as naming no stored part while the
+ * checks read it (#938), and a directory it could not list rejected the
+ * whole call with the file system's error (#961).
  */
-async function storedPartNames(unpackedDir: string): Promise<string[]> {
-    const names: string[] = [];
-    const walk = async (dir: string, prefix: string): Promise<void> => {
-        for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
-            if (entry.isFile()) {
-                names.push(prefix === "" ? entry.name : `${prefix}/${entry.name}`);
-            } else if (entry.isDirectory()) {
-                await walk(path.join(dir, entry.name), prefix === "" ? entry.name : `${prefix}/${entry.name}`);
-            }
-        }
-    };
-    await walk(unpackedDir, "");
-    return names;
+function packageViewPartNames(unpackedDir: string): string[] {
+    return walkDirectory(unpackedDir).files.map((file) => path.relative(unpackedDir, file).split(path.sep).join("/"));
 }
 
 /**
@@ -433,6 +432,11 @@ async function storedPartNames(unpackedDir: string): Promise<string[]> {
  * climbs past the package root, or a named part that is not stored, the
  * conventional `word/document.xml` included — is refused, naming `_rels/.rels`
  * or the missing part, before any write (#919).
+ * The stored parts are the names `packageViewPartNames` reads, so a main
+ * document stored as a symbolic link, or under one, that resolves inside the
+ * unpacked tree is found under the link's own name, and one that resolves
+ * outside it, or is broken, is not (#938); a directory that walk cannot list
+ * hides only what is stored under it (#961).
  */
 type CommentWiring =
     | { kind: "conventional"; mainRelsPart: string }
@@ -448,6 +452,8 @@ type CommentWiring =
  * sidecar stored under another, equivalent spelling
  * (`word/_rels/m%61in.xml.rels` beside `word/main.xml`) is written to under
  * its own name, never given a second, OPC-equivalent one beside it.
+ * `storedNames` are the names `packageViewPartNames` reads, so a sidecar
+ * that is a symbolic link inside the tree counts under its own name (#938).
  */
 function mainDocumentRelsPart(storedNames: readonly string[], mainDocument: string): string {
     const derived = path.posix.join(path.posix.dirname(mainDocument), "_rels", `${path.posix.basename(mainDocument)}.rels`);
@@ -457,7 +463,7 @@ function mainDocumentRelsPart(storedNames: readonly string[], mainDocument: stri
 async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring> {
     const packageRelsPath = path.join(unpackedDir, ...PACKAGE_RELS_PART.split("/"));
     if (!(await pathExists(packageRelsPath))) {
-        const storedNames = await storedPartNames(unpackedDir);
+        const storedNames = packageViewPartNames(unpackedDir);
         return { kind: "conventional", mainRelsPart: mainDocumentRelsPart(storedNames, CONVENTIONAL_MAIN_DOCUMENT) };
     }
     const part = await readXmlPart(packageRelsPath);
@@ -505,7 +511,7 @@ async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring>
     // OPC equivalence, and the wiring goes through that part's own name; a
     // named part that is not stored is refused before any write, the
     // conventional `word/document.xml` included (#919).
-    const storedNames = await storedPartNames(unpackedDir);
+    const storedNames = packageViewPartNames(unpackedDir);
     const storedName = findEquivalentPart(storedNames, reference);
     if (storedName === undefined) {
         return { kind: "refused", message: `Error: ${path.join(unpackedDir, ...reference.replace(/^\//, "").split("/"))} not found` };
