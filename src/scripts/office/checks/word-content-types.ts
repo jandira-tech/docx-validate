@@ -8,6 +8,7 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
+import { citesWordSession } from "../../../lib/conformance-class";
 import {
     asciiLowercase,
     canonicalPartName,
@@ -24,6 +25,7 @@ import type { ValidationContext } from "../../../lib/validation-context";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
 import { REPORTING_SEGMENT_ORDER } from "./word-part-content-type-generic";
+import { xmlPartNames } from "./xml";
 
 const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
 
@@ -93,6 +95,14 @@ const emptyContentTypeFindings = async (ctx: ValidationContext, profile?: Profil
         const declaration = overrides.find((elem) => canonicalPartName(elem.getAttribute("PartName") ?? "") === canonical);
         if (!declaration?.hasAttribute("ContentType")) continue;
         const session = EMPTY_OVERRIDE_SESSIONS.get(segment);
+        // Sessions 49, 50 and 53 stored Transitional packages: a package
+        // with a Strict part keeps the finding without the session (#1016).
+        const cited =
+            session !== undefined &&
+            citesWordSession(
+                ctx,
+                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name)),
+            );
         issues.push({
             severity: "error",
             code: "word-content-type-invalid",
@@ -100,7 +110,7 @@ const emptyContentTypeFindings = async (ctx: ValidationContext, profile?: Profil
             message:
                 session === undefined
                     ? `Microsoft Word refuses empty content type '' for ${part} (main document Override)`
-                    : `Microsoft Word refuses empty content type '' for ${part} (main document ${segment} relationship Override, session ${session})`,
+                    : `Microsoft Word refuses empty content type '' for ${part} (main document ${segment} relationship Override${cited ? `, session ${session}` : ""})`,
         });
     }
     return issues;

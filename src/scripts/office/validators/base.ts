@@ -66,6 +66,7 @@ import {
     UNDERSTOOD_NAMESPACES,
     understoodNamespacesForPart,
 } from "../../../lib/markup-compatibility";
+import { STRICT_OOXML_NS_PREFIX } from "../../../lib/conformance-class";
 import { opcNameIssueSeverity, wordObservedIssueSeverity } from "../../../lib/mode-policy";
 import { withTempDir } from "../../../lib/run-cli";
 import { VALIDATION_DEADLINE, type RunDeadline } from "../../../lib/run-deadline";
@@ -265,20 +266,6 @@ const asciiLowerCase = (text: string): string => text.replace(/[A-Z]/g, (letter)
 
 /** {@link SCHEMA_MAPPINGS} keys by their ASCII lower case, for part-name lookups (#377). */
 const SCHEMA_KEY_BY_LOWER_CASE = new Map(Object.keys(SCHEMA_MAPPINGS).map((key) => [asciiLowerCase(key), key]));
-
-/**
- * URI prefix shared by all ISO OOXML Strict conformance class namespaces.
- * Strict documents use `purl.oclc.org/ooxml/` instead of the Transitional
- * `schemas.openxmlformats.org/…` prefix. Any root element namespace that
- * starts with this prefix belongs to the Strict conformance class.
- *
- * The bundled `iso-strict/` schemas cover these namespaces. Under
- * `profile: "strict"` `validateAgainstXsd` validates Strict parts against
- * them (namespace + part identity dispatch); lenient keeps the historical
- * info-level `xsd-strict-skipped` skip, and word-valid walks no schema at
- * all, so it emits no XSD issue.
- */
-const STRICT_OOXML_NS_PREFIX = "http://purl.oclc.org/ooxml/";
 
 // Use a non-`g` regex for the predicate (`.test()` against a stateful `g`
 // pattern advances `lastIndex` between calls and silently mis-skips matches),

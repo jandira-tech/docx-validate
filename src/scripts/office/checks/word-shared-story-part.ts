@@ -41,10 +41,12 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
+import { citesWordSession } from "../../../lib/conformance-class";
 import { canonicalPartName } from "../../../lib/content-types";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { storyRootUses, wordReadTypedTargets } from "../../../lib/word-read-parts";
+import { xmlPartNames } from "./xml";
 
 /**
  * The lazily read story segments whose shared part Word refuses, each
@@ -118,11 +120,20 @@ export const wordSharedStoryPartCheck: CheckDefinition = {
             if (root === undefined) {
                 continue;
             }
+            // Sessions 66 and 67 stored Transitional packages: a package
+            // with a Strict part keeps the finding without the recovery
+            // sentence that cites them (#1016).
+            const recovery = citesWordSession(
+                ctx,
+                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name)),
+            )
+                ? `Microsoft Word offers to recover the file (${entry.session}). `
+                : "";
             issues.push({
                 severity: "error",
                 message:
                     `${entry.part} is the ${entry.segment} part of both the main document and the reached glossary ${root}. ` +
-                    `Microsoft Word offers to recover the file (${entry.session}). ` +
+                    recovery +
                     `Give each story root its own ${entry.segment} part.`,
                 path: entry.part,
                 code: "word-shared-story-part",

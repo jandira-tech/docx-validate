@@ -223,6 +223,36 @@ describe("word-shared-story-part (#850)", () => {
         expect(await diagnose(crossSegmentShare())).toEqual([]);
     });
 
+    // #1016: sessions 66 and 67 stored Transitional packages, so a package
+    // with an ISO Strict part keeps the finding without the recovery
+    // sentence that cites them.
+    const STRICT_W = "http://purl.oclc.org/ooxml/wordprocessingml/main";
+    const STRICT_R = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+    const uniformlyStrict = (parts: Record<string, string>): Record<string, string> =>
+        Object.fromEntries(
+            Object.entries(parts).map(([name, text]) => [name, name === CT ? text : text.replaceAll(W, STRICT_W).replaceAll(R, STRICT_R)]),
+        );
+    const strictApp = (parts: Record<string, string>): Record<string, string> => ({
+        ...parts,
+        "docProps/app.xml": '<Properties xmlns="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"/>',
+    });
+    it.each([
+        ["comments", () => commentsShared(true, true, true, true)],
+        ["footnotes", () => notesShared("footnote", true, true, true)],
+        ["endnotes", () => notesShared("endnote", true, true, true)],
+    ] as const)("drops the session from the shared %s part in a package with a Strict part (#1016)", async (segment, parts) => {
+        const finding = {
+            severity: "error",
+            code: "word-shared-story-part",
+            path: `word/${segment}.xml`,
+            message:
+                `word/${segment}.xml is the ${segment} part of both the main document and the reached glossary word/glossary/document.xml. ` +
+                `Give each story root its own ${segment} part.`,
+        };
+        expect(await diagnose(uniformlyStrict(parts()))).toEqual([finding]);
+        expect(await diagnose(strictApp(parts()))).toEqual([finding]);
+    });
+
     it("skips absent and unparseable packages", async () => {
         expect(await wordSharedStoryPartCheck.run(ValidationContext.fromEntries({}))).toEqual([]);
         expect(await wordSharedStoryPartCheck.run(ValidationContext.fromEntries({ "_rels/.rels": "<broken" }))).toEqual([]);

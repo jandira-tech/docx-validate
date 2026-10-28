@@ -16,6 +16,7 @@ import { contentTypeSpecimens } from "./support/word-content-types-specimens";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
 import { glossaryStylesParts } from "./support/glossary-content-type-specimens";
 import { RELATED_PART_SPECIMENS, relatedContentTypeParts } from "./support/related-content-type-specimens";
+import { uniformlyStrict } from "./support/story-content-type-specimens";
 
 it("registers duplicate declarations for all formats, reads the Markup-Compatibility-processed stream and skips absent/unparseable streams (#431, #459)", async () => {
     const check = createDefaultCheckRegistry().get("ct-duplicate-declaration");
@@ -218,7 +219,7 @@ describe("empty related Override (#720, sessions 49, 50 and 53)", () => {
         "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(stylesType, ""),
     });
 
-    it.each([
+    const rows = [
         {
             label: "the styles part the main document relates",
             parts: stylesEmptyParts(),
@@ -247,7 +248,9 @@ describe("empty related Override (#720, sessions 49, 50 and 53)", () => {
             segment: "numbering",
             session: 53,
         },
-    ])("reports $label exactly once with its session", async ({ parts, part, segment, session }) => {
+    ];
+
+    it.each(rows)("reports $label exactly once with its session", async ({ parts, part, segment, session }) => {
         expect(await wordContentTypeInvalidCheck.run(ValidationContext.fromEntries(parts))).toEqual([
             {
                 severity: "error",
@@ -257,6 +260,28 @@ describe("empty related Override (#720, sessions 49, 50 and 53)", () => {
             },
         ]);
         expect(await wordContentTypeInvalidCheck.run(ValidationContext.fromEntries({ ...MINIMAL_PARTS }))).toEqual([]);
+    });
+
+    // #1016: sessions 49, 50 and 53 stored Transitional packages, so a
+    // package with an ISO Strict part keeps the finding without the session.
+    const strictApp = (parts: Record<string, string>): Record<string, string> => ({
+        ...parts,
+        "docProps/app.xml": '<Properties xmlns="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"/>',
+    });
+    it.each(
+        rows.flatMap((row) => [
+            { ...row, packageClass: "a uniformly Strict", parts: uniformlyStrict(row.parts) },
+            { ...row, packageClass: "a Transitional package with a Strict docProps/app.xml, as", parts: strictApp(row.parts) },
+        ]),
+    )("reports $label in $packageClass package without its session (#1016)", async ({ parts, part, segment }) => {
+        expect(await wordContentTypeInvalidCheck.run(ValidationContext.fromEntries(parts))).toEqual([
+            {
+                severity: "error",
+                code: "word-content-type-invalid",
+                path: "[Content_Types].xml",
+                message: `Microsoft Word refuses empty content type '' for ${part} (main document ${segment} relationship Override)`,
+            },
+        ]);
     });
 
     it("invalidates the full word-valid run and a named run on the numbering row (#740)", async () => {
