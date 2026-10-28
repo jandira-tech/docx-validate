@@ -284,13 +284,21 @@ describe("notes defined only through a reached glossary (#828, session 63 s63c)"
                 }),
             );
             const result = await validate(file, { profile: "word-valid", ...(mode === "selected" ? { checks: [code] } : {}) });
-            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([
+            const errors = result.issues.filter((issue) => issue.severity === "error");
+            expect(errors).toEqual([
                 expect.objectContaining({
                     code,
                     path: "word/document.xml",
                     message: expect.stringContaining(`${kind} reference uses id 1`),
                 }),
             ]);
+            expect(errors[0]?.message).toContain(
+                `the notes parts the main document relates define no w:${kind} with that id; only a reached glossary's notes part does.`,
+            );
+            expect(errors[0]?.message).toContain("Microsoft Word offers to recover the file.");
+            expect(errors[0]?.message).toContain(
+                `Remove the w:${kind}Reference, or add the note to a notes part the main document relates.`,
+            );
             expect(result.valid).toBe(false);
         });
     });
