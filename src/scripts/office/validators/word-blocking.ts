@@ -251,6 +251,11 @@ export const isWordBlockingIssue = (
         case "opc-part-name-word-refused":
         case "ct-override-partname-word-refused":
         case "opc-part-name-escaped-slash":
+        // An item name that places no part is refused for staging under every
+        // profile (#629). Word 16.115 rejects every kind, even unreferenced: it
+        // offers recovery for a leading `/` or `\`, a drive, and an empty, `.`,
+        // `..` or `...` segment (sessions 3, 42 and 43).
+        case "opc-item-name-refused":
             return true;
         // Word 16.115 offers recovery for every malformed Override PartName
         // probed, even when nothing is stored under that name and the content

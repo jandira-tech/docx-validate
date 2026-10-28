@@ -61,19 +61,20 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
      * except that word-valid and strict still judge the content-types stream.
      */
     async validate(): Promise<ValidationResult> {
-        return this.withinBaselineRun(() => this.runEveryCheck());
+        return this.withDeadlineFinding(await this.withinBaselineRun(() => this.runEveryCheck()));
     }
 
     private async runEveryCheck(): Promise<ValidationResult> {
         this.resetExecutedChecks();
         const opened = openDirectoryContext(this.unpackedDir);
         if (opened.openError !== undefined) {
-            const diagnostic = await storedNamesRun(opened.context, "pptx", this.profile);
+            const diagnostic = await storedNamesRun(opened.context, "pptx", this.profile, this.deadline);
             this.recordExecutedChecks(diagnostic.executed);
             return { valid: false, issues: [...diagnostic.issues, packageExtractFailedIssue(this.unpackedDir, opened.openError)] };
         }
         const context = opened.context;
-        const xml = await this.validateXml();
+        const rule = this.ruleScheduler();
+        const xml = await rule("PPTX validateXml", () => this.validateXml());
         const malformed = new Set(
             xml.issues.flatMap((issue) => (issue.severity === "error" && issue.path !== undefined ? [issue.path] : [])),
         );
@@ -86,30 +87,34 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             return withoutRestatedIgnorablePrefixes(
                 mergeResults(
                     xml,
-                    await this.validateDuplicateDeclarations(context, malformed),
-                    await this.validateOverridePartNames(context, "pptx", malformed),
-                    await this.validateContentTypesMarkupCompatibility(context, "pptx", malformed),
+                    await rule("PPTX validateDuplicateDeclarations", () => this.validateDuplicateDeclarations(context, malformed)),
+                    await rule("PPTX validateOverridePartNames", () => this.validateOverridePartNames(context, "pptx", malformed)),
+                    await rule("PPTX validateContentTypesMarkupCompatibility", () =>
+                        this.validateContentTypesMarkupCompatibility(context, "pptx", malformed),
+                    ),
                 ),
             );
         }
 
         const checks = [
             xml,
-            await this.validateNamespaces(),
-            await this.validateUniqueIds(),
-            await this.validateUuidIds(),
-            await this.validateFileReferences(),
-            await this.validateRelationshipElements(),
-            await this.validateSlideLayoutIds(),
-            await this.validateContentTypes(),
-            await this.validateOverridePartNames(context, "pptx", malformed),
-            await this.validateContentTypesMarkupCompatibility(context, "pptx", malformed),
-            await this.validateAgainstXsd(),
-            await this.validateNotesSlideReferences(),
-            await this.validateAllRelationshipIds(),
-            await this.validateNoDuplicateSlideLayouts(),
-            await this.validateNoBom(),
-            await this.validateNoEmptyRelsParts(),
+            await rule("PPTX validateNamespaces", () => this.validateNamespaces()),
+            await rule("PPTX validateUniqueIds", () => this.validateUniqueIds()),
+            await rule("PPTX validateUuidIds", () => this.validateUuidIds()),
+            await rule("PPTX validateFileReferences", () => this.validateFileReferences()),
+            await rule("PPTX validateRelationshipElements", () => this.validateRelationshipElements()),
+            await rule("PPTX validateSlideLayoutIds", () => this.validateSlideLayoutIds()),
+            await rule("PPTX validateContentTypes", () => this.validateContentTypes()),
+            await rule("PPTX validateOverridePartNames", () => this.validateOverridePartNames(context, "pptx", malformed)),
+            await rule("PPTX validateContentTypesMarkupCompatibility", () =>
+                this.validateContentTypesMarkupCompatibility(context, "pptx", malformed),
+            ),
+            await rule("PPTX validateAgainstXsd", () => this.validateAgainstXsd()),
+            await rule("PPTX validateNotesSlideReferences", () => this.validateNotesSlideReferences()),
+            await rule("PPTX validateAllRelationshipIds", () => this.validateAllRelationshipIds()),
+            await rule("PPTX validateNoDuplicateSlideLayouts", () => this.validateNoDuplicateSlideLayouts()),
+            await rule("PPTX validateNoBom", () => this.validateNoBom()),
+            await rule("PPTX validateNoEmptyRelsParts", () => this.validateNoEmptyRelsParts()),
         ];
         return withoutRestatedIgnorablePrefixes(mergeResults(...checks));
     }

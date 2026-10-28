@@ -27,9 +27,12 @@ import {
     LOCAL_HEADER_SIGNATURE,
     readU32,
     type CentralDirectoryView,
+    EOCD_FIXED_LENGTH,
 } from "./zip-central-directory";
 
 const LOCAL_HEADER_FIXED_LENGTH = 30;
+const EOCD_DISK_ENTRIES_OFFSET = 8;
+const EOCD_TOTAL_ENTRIES_OFFSET = 10;
 const CENTRAL_HEADER_FIXED_LENGTH = 46;
 const UNICODE_PATH_FIELD = 0x7075;
 const EOCD_CD_SIZE_OFFSET = 12;
@@ -349,6 +352,57 @@ export const centralKeyedArchive = (bytes: Uint8Array): Uint8Array => {
         push(bytes.subarray(view.eocdOffset, view.eocdEnd));
     }
     push(bytes.subarray(view.eocdEnd));
+    return Buffer.concat(parts.map((part) => Buffer.from(part.buffer, part.byteOffset, part.byteLength)));
+};
+
+/**
+ * The archive bytes without the central records `drop` matches, so the rest
+ * of a package can be read when one entry is refused (#629). JSZip keys its
+ * view by resolved name, and a refused `word/x/../document.xml` stored after
+ * `word/document.xml` replaces it there; leaving the refused record out of the
+ * directory brings back the entry it hid, where dropping it from the loaded
+ * view would lose both. `drop` sees every record, folder records included.
+ *
+ * Everything before the directory stays verbatim: the prefix, every local
+ * record (a dropped one stays, but no record names it any more) and the gaps
+ * between them. So do the EOCD's comment and any bytes after it. The kept
+ * records keep their bytes and offsets, and the EOCD's entry counts and
+ * directory size follow them; its directory offset is unchanged, so the bytes
+ * before the archive keep rebasing every offset as before (#467).
+ *
+ * The bytes come back as given when no record matches, and `undefined` when
+ * the rewrite cannot honor the envelope: a directory
+ * `readCentralDirectoryView` cannot parse, a ZIP64 directory, or bytes
+ * between the walked directory and the EOCD, which moving the EOCD would drop
+ * (#468, #478).
+ */
+export const archiveWithoutEntries = (bytes: Uint8Array, drop: (record: ZipCentralRecord) => boolean): Uint8Array | undefined => {
+    const view = readCentralDirectoryView(bytes);
+    if (view === undefined || view.zip64 || view.cdEnd !== view.eocdOffset) {
+        return undefined;
+    }
+    const kept = view.records.filter((record) => !drop(record));
+    if (kept.length === view.records.length) {
+        return bytes;
+    }
+    const records = kept.map((record) =>
+        bytes.subarray(
+            record.recordOffset,
+            record.recordOffset +
+                CENTRAL_HEADER_FIXED_LENGTH +
+                record.nameBytes.length +
+                record.extraBytes.length +
+                record.commentBytes.length,
+        ),
+    );
+    const eocd = Buffer.from(bytes.subarray(view.eocdOffset, view.eocdOffset + EOCD_FIXED_LENGTH));
+    eocd.writeUInt16LE(kept.length, EOCD_DISK_ENTRIES_OFFSET);
+    eocd.writeUInt16LE(kept.length, EOCD_TOTAL_ENTRIES_OFFSET);
+    eocd.writeUInt32LE(
+        records.reduce((size, record) => size + record.length, 0),
+        EOCD_CD_SIZE_OFFSET,
+    );
+    const parts = [bytes.subarray(0, view.cdOffset), ...records, eocd, bytes.subarray(view.eocdOffset + EOCD_FIXED_LENGTH)];
     return Buffer.concat(parts.map((part) => Buffer.from(part.buffer, part.byteOffset, part.byteLength)));
 };
 

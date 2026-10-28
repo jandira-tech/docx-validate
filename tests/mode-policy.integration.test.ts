@@ -159,6 +159,7 @@ describe("quick mode runs the common-defect preset and discloses its omissions",
             "opc-part-name-escaped-unreserved",
             "opc-part-name-escaped-slash",
             "opc-part-name-word-refused",
+            "opc-item-name-refused",
             "xml-syntax",
             "ct-duplicate-declaration",
             // The content-types group's Override PartName grammar (#414).

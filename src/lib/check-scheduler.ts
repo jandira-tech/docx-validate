@@ -26,6 +26,7 @@
  */
 
 import type { CheckDefinition, CheckRegistry } from "./check-registry";
+import type { RunDeadline } from "./run-deadline";
 import type { PackageFormat, Profile, ValidationIssue } from "./types";
 import type { ValidationContext } from "./validation-context";
 
@@ -67,6 +68,12 @@ export type RunChecksOptions = {
      * `word-valid` and `strict`, the stored view under `lenient` (#634).
      */
     readonly profile?: Profile;
+    /**
+     * The run's wall-clock budget (#630). A check asks it before it starts;
+     * once the budget is spent, every remaining check is skipped and recorded
+     * on the deadline as not run. A check already running finishes.
+     */
+    readonly deadline?: RunDeadline;
 };
 
 export const runChecks = async (ctx: ValidationContext, registry: CheckRegistry, opts: RunChecksOptions): Promise<CheckRun> => {
@@ -78,7 +85,9 @@ export const runChecks = async (ctx: ValidationContext, registry: CheckRegistry,
     const byId = new Map<string, CheckOutcome>();
     // Registration order puts every prerequisite before its dependents.
     for (const def of registry.list(opts.format).filter((candidate) => selected.includes(candidate.id))) {
-        const outcome = await runOne(ctx, def, status, byId, registry, opts.profile);
+        const outcome: CheckOutcome = opts.deadline?.reached(def.id)
+            ? { id: def.id, status: "skipped", issues: [], reason: "the validation deadline was reached" }
+            : await runOne(ctx, def, status, byId, registry, opts.profile);
         status.set(def.id, outcome.status);
         byId.set(def.id, outcome);
         outcomes.push(outcome);

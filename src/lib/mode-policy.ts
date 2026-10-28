@@ -61,6 +61,8 @@ export type ModeRequest = {
     checks?: readonly string[];
     /** `--auto-repair`: repair before validating. Only a full run repairs. */
     autoRepair?: boolean;
+    /** `--deadline-ms`: the run's wall-clock budget (#630). Never with `--auto-repair`. */
+    deadlineMs?: number;
 };
 
 /**
@@ -169,6 +171,14 @@ export const assertModeCoherent = (request: ModeRequest): void => {
     }
     if (request.autoRepair === true && partial) {
         throw new ModeConflictError("Cannot combine --auto-repair with --quick or --checks: only a full run repairs.");
+    }
+    // #630: a repair writes. A deadline that stopped it part-way would leave a
+    // directory input partly repaired, and one that let it finish would not
+    // bound the run.
+    if (request.autoRepair === true && request.deadlineMs !== undefined) {
+        throw new ModeConflictError(
+            "Cannot combine --auto-repair with --deadline-ms: a deadline could stop a repair part-way through, and a repair it let finish would not be bounded.",
+        );
     }
 };
 

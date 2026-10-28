@@ -63,10 +63,12 @@ import {
     type XsdWalkTrace,
 } from "../../lib/types";
 import type { XsdValidator } from "../../lib/xsd-validator";
-import { verifyInWord, type WordVerification } from "../../lib/word-verifier";
+import { RunDeadline, VALIDATION_DEADLINE } from "../../lib/run-deadline";
+import { verifyInWord, WORD_VERIFY_TIMEOUT_MS, type WordVerification } from "../../lib/word-verifier";
 import {
     archiveStoredNames,
     assertPlaceableNames,
+    entryNameRefusal,
     indexByPartName,
     normalizePartName,
     ValidationContext,
@@ -100,7 +102,7 @@ import { wordReadParts, wordStoryRootParts } from "../../lib/word-read-parts";
 import { CT_DUPLICATE_DECLARATION } from "../../lib/content-types";
 import { isWordBlockingIssue } from "./validators/word-blocking";
 import { explainWordError } from "./validators/word-error-explanations";
-import { loadCentralNamedArchive } from "../../lib/zip-central-names";
+import { archiveWithoutEntries, loadCentralNamedArchive } from "../../lib/zip-central-names";
 import { WORD_PART_CONTENT_TYPE_MISMATCH } from "./checks/word-part-content-type-mismatch";
 import { WORD_PART_CONTENT_TYPE_INEXACT } from "./checks/word-part-content-type-inexact";
 
@@ -141,8 +143,12 @@ const WORD_OBSERVED_CODES: ReadonlySet<string> = new Set([
  * Side-effect boundary for real-Word verification. Defaults to
  * `verifyInWord` (a temporary copy, opened through the injectable
  * `WordTransport`); tests substitute their own so no lane opens Word.
+ *
+ * A run with a deadline passes `options.timeoutMs`: what is left of its
+ * budget, at most the default verifier's own 45 s (#630). A run without one
+ * passes the bytes alone, as before.
  */
-export type WordVerifier = (bytes: Uint8Array) => Promise<WordVerification>;
+export type WordVerifier = (bytes: Uint8Array, options?: { timeoutMs?: number }) => Promise<WordVerification>;
 
 export interface ValidateOptions {
     /** Path to the original packed Office file. Required for DOCX redlining. */
@@ -184,6 +190,19 @@ export interface ValidateOptions {
      * libxml2-wasm validator.
      */
     xsdValidator?: XsdValidator;
+    /**
+     * `--deadline-ms`: the wall-clock budget of the whole run, in milliseconds
+     * (#630). The bound is cooperative: every step asks the budget before it
+     * starts — the package stages, each named check, each rule of the format
+     * validator, each part of the schema walk, Word verification — and a step
+     * already running finishes, so the run overruns by at most its longest
+     * single step. When the budget stopped any step, the result carries one
+     * error-severity `validation-deadline` finding naming them and is invalid:
+     * a run cut short is never a pass. `metadata.deadline` reports the budget
+     * and the steps it stopped. A finite number, 0 or more; not with
+     * `autoRepair`. Default: no deadline.
+     */
+    deadlineMs?: number;
 }
 
 /**
@@ -236,6 +255,9 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     const format = formatForSuffix(dispatchSuffix);
     const mode = resolveMode(format, opts);
     const profile: Profile = mode.profile;
+    // #630: the budget starts before the first read; an invalid one is a
+    // configuration error, raised before anything is touched.
+    const deadline = opts.deadlineMs === undefined ? undefined : new RunDeadline(opts.deadlineMs);
     const registry = createDefaultCheckRegistry();
     const selected = mode.select === undefined ? undefined : selectionUnderProfile(registry, mode.select, format, profile);
 
@@ -275,17 +297,34 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
           )
         : undefined;
     const packedBytes = packedRead !== undefined && "bytes" in packedRead ? packedRead.bytes : undefined;
-    const finish = async (result: ValidateRunResult): Promise<ValidateRunResult> =>
-        opts.verifyWord === true
-            ? withWordVerification(
-                  result,
-                  packedBytes,
-                  opts.wordVerifier,
-                  packedRead !== undefined && "error" in packedRead
-                      ? `Word verification needs the packed file's bytes; ${target} cannot be read: ${packedRead.error instanceof Error ? packedRead.error.message : String(packedRead.error)}`
-                      : undefined,
-              )
-            : result;
+    const finish = async (result: ValidateRunResult): Promise<ValidateRunResult> => {
+        const verified =
+            opts.verifyWord === true
+                ? await withWordVerification(
+                      result,
+                      packedBytes,
+                      opts.wordVerifier,
+                      packedRead !== undefined && "error" in packedRead
+                          ? `Word verification needs the packed file's bytes; ${target} cannot be read: ${packedRead.error instanceof Error ? packedRead.error.message : String(packedRead.error)}`
+                          : undefined,
+                      deadline,
+                  )
+                : result;
+        return deadline === undefined ? verified : withDeadline(verified, deadline);
+    };
+
+    // #630: the deadline stopped the run before its next stage. The findings
+    // of the stages that ran are kept; `finish` adds the deadline finding.
+    const stopped = (
+        findings: { issues: readonly ValidationIssue[]; executed: readonly string[] } = EMPTY_FINDINGS,
+    ): ValidateRunResult => ({
+        valid: false,
+        issues: [...findings.issues],
+        repairs: 0,
+        suffix: dispatchSuffix,
+        xsdWalk: xsdWalkNotStarted(),
+        metadata: { profile, executedChecks: orderedExecutedChecks(format, findings.executed), omittedChecks: [], schemaCompleted: false },
+    });
 
     if (packedRead !== undefined && "error" in packedRead) {
         // An unreadable input is an archive that cannot be opened: the same
@@ -307,7 +346,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     }
 
     if (selected !== undefined) {
-        return finish(await runSelectedChecks(target, packedBytes, dispatchSuffix, format, mode, registry, selected));
+        return finish(await runSelectedChecks(target, packedBytes, dispatchSuffix, format, mode, registry, selected, deadline));
     }
 
     const runWithUnpacked = async (unpackedDir: string, extra = EMPTY_ENVELOPE_RUN): Promise<ValidateRunResult> => {
@@ -320,6 +359,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
             schemasDir: opts.schemasDir,
             xsdValidator: opts.xsdValidator,
             profile,
+            deadline,
         });
         return {
             ...subclassResult,
@@ -521,7 +561,9 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     if (targetIsPackedFile) {
         // Defined: the read above already reported an unreadable input.
         const buf = packedBytes!;
-        const envelope = runsWordPackageChecks(profile) ? await zipEnvelopeRun(buf, dispatchSuffix, profile) : EMPTY_ENVELOPE_RUN;
+        if (deadline?.reached("opening the archive and every later step")) return finish(stopped());
+        const envelope = runsWordPackageChecks(profile) ? await zipEnvelopeRun(buf, dispatchSuffix, profile, deadline) : EMPTY_ENVELOPE_RUN;
+        if (deadline?.reached("loading the archive entries and every later step")) return finish(stopped(envelope));
         let zip: JSZip;
         try {
             zip = await loadCentralNamedArchive(buf);
@@ -559,7 +601,12 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
             buf,
             Object.values(zip.files).filter((entry) => !entry.dir),
         );
-        const diagnostic = await storedNamesRun(ValidationContext.fromEntries(stored.map((name) => [name, ""] as const)), format, profile);
+        const diagnostic = await storedNamesRun(
+            ValidationContext.fromEntries(stored.map((name) => [name, ""] as const)),
+            format,
+            profile,
+            deadline,
+        );
         const named = {
             issues: [...envelope.issues, ...diagnostic.issues],
             executed: [...envelope.executed, ...diagnostic.executed],
@@ -569,7 +616,11 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
             // resolved onto a later entry names no part either way (#378).
             assertPlaceableNames(stored);
         } catch (err) {
-            return finish(stagingFailed(named, err));
+            // The package still is not staged, but a refused name no longer
+            // hides the rest of it: opc-item-name-refused named each refused
+            // entry above, and the checks that read the archive directly
+            // judge every other entry, as after a failed extraction (#629).
+            return finish(stagingFailed(named, err, await placeableEntryFindings(buf, format, profile, registry, deadline)));
         }
         // The extraction can fail after the archive opened: the host
         // filesystem cannot hold two parts under one name (#373). The archive
@@ -581,31 +632,34 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         // The disclosure says a repair ran, so it is added only when one did
         // (#666): a failed extraction stops before the repair block, and
         // `.xlsx`, the one accepted suffix without validators, never reaches it.
+        if (deadline?.reached("staging the package and every later step")) return finish(stopped(named));
         let repairRan = autoRepair && format !== "xlsx";
         const staged = await runStaged(zip, named, undefined, () => {
             repairRan = false;
-            return archiveFindings(buf, format, profile, registry);
+            return archiveFindings(buf, format, profile, registry, deadline);
         });
         return finish(repairRan ? { ...staged, issues: [...staged.issues, PACKED_REPAIR_DISCLOSURE] } : staged);
     }
 
     const dir = path.resolve(target);
+    if (deadline?.reached("reading the directory and every later step")) return finish(stopped());
     const walked = walkDirectory(dir);
     const opened = openDirectoryContext(dir, walked.unreadable);
     if (opened.openError !== undefined) {
         // Refused stored names (#424) and unreadable walk entries (#557)
         // fail before any part is read. The stored-names diagnosis still
         // sees every stored name, readable or not.
-        const diagnostic = await storedNamesRun(opened.context, format, profile);
+        const diagnostic = await storedNamesRun(opened.context, format, profile, deadline);
         return finish(stagingFailed(diagnostic, new Error(opened.openError)));
     }
-    const diagnostic = await storedNamesRun(opened.context, format, profile);
+    const diagnostic = await storedNamesRun(opened.context, format, profile, deadline);
     const entries = walked.files.map((file) => [path.relative(dir, file).split(path.sep).join("/"), file] as const);
     // A symlink or hard link in the tree stages too (#425, #545): the stored
     // bytes are read into the package view, while every write-back
     // destination is guarded against following a link or modifying an
     // unnamed hard-link alias.
     if (entries.some(([name]) => name !== normalizePartName(name)) || walked.holdsSymlinks || walked.holdsHardLinks) {
+        if (deadline?.reached("staging the package and every later step")) return finish(stopped(diagnostic));
         // JSZip is only an in-memory entry collection here: no ZIP is written.
         const zip = new JSZip();
         for (const [name, file] of entries) {
@@ -637,6 +691,7 @@ async function withWordVerification(
     packedBytes: Uint8Array | undefined,
     injected: WordVerifier | undefined,
     unavailableDetails = "Word verification needs a packed Office file; the validated target is an unpacked directory",
+    deadline?: RunDeadline,
 ): Promise<ValidateRunResult> {
     const verify = injected ?? verifyInWord;
     if (packedBytes === undefined) {
@@ -652,8 +707,25 @@ async function withWordVerification(
             details: unavailableDetails,
         });
     }
+    // #630: a spent budget leaves Word unasked, which is not a pass either.
+    if (deadline?.reached("Word verification")) {
+        return applyWordVerification(result, {
+            requested: true,
+            outcome: "unavailable",
+            satisfied: false,
+            fileSha256: createHash("sha256").update(packedBytes).digest("hex"),
+            platform: process.platform,
+            observedAt: new Date().toISOString(),
+            observationMs: 0,
+            details: "Word verification did not run: the validation deadline was reached first",
+        });
+    }
     try {
-        return applyWordVerification(result, await verify(packedBytes));
+        const verification =
+            deadline === undefined
+                ? await verify(packedBytes)
+                : await verify(packedBytes, { timeoutMs: Math.min(deadline.remainingMs(), WORD_VERIFY_TIMEOUT_MS) });
+        return applyWordVerification(result, verification);
     } catch (err) {
         // A verifier that throws could not run: report that, never reject (#333).
         return applyWordVerification(result, {
@@ -667,6 +739,19 @@ async function withWordVerification(
             details: `Word verification failed to run: ${err instanceof Error ? err.message : String(err)}`,
         });
     }
+}
+
+/**
+ * The result of a run with a deadline (#630): `metadata.deadline` reports the
+ * budget and the steps it stopped, and when it stopped any, the run carries
+ * exactly one `validation-deadline` finding and is invalid. A validator of
+ * this run may have reported its own copy; the run's finding replaces it.
+ */
+function withDeadline(result: ValidateRunResult, deadline: RunDeadline): ValidateRunResult {
+    const issue = deadline.issue();
+    const issues = result.issues.filter((existing) => existing.code !== VALIDATION_DEADLINE);
+    const metadata = { ...result.metadata, deadline: { budgetMs: deadline.budgetMs, notRun: deadline.notRun } };
+    return issue === undefined ? { ...result, issues, metadata } : { ...result, valid: false, issues: [...issues, issue], metadata };
 }
 
 function applyWordVerification(result: ValidateRunResult, verification: WordVerification): ValidateRunResult {
@@ -814,25 +899,29 @@ function findingsUnderProfile(
  *
  * The machinery is the one a partial run uses: the registry's checks for the
  * format, the profile's policy on their findings, and lenient's stop at the
- * first malformed part.
+ * first malformed part. `select` defaults to every check the staging failure
+ * still runs; a partial run passes its own part-reading selection (#629).
  */
 async function archiveFindings(
     bytes: Uint8Array,
     format: PackageFormat,
     profile: Profile,
     registry: CheckRegistry,
+    deadline?: RunDeadline,
+    select: readonly string[] = stagingFallbackSelection(registry, format, profile),
 ): Promise<{ issues: readonly ValidationIssue[]; executed: readonly string[] }> {
+    if (deadline?.reached("the checks a failed staging still runs")) return EMPTY_FINDINGS;
     const opened = await contextFromArchive(bytes);
     // An archive that does not open, or whose package view is refused, holds
     // no part: the full run reports that failure alone (#413).
     if (opened.openError !== undefined) return EMPTY_FINDINGS;
-    const select = stagingFallbackSelection(registry, format, profile);
     if (select.length === 0) return EMPTY_FINDINGS;
     try {
         const run = await runChecks(opened.context, registry, {
             format,
             select,
             profile,
+            deadline,
             // A full lenient run stops at its first malformed part, so the
             // merged run stops where xml-syntax fails (#391).
             ...(profile === "lenient" ? { haltAfterFailing: XML_SYNTAX_CHECK_ID } : {}),
@@ -877,6 +966,27 @@ async function archiveFindings(
 }
 
 /**
+ * The findings {@link archiveFindings} reads from the archive's other entries
+ * when a stored item name places no part (#629). The refused records are
+ * left out of the directory, so an entry a refused `..` name hid in JSZip's
+ * view is judged by its own bytes. An envelope the rewrite cannot honor adds
+ * nothing, and an archive whose remaining view is refused too — a portable
+ * name collision — adds nothing either (#413). The bytes come back as given
+ * when no name was refused, so they add nothing either.
+ */
+async function placeableEntryFindings(
+    bytes: Uint8Array,
+    format: PackageFormat,
+    profile: Profile,
+    registry: CheckRegistry,
+    deadline?: RunDeadline,
+    select?: readonly string[],
+): Promise<{ issues: readonly ValidationIssue[]; executed: readonly string[] }> {
+    const rest = archiveWithoutEntries(bytes, (record) => !record.directory && entryNameRefusal(record.name) !== undefined);
+    return rest === undefined || rest === bytes ? EMPTY_FINDINGS : archiveFindings(rest, format, profile, registry, deadline, select);
+}
+
+/**
  * The checks a staging failure still runs: every check registered for the
  * format, minus the ones the full run already ran — the ZIP-envelope checks
  * and the stored-name checks — and the ones the profile never runs, so
@@ -906,7 +1016,27 @@ async function runSelectedChecks(
     mode: ResolvedMode,
     registry: CheckRegistry,
     selected: readonly string[],
+    deadline?: RunDeadline,
 ): Promise<ValidateRunResult> {
+    if (deadline?.reached("opening the package and every later step")) {
+        const resolved = registry.resolve(selected, format);
+        return {
+            valid: false,
+            issues: [],
+            repairs: 0,
+            suffix,
+            xsdWalk: xsdWalkNotStarted(),
+            metadata: {
+                profile: mode.profile,
+                executedChecks: [],
+                omittedChecks: registry
+                    .list(format)
+                    .map((definition) => definition.id)
+                    .filter((id) => !resolved.includes(id)),
+                schemaCompleted: false,
+            },
+        };
+    }
     const reportsParseFailures = registry.resolve(selected, format).some((id) => registry.get(id)?.reportsParseFailures);
     // A companion, not a prerequisite: these checks still read every part
     // with their own parser, even when xml-syntax rejects it (#385).
@@ -933,15 +1063,24 @@ async function runSelectedChecks(
         const runnableSelect = resolved.filter((id) => runnable.has(id));
         const run =
             runnableSelect.length > 0
-                ? await runChecks(opened.context, registry, { format, select: runnableSelect, profile: mode.profile })
+                ? await runChecks(opened.context, registry, { format, select: runnableSelect, profile: mode.profile, deadline })
                 : undefined;
         // A refused view has no parts, so no properties part to block (#409).
         const issues = run === undefined ? [] : findingsUnderProfile(run, registry, format, mode.profile, new Set());
-        const executed = run?.executed ?? [];
+        // A refused item name no longer hides the rest of a packed package:
+        // the selected checks that read parts judge the entries it leaves, as
+        // the full run's staging failure does (#629).
+        const partSelect = resolved.filter((id) => !runnable.has(id));
+        const rest =
+            opened.extractFailed === true && packedBytes !== undefined && partSelect.length > 0
+                ? await placeableEntryFindings(packedBytes, format, mode.profile, registry, deadline, partSelect)
+                : EMPTY_FINDINGS;
+        const executed = orderedExecutedChecks(format, [...(run?.executed ?? []), ...rest.executed]);
         return {
             valid: false,
             issues: [
                 ...issues,
+                ...rest.issues,
                 opened.extractFailed === true
                     ? packageExtractFailedIssue(target, opened.openError)
                     : packageOpenFailedIssue(target, opened.openError),
@@ -970,6 +1109,7 @@ async function runSelectedChecks(
         format,
         select,
         profile: mode.profile,
+        deadline,
         ...(mode.profile === "lenient" ? { haltAfterFailing: XML_SYNTAX_CHECK_ID } : {}),
     });
     const malformed = new Set(
@@ -1132,10 +1272,11 @@ function packageOpenFailedIssue(target: string, detail: string, failure: "read" 
 
 /**
  * A schema walk "completed" when it started, offered every eligible part to
- * the engine, and the engine answered for each one (no schema failed to load).
+ * the engine, the engine answered for each one (no schema failed to load),
+ * and no deadline stopped it before a part (#630).
  */
 function schemaWalkCompleted(walk: XsdWalkTrace, engineFailures: number): boolean {
-    return walk.started && walk.parts.length === walk.eligible && engineFailures === 0;
+    return walk.started && walk.parts.length === walk.eligible && engineFailures === 0 && (walk.notExamined ?? 0) === 0;
 }
 
 /**
@@ -1153,6 +1294,7 @@ async function zipEnvelopeRun(
     archiveBytes: Uint8Array,
     suffix: string,
     profile: Profile,
+    deadline?: RunDeadline,
 ): Promise<{ issues: ValidationResult["issues"]; executed: readonly string[] }> {
     const format: PackageFormat = suffix === ".pptx" ? "pptx" : suffix === ".xlsx" ? "xlsx" : "docx";
     const context = ValidationContext.fromEntries({}, { source: "archive", archiveBytes });
@@ -1162,7 +1304,7 @@ async function zipEnvelopeRun(
         .list()
         .filter((definition) => definition.archiveOnly === true)
         .map((definition) => definition.id);
-    const run = await runChecks(context, registry, { format, select, profile });
+    const run = await runChecks(context, registry, { format, select, profile, deadline });
     return { issues: [...run.issues], executed: [...run.executed] };
 }
 
@@ -1187,6 +1329,8 @@ interface RunValidatorsOptions {
     schemasDir?: string;
     xsdValidator?: XsdValidator;
     profile: Profile;
+    /** The run's wall-clock budget (#630). `validate()` refuses it with `autoRepair`. */
+    deadline?: RunDeadline;
 }
 
 async function runValidators(
@@ -1204,6 +1348,7 @@ async function runValidators(
             schemasDir: opts.schemasDir,
             xsdValidator: opts.xsdValidator,
             profile: opts.profile,
+            deadline: opts.deadline,
         });
         schemaValidator = docx;
         validators.push(docx);
@@ -1216,15 +1361,18 @@ async function runValidators(
             const originalDocx = opts.originalFile;
             const author = opts.author;
             const verbose = opts.verbose;
+            const deadline = opts.deadline;
             validators.push({
                 repair: async () => 0,
-                validate: () =>
-                    validateRedlining({
-                        unpackedDir,
-                        originalDocx,
-                        author,
-                        verbose,
-                    }),
+                validate: async () =>
+                    deadline?.reached("redlining validation")
+                        ? { valid: true, issues: [] }
+                        : validateRedlining({
+                              unpackedDir,
+                              originalDocx,
+                              author,
+                              verbose,
+                          }),
             });
         }
     } else if (opts.suffix === ".pptx") {
@@ -1235,6 +1383,7 @@ async function runValidators(
             schemasDir: opts.schemasDir,
             xsdValidator: opts.xsdValidator,
             profile: opts.profile,
+            deadline: opts.deadline,
         });
         schemaValidator = pptx;
         validators.push(pptx);
@@ -1333,6 +1482,8 @@ interface CliOptions {
     /** Comma-separated check ids or group names. */
     checks?: string;
     listChecks?: boolean;
+    /** `--deadline-ms`, unparsed. */
+    deadlineMs?: string;
 }
 
 export function buildValidateCommand(): Command {
@@ -1360,6 +1511,10 @@ export function buildValidateCommand(): Command {
         .option("--verify-word", "Also ask Microsoft Word to open the exact file; unavailable or inconclusive is not a pass", false)
         .option("--checks <ids-or-groups,...>", "Run only these named checks (or groups) plus their prerequisites")
         .option("--list-checks", "List every named check with its id, groups, formats and description, then exit", false)
+        .option(
+            "--deadline-ms <ms>",
+            "Wall-clock budget for the whole run; steps it stops are reported as a validation-deadline error (not with --auto-repair)",
+        )
         .option("--json", "Print one JSON document (every issue plus execution metadata) on stdout, with no human text", false);
     return cmd;
 }
@@ -1417,10 +1572,25 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
 
     const checks = parseCheckList(opts.checks);
 
+    // #630: a budget that is not a finite number of milliseconds, 0 or more,
+    // is refused before anything runs.
+    const deadlineMs = opts.deadlineMs === undefined || opts.deadlineMs.trim() === "" ? Number.NaN : Number(opts.deadlineMs);
+    if (opts.deadlineMs !== undefined && (!Number.isFinite(deadlineMs) || deadlineMs < 0)) {
+        process.stderr.write(`Invalid --deadline-ms: ${opts.deadlineMs}. Must be a finite number of milliseconds, 0 or more.\n`);
+        return 1;
+    }
+
     // Reject contradictory selectors before any validation work, so the caller
     // gets one clear line instead of a verdict on a run they did not ask for.
     try {
-        assertModeCoherent({ profile: opts.profile, strict: opts.strict, quick: opts.quick, checks, autoRepair: opts.autoRepair });
+        assertModeCoherent({
+            profile: opts.profile,
+            strict: opts.strict,
+            quick: opts.quick,
+            checks,
+            autoRepair: opts.autoRepair,
+            deadlineMs: opts.deadlineMs === undefined ? undefined : deadlineMs,
+        });
     } catch (err) {
         process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);
         return 1;
@@ -1468,6 +1638,7 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
             quick: opts.quick,
             checks,
             verifyWord: opts.verifyWord,
+            deadlineMs: opts.deadlineMs === undefined ? undefined : deadlineMs,
         });
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);

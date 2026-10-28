@@ -275,7 +275,7 @@ const equivalent = await jubarte.validate(bytes, { checks: ["tables"] });
 ```
 
 `Validate` and `jubarte.validate` also forward `profile`, `strict`, `schemasDir`,
-`xsdValidator`, `verifyWord`, and `wordVerifier`. Set `suffix` on byte APIs for
+`xsdValidator`, `verifyWord`, `wordVerifier`, and `deadlineMs`. Set `suffix` on byte APIs for
 formats other than their default `.docx` (for example, `.pptx` or `.docm`).
 
 - `--quick` / `{ quick: true }` selects `QUICK_CHECK_GROUPS`: `package`, `xml`,
@@ -308,12 +308,32 @@ formats other than their default `.docx` (for example, `.pptx` or `.docm`).
   warnings and available locations. Exit status is 0 for valid and 1 for invalid;
   configuration/startup errors go to stderr. The path API also returns `suffix`,
   `repairs`, and `xsdWalk`, which are not included in CLI JSON.
+- `--deadline-ms <ms>` / `{ deadlineMs }` bounds the whole run, counted from the
+  call; the byte APIs count their temporary write too (#630). The bound is
+  cooperative: each step asks the budget before it starts — the package stages,
+  every named check, every rule of the DOCX or PPTX validator, every part of the
+  schema walk, the redlining validation, and Word verification — and a step
+  already running finishes, so a run overruns by at most its longest single step.
+  With a deadline the DOCX validator's rules run one after another rather than
+  all at once, so the budget can stop one between two others. When the budget
+  stopped any step, the run is invalid and reports one error-severity
+  `validation-deadline` finding naming what did not run: a run cut short is never
+  a pass, whatever the steps that ran found (timeout > engine error > invalid >
+  valid). The profile's severity policy still applies to what ran.
+  `metadata.deadline` reports `{ budgetMs, notRun }`. A schema walk the budget
+  stopped leaves `schemaCompleted: false` and counts the parts it never reached
+  in `xsdWalk.notExamined`. Word verification gets what is left of the budget, at
+  most its own 45 seconds; once the budget is spent it does not run and is
+  `unavailable`. The budget is a finite number of milliseconds, 0 or more
+  (`RangeError` otherwise; the CLI exits 1). It cannot be combined with
+  `--auto-repair`: a repair writes, and a deadline could stop it part-way.
 
 ```bash
 docx-validate --list-checks
 docx-validate --quick contract.docx
 docx-validate --checks tables,word-run-misplaced --json contract.docx
 docx-validate --strict contract.docx
+docx-validate --deadline-ms 30000 --json contract.docx
 ```
 
 Full lenient and strict CLI runs first compile a small startup probe schema to
@@ -335,8 +355,8 @@ The complete named check catalogue is below. Each Word check except
 `word-markup-compatibility` uses its id as its finding code. Package checks are
 `zip-bytes-after-eocd`, `zip-bytes-before-archive`, `zip-eocd-comment-overrun`,
 `opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`,
-`opc-part-name-escaped-slash`, and `opc-part-name-word-refused`; `xml-syntax` is the shared
-XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
+`opc-part-name-escaped-slash`, `opc-part-name-word-refused`, and
+`opc-item-name-refused`; `xml-syntax` is the shared XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
 `ct-duplicate-declaration`, `ct-override-partname-invalid`,
 `ct-override-partname-word-refused` and `ct-markup-compatibility` apply to
 every package format; `word-content-type-invalid`,
@@ -442,6 +462,20 @@ only defect is its name. Hex is case-insensitive and whole
 triplets are consumed: `%2521` stays clean, as do `%20`, `%26`, `%3A`, `%5B`,
 `%7F`, and a literal `!`. Unreserved escapes keep their existing M1.8 finding.
 
+`opc-item-name-refused` reports one finding per distinct stored file-entry name
+that places no package part: one that starts with `/` or `\`, names a drive
+(`c:`), or has an empty, `.`, `..` or other dot-only segment, read with `\` as
+`/`. The finding's `path` is the stored name and its message is the package
+view's refusal. It reads the same stored names as the checks above, and folder
+entries are not judged. Every such name still refuses the staging, so the
+finding is an error under every profile, and it is Word-blocking: Word 16.115
+rejects every kind, even for an unreferenced entry. It offers recovery for a
+leading `/` or `\`, a drive, and an empty, `.`, `..` or `...` segment (#411;
+sessions 3, 42 and 43). The
+`package-extract-failed` the refusal raises names only the first such name;
+this check names each one
+([#629](https://github.com/jandira-tech/docx-validate/issues/629)).
+
 `ct-override-partname-word-refused` applies the same escaped-mark, high-octet
 and literal non-ASCII rules to every Override PartName, even when no part is
 stored under that name. It reports one finding per declaration at the stored
@@ -466,7 +500,7 @@ names and input bytes unchanged.
 
 | Group                     | Named checks                                                                                                                                                                                                                                                                                                                                        |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `package`                 | `zip-bytes-after-eocd`, `zip-bytes-before-archive`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, `opc-part-name-word-refused`                                                                                                                                        |
+| `package`                 | `zip-bytes-after-eocd`, `zip-bytes-before-archive`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, `opc-part-name-word-refused`, `opc-item-name-refused`                                                                                                               |
 | `math`, `tracked-changes` | `word-math-run-insertion`, `word-math-run-deletion`                                                                                                                                                                                                                                                                                                 |
 | `math`                    | `word-math-parse`, `word-math-spre-body`                                                                                                                                                                                                                                                                                                            |
 | `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`         |
@@ -1409,8 +1443,8 @@ interface ValidationResult {
 `ValidationMetadata` has optional `profile`, `executedChecks`, `omittedChecks`,
 `schemaCompleted`, and `wordVerification` fields. `executedChecks` reports the
 registry ids a complete run executed (#319): lenient lists `opc-equivalent-part-names`,
-`opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, and
-`opc-part-name-word-refused` first, then `xml-syntax` and the rest; Word-valid
+`opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`,
+`opc-part-name-word-refused`, and `opc-item-name-refused` first, then `xml-syntax` and the rest; Word-valid
 and strict add the ZIP-envelope checks for a packed file and every Word rule whose
 prerequisites passed. A partial run lists the selected checks that ran, so an
 archive-only check is not listed for an unpacked directory. A missing target (`ENOENT` or `ENOTDIR`) throws
@@ -1425,7 +1459,16 @@ the encrypted, corrupted or truncated archive explanation is reserved for JSZip 
 a stored item name that places no part — judged on the central-directory name,
 never the local header's or the unicode-path field's (#445) — or an unreadable
 entry — fails with
-`package-extract-failed`, as the full run's extraction reports it (#413). Directory inputs apply the same stored-name refusal before either full or partial validation: literal backslash names with empty or dot-only segments are refused with the same code and message (#424).
+`package-extract-failed`, as the full run's extraction reports it (#413). Each stored
+item name that places no part is also its own error-severity `opc-item-name-refused`
+finding, and a full or partial run of a packed file still judges the archive's other
+entries, as a full run does after a failed extraction: it leaves the refused
+central-directory records out, so an entry a refused `..` name hid in the package view
+is judged by its own bytes. A partial run judges them with its selected checks only.
+Neither judges anything more when the remaining names still collide (#413), when the
+archive uses ZIP64, or when bytes sit between the central directory and its end record,
+and a directory input judges only its names
+([#629](https://github.com/jandira-tech/docx-validate/issues/629)). Directory inputs apply the same stored-name refusal before either full or partial validation: literal backslash names with empty or dot-only segments are refused with the same code and message (#424).
 Direct `DOCXSchemaValidator.validate()` and `PPTXSchemaValidator.validate()` calls also return an error-severity
 `package-extract-failed` for such refused directory names, with the same message as `validate()`; programming errors still propagate
 ([#548](https://github.com/jandira-tech/docx-validate/issues/548)). They also apply the same directory walk refusal
@@ -1435,12 +1478,14 @@ direct validators include the same stored-name findings, in the same order and a
 as `validate()` for the same path string, and list the stored-name checks they ran in `executedChecks`, as `validate()`'s
 `metadata.executedChecks` does ([#572](https://github.com/jandira-tech/docx-validate/issues/572)). Its stored
 entry names and archive bytes are still read. Selected `opc-equivalent-part-names`,
-`opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, and
-`opc-part-name-word-refused` checks and
+`opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`,
+`opc-part-name-word-refused`, and `opc-item-name-refused` checks and
 selected envelope checks (such as `zip-bytes-after-eocd`) run and report what the
-full run reports. Every other selected check needs the package's parts and is
-listed in `omittedChecks`
-([#420](https://github.com/jandira-tech/docx-validate/issues/420)). It is not a
+full run reports. Every other selected check needs the package's parts: it runs
+on the entries a refused item name leaves, as above, and is otherwise listed in
+`omittedChecks`
+([#420](https://github.com/jandira-tech/docx-validate/issues/420),
+[#629](https://github.com/jandira-tech/docx-validate/issues/629)). It is not a
 per-method execution trace. In the source scheduler, use `runChecks().outcomes`
 for individual
 `passed` / `failed` / `skipped` / `unavailable` statuses. `omittedChecks` names ids

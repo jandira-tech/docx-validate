@@ -17,6 +17,7 @@ import { zipBytesAfterEocdCheck, zipBytesBeforeArchiveCheck, zipEocdCommentOverr
 import { opcEquivalentPartNamesCheck } from "./opc-equivalent-part-names";
 import { opcRelationshipsStructureCheck } from "./opc-relationships-structure";
 import { opcPartNameWordRefusedCheck } from "./opc-part-name-word-refused";
+import { opcItemNameRefusedCheck } from "./opc-item-name-refused";
 import { ctOverridePartnameWordRefusedCheck } from "./ct-override-partname-word-refused";
 import { opcPartNameEscapedSlashCheck } from "./opc-part-name-escaped-slash";
 import { opcPartNameEscapedUnreservedCheck } from "./opc-part-name-escaped-unreserved";
@@ -132,6 +133,7 @@ export function createDefaultCheckRegistry(): CheckRegistry {
         opcPartNameEscapedUnreservedCheck,
         opcPartNameEscapedSlashCheck,
         opcPartNameWordRefusedCheck,
+        opcItemNameRefusedCheck,
         xmlSyntaxCheck,
         ctDuplicateDeclarationCheck,
         ctOverridePartnameInvalidCheck,

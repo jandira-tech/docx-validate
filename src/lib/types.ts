@@ -91,6 +91,13 @@ export type ValidationMetadata = {
     schemaCompleted?: boolean;
     /** Present when real-Word verification ran. */
     wordVerification?: WordVerificationMetadata;
+    /**
+     * Present when the caller gave the run a `deadlineMs` (#630): the budget,
+     * and the steps it stopped, in the order they were stopped. An empty
+     * `notRun` means every step ran. A non-empty one comes with one
+     * error-severity `validation-deadline` finding.
+     */
+    deadline?: { budgetMs: number; notRun: readonly string[] };
 };
 
 /** Aggregate result returned by every validator. `valid` is false iff there is at least one `error` issue. */
@@ -114,6 +121,12 @@ export type XsdWalkTrace = {
     started: boolean;
     parts: string[];
     eligible: number;
+    /**
+     * XML parts the walk never examined because the run's deadline was
+     * reached (#630). Their eligibility is unknown, so `eligible` does not
+     * count them; a walk with any is not complete.
+     */
+    notExamined?: number;
 };
 
 /** Walk trace for a path that never entered `validateAgainstXsd`. */

@@ -465,7 +465,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // the previous run must not outlive it, as `runContext` does not.
         this.resetProcessedRelationships();
         try {
-            return await this.withinBaselineRun(() => this.runEveryCheck());
+            return this.withDeadlineFinding(await this.withinBaselineRun(() => this.runEveryCheck()));
         } finally {
             this.inRun = false;
             this.runContext = undefined;
@@ -478,12 +478,13 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         this.resetExecutedChecks();
         const opened = openDirectoryContext(this.unpackedDir);
         if (opened.openError !== undefined) {
-            const diagnostic = await storedNamesRun(opened.context, "docx", this.profile);
+            const diagnostic = await storedNamesRun(opened.context, "docx", this.profile, this.deadline);
             this.recordExecutedChecks(diagnostic.executed);
             return { valid: false, issues: [...diagnostic.issues, packageExtractFailedIssue(this.unpackedDir, opened.openError)] };
         }
         this.runContext = opened.context;
-        const xmlOk = await this.validateXml();
+        const rule = this.ruleScheduler();
+        const xmlOk = await rule("DOCX validateXml", () => this.validateXml());
         // Only lenient stops at a malformed part. Word-valid and strict keep
         // running the checks of every other part, so strict reports every
         // code word-valid does. The malformed part itself is reported once,
@@ -498,50 +499,54 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 issues: withoutConsequentialParseFailures(result.issues, this.malformedParts),
             }));
 
-        const contentTypes = this.validateContentTypes();
+        const contentTypes = rule("DOCX validateContentTypes", () => this.validateContentTypes());
         // #612: the relationship-id walk is captured by name because a full
         // non-lenient run hands the story reference elements its Word rule
         // already reported back to that rule, dropping rels-id-mismatch's —
         // and, for an r:id naming no Relationship, rels-id-missing's (#619) —
         // copy of each (withoutRepeatedHeaderFooterFindings). Called on its
         // own, validateAllRelationshipIds keeps every finding.
-        const relationshipIds = this.validateAllRelationshipIds();
+        const relationshipIds = rule("DOCX validateAllRelationshipIds", () => this.validateAllRelationshipIds());
         const checks: Array<Promise<ValidationResult>> = [
-            this.validateNamespaces(),
-            this.validateUniqueIds(),
-            this.validateFileReferences(),
-            this.validateRelationshipElements(),
+            rule("DOCX validateNamespaces", () => this.validateNamespaces()),
+            rule("DOCX validateUniqueIds", () => this.validateUniqueIds()),
+            rule("DOCX validateFileReferences", () => this.validateFileReferences()),
+            rule("DOCX validateRelationshipElements", () => this.validateRelationshipElements()),
             contentTypes,
-            this.validateOverridePartNames(this.context(), "docx", this.malformedParts),
-            this.validateContentTypesMarkupCompatibility(this.context(), "docx", this.malformedParts),
-            this.validateWordPartContentTypes(this.context(), "docx", this.malformedParts, contentTypes),
-            this.validateWhitespacePreservation(),
-            this.validateDeletions(),
-            this.validateInsertions(),
+            rule("DOCX validateOverridePartNames", () => this.validateOverridePartNames(this.context(), "docx", this.malformedParts)),
+            rule("DOCX validateContentTypesMarkupCompatibility", () =>
+                this.validateContentTypesMarkupCompatibility(this.context(), "docx", this.malformedParts),
+            ),
+            rule("DOCX validateWordPartContentTypes", () =>
+                this.validateWordPartContentTypes(this.context(), "docx", this.malformedParts, contentTypes),
+            ),
+            rule("DOCX validateWhitespacePreservation", () => this.validateWhitespacePreservation()),
+            rule("DOCX validateDeletions", () => this.validateDeletions()),
+            rule("DOCX validateInsertions", () => this.validateInsertions()),
             relationshipIds,
-            this.validateIdConstraints(),
-            this.validateCommentMarkers(),
-            this.validateCommentThreading(),
-            this.validateNoTrackingTokens(),
-            this.validateAllParagraphsHaveParaId(),
-            this.validateRunContentPlacement(),
-            this.validateStyleReferences(),
-            this.validateStyleDefaults(),
-            this.validateDocumentBuilderInserts(),
-            this.validateDocPropsBooleans(),
-            this.validateNoBom(),
-            this.validateNoEmptyRelsParts(),
-            this.validateOrphanedRelationships(),
-            this.validateFontTable(),
-            this.validateLatentStyles(),
-            this.validateTableLook(),
-            this.validateTrackedChangeIds(),
-            this.validateRedundantCellBorders(),
-            this.validateRelationshipIdStability(),
-            this.validateRedundantRunProperties(),
+            rule("DOCX validateIdConstraints", () => this.validateIdConstraints()),
+            rule("DOCX validateCommentMarkers", () => this.validateCommentMarkers()),
+            rule("DOCX validateCommentThreading", () => this.validateCommentThreading()),
+            rule("DOCX validateNoTrackingTokens", () => this.validateNoTrackingTokens()),
+            rule("DOCX validateAllParagraphsHaveParaId", () => this.validateAllParagraphsHaveParaId()),
+            rule("DOCX validateRunContentPlacement", () => this.validateRunContentPlacement()),
+            rule("DOCX validateStyleReferences", () => this.validateStyleReferences()),
+            rule("DOCX validateStyleDefaults", () => this.validateStyleDefaults()),
+            rule("DOCX validateDocumentBuilderInserts", () => this.validateDocumentBuilderInserts()),
+            rule("DOCX validateDocPropsBooleans", () => this.validateDocPropsBooleans()),
+            rule("DOCX validateNoBom", () => this.validateNoBom()),
+            rule("DOCX validateNoEmptyRelsParts", () => this.validateNoEmptyRelsParts()),
+            rule("DOCX validateOrphanedRelationships", () => this.validateOrphanedRelationships()),
+            rule("DOCX validateFontTable", () => this.validateFontTable()),
+            rule("DOCX validateLatentStyles", () => this.validateLatentStyles()),
+            rule("DOCX validateTableLook", () => this.validateTableLook()),
+            rule("DOCX validateTrackedChangeIds", () => this.validateTrackedChangeIds()),
+            rule("DOCX validateRedundantCellBorders", () => this.validateRedundantCellBorders()),
+            rule("DOCX validateRelationshipIdStability", () => this.validateRelationshipIdStability()),
+            rule("DOCX validateRedundantRunProperties", () => this.validateRedundantRunProperties()),
         ];
         // Strict runs the same Word-proven rules at their native severity.
-        const wordRules = this.profile === "lenient" ? undefined : this.validateRegisteredWordRules();
+        const wordRules = this.profile === "lenient" ? undefined : rule("DOCX Word rules", () => this.validateRegisteredWordRules());
         if (wordRules) checks.push(wordRules);
         // #612: in a full non-lenient run each element the Word rule reported
         // yields one finding, the Word rule's, so the settled relationship-id
@@ -561,7 +566,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             );
         }
 
-        const xsd = this.validateAgainstXsd();
+        const xsd = rule("DOCX validateAgainstXsd", () => this.validateAgainstXsd());
         checks.push(xsd);
         const results = await settle(checks);
         if (!wordRules) return withoutRestatedIgnorablePrefixes(mergeResults(xmlOk, ...results));
@@ -589,6 +594,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             format: "docx",
             select: [...rules],
             profile: this.profile,
+            deadline: this.deadline,
         });
         // xml-syntax runs as the rules' prerequisite; validateXml already
         // reports its findings, so keep only the rules' own (#307).
@@ -884,6 +890,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             format: "docx",
             select: ["comment-markers"],
             profile: this.profile,
+            deadline: this.deadline,
         });
         this.recordExecutedChecks(run.executed);
         return finalize([...run.issues]);
@@ -1308,6 +1315,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             format: "docx",
             select: ["comment-threading"],
             profile: this.profile,
+            deadline: this.deadline,
         });
         this.recordExecutedChecks(run.executed);
         return finalize(run.issues.map((issue) => promoteFullCheckIssue(issue, this.profile, "docx")));
