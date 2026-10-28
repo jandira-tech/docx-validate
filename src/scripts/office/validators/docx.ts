@@ -2915,7 +2915,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * per-element renumbering, independent of the preflight below.
      * Every part the hex rewrite would write must be decodable and writable;
      * otherwise only the decimal renumbering runs. A failed or refused write
-     * returns only the repairs already written (#909, #920).
+     * of a part carrying a hex rename stops the remaining hex renames and
+     * counts only the repairs already written (#909, #920). A failed or
+     * refused write of a part carrying only the decimal renumbering counts
+     * nothing and stops nothing, and that renumbering runs whether the hex
+     * rewrite is refused by the preflight or stopped by a failed write
+     * (#925).
      */
     async repairDurableId(): Promise<number> {
         let repairs = 0;
@@ -3004,12 +3009,16 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         // Pass 2: rewrite all references; numbering.xml keeps its own
         // self-contained decimal renumbering.
+        let hexStopped = false;
         for (const [xmlFile, dom] of parsedDoms) {
             const base = baseName(xmlFile);
             let modified = false;
             // Counted only after the write: a part whose encoding
             // `writeXmlPart` refuses is left untouched (#880).
             let partRepairs = 0;
+            // A part the hex rewrite renames: its failed write stops the
+            // remaining hex renames, like the preflight refusal (#909, #920).
+            let hexPart = false;
             const all = getElementsByTagNameAll(dom);
             for (let i = 0; i < all.length; i += 1) {
                 const elem = all[i];
@@ -3023,18 +3032,20 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         partRepairs += 1;
                         modified = true;
                     }
-                } else if (cidDurableId && !hexRefused && remap.has(cidDurableId.toUpperCase())) {
+                } else if (cidDurableId && !hexRefused && !hexStopped && remap.has(cidDurableId.toUpperCase())) {
                     // setAttributeNS keeps the prefix binding intact.
                     elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", remap.get(cidDurableId.toUpperCase())!);
                     partRepairs += 1;
                     modified = true;
+                    hexPart = true;
                 }
                 const cexDurableId = elem.getAttributeNS(W16CEX_NAMESPACE, "durableId");
-                if (cexDurableId && !hexRefused && remap.has(cexDurableId.toUpperCase())) {
+                if (cexDurableId && !hexRefused && !hexStopped && remap.has(cexDurableId.toUpperCase())) {
                     // setAttributeNS keeps the prefix binding intact.
                     elem.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", remap.get(cexDurableId.toUpperCase())!);
                     partRepairs += 1;
                     modified = true;
+                    hexPart = true;
                 }
             }
             if (modified) {
@@ -3042,9 +3053,16 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 try {
                     written = await writeXmlPart(xmlFile, dom);
                 } catch {
-                    return repairs;
+                    // A failed write of a hex part stops the remaining hex
+                    // renames; a decimal-only write is skipped, as numbering's
+                    // renumbering is independent of the hex rewrite (#925).
+                    if (hexPart) hexStopped = true;
+                    continue;
                 }
-                if (!written) return repairs;
+                if (!written) {
+                    if (hexPart) hexStopped = true;
+                    continue;
+                }
                 repairs += partRepairs;
             }
         }

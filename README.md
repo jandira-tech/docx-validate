@@ -1920,7 +1920,12 @@ fails after that check stops the repair, which counts only the parts already
 written; before, it rejected `repair()` and `validate()` with the other part
 already changed. So does a write `writeXmlPart` refuses after the check; before,
 the repair went on writing the later parts with the new value, splitting the
-rename ([#920](https://github.com/jandira-tech/docx-validate/issues/920)). No
+rename ([#920](https://github.com/jandira-tech/docx-validate/issues/920)). In
+`repairDurableId` a failed write of `numbering.xml` does not stop the hex
+rewrite, and its decimal renumbering runs whether the hex rewrite is refused by
+the check or stopped by a failed write; before, a failed `numbering.xml` write
+between two hex parts split the rename
+([#925](https://github.com/jandira-tech/docx-validate/issues/925)). No
 other repair renames a value across parts.
 
 For a document's first comment, `addComment` relates the four comments parts
