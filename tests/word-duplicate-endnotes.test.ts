@@ -17,8 +17,11 @@
  * its own rule (#827). The octet-stream row also draws
  * `word-endnote-reference-missing`: such a part defines no note whatever
  * its name (session 64 s64b, #829), so the body reference to the note only
- * it holds dangles. Specimens are built from MINIMAL_PARTS the way
- * the session 62 builder built its rows.
+ * it holds dangles. The rule counts exact Types whatever their target or
+ * TargetMode, in either relationship namespace, so the same-part,
+ * internal-plus-External and Strict-Type pairs below are judged too; no
+ * session showed them, so they are unprobed. Specimens are built from
+ * MINIMAL_PARTS the way the session 62 builder built its rows.
  */
 
 import { writeFileSync } from "node:fs";
@@ -31,7 +34,7 @@ import type { ValidationIssue } from "../src/lib/types";
 import { WORD_RULE_CHECKS } from "../src/scripts/office/checks";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
-import { R } from "./support/word-rule-test-xml";
+import { R, RS } from "./support/word-rule-test-xml";
 
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const U = "urn:example:unknown";
@@ -47,8 +50,10 @@ const replaceOnce = (text: string, from: string, to: string): string => {
     if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
     return text.replace(from, to);
 };
-const relationship = (id: string, segment: string, target: string): string =>
-    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const relationship = (id: string, segment: string, target: string, extra = ""): string =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"${extra}/>`;
+/** An endnotes relationship whose exact Type sits in the Strict relationship-type namespace. */
+const strictRelationship = (id: string, target: string): string => `<Relationship Id="${id}" Type="${RS}/endnotes" Target="${target}"/>`;
 const appendRels = (rels: string, extra: string): string => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
 const overrides = (ct: string, ...entries: [string, string][]): string =>
     replaceOnce(
@@ -124,6 +129,52 @@ const twoEndnotes = (first: string, second: string, referenced: boolean): Promis
     };
     return buildDocx(referenced ? mainWith(both, noteRef("endnote", "1")) : both);
 };
+
+/** Two endnotes relationships naming the same `word/endnotes.xml`, the body referencing endnote 1: the unprobed same-part shape. */
+const samePartPair = (): Promise<Buffer> => {
+    const parts = withNotes("endnote", "1");
+    return buildDocx(
+        mainWith(
+            { ...parts, [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdN2", "endnotes", "endnotes.xml")) },
+            noteRef("endnote", "1"),
+        ),
+    );
+};
+
+/** An internal endnotes relationship beside an External one, the body referencing endnote 1: the unprobed TargetMode shape. */
+const internalExternalPair = (): Promise<Buffer> => {
+    const parts = withNotes("endnote", "1");
+    return buildDocx(
+        mainWith(
+            {
+                ...parts,
+                [SIDECAR]: appendRels(
+                    parts[SIDECAR]!,
+                    relationship("rIdN2", "endnotes", "https://example.invalid/endnotes.xml", ' TargetMode="External"'),
+                ),
+            },
+            noteRef("endnote", "1"),
+        ),
+    );
+};
+
+/** Two endnotes relationships typed in the Strict relationship-type namespace, to two parts; the body references endnote 1. */
+const strictTypePair = (): Promise<Buffer> =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                "word/endnotes.xml": notesXml("endnote", "1"),
+                "word/notes2.xml": notesXml("endnote", "5"),
+                [SIDECAR]: appendRels(
+                    P[SIDECAR]!,
+                    `${strictRelationship("rIdN", "endnotes.xml")}${strictRelationship("rIdN2", "notes2.xml")}`,
+                ),
+                [CT]: overrides(P[CT]!, ["word/endnotes.xml", `${WML}.endnotes+xml`], ["word/notes2.xml", `${WML}.endnotes+xml`]),
+            },
+            noteRef("endnote", "1"),
+        ),
+    );
 
 /** Session 45's `footnotes-dup` shape: two footnotes relationships to two parts, no reference (s45g). */
 const footnotesDup = (): Promise<Buffer> => {
@@ -223,6 +274,20 @@ describe("word-valid duplicate endnotes relationship (#807; session 62)", { time
                 },
                 duplicateEndnotesFinding(),
             ]);
+        });
+    });
+
+    // No session showed these shapes; the rule counts exact Types whatever
+    // the target or TargetMode and in either relationship namespace.
+    it.each([
+        ["two relationships to the same part", samePartPair],
+        ["an internal and an External relationship", internalExternalPair],
+        ["two Strict-Type relationships", strictTypePair],
+    ])("rejects %s with only the duplicate finding (unprobed)", async (name, make) => {
+        await withTempDir(async (dir) => {
+            const result = await validate(await write(dir, `endnotes-pair-${name}`, make), { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(errorIssues(result)).toEqual([duplicateEndnotesFinding()]);
         });
     });
 

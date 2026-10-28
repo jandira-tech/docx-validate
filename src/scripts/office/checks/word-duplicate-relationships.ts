@@ -57,7 +57,12 @@
  * own pair is unprobed, so the endnotes rule judges only the main
  * document's sidecar, and the gate reads the main document's own
  * effective content: a reference only in a header, a footnote or a
- * comment is unprobed and does not count.
+ * comment is unprobed and does not count. The count reads exact
+ * Types whatever the target or TargetMode and in either
+ * relationship namespace, so two relationships to the same part, an
+ * internal plus an External one and a Strict-Type pair are judged
+ * too; session 62's rows are two internal Transitional
+ * relationships to distinct parts, so those shapes are unprobed.
  *
  * Two `footnotes` relationships in the main document's relationships
  * part make Word offer to recover the file when the body references
@@ -67,7 +72,12 @@
  * (session 45 s45g). The footnotes rule judges like the endnotes
  * rule — only the main document's sidecar, gated on the main
  * document's own effective content holding a `w:footnoteReference`;
- * a reached glossary's own pair is unprobed.
+ * a reached glossary's own pair is unprobed. The count reads exact
+ * Types whatever the target or TargetMode and in either
+ * relationship namespace, so two relationships to the same part, an
+ * internal plus an External one and a Strict-Type pair are judged
+ * too; session 63's s63d rows are two internal Transitional
+ * relationships to distinct parts, so those shapes are unprobed.
  *
  * Scope (#717; sessions 49, 50 and 54, Word 16.115): two of one kind in
  * a reached glossary's own relationships part — to two parts in its

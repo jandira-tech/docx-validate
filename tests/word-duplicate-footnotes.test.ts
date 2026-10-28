@@ -10,8 +10,12 @@
  * footnote — whether the second part held another id or the same
  * footnote 1 — while two unreferenced footnotes relationships opened
  * clean (session 45 s45g). A reached glossary's own pair is unprobed, so
- * the rule judges only the main document's sidecar. Specimens are built
- * from MINIMAL_PARTS the way the session 63 builder built its rows.
+ * the rule judges only the main document's sidecar. The rule counts
+ * exact Types whatever their target or TargetMode, in either
+ * relationship namespace, so the same-part, internal-plus-External and
+ * Strict-Type pairs below are judged too; no session showed them, so
+ * they are unprobed. Specimens are built from MINIMAL_PARTS the way
+ * the session 63 builder built its rows.
  */
 
 import { writeFileSync } from "node:fs";
@@ -24,7 +28,7 @@ import type { ValidationIssue } from "../src/lib/types";
 import { WORD_RULE_CHECKS } from "../src/scripts/office/checks";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
-import { R } from "./support/word-rule-test-xml";
+import { R, RS } from "./support/word-rule-test-xml";
 
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const U = "urn:example:unknown";
@@ -40,8 +44,10 @@ const replaceOnce = (text: string, from: string, to: string): string => {
     if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
     return text.replace(from, to);
 };
-const relationship = (id: string, segment: string, target: string): string =>
-    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const relationship = (id: string, segment: string, target: string, extra = ""): string =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"${extra}/>`;
+/** A footnotes relationship whose exact Type sits in the Strict relationship-type namespace. */
+const strictRelationship = (id: string, target: string): string => `<Relationship Id="${id}" Type="${RS}/footnotes" Target="${target}"/>`;
 const appendRels = (rels: string, extra: string): string => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
 const overrides = (ct: string, ...entries: [string, string][]): string =>
     replaceOnce(
@@ -86,6 +92,52 @@ const twoFootnotes = (first: string, second: string, referenced: boolean): Promi
     };
     return buildDocx(referenced ? mainWith(both, footnoteRef("1")) : both);
 };
+
+/** Two footnotes relationships naming the same `word/footnotes.xml`, the body referencing footnote 1: the unprobed same-part shape. */
+const samePartPair = (): Promise<Buffer> => {
+    const parts = withFootnotes("1");
+    return buildDocx(
+        mainWith(
+            { ...parts, [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdN2", "footnotes", "footnotes.xml")) },
+            footnoteRef("1"),
+        ),
+    );
+};
+
+/** An internal footnotes relationship beside an External one, the body referencing footnote 1: the unprobed TargetMode shape. */
+const internalExternalPair = (): Promise<Buffer> => {
+    const parts = withFootnotes("1");
+    return buildDocx(
+        mainWith(
+            {
+                ...parts,
+                [SIDECAR]: appendRels(
+                    parts[SIDECAR]!,
+                    relationship("rIdN2", "footnotes", "https://example.invalid/footnotes.xml", ' TargetMode="External"'),
+                ),
+            },
+            footnoteRef("1"),
+        ),
+    );
+};
+
+/** Two footnotes relationships typed in the Strict relationship-type namespace, to two parts; the body references footnote 1. */
+const strictTypePair = (): Promise<Buffer> =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                "word/footnotes.xml": footnotesXml("1"),
+                "word/notes2.xml": footnotesXml("5"),
+                [SIDECAR]: appendRels(
+                    P[SIDECAR]!,
+                    `${strictRelationship("rIdN", "footnotes.xml")}${strictRelationship("rIdN2", "notes2.xml")}`,
+                ),
+                [CT]: overrides(P[CT]!, ["word/footnotes.xml", `${WML}.footnotes+xml`], ["word/notes2.xml", `${WML}.footnotes+xml`]),
+            },
+            footnoteRef("1"),
+        ),
+    );
 
 /** Session 45's `footnotes-dup` shape: two footnotes relationships to two parts, no reference (s45g). */
 const footnotesDup = (): Promise<Buffer> => {
@@ -156,6 +208,20 @@ describe("word-valid duplicate footnotes relationship (#827; session 63)", { tim
     ])("rejects %s with only the duplicate finding", async (name, make) => {
         await withTempDir(async (dir) => {
             const result = await validate(await write(dir, name, make), { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(errorIssues(result)).toEqual([duplicateFootnotesFinding()]);
+        });
+    });
+
+    // No session showed these shapes; the rule counts exact Types whatever
+    // the target or TargetMode and in either relationship namespace.
+    it.each([
+        ["two relationships to the same part", samePartPair],
+        ["an internal and an External relationship", internalExternalPair],
+        ["two Strict-Type relationships", strictTypePair],
+    ])("rejects %s with only the duplicate finding (unprobed)", async (name, make) => {
+        await withTempDir(async (dir) => {
+            const result = await validate(await write(dir, `footnotes-pair-${name}`, make), { profile: "word-valid" });
             expect(result.valid).toBe(false);
             expect(errorIssues(result)).toEqual([duplicateFootnotesFinding()]);
         });
