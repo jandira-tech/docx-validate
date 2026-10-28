@@ -148,6 +148,11 @@ describe("isWordBlockingIssue", () => {
         // Word offer recovery (#694, session 45).
         "word-duplicate-styles-relationship",
         "word-duplicate-numbering-relationship",
+        // Word session 62 (s62c, s62e) offers recovery for two endnotes
+        // relationships in the main document's sidecar when the body
+        // references an endnote; the same pair with no reference opens
+        // clean (#807).
+        "word-duplicate-endnotes-relationship",
         "word-numbering-picture-bullet",
         "word-footnote-reference-missing",
         "documentbuilder-insert-unresolved",

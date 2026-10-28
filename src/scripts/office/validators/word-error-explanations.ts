@@ -64,6 +64,8 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "The main document's or a reached glossary document's relationships part lists more than one styles part. Word offers to recover the file; the same pair in _rels/.rels or a referenced header's relationships part opens clean. Keep a single styles relationship.",
     "word-duplicate-numbering-relationship":
         "The main document's or a reached glossary document's relationships part lists more than one numbering part. Word offers to recover the file; the same pair in _rels/.rels or a referenced header's relationships part opens clean. Keep a single numbering relationship.",
+    "word-duplicate-endnotes-relationship":
+        "The main document's relationships part lists more than one endnotes part while the document references an endnote. Word offers to recover the file; the same pair with no endnote reference opens clean (session 62), and a reached glossary's own pair is unprobed. Keep a single endnotes relationship.",
     "word-drawing-arc-radius":
         "An a:arcTo radius (wR or hR) is not an integer. Word cannot open the file. Replace the radius with an integer.",
     "word-empty-drawing":
