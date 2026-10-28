@@ -1837,6 +1837,76 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
         );
     });
 
+    /**
+     * Session 56 (2026-10-26, chunk s56a, Word 16.115, two runs, both
+     * readings agree on every row; in
+     * docs/plans/evidence/word-probes-2026-10-24.md) refused the inexact
+     * spelling the read footer hid: `word/styles.xml` typed
+     * `…styles+xml; charset=utf-8` gets the recovery offer through the main
+     * document's styles relationship alone (the calibration) and with a
+     * footer relationship the body references also targeting it. Word-valid
+     * passed the co-reach — the read footer reach left only itself in the
+     * judgment, whose own type never matches the styles media type — so the
+     * spelling is now judged over every reach the story roots read, as #739
+     * judged the mismatch over all of the part's entries: a read footer
+     * hides no eagerly parsed reach (#760).
+     */
+    describe("session 56's read-footer co-reach (#760)", () => {
+        const CONTENT_TYPE = `${CT.styles}; charset=utf-8`;
+        /** The s56a calibration: the styles Override carrying the styles type plus `; charset=utf-8`. */
+        const calibration = withOverride({ ...MINIMAL_PARTS }, "word/styles.xml", CONTENT_TYPE);
+        /** The calibration plus a footer relationship (rIdF) targeting word/styles.xml that the body's section references. */
+        const readFooter: Parts = {
+            ...calibration,
+            "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(`xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`).replace(
+                "<w:sectPr>",
+                `<w:sectPr><w:footerReference w:type="default" r:id="rIdF"/>`,
+            ),
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdF" Type="${R}/footer" Target="styles.xml"/></Relationships>`,
+            ),
+        };
+        const wanted = expectedInexactFinding("word/styles.xml", "styles", "error", CONTENT_TYPE);
+
+        it("reports the read-footer row under the styles relationship, and the mismatch check stays silent", async () => {
+            expect(await diagnoseInexact(ValidationContext.fromEntries(readFooter))).toEqual([wanted]);
+            // The declared media type matches the styles reach, and the
+            // footer co-reach rule needs an exact spelling (#739), so the
+            // mismatch check reports nothing: no part is reported twice.
+            const mismatch = createDefaultCheckRegistry().get("word-part-content-type-mismatch");
+            expect(await mismatch?.run(ValidationContext.fromEntries(readFooter))).toEqual([]);
+        });
+
+        it("invalidates the full word-valid run with exactly the inexact error, and a named run agrees", async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "styles-charset-read-footer.docx");
+                writeFileSync(file, await buildDocx(readFooter));
+                const result = await validate(file);
+                expect(result.valid).toBe(false);
+                expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([wanted]);
+                const partial = await validate(file, { checks: [PID] });
+                expect(partial.valid).toBe(false);
+                expect(partial.issues.filter((issue) => issue.code === PID)).toEqual([wanted]);
+            });
+        }, 60_000);
+
+        it("reports the code under strict too, and the calibration keeps its verdict", async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "styles-charset-read-footer.docx");
+                writeFileSync(file, await buildDocx(readFooter));
+                const strict = await validate(file, { profile: "strict" });
+                expect(inexactFindings(strict.issues)).toEqual([wanted]);
+                expect(strict.valid).toBe(false);
+                const calibrationFile = path.join(dir, "styles-charset-calibration.docx");
+                writeFileSync(calibrationFile, await buildDocx(calibration));
+                const result = await validate(calibrationFile);
+                expect(result.valid).toBe(false);
+                expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([wanted]);
+            });
+        }, 60_000);
+    });
+
     it("drops a Default-typed main under strict only when ct-undeclared-part errors at the same path (#535)", async () => {
         await withTempDir(async (dir) => {
             const declared = path.join(dir, "declared.docx");

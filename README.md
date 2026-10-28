@@ -822,7 +822,12 @@ against each: the finding names the type whose expected content type's
 media type matches the declared value — the types are pairwise distinct,
 so at most one can — and an unreferenced lazy relationship neither reports
 nor hides a read one, because usage is decided per (part, type) pair
-([#593](https://github.com/jandira-tech/docx-validate/issues/593)). Strict
+([#593](https://github.com/jandira-tech/docx-validate/issues/593)); a read
+story relationship hides no eager one either — session 56 (s56a, 2026-10-26)
+observed Word recover the styles part typed `…styles+xml; charset=utf-8`
+with a read footer relationship also targeting it, so the spelling is
+judged over every reach the story roots read
+([#760](https://github.com/jandira-tech/docx-validate/issues/760)). Strict
 judges the same probed set — theme included, though it is a DrawingML part,
 not a clause-11.3 one — plus the unprobed Part 1 WordprocessingML
 glossaryDocument type, citing the content type ECMA-376 Part 1
