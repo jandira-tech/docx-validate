@@ -178,9 +178,10 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
     async validateSlideLayoutIds(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
 
-        // glob "ppt/slideMasters/*.xml" — one level only, no _rels subdir —
-        // and every master the presentation relates, wherever stored (#1013).
-        const slideMasters = (await this.judgedParts(/^ppt\/slideMasters\/[^/]+\.xml$/, "slideMaster")).map((part) => part.file);
+        // glob "ppt/slideMasters/*.xml" — one level only, no _rels subdir,
+        // ASCII case-insensitively (#1017) — and every master the
+        // presentation relates, wherever stored (#1013).
+        const slideMasters = (await this.judgedParts(/^ppt\/slideMasters\/[^/]+\.xml$/i, "slideMaster")).map((part) => part.file);
 
         if (slideMasters.length === 0) {
             return { valid: true, issues: [] };
@@ -388,45 +389,43 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
 
     /**
      * The relationships parts of the slides the slide checks judge, each
-     * once, in code-unit order of their names, with the folder of the slide
-     * whose targets they hold: `ppt/slides/_rels/*.xml.rels`, as the Python
-     * port listed them, and the sidecar of every slide the presentation
-     * relates, wherever stored (#1013).
+     * stored name once, in code-unit order, with the folder of the slide
+     * whose targets they hold: every stored `ppt/slides/_rels/*.xml.rels`, as
+     * the Python port listed them, and the sidecar of every slide the
+     * presentation relates, wherever stored (#1013). The historical pattern
+     * matches ASCII case-insensitively, as OPC compares part names, and every
+     * stored spelling of two equivalent names is judged, as the file-system
+     * walk before #1013 judged them (#1017). A sidecar's folder is the parent
+     * of its `_rels` folder, as its stored name spells it.
      */
     private async slideRelationshipsParts(): Promise<Array<{ file: string; folder: string }>> {
         const entries = packageEntries(this.unpackedDir);
         const names = [...entries.keys()];
-        const judged = new Map<string, { name: string; folder: string }>();
-        for (const name of names) {
-            if (/^ppt\/slides\/_rels\/[^/]+\.xml\.rels$/.test(name)) judged.set(canonicalPartName(name), { name, folder: "ppt/slides" });
-        }
+        const judged = new Set(names.filter((name) => /^ppt\/slides\/_rels\/[^/]+\.xml\.rels$/i.test(name)));
         for (const slide of await this.presentationRelatedParts(names, "slide")) {
-            const folder = path.posix.dirname(slide);
-            const name = findEquivalentPart(names, path.posix.join(folder, "_rels", `${path.posix.basename(slide)}.rels`));
-            if (name !== undefined && !judged.has(canonicalPartName(name))) judged.set(canonicalPartName(name), { name, folder });
+            const name = findEquivalentPart(
+                names,
+                path.posix.join(path.posix.dirname(slide), "_rels", `${path.posix.basename(slide)}.rels`),
+            );
+            if (name !== undefined) judged.add(name);
         }
-        return [...judged.values()]
-            .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
-            .map(({ name, folder }) => ({ file: entries.get(name)!, folder }));
+        return [...judged]
+            .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+            .map((name) => ({ file: entries.get(name)!, folder: path.posix.dirname(path.posix.dirname(name)) }));
     }
 
     /**
-     * The stored parts a check judges, each once, in code-unit order of their
-     * names: those whose names match `historical`, as the Python port listed
-     * them, and those the presentation relates by a `segment` relationship,
-     * wherever stored (#1013).
+     * The stored parts a check judges, each stored name once, in code-unit
+     * order: every one whose name matches `historical`, as the Python port
+     * listed them (#1017), and those the presentation relates by a `segment`
+     * relationship, wherever stored (#1013).
      */
     private async judgedParts(historical: RegExp, segment: string): Promise<Array<{ name: string; file: string }>> {
         const entries = packageEntries(this.unpackedDir);
         const names = [...entries.keys()];
-        const judged = new Map<string, string>();
-        for (const name of names) {
-            if (historical.test(name)) judged.set(canonicalPartName(name), name);
-        }
-        for (const part of await this.presentationRelatedParts(names, segment)) {
-            if (!judged.has(canonicalPartName(part))) judged.set(canonicalPartName(part), part);
-        }
-        return [...judged.values()].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)).map((name) => ({ name, file: entries.get(name)! }));
+        const judged = new Set(names.filter((name) => historical.test(name)));
+        for (const part of await this.presentationRelatedParts(names, segment)) judged.add(part);
+        return [...judged].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)).map((name) => ({ name, file: entries.get(name)! }));
     }
 
     /**
