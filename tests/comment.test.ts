@@ -45,6 +45,12 @@ const RELATIONSHIPS_TYPE = "application/vnd.openxmlformats-package.relationships
 const MAIN_DOCUMENT_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
 const OFFICE_DOCUMENT_RELATIONSHIP_TYPE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument";
 const STRICT_OFFICE_DOCUMENT_RELATIONSHIP_TYPE = "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument";
+const COMMENTS_RELATIONSHIP_TYPE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
+const STRICT_COMMENTS_RELATIONSHIP_TYPE = "http://purl.oclc.org/ooxml/officeDocument/relationships/comments";
+const HYPERLINK_RELATIONSHIP_TYPE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
+const COMMENTS_EXTENDED_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2011/relationships/commentsExtended";
+const COMMENTS_IDS_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2016/09/relationships/commentsIds";
+const COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible";
 
 const CT_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
@@ -63,6 +69,14 @@ const packageRels = (attributes: string): string =>
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n  <Relationship Id="rId1" ${attributes}/>\n</Relationships>`;
 
 const officeDocumentRels = (target: string): string => packageRels(`Type="${OFFICE_DOCUMENT_RELATIONSHIP_TYPE}" Target="${target}"`);
+
+/** The four relationships a first comment appends, with ids counting from `firstRid`. */
+const firstCommentRelationships = (firstRid: number): string[][] => [
+    [`rId${firstRid}`, COMMENTS_RELATIONSHIP_TYPE, "comments.xml", ""],
+    [`rId${firstRid + 1}`, COMMENTS_EXTENDED_RELATIONSHIP_TYPE, "commentsExtended.xml", ""],
+    [`rId${firstRid + 2}`, COMMENTS_IDS_RELATIONSHIP_TYPE, "commentsIds.xml", ""],
+    [`rId${firstRid + 3}`, COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE, "commentsExtensible.xml", ""],
+];
 
 /** A content-types stream whose `.rels` Default names `relsType`, with `overrides` spliced in (#901). */
 const contentTypes = (relsType: string, overrides: readonly string[] = []): string =>
@@ -158,6 +172,22 @@ function overridesNaming(dom: ReturnType<typeof parseXml>, partName: string): [s
         }
     }
     return found;
+}
+
+/** Every [Id, Type, Target, TargetMode] of the relationships a relationships part holds. */
+function relationshipRows(dom: ReturnType<typeof parseXml>): string[][] {
+    const rows: string[][] = [];
+    const relationships = dom.getElementsByTagName("Relationship");
+    for (let i = 0; i < relationships.length; i += 1) {
+        const rel = relationships.item(i)!;
+        rows.push([
+            rel.getAttribute("Id") ?? "",
+            rel.getAttribute("Type") ?? "",
+            rel.getAttribute("Target") ?? "",
+            rel.getAttribute("TargetMode") ?? "",
+        ]);
+    }
+    return rows;
 }
 
 /** Every [Extension, ContentType] pair of the Default elements naming `extension`. */
@@ -752,6 +782,121 @@ describe("addComment", () => {
             });
         },
     );
+
+    it.each([
+        [
+            "an External comments relationship (word/document.xml)",
+            "word/document.xml",
+            packageRels(`Type="${COMMENTS_RELATIONSHIP_TYPE}" Target="/word/comments.xml" TargetMode="External"`),
+            ["rId1", COMMENTS_RELATIONSHIP_TYPE, "/word/comments.xml", "External"],
+        ],
+        [
+            "a hyperlink relationship (word/document.xml)",
+            "word/document.xml",
+            packageRels(`Type="${HYPERLINK_RELATIONSHIP_TYPE}" Target="comments.xml"`),
+            ["rId1", HYPERLINK_RELATIONSHIP_TYPE, "comments.xml", ""],
+        ],
+        [
+            "an External comments relationship (word/main.xml)",
+            "word/main.xml",
+            packageRels(`Type="${COMMENTS_RELATIONSHIP_TYPE}" Target="/word/comments.xml" TargetMode="External"`),
+            ["rId1", COMMENTS_RELATIONSHIP_TYPE, "/word/comments.xml", "External"],
+        ],
+        [
+            "a hyperlink relationship (word/main.xml)",
+            "word/main.xml",
+            packageRels(`Type="${HYPERLINK_RELATIONSHIP_TYPE}" Target="comments.xml"`),
+            ["rId1", HYPERLINK_RELATIONSHIP_TYPE, "comments.xml", ""],
+        ],
+    ])(
+        "relates the comments parts when the main document's relationships part already holds %s (#917)",
+        async (_label, mainPart, relsXml, existing) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels(mainPart), mainPart);
+                const relsPath = path.join(dir, "word", "_rels", `${path.posix.basename(mainPart)}.rels`);
+                await fs.mkdir(path.dirname(relsPath), { recursive: true });
+                await fs.writeFile(relsPath, relsXml, "utf-8");
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // Neither relationship relates the comments part — not by
+                // type, or not internally — so the four relationships are
+                // added beside it, each with an id no other relationship in
+                // the part uses, and the existing one is left as it was.
+                expect(relationshipRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual([
+                    existing,
+                    ...firstCommentRelationships(2),
+                ]);
+            });
+        },
+    );
+
+    it("validates once the markers are added over an External comments relationship (#917)", { timeout: 30000 }, async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+            await fs.writeFile(
+                path.join(dir, "word", "_rels", "document.xml.rels"),
+                packageRels(`Type="${COMMENTS_RELATIONSHIP_TYPE}" Target="/word/comments.xml" TargetMode="External"`),
+                "utf-8",
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The comment is related through the relationship the first
+            // comment added, so the markers name a comment Word reads.
+            await fs.writeFile(path.join(dir, "word", "document.xml"), markedMainDocument(), "utf-8");
+            const file = path.join(dir, "external-comments-rel.docx");
+            await packTree(dir, file);
+            const validation = await validate(file, { profile: "word-valid" });
+            expect(validation.issues.filter((issue) => issue.code === "comment-marker-missing")).toEqual([]);
+            expect(validation.valid).toBe(true);
+        });
+    });
+
+    it("adds no second set of relationships when the main document already relates word/comments.xml with the Strict comments type (#917)", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/main.xml"), "word/main.xml");
+            await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+            await fs.writeFile(
+                path.join(dir, "word", "_rels", "main.xml.rels"),
+                packageRels(`Type="${STRICT_COMMENTS_RELATIONSHIP_TYPE}" Target="comments.xml"`),
+                "utf-8",
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The Strict comments type relates the part as the Transitional
+            // one does, so nothing is appended.
+            expect(relationshipRows(parseXml(await fs.readFile(path.join(dir, "word", "_rels", "main.xml.rels"), "utf-8")))).toEqual([
+                ["rId1", STRICT_COMMENTS_RELATIONSHIP_TYPE, "comments.xml", ""],
+            ]);
+        });
+    });
 
     it.each([
         [
