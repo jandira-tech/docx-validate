@@ -705,7 +705,7 @@ describe("#612: rels-id-mismatch reports every mismatch; full runs deduplicate",
             return issue;
         };
 
-        it("drops matching pairs one-for-one, so one Word finding drops only one mismatch", () => {
+        it("drops every matching copy of the Id on the element, from one Word finding (#727)", () => {
             const pair = [
                 relsMismatch("word/document.xml", "headerReference", "rId1"),
                 relsMismatch("word/document.xml", "headerReference", "rId1"),
@@ -714,21 +714,10 @@ describe("#612: rels-id-mismatch reports every mismatch; full runs deduplicate",
                 { valid: false, issues: pair },
                 { valid: false, issues: [wordFinding("word/document.xml", "headerReference", "rId1")] },
             );
-            expect(one.issues).toEqual([pair[1]]);
-            const both = withoutRepeatedHeaderFooterFindings(
-                { valid: false, issues: pair },
-                {
-                    valid: false,
-                    issues: [
-                        wordFinding("word/document.xml", "headerReference", "rId1"),
-                        wordFinding("word/document.xml", "headerReference", "rId1"),
-                    ],
-                },
-            );
-            expect(both.issues).toEqual([]);
+            expect(one.issues).toEqual([]);
         });
 
-        it("keeps a mismatch in another part, for another r:id, for another element, or in another namespace", () => {
+        it("keeps a mismatch in another part, for another r:id, for another element, or in another element namespace", () => {
             const matching = relsMismatch("word/document.xml", "headerReference", "rId1");
             const otherPart = relsMismatch("word/glossary/document.xml", "headerReference", "rId1");
             const otherRid = relsMismatch("word/document.xml", "headerReference", "rId2");
@@ -771,13 +760,13 @@ describe("#612: rels-id-mismatch reports every mismatch; full runs deduplicate",
             expect(result.issues).toEqual([]);
         });
 
-        it("keeps a rels-id-missing whose r:id sits in another attribute namespace (review BE F1)", () => {
+        it("drops a rels-id-missing in the other attribute namespace too: one element, one defect (#727)", () => {
             const fallback = relsMissing("word/document.xml", "footerReference", "rId9", W, REL);
             const result = withoutRepeatedHeaderFooterFindings(
                 { valid: false, issues: [fallback] },
                 { valid: false, issues: [wordFinding("word/document.xml", "footerReference", "rId9", W, STRICT_REL)] },
             );
-            expect(result.issues).toEqual([fallback]);
+            expect(result.issues).toEqual([]);
         });
 
         it("keeps a rels-id-missing with no registered identity (#619)", () => {
@@ -910,6 +899,26 @@ const danglingReferenceParts = (reference: "headerReference" | "footerReference"
         `<w:document xmlns:w="${W}"`,
         `<w:document xmlns:w="${W}" xmlns:r="${REL}"`,
     ).replace("<w:sectPr>", `<w:sectPr><w:${reference} w:type="default" r:id="${rid}"/>`),
+});
+
+/**
+ * #727: the same dangling reference inside both branches of one
+ * `mc:AlternateContent` whose Choice Word does not select. The legacy walk
+ * reads the raw part, so it sees two references and makes two
+ * `rels-id-missing` copies; the Word rule reads the selected view and
+ * reports one finding, which must drop every legacy copy of the same Id on
+ * the same element.
+ */
+const twinDanglingReferenceParts = (reference: "headerReference" | "footerReference", rid = "rId9"): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+        `<w:document xmlns:w="${W}"`,
+        `<w:document xmlns:w="${W}" xmlns:r="${REL}" xmlns:x="http://example.com/unknown"`,
+    ).replace(
+        "<w:sectPr>",
+        `<w:sectPr><mc:AlternateContent><mc:Choice Requires="x"><w:${reference} w:type="default" r:id="${rid}"/></mc:Choice>` +
+            `<mc:Fallback><w:${reference} w:type="default" r:id="${rid}"/></mc:Fallback></mc:AlternateContent>`,
+    ),
 });
 
 describe("#619: a story reference whose r:id names no Relationship (Word 16.115 session 32)", { timeout: 240_000 }, () => {
@@ -1071,6 +1080,27 @@ describe("#619: a story reference whose r:id names no Relationship (Word 16.115 
         });
     });
 
+    it("reports a dangling reference once when its element has mc:Choice and mc:Fallback twins (#727)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "headerref-twins-no-relationship.docx");
+            writeFileSync(file, await buildDocx(twinDanglingReferenceParts("headerReference")));
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validate(file, { profile });
+                expect(
+                    result.issues.filter((issue) => issue.code === CODE),
+                    profile,
+                ).toHaveLength(1);
+                expect(
+                    result.issues.filter((issue) => issue.code === "rels-id-missing"),
+                    profile,
+                ).toEqual([]);
+            }
+            // Lenient runs no Word rule; both twins keep their legacy copies.
+            const lenient = await validate(file, { profile: "lenient" });
+            expect(lenient.issues.filter((issue) => issue.code === "rels-id-missing")).toHaveLength(2);
+        });
+    });
+
     it("quick and named runs agree with the full word-valid run (#381)", async () => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "footerref-no-relationship.docx");
@@ -1094,8 +1124,9 @@ describe("#619: a story reference whose r:id names no Relationship (Word 16.115 
      * Review BE F1: the Word rule reads the markup-compatibility view, where
      * the Choice's footerReference carries its id in the ISO Strict
      * relationships namespace; the legacy walk reads the raw part and only
-     * the Transitional one, so it reports the Fallback's footerReference.
-     * The two findings name different elements and must both survive.
+     * the Transitional one, so it reports the Fallback's footerReference —
+     * the same element's other spelling, which #727's pairing drops with
+     * the Word rule's own finding: one element, one report.
      */
     const choiceFallbackParts = (rid: string): Record<string, string> => ({
         ...MINIMAL_PARTS,
@@ -1109,28 +1140,28 @@ describe("#619: a story reference whose r:id names no Relationship (Word 16.115 
         ),
     });
 
-    it("a Choice's Strict rs:id does not consume the Fallback's Transitional rels-id-missing (review BE F1)", async () => {
+    it("a Choice's Strict rs:id and its Fallback twin's Transitional copy are one report (review BE F1, #727)", async () => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "choice-fallback-missing.docx");
             writeFileSync(file, await buildDocx(choiceFallbackParts("rId9")));
             const strict = await validate(file, { profile: "strict" });
             expect(strict.issues.filter((issue) => issue.code === CODE)).toHaveLength(1);
-            expect(
-                strict.issues.filter((issue) => issue.code === "rels-id-missing" && issue.message.includes("footerReference")),
-            ).toHaveLength(1);
+            expect(strict.issues.filter((issue) => issue.code === "rels-id-missing" && issue.message.includes("footerReference"))).toEqual(
+                [],
+            );
         });
     });
 
-    it("a Choice's Strict rs:id does not consume the Fallback's Transitional rels-id-mismatch (review BE F1, #616)", async () => {
+    it("a Choice's Strict rs:id and its Fallback twin's mismatch are one report (review BE F1, #616, #727)", async () => {
         await withTempDir(async (dir) => {
             // rId1 is MINIMAL_PARTS' styles relationship: a mismatch for both.
             const file = path.join(dir, "choice-fallback-mismatch.docx");
             writeFileSync(file, await buildDocx(choiceFallbackParts("rId1")));
             const strict = await validate(file, { profile: "strict" });
             expect(strict.issues.filter((issue) => issue.code === CODE)).toHaveLength(1);
-            expect(
-                strict.issues.filter((issue) => issue.code === "rels-id-mismatch" && issue.message.includes("footerReference")),
-            ).toHaveLength(1);
+            expect(strict.issues.filter((issue) => issue.code === "rels-id-mismatch" && issue.message.includes("footerReference"))).toEqual(
+                [],
+            );
         });
     });
 

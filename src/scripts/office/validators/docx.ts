@@ -3201,11 +3201,16 @@ export function withoutRepeatedCompatibilityFindings(schema: ValidationResult, r
  * `word-attached-toolbar-relationship` (#716, session 48). The pairing is the structured identity both producers registered on
  * the issue object when they created it (#616): part path (normalized on
  * registration, as `withoutRepeatedCompatibilityFindings` compares paths),
- * element namespace URI, local name, raw `r:id` and the namespace URI the
- * `r:id` was read in all match, so an `mc:Choice` reference whose ISO Strict
- * `r:id` the Word rule judged never consumes its `mc:Fallback` twin's
- * Transitional finding (review BE F1). Findings pair one-for-one — two
- * identical elements are both dropped only by two Word-rule findings. The former message-prose pairing let a quoted `r:id`
+ * element namespace URI, local name and the raw `r:id` all match. The
+ * namespace URI the `r:id` was read in is deliberately not part of the
+ * pairing (#727): the Word rule reads the markup-compatibility view and the
+ * legacy walk the raw part, so an element with an `mc:Choice` and an
+ * `mc:Fallback` twin yields two legacy copies of the one defect the Word
+ * rule reports once, and a Strict-namespace `r:id` on the selected twin
+ * (review BE F1) is the same element's other spelling. Every legacy copy
+ * of the same Id on the same element in the same part is therefore dropped,
+ * and no finding is dropped for another part, another Id or another
+ * element. The former message-prose pairing let a quoted `r:id`
  * double the report and a crafted `r:id` consume a foreign element's only
  * mismatch. A finding without a registered identity — another producer, or
  * a copy made between producer and helper — is never dropped. Where the
@@ -3215,8 +3220,8 @@ export function withoutRepeatedCompatibilityFindings(schema: ValidationResult, r
  */
 export function withoutRepeatedHeaderFooterFindings(relationshipIds: ValidationResult, rules: ValidationResult): ValidationResult {
     const key = (identity: StoryReferenceIdentity): string =>
-        `${identity.part}\u0000${identity.namespaceURI}\u0000${identity.localName}\u0000${identity.rid}\u0000${identity.ridNamespaceURI}`;
-    const reported = new Map<string, number>();
+        `${identity.part}\u0000${identity.namespaceURI}\u0000${identity.localName}\u0000${identity.rid}`;
+    const reported = new Set<string>();
     for (const issue of rules.issues) {
         if (
             issue.code !== WORD_HEADER_FOOTER_RELATIONSHIP &&
@@ -3226,16 +3231,13 @@ export function withoutRepeatedHeaderFooterFindings(relationshipIds: ValidationR
             continue;
         const identity = storyReferenceIdentity(issue);
         if (!identity) continue;
-        reported.set(key(identity), (reported.get(key(identity)) ?? 0) + 1);
+        reported.add(key(identity));
     }
     const issues = relationshipIds.issues.filter((issue) => {
         if (issue.code !== "rels-id-mismatch" && issue.code !== "rels-id-missing") return true;
         const identity = storyReferenceIdentity(issue);
         if (!identity) return true;
-        const remaining = reported.get(key(identity)) ?? 0;
-        if (remaining === 0) return true;
-        reported.set(key(identity), remaining - 1);
-        return false;
+        return !reported.has(key(identity));
     });
     return { valid: relationshipIds.valid, issues };
 }

@@ -46,7 +46,8 @@ export const isStoryReferenceLocalName = (name: string): name is StoryReferenceL
  * namespaces, the legacy walk the raw part and only the Transitional one,
  * so an `mc:Choice` reference with an ISO Strict `r:id` and its
  * `mc:Fallback` twin with a Transitional one differ only in that last
- * field (review BE F1).
+ * field (review BE F1); the hand-off's pairing deliberately ignores that
+ * field (#727), so both spellings of one element pair as one defect.
  */
 export interface StoryReferenceIdentity {
     readonly part: string;

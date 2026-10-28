@@ -708,4 +708,44 @@ describe(`${CODE} (selectors and the rels-id-missing hand-off)`, { timeout: 240_
             expect(lenient.issues.some((issue) => issue.code === "rels-id-missing")).toBe(true);
         });
     });
+
+    /**
+     * #727: the element sits in both branches of one `mc:AlternateContent`
+     * whose Choice Word does not select. The legacy walk reads the raw
+     * part, so it sees two elements and makes two `rels-id-missing` copies;
+     * the Word rule reads the selected view and reports one finding, which
+     * must drop every legacy copy of the same Id on the same element.
+     */
+    const mcTwins = (element: string): Record<string, string | Uint8Array> => {
+        const parts = withDrawing(
+            pngReached(),
+            `<mc:AlternateContent><mc:Choice Requires="x">${element}</mc:Choice><mc:Fallback>${element}</mc:Fallback></mc:AlternateContent>`,
+        );
+        parts[MAIN] = replaceOnce(parts[MAIN] as string, "<w:document ", '<w:document xmlns:x="http://example.com/unknown" ');
+        return parts;
+    };
+
+    it.each([
+        ["c:chart", () => mcTwins(CHART_DRAWING("rId9"))],
+        ["o:OLEObject", () => mcTwins(OLE_OBJECT("rId9"))],
+    ])("reports a dangling %s r:id once when its element has mc:Choice and mc:Fallback twins (#727)", async (element, make) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, `twins-${element}.docx`);
+            writeFileSync(file, await buildDocx(make()));
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validate(file, { profile });
+                expect(
+                    result.issues.filter((issue) => issue.code === CODE),
+                    profile,
+                ).toHaveLength(1);
+                expect(
+                    result.issues.filter((issue) => issue.code === "rels-id-missing"),
+                    profile,
+                ).toEqual([]);
+            }
+            // Lenient runs no Word rule; both twins keep their legacy copies.
+            const lenient = await validate(file, { profile: "lenient" });
+            expect(lenient.issues.filter((issue) => issue.code === "rels-id-missing")).toHaveLength(2);
+        });
+    });
 });
