@@ -1342,68 +1342,77 @@ export class BaseSchemaValidator {
                 continue;
             }
 
-            const rNs = OFFICE_RELATIONSHIPS_NAMESPACE;
+            // #1065: outside lenient the ids are read in both relationships
+            // namespaces, as the sidecar check above reads them, so a Strict
+            // package's ids are judged; lenient keeps the Python validator's
+            // Transitional-only walk.
+            const ridNamespaces =
+                this.profile === "lenient"
+                    ? [OFFICE_RELATIONSHIPS_NAMESPACE]
+                    : [OFFICE_RELATIONSHIPS_NAMESPACE, STRICT_OFFICE_RELATIONSHIPS_NAMESPACE];
             const ridAttrsToCheck: ReadonlyArray<"id" | "embed" | "link"> = ["id", "embed", "link"];
             const xmlRoot = xmlDom.documentElement;
             if (!xmlRoot) continue;
 
             for (const elem of iterElements(xmlRoot)) {
-                for (const attrName of ridAttrsToCheck) {
-                    const ridAttr = elem.getAttributeNS(rNs, attrName);
-                    if (!ridAttr) continue;
-                    const elemName = localName(elem.tagName ?? elem.nodeName);
+                for (const rNs of ridNamespaces) {
+                    for (const attrName of ridAttrsToCheck) {
+                        const ridAttr = elem.getAttributeNS(rNs, attrName);
+                        if (!ridAttr) continue;
+                        const elemName = localName(elem.tagName ?? elem.nodeName);
 
-                    if (!ridToType.has(ridAttr)) {
-                        const valid = [...ridToType.keys()].sort().slice(0, 5).join(", ");
-                        const ellipsis = ridToType.size > 5 ? "..." : "";
-                        const issue: ValidationIssue = {
-                            severity: "error",
-                            message:
-                                `<${elemName}> r:${attrName} references non-existent relationship '${ridAttr}' ` +
-                                `(valid IDs: ${valid}${ellipsis})`,
-                            path: this.relPath(xmlFile),
-                            code: "rels-id-missing",
-                        };
-                        // #619: the full run's Word-rule hand-off pairs this
-                        // copy with the rule's finding through the registered
-                        // element identity, never the prose.
-                        if (attrName === "id" && isStoryReferenceLocalName(elemName)) {
-                            registerStoryReferenceIdentity(issue, {
-                                part: this.relPath(xmlFile),
-                                namespaceURI: elem.namespaceURI ?? "",
-                                localName: elemName,
-                                rid: ridAttr,
-                                ridNamespaceURI: rNs,
-                            });
-                        }
-                        issues.push(issue);
-                    } else if (attrName === "id" && Object.keys(this.elementRelationshipTypes).length > 0) {
-                        const expectedType = this._getExpectedRelationshipType(elemName);
-                        if (expectedType) {
-                            const fullType = ridToType.get(ridAttr) ?? "";
-                            const actualType = relationshipTypeName(fullType);
-                            if (!this.relationshipTypeSatisfies(fullType, expectedType, elem.namespaceURI ?? "")) {
-                                const issue: ValidationIssue = {
-                                    severity: "error",
-                                    message:
-                                        `<${elemName}> references '${ridAttr}' which points to '${actualType}' ` +
-                                        `but should point to a '${expectedType}' relationship`,
-                                    path: this.relPath(xmlFile),
-                                    code: "rels-id-mismatch",
-                                };
-                                // #616: the full run's Word-rule hand-off pairs
-                                // this copy with the rule's finding through the
-                                // registered element identity, never the prose.
-                                if (isStoryReferenceLocalName(elemName)) {
-                                    registerStoryReferenceIdentity(issue, {
-                                        part: this.relPath(xmlFile),
-                                        namespaceURI: elem.namespaceURI ?? "",
-                                        localName: elemName,
-                                        rid: ridAttr,
-                                        ridNamespaceURI: rNs,
-                                    });
+                        if (!ridToType.has(ridAttr)) {
+                            const valid = [...ridToType.keys()].sort().slice(0, 5).join(", ");
+                            const ellipsis = ridToType.size > 5 ? "..." : "";
+                            const issue: ValidationIssue = {
+                                severity: "error",
+                                message:
+                                    `<${elemName}> r:${attrName} references non-existent relationship '${ridAttr}' ` +
+                                    `(valid IDs: ${valid}${ellipsis})`,
+                                path: this.relPath(xmlFile),
+                                code: "rels-id-missing",
+                            };
+                            // #619: the full run's Word-rule hand-off pairs this
+                            // copy with the rule's finding through the registered
+                            // element identity, never the prose.
+                            if (attrName === "id" && isStoryReferenceLocalName(elemName)) {
+                                registerStoryReferenceIdentity(issue, {
+                                    part: this.relPath(xmlFile),
+                                    namespaceURI: elem.namespaceURI ?? "",
+                                    localName: elemName,
+                                    rid: ridAttr,
+                                    ridNamespaceURI: rNs,
+                                });
+                            }
+                            issues.push(issue);
+                        } else if (attrName === "id" && Object.keys(this.elementRelationshipTypes).length > 0) {
+                            const expectedType = this._getExpectedRelationshipType(elemName);
+                            if (expectedType) {
+                                const fullType = ridToType.get(ridAttr) ?? "";
+                                const actualType = relationshipTypeName(fullType);
+                                if (!this.relationshipTypeSatisfies(fullType, expectedType, elem.namespaceURI ?? "")) {
+                                    const issue: ValidationIssue = {
+                                        severity: "error",
+                                        message:
+                                            `<${elemName}> references '${ridAttr}' which points to '${actualType}' ` +
+                                            `but should point to a '${expectedType}' relationship`,
+                                        path: this.relPath(xmlFile),
+                                        code: "rels-id-mismatch",
+                                    };
+                                    // #616: the full run's Word-rule hand-off pairs
+                                    // this copy with the rule's finding through the
+                                    // registered element identity, never the prose.
+                                    if (isStoryReferenceLocalName(elemName)) {
+                                        registerStoryReferenceIdentity(issue, {
+                                            part: this.relPath(xmlFile),
+                                            namespaceURI: elem.namespaceURI ?? "",
+                                            localName: elemName,
+                                            rid: ridAttr,
+                                            ridNamespaceURI: rNs,
+                                        });
+                                    }
+                                    issues.push(issue);
                                 }
-                                issues.push(issue);
                             }
                         }
                     }

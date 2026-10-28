@@ -1176,6 +1176,26 @@ describe("#619: a story reference whose r:id names no Relationship (Word 16.115 
             expect(found[0]?.message).toBe("<footerReference> r:id references non-existent relationship 'rId9' (valid IDs: rId1)");
         });
     });
+
+    // #1065: outside lenient the legacy walk reads a Strict rs:id too, and
+    // #727's pairing keeps the reference one report.
+    it.each(["word-valid", "strict"] as const)(
+        "a dangling Strict rs:id footer reference is one report under %s (#1065)",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                const parts = danglingReferenceParts("footerReference");
+                parts["word/document.xml"] = parts["word/document.xml"]!.replace(
+                    "<w:document ",
+                    `<w:document xmlns:rs="${STRICT_REL}" `,
+                ).replace(' r:id="rId9"', ' rs:id="rId9"');
+                const file = path.join(dir, "strict-rid-dangling.docx");
+                writeFileSync(file, await buildDocx(parts));
+                const result = await validate(file, { profile });
+                expect(result.issues.filter((issue) => issue.code === CODE)).toHaveLength(1);
+                expect(result.issues.filter((issue) => LEGACY_REFERENCE_CODES.has(issue.code ?? ""))).toEqual([]);
+            });
+        },
+    );
 });
 
 /** Session 33 (#623): only the relationships-namespace id attribute changes. */

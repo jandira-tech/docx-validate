@@ -1095,8 +1095,8 @@ describe("rels-id-mismatch reads PPTX relationship types exactly outside lenient
         });
     });
 
-    // #1064: the r:id stays Transitional, the only namespace the check reads
-    // (#1065), so this pins the type's Strict spelling, not a Strict package.
+    // #1064: the r:id stays Transitional, so this pins the type's Strict
+    // spelling, not a Strict package; #1065's rows judge one.
     it.each(["word-valid", "strict"] as const)(
         "accepts a Strict-spelled slide type under a Transitional r:id under %s",
         async (profile) => {
@@ -1210,6 +1210,54 @@ describe("rels-id-mismatch reads only the PPTX tables' own keys (#1063)", () => 
             });
         },
     );
+});
+
+// #1065: outside lenient the id walk reads `r:id` in the Strict relationships
+// namespace too, so a Strict deck's ids are judged; lenient keeps the Python
+// validator's Transitional-only walk.
+describe("validateAllRelationshipIds reads a Strict deck's r:id outside lenient (#1065)", () => {
+    const STRICT_PML = "http://purl.oclc.org/ooxml/presentationml/main";
+    const STRICT_R = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+    const findings = async (dir: string, profile: "lenient" | "word-valid" | "strict") =>
+        (await new PPTXSchemaValidator({ unpackedDir: dir, profile }).validateAllRelationshipIds()).issues
+            .filter((issue) => issue.code === "rels-id-missing" || issue.code === "rels-id-mismatch")
+            .map((issue) => `${issue.code}: ${issue.message}`);
+    const writeDeck = async (dir: string, rid: string, segment: string) => {
+        await writeFile(
+            path.join(dir, "ppt", "presentation.xml"),
+            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                `<p:presentation xmlns:p="${STRICT_PML}" xmlns:r="${STRICT_R}">` +
+                `<p:sldIdLst><p:sldId id="256" r:id="${rid}"/></p:sldIdLst></p:presentation>`,
+        );
+        await writeFile(
+            path.join(dir, "ppt", "_rels", "presentation.xml.rels"),
+            relsXml(`<Relationship Id="rId1" Type="${STRICT_R}/${segment}" Target="slides/slide1.xml"/>`),
+        );
+    };
+
+    it.each([
+        ["a dangling r:id", "rId9", "slide", "rels-id-missing: <sldId> r:id references non-existent relationship 'rId9' (valid IDs: rId1)"],
+        [
+            "an r:id naming a slideLayout relationship",
+            "rId1",
+            "slideLayout",
+            "rels-id-mismatch: <sldId> references 'rId1' which points to 'slideLayout' but should point to a 'slide' relationship",
+        ],
+    ])("reports %s only outside lenient", async (_label, rid, segment, finding) => {
+        await withTempDir(async (dir) => {
+            await writeDeck(dir, rid, segment);
+            expect(await findings(dir, "lenient")).toEqual([]);
+            expect(await findings(dir, "word-valid")).toEqual([finding]);
+            expect(await findings(dir, "strict")).toEqual([finding]);
+        });
+    });
+
+    it.each(["lenient", "word-valid", "strict"] as const)("accepts an r:id naming a slide relationship under %s", async (profile) => {
+        await withTempDir(async (dir) => {
+            await writeDeck(dir, "rId1", "slide");
+            expect(await findings(dir, profile)).toEqual([]);
+        });
+    });
 });
 
 // #1018: a master's relationships part is found by OPC part-name

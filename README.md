@@ -192,9 +192,10 @@ so a `p:sldId` naming a `slideLayout` relationship passed as `slide`. An
 element in another namespace, such as a foreign element in a `p:ext` sharing
 a PresentationML local name, keeps that reading, as lenient and DOCX do
 ([#1058](https://github.com/jandira-tech/docx-validate/issues/1058),
-[#1061](https://github.com/jandira-tech/docx-validate/issues/1061)). The
-check reads `r:id` only in the Transitional relationships namespace, so a
-Strict package's ids are not judged yet
+[#1061](https://github.com/jandira-tech/docx-validate/issues/1061)).
+Outside lenient the check reads `r:id`, `r:embed` and `r:link` in the Strict
+relationships namespace too, so a Strict package's ids are judged; lenient
+reads only the Transitional one
 ([#1065](https://github.com/jandira-tech/docx-validate/issues/1065)).
 
 The `strict` profile runs the Word rules and applicable XSD schemas. Schema

@@ -110,3 +110,45 @@ describe("validateAllRelationshipIds — an element named for an Object.prototyp
         });
     });
 });
+
+// #1065: outside lenient the walk reads ids in the Strict relationships
+// namespace too; lenient keeps the Python validator's Transitional-only walk.
+describe("validateAllRelationshipIds — a Strict package's r:id (#1065)", () => {
+    const STRICT_W = "http://purl.oclc.org/ooxml/wordprocessingml/main";
+    const STRICT_R = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+    const findings = async (dir: string, profile: "lenient" | "word-valid" | "strict") => {
+        await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+        await fs.writeFile(
+            path.join(dir, "word", "document.xml"),
+            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+                `<w:document xmlns:w="${STRICT_W}" xmlns:r="${STRICT_R}"><w:body>` +
+                `<w:p><w:hyperlink r:id="rId7"><w:r><w:t>link</w:t></w:r></w:hyperlink></w:p></w:body></w:document>`,
+            "utf-8",
+        );
+        await fs.writeFile(
+            path.join(dir, "word", "_rels", "document.xml.rels"),
+            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="${PKG}">` +
+                `<Relationship Id="rId7" Type="${STRICT_R}/header" Target="header1.xml"/></Relationships>`,
+            "utf-8",
+        );
+        const result = await new DOCXSchemaValidator({ unpackedDir: dir, profile }).validateAllRelationshipIds();
+        return result.issues.filter((i) => i.code === "rels-id-mismatch").map((i) => i.message);
+    };
+
+    it.each(["word-valid", "strict"] as const)(
+        "reports a Strict w:hyperlink r:id naming a header relationship under %s",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                expect(await findings(dir, profile)).toEqual([
+                    "<hyperlink> references 'rId7' which points to 'header' but should point to a 'hyperlink' relationship",
+                ]);
+            });
+        },
+    );
+
+    it("keeps lenient's Transitional-only walk", async () => {
+        await withTempDir(async (dir) => {
+            expect(await findings(dir, "lenient")).toEqual([]);
+        });
+    });
+});
