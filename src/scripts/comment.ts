@@ -49,7 +49,7 @@ import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import { commanderExitCode, runCli } from "../lib/run-cli";
 import { nextSecureLongHexNumber } from "../lib/secure-id";
-import { readXmlPart, writeXmlPart, writeXmlText } from "../lib/xml-part-io";
+import { readXmlPart, writeXmlPart, writeXmlText, type DecodedXmlPart } from "../lib/xml-part-io";
 import { parseXml, serializeXml, xmlDeclarationEncoding } from "../lib/xml-helpers";
 
 const TEMPLATE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "templates");
@@ -145,8 +145,8 @@ async function pathExists(p: string): Promise<boolean> {
 }
 
 /** Append `content` under the part's root element, in the part's own encoding. */
-async function appendXml(xmlPath: string, rootTag: string, content: string): Promise<boolean> {
-    const part = await readXmlPart(xmlPath);
+async function appendXml(xmlPath: string, rootTag: string, content: string, decoded?: DecodedXmlPart): Promise<boolean> {
+    const part = decoded ?? (await readXmlPart(xmlPath));
     if (part === undefined) {
         // An encoding we cannot decode: leave the part's bytes untouched.
         return false;
@@ -173,12 +173,8 @@ async function appendXml(xmlPath: string, rootTag: string, content: string): Pro
     return true;
 }
 
-async function findParaId(commentsPath: string, commentId: number): Promise<string | null> {
-    const part = await readXmlPart(commentsPath);
-    if (part === undefined) {
-        return null;
-    }
-    const dom = parseXml(part.text);
+function findParaId(commentsPart: DecodedXmlPart, commentId: number): string | null {
+    const dom = parseXml(commentsPart.text);
     const comments = dom.getElementsByTagName("w:comment");
     for (let i = 0; i < comments.length; i += 1) {
         const c = comments.item(i)!;
@@ -196,14 +192,10 @@ async function findParaId(commentsPath: string, commentId: number): Promise<stri
     return null;
 }
 
-/** Return true if `commentsPath` already contains a `<w:comment>` with the
+/** Return true if the comments part already contains a `<w:comment>` with the
  * given `w:id`. Used to preflight `addComment()` before mutating any part. */
-async function commentIdExists(commentsPath: string, commentId: number): Promise<boolean> {
-    const part = await readXmlPart(commentsPath);
-    if (part === undefined) {
-        return false;
-    }
-    const dom = parseXml(part.text);
+function commentIdExists(commentsPart: DecodedXmlPart, commentId: number): boolean {
+    const dom = parseXml(commentsPart.text);
     const comments = dom.getElementsByTagName("w:comment");
     for (let i = 0; i < comments.length; i += 1) {
         const c = comments.item(i)!;
@@ -214,12 +206,7 @@ async function commentIdExists(commentsPath: string, commentId: number): Promise
     return false;
 }
 
-async function getNextRid(relsPath: string): Promise<number> {
-    const part = await readXmlPart(relsPath);
-    if (part === undefined) {
-        return 1;
-    }
-    const dom = parseXml(part.text);
+function getNextRid(dom: Document): number {
     let maxRid = 0;
     const rels = dom.getElementsByTagName("Relationship");
     for (let i = 0; i < rels.length; i += 1) {
@@ -235,12 +222,7 @@ async function getNextRid(relsPath: string): Promise<number> {
     return maxRid + 1;
 }
 
-async function hasRelationship(relsPath: string, target: string): Promise<boolean> {
-    const part = await readXmlPart(relsPath);
-    if (part === undefined) {
-        return false;
-    }
-    const dom = parseXml(part.text);
+function hasRelationship(dom: Document, target: string): boolean {
     const rels = dom.getElementsByTagName("Relationship");
     for (let i = 0; i < rels.length; i += 1) {
         const rel = rels.item(i)!;
@@ -251,12 +233,7 @@ async function hasRelationship(relsPath: string, target: string): Promise<boolea
     return false;
 }
 
-async function hasContentType(ctPath: string, partName: string): Promise<boolean> {
-    const part = await readXmlPart(ctPath);
-    if (part === undefined) {
-        return false;
-    }
-    const dom = parseXml(part.text);
+function hasContentType(dom: Document, partName: string): boolean {
     const overrides = dom.getElementsByTagName("Override");
     for (let i = 0; i < overrides.length; i += 1) {
         const override = overrides.item(i)!;
@@ -267,24 +244,25 @@ async function hasContentType(ctPath: string, partName: string): Promise<boolean
     return false;
 }
 
-async function ensureCommentRelationships(unpackedDir: string): Promise<void> {
+async function ensureCommentRelationships(unpackedDir: string, decoded?: DecodedXmlPart): Promise<void> {
     const relsPath = path.join(unpackedDir, "word", "_rels", "document.xml.rels");
     if (!(await pathExists(relsPath))) {
         return;
     }
 
-    if (await hasRelationship(relsPath, "comments.xml")) {
-        return;
-    }
-
-    const part = await readXmlPart(relsPath);
+    const part = decoded ?? (await readXmlPart(relsPath));
     if (part === undefined) {
-        // An encoding we cannot decode: leave the part's bytes untouched.
-        return;
+        // addComment's preflight decodes this part before any write, so this is
+        // reachable only when the part changed mid-run: refuse, never report a
+        // write that did not happen (#879).
+        throw new Error(`${relsPath} is stored in an encoding this tool cannot decode`);
     }
     const dom = parseXml(part.text);
+    if (hasRelationship(dom, "comments.xml")) {
+        return;
+    }
     const root = dom.documentElement;
-    let nextRid = await getNextRid(relsPath);
+    let nextRid = getNextRid(dom);
 
     const rels: Array<[string, string]> = [
         ["http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments", "comments.xml"],
@@ -305,22 +283,23 @@ async function ensureCommentRelationships(unpackedDir: string): Promise<void> {
     await writeXmlPart(relsPath, dom, part);
 }
 
-async function ensureCommentContentTypes(unpackedDir: string): Promise<void> {
+async function ensureCommentContentTypes(unpackedDir: string, decoded?: DecodedXmlPart): Promise<void> {
     const ctPath = path.join(unpackedDir, "[Content_Types].xml");
     if (!(await pathExists(ctPath))) {
         return;
     }
 
-    if (await hasContentType(ctPath, "/word/comments.xml")) {
-        return;
-    }
-
-    const part = await readXmlPart(ctPath);
+    const part = decoded ?? (await readXmlPart(ctPath));
     if (part === undefined) {
-        // An encoding we cannot decode: leave the part's bytes untouched.
-        return;
+        // addComment's preflight decodes this part before any write, so this is
+        // reachable only when the part changed mid-run: refuse, never report a
+        // write that did not happen (#879).
+        throw new Error(`${ctPath} is stored in an encoding this tool cannot decode`);
     }
     const dom = parseXml(part.text);
+    if (hasContentType(dom, "/word/comments.xml")) {
+        return;
+    }
     const root = dom.documentElement;
 
     const overrides: Array<[string, string]> = [
@@ -378,21 +357,48 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
     const ts = formatUtcTimestamp(date ?? new Date());
 
     const comments = path.join(word, "comments.xml");
+    const ext = path.join(word, "commentsExtended.xml");
+    const ids = path.join(word, "commentsIds.xml");
+    const extensible = path.join(word, "commentsExtensible.xml");
+    const relsPath = path.join(word, "_rels", "document.xml.rels");
+    const ctPath = path.join(unpackedDir, "[Content_Types].xml");
     const firstComment = !(await pathExists(comments));
+
+    // Preflight: decode every existing part this edit may write, before any
+    // file is created, copied or changed. `word/_rels/document.xml.rels` and
+    // `[Content_Types].xml` are written only for the first comment. A part
+    // whose encoding cannot be decoded is left byte-for-byte untouched (#866),
+    // so an undecodable part found mid-write used to leave earlier parts
+    // already changed, or report success for a wiring it skipped (#879).
+    const writtenParts = [comments, ext, ids, extensible];
+    if (firstComment) {
+        writtenParts.push(relsPath, ctPath);
+    }
+    const decoded = new Map<string, DecodedXmlPart>();
+    for (const part of writtenParts) {
+        if (!(await pathExists(part))) {
+            continue;
+        }
+        const xml = await readXmlPart(part);
+        if (xml === undefined) {
+            return { paraId: "", message: `Error: ${part} is stored in an encoding this tool cannot decode` };
+        }
+        decoded.set(part, xml);
+    }
 
     // Preflight validation: check duplicate commentId and resolve `parent`
     // BEFORE we mutate any part. Without this, an existing comments.xml could
     // be mutated and then the parent-not-found branch leaves an orphan comment
     // behind on a failed call.
     if (!firstComment) {
-        if (await commentIdExists(comments, commentId)) {
+        if (commentIdExists(decoded.get(comments)!, commentId)) {
             return {
                 paraId: "",
                 message: `Error: Comment id ${commentId} already exists`,
             };
         }
         if (parent !== undefined) {
-            const parentPara = await findParaId(comments, parent);
+            const parentPara = findParaId(decoded.get(comments)!, parent);
             if (!parentPara) {
                 return {
                     paraId: "",
@@ -408,8 +414,8 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
 
     if (firstComment) {
         await fs.copyFile(path.join(TEMPLATE_DIR, "comments.xml"), comments);
-        await ensureCommentRelationships(unpackedDir);
-        await ensureCommentContentTypes(unpackedDir);
+        await ensureCommentRelationships(unpackedDir, decoded.get(relsPath));
+        await ensureCommentContentTypes(unpackedDir, decoded.get(ctPath));
     }
     if (
         !(await appendXml(
@@ -423,12 +429,12 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
                 para_id: paraId,
                 text: escapeXml(text),
             }),
+            decoded.get(comments),
         ))
     ) {
         return { paraId: "", message: `Error: ${comments} is stored in an encoding this tool cannot decode` };
     }
 
-    const ext = path.join(word, "commentsExtended.xml");
     if (!(await pathExists(ext))) {
         await fs.copyFile(path.join(TEMPLATE_DIR, "commentsExtended.xml"), ext);
     }
@@ -436,7 +442,7 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
     let commentEx = `<w15:commentEx w15:paraId="${paraId}" w15:done="0"/>`;
     if (parent !== undefined) {
         // Already preflighted above; resolve the actual paraId here for the link.
-        const parentPara = await findParaId(comments, parent);
+        const parentPara = findParaId(decoded.get(comments)!, parent);
         if (!parentPara) {
             // Defensive: should be unreachable given preflight, but keep a
             // structured failure rather than a silent bad ref.
@@ -448,26 +454,36 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
         commentEx = `<w15:commentEx w15:paraId="${paraId}" w15:paraIdParent="${parentPara}" w15:done="0"/>`;
     }
 
-    const ids = path.join(word, "commentsIds.xml");
     if (!(await pathExists(ids))) {
         await fs.copyFile(path.join(TEMPLATE_DIR, "commentsIds.xml"), ids);
     }
 
-    const extensible = path.join(word, "commentsExtensible.xml");
     if (!(await pathExists(extensible))) {
         await fs.copyFile(path.join(TEMPLATE_DIR, "commentsExtensible.xml"), extensible);
     }
 
-    const appended =
-        (await appendXml(ext, "w15:commentsEx", commentEx)) &&
-        (await appendXml(ids, "w16cid:commentsIds", `<w16cid:commentId w16cid:paraId="${paraId}" w16cid:durableId="${durableId}"/>`)) &&
-        (await appendXml(
+    if (!(await appendXml(ext, "w15:commentsEx", commentEx, decoded.get(ext)))) {
+        return { paraId: "", message: `Error: ${ext} is stored in an encoding this tool cannot decode` };
+    }
+    if (
+        !(await appendXml(
+            ids,
+            "w16cid:commentsIds",
+            `<w16cid:commentId w16cid:paraId="${paraId}" w16cid:durableId="${durableId}"/>`,
+            decoded.get(ids),
+        ))
+    ) {
+        return { paraId: "", message: `Error: ${ids} is stored in an encoding this tool cannot decode` };
+    }
+    if (
+        !(await appendXml(
             extensible,
             "w16cex:commentsExtensible",
             `<w16cex:commentExtensible w16cex:durableId="${durableId}" w16cex:dateUtc="${ts}"/>`,
-        ));
-    if (!appended) {
-        return { paraId: "", message: `Error: ${word} holds a part stored in an encoding this tool cannot decode` };
+            decoded.get(extensible),
+        ))
+    ) {
+        return { paraId: "", message: `Error: ${extensible} is stored in an encoding this tool cannot decode` };
     }
 
     const action = parent !== undefined ? "reply" : "comment";
