@@ -750,8 +750,8 @@ reached glossary's own styles part a main footer relationship also reaches
 other read stories: a used comments, endnotes or footnotes part the body
 references holding its own root
 ([#803](https://github.com/jandira-tech/docx-validate/issues/803); a comments
-part whose stored root is an `mc:AlternateContent` unwrapping to its own root
-only typed styles exactly, session 63 s63b,
+part whose stored root is an `mc:AlternateContent` whose branches hold
+nothing but its own root only typed styles exactly, session 63 s63b,
 [#818](https://github.com/jandira-tech/docx-validate/issues/818)) and
 typed with the styles type, a spelling with a parameter included (session
 62 s62c, [#802](https://github.com/jandira-tech/docx-validate/issues/802)),

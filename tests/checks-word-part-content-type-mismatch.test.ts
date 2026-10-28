@@ -587,10 +587,12 @@ describe("parameterized styles spelling on the session 58 pairs (#802, session 6
 // Session 63 (s63b, two runs, all readings agree) offered recovery for the
 // comments part in that shape typed with the styles type exactly, and
 // opened the same part typed comments clean, so that finding cites session
-// 63. The endnotes and footnotes parts in it, and the charset spelling,
-// are unprobed and keep the verdict they had before #785, as the foreign
-// root does (#803): silent under word-valid, the spec-path finding under
-// strict, and no session citation (#818).
+// 63. The endnotes and footnotes parts in it, the charset spelling, and the
+// other stored roots that unwrap to the comments root (an ignorable wrapper
+// that processes its content, alone or inside the Choice) are unprobed and
+// keep the verdict they had before #785, as the foreign root does (#803):
+// silent under word-valid, the spec-path finding under strict, and no
+// session citation (#818).
 describe("a story part whose stored root is an AlternateContent (#818, session 63 s63b)", () => {
     const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
     const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
@@ -618,22 +620,22 @@ describe("a story part whose stored root is an AlternateContent (#818, session 6
         },
     } as const;
     type Story = keyof typeof STORIES;
-    /**
-     * A used `word/<story>.xml` whose stored root is `mc:AlternateContent`, a
-     * selected `w14` Choice holding the story's own root with the referenced
-     * item and an empty Fallback, typed `type` — session 63's s63b specimen
-     * for the comments part.
-     */
-    const alternateRootStoryParts = (story: Story, type: string): Record<string, string> => ({
+    /** An `mc:AlternateContent` holding `content` in a selected `w14` Choice, with an empty Fallback. */
+    const alternateContent = (content: string): string =>
+        `<mc:AlternateContent xmlns:mc="${MC}" xmlns:w="${W}" xmlns:w14="${W14}">` +
+        `<mc:Choice Requires="w14">${content}</mc:Choice><mc:Fallback/>` +
+        `</mc:AlternateContent>`;
+    /** An ignorable element that names itself in `mc:ProcessContent`, so the effective view keeps `content` without it. */
+    const ignorableWrapper = (content: string): string =>
+        `<x:wrap xmlns:x="urn:example:wrap" xmlns:mc="${MC}" mc:Ignorable="x" mc:ProcessContent="x:wrap">${content}</x:wrap>`;
+    /** A used `word/<story>.xml` stored as `stored`, the body referencing the held item, typed `type`. */
+    const usedStoryParts = (story: Story, type: string, stored: string): Record<string, string> => ({
         ...MINIMAL_PARTS,
         "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(`xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`).replace(
             "</w:r></w:p>",
             `</w:r>${STORIES[story].ref}</w:p>`,
         ),
-        [`word/${story}.xml`]:
-            `<mc:AlternateContent xmlns:mc="${MC}" xmlns:w="${W}" xmlns:w14="${W14}">` +
-            `<mc:Choice Requires="w14">${STORIES[story].root(STORIES[story].held)}</mc:Choice><mc:Fallback/>` +
-            `</mc:AlternateContent>`,
+        [`word/${story}.xml`]: stored,
         "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
             "</Relationships>",
             `<Relationship Id="rIdS" Type="${R}/${story}" Target="${story}.xml"/></Relationships>`,
@@ -643,6 +645,14 @@ describe("a story part whose stored root is an AlternateContent (#818, session 6
             `<Override PartName="/word/${story}.xml" ContentType="${type}"/></Types>`,
         ),
     });
+    /**
+     * A used `word/<story>.xml` whose stored root is `mc:AlternateContent`, a
+     * selected `w14` Choice holding the story's own root with the referenced
+     * item and an empty Fallback, typed `type` — session 63's s63b specimen
+     * for the comments part.
+     */
+    const alternateRootStoryParts = (story: Story, type: string): Record<string, string> =>
+        usedStoryParts(story, type, alternateContent(STORIES[story].root(STORIES[story].held)));
 
     it("rejects the used comments part typed styles, citing session 63 (s63b)", async () => {
         await withTempDir(async (dir) => {
@@ -721,6 +731,45 @@ describe("a story part whose stored root is an AlternateContent (#818, session 6
                 expect(partial.valid).toBe(true);
                 expect(partial.issues.filter((issue) => issue.code === ID)).toEqual([]);
                 expect((await validate(file)).issues.filter((issue) => issue.code === ID)).toEqual([]);
+                const strict = (await validate(file, { profile: "strict" })).issues.filter((issue) => issue.code === ID);
+                expect(strict).toEqual([
+                    expect.objectContaining({
+                        severity: "error",
+                        path: `word/${story}.xml`,
+                        message: expect.stringContaining("ECMA-376 Part 1 (4th edition), clause 11.3"),
+                    }),
+                ]);
+                expect(strict[0]?.message).not.toContain("session");
+            });
+        },
+        60_000,
+    );
+
+    // The effective view also unwraps an ignorable wrapper that processes
+    // its content, so the effective root alone does not show session 63's
+    // stored shape (#831).
+    it.each([
+        ["an ignorable wrapper", ignorableWrapper(STORIES.comments.root("0"))],
+        ["an AlternateContent whose Choice holds an ignorable wrapper", alternateContent(ignorableWrapper(STORIES.comments.root("0")))],
+    ])(
+        "cites no session for a used comments part typed styles whose stored root is %s",
+        async (_shape, stored) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "wrapped-root.docx");
+                writeFileSync(file, await buildDocx(usedStoryParts("comments", storyContentType("styles"), stored)));
+                const partial = await validate(file, { checks: [ID] });
+                expect(partial.valid).toBe(true);
+                expect(partial.issues.filter((issue) => issue.code === ID)).toEqual([]);
+                expect((await validate(file)).issues.filter((issue) => issue.code === ID)).toEqual([]);
+                const strict = (await validate(file, { profile: "strict" })).issues.filter((issue) => issue.code === ID);
+                expect(strict).toEqual([
+                    expect.objectContaining({
+                        severity: "error",
+                        path: "word/comments.xml",
+                        message: expect.stringContaining("ECMA-376 Part 1 (4th edition), clause 11.3"),
+                    }),
+                ]);
+                expect(strict[0]?.message).not.toContain("session");
             });
         },
         60_000,
