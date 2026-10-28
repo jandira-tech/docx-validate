@@ -63,12 +63,12 @@ describe("story content type mismatch (#600, session 24)", () => {
         expect(await diagnose(storyContentTypeParts("footer", declared))).toEqual([]);
     });
 
-    it("rejects a read footer typed with the styles type, citing session 53 (#739)", async () => {
+    it("rejects a read footer typed with the styles type, citing sessions 53 and 57 (#739, #778)", async () => {
         const found = await diagnose(storyContentTypeParts("footer", storyContentType("styles")));
         expect(found).toHaveLength(1);
         expect(found[0]).toMatchObject({ code: ID, severity: "error", path: "word/footer9.xml" });
         expect(found[0]?.message).toContain("the main document's footer relationship");
-        expect(found[0]?.message).toContain("Word 16.115 offers to recover the package (session 53).");
+        expect(found[0]?.message).toContain("Word 16.115 offers to recover the package (sessions 53 and 57).");
         // The unread twin stays silent, as #516 observed for the header.
         expect(await diagnose(storyContentTypeParts("footer", storyContentType("styles"), "main", false))).toEqual([]);
     });
@@ -505,7 +505,7 @@ describe("observed co-reach (#739, session 53)", () => {
             parts: withReadFooter({ ...MINIMAL_PARTS }, "document.xml"),
             path: "word/document.xml",
             by: "the main document's footer relationship",
-            citation: "session 53",
+            citation: "sessions 53 and 57",
         },
         {
             label: "a read footer targeting the main document typed with the styles type",
@@ -522,7 +522,7 @@ describe("observed co-reach (#739, session 53)", () => {
             ),
             path: "word/numbering.xml",
             by: "the main document's footer relationship",
-            citation: "session 53",
+            citation: "sessions 53 and 57",
         },
         {
             label: "a read footer targeting the related numbering part typed with the settings type",
@@ -536,7 +536,7 @@ describe("observed co-reach (#739, session 53)", () => {
             parts: withReadFooter({ ...MINIMAL_PARTS }, "styles.xml"),
             path: "word/styles.xml",
             by: "the main document's footer relationship",
-            citation: "session 53",
+            citation: "sessions 53 and 57",
         },
         {
             label: "a read footer targeting the styles part typed with the settings type",
@@ -864,4 +864,128 @@ describe("per-pair recovery citations (#779)", () => {
         expect(found[0]?.message).not.toContain("Word 16.115");
         expect(isWordBlockingIssue(found[0]!)).toBe(true);
     });
+});
+
+// Session 57 (2026-10-26, chunks s57c–s57e; Word 16.115, two runs, all
+// readings agree) asked Word about the header/footer reaches with no eager
+// reach: every row gets the recovery offer. The false negatives — a footer
+// the body references typed with the settings type, a header the body
+// references typed with the main document or styles type, and the
+// exact-typed styles part a read header relationship also targets (the
+// s57e calibration) — join the footer rows session 53 already showed; a
+// header typed with a type no session showed stays valid.
+describe("read header/footer co-reach (#778, session 57)", () => {
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    /** `word/styles.xml`, exact styles type, also the target of a header relationship the body references (s57e). */
+    const stylesWithReadHeader = (): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(`xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`).replace(
+            "<w:sectPr>",
+            `<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>`,
+        ),
+        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdH" Type="${R}/header" Target="styles.xml"/></Relationships>`,
+        ),
+    });
+    /** A reached glossary's own styles part that a footer relationship the main body references also targets (s57d). */
+    const glossaryStylesWithReadFooter = (): Record<string, string> => {
+        const parts = glossaryStylesParts(true);
+        return {
+            ...parts,
+            "word/document.xml": parts["word/document.xml"]!.replace(`xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`).replace(
+                "<w:sectPr>",
+                `<w:sectPr><w:footerReference w:type="default" r:id="rIdF"/>`,
+            ),
+            "word/_rels/document.xml.rels": parts["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdF" Type="${R}/footer" Target="glossary/styles.xml"/></Relationships>`,
+            ),
+        };
+    };
+    const FALSE_NEGATIVES = [
+        {
+            label: "footer1-referenced-typed-settings (s57c)",
+            parts: storyContentTypeParts("footer", storyContentType("settings")),
+            path: "word/footer9.xml",
+            by: "the main document's footer relationship",
+        },
+        {
+            label: "header1-referenced-typed-main (s57c)",
+            parts: storyContentTypeParts("header", storyContentType("document.main")),
+            path: "word/header9.xml",
+            by: "the main document's header relationship",
+        },
+        {
+            label: "header1-referenced-typed-styles (s57d)",
+            parts: storyContentTypeParts("header", storyContentType("styles")),
+            path: "word/header9.xml",
+            by: "the main document's header relationship",
+        },
+        {
+            label: "styles-exact-read-header-calibration (s57e)",
+            parts: stylesWithReadHeader(),
+            path: "word/styles.xml",
+            by: "the main document's header relationship",
+        },
+    ] as const;
+
+    it.each(FALSE_NEGATIVES)(
+        "rejects $label under word-valid citing session 57",
+        async ({ parts, path: expectedPath, by }) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "coreach.docx");
+                writeFileSync(file, await buildDocx(parts));
+                const result = await validate(file);
+                expect(result.valid, "the full word-valid run fails").toBe(false);
+                const found = result.issues.filter((issue) => issue.code === ID && issue.severity === "error");
+                expect(found).toHaveLength(1);
+                expect(found[0]).toMatchObject({ path: expectedPath });
+                expect(found[0]?.message).toContain(by);
+                expect(found[0]?.message).toContain("Word 16.115 offers to recover the package (session 57).");
+                expect(isWordBlockingIssue(found[0]!)).toBe(true);
+                const partial = await validate(file, { checks: [ID] });
+                expect(partial.valid).toBe(false);
+            });
+        },
+        60_000,
+    );
+
+    it.each([
+        {
+            label: "footer1-referenced-typed-styles (s57c)",
+            parts: storyContentTypeParts("footer", storyContentType("styles")),
+            path: "word/footer9.xml",
+        },
+        {
+            label: "footer1-referenced-typed-main (s57c)",
+            parts: storyContentTypeParts("footer", storyContentType("document.main")),
+            path: "word/footer9.xml",
+        },
+        {
+            label: "footer1-referenced-typed-numbering (s57c)",
+            parts: storyContentTypeParts("footer", storyContentType("numbering")),
+            path: "word/footer9.xml",
+        },
+        {
+            label: "glossary-styles-main-footer-coreach (s57d)",
+            parts: glossaryStylesWithReadFooter(),
+            path: "word/glossary/styles.xml",
+        },
+    ] as const)("keeps $label rejected, citing sessions 53 and 57", async ({ parts, path }) => {
+        const found = await diagnose(parts);
+        expect(found).toHaveLength(1);
+        expect(found[0]).toMatchObject({ code: ID, severity: "error", path });
+        expect(found[0]?.message).toContain("Word 16.115 offers to recover the package (sessions 53 and 57).");
+        expect(isWordBlockingIssue(found[0]!)).toBe(true);
+    });
+
+    it("keeps a header typed with a type no session showed valid (header typed numbering)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "unshown.docx");
+            writeFileSync(file, await buildDocx(storyContentTypeParts("header", storyContentType("numbering"))));
+            expect((await validate(file)).valid).toBe(true);
+        });
+    }, 60_000);
 });

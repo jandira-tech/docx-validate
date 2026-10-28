@@ -26,13 +26,20 @@
  * (s53a/s53b) also observed the co-reach: an eagerly read part — the main
  * document, a related numbering part or the styles part — that a read
  * footer or a second eager relationship of another kind also reaches,
- * whatever the Override says. Word-valid reports those observed shapes —
- * the swaps Word reads through the swapping relationship, the eagerly
- * parsed reaches, which need no usage lookup, and the co-reach of a read
- * footer typed with the main document, numbering or styles type;
- * fontTable, webSettings, theme, the stories and every glossary reach were
- * not shown a mapped type and stay silent until probed. Strict judges
- * every mapped relationship.
+ * whatever the Override says, and session 57 (s57c–s57e) the header and
+ * footer parts themselves: a footer the body references typed with the
+ * main document, numbering, styles or settings type and a header the body
+ * references typed with the main document or styles type, including the
+ * exact-typed styles part a read header relationship targets and a
+ * reached glossary's styles part a main footer relationship also reaches,
+ * while typings no session showed on a header or footer keep their
+ * verdict. Word-valid reports those observed shapes — the swaps Word
+ * reads through the swapping relationship, the eagerly parsed reaches,
+ * which need no usage lookup, and the read header/footer co-reach of the
+ * observed pairs; fontTable, webSettings, theme, the comments, footnotes
+ * and endnotes reaches and every glossary reach were not shown a mapped
+ * type, and a header or footer typed with a type no session showed stays
+ * silent until probed. Strict judges every mapped relationship.
  * Clause 11.3 of ECMA-376 Part 1 (4th edition) assigns the WML types; theme
  * is DrawingML and its assignment is in clause 14.2.7 instead.
  */
@@ -48,7 +55,7 @@ import {
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { wordReadTypedTargets } from "../../../lib/word-read-parts";
-import { MAIN_DOCUMENT_CONTENT_TYPES, REPORTING_SEGMENT_ORDER } from "./word-part-content-type-generic";
+import { REPORTING_SEGMENT_ORDER } from "./word-part-content-type-generic";
 import {
     expectedContentTypesFor,
     LAZY_OBSERVED_SEGMENTS,
@@ -131,16 +138,27 @@ const OBSERVED_REACHES: ReadonlySet<string> = new Set(["main\nofficeDocument", "
 const segmentForMediaType = (mediaType: string): string | undefined =>
     [...SPEC_SEGMENTS].find((segment) => expectedContentTypesFor(segment).some((type) => asciiLowercase(type) === mediaType));
 /**
- * Session 53's co-reach (s53a): a footer relationship the body references
- * whose target is typed with the main document, numbering or styles type —
- * Word refused every co-reach shape whatever the Override says, so a
- * matching reach on the same part exempts none of it. An exact spelling
- * only; an inexact one is the inexact check's finding.
+ * The read header/footer co-reach, keyed by the segment and the declared
+ * mapped type's own segment (#739, #778). Session 53 (s53a) showed the
+ * footer pairs on the main document, numbering and styles types — the
+ * calibrations on eagerly read parts — and session 57 (s57c–s57e) each
+ * pair's own shape: a footer part typed styles, main document, numbering
+ * or settings (s57c), a header part typed main document (s57c) or
+ * styles (s57d), a reached glossary's styles part a main footer
+ * relationship also reaches (s57d), and the exact-typed styles part a
+ * read header relationship targets (s57e). Word refused every shape
+ * whatever the Override says, so a matching reach on the same part exempts
+ * none of it, and typings no session showed keep their verdict. An exact
+ * spelling only; an inexact one is the inexact check's finding.
  */
-const FOOTER_COREACH_TYPES: ReadonlySet<string> = new Set(
-    [MAIN_DOCUMENT_CONTENT_TYPES, expectedContentTypesFor("numbering"), expectedContentTypesFor("styles")].flat().map(asciiLowercase),
-);
-const FOOTER_COREACH_SESSION = "session 53";
+const HEADER_FOOTER_COREACH_SESSIONS: ReadonlyMap<string, string> = new Map([
+    ["footer\nofficeDocument", "sessions 53 and 57"],
+    ["footer\nnumbering", "sessions 53 and 57"],
+    ["footer\nstyles", "sessions 53 and 57"],
+    ["footer\nsettings", "session 57"],
+    ["header\nofficeDocument", "session 57"],
+    ["header\nstyles", "session 57"],
+]);
 export const MAPPED_MEDIA_TYPES: ReadonlySet<string> = new Set([...SPEC_SEGMENTS].flatMap(expectedContentTypesFor).map(asciiLowercase));
 
 export const wordPartContentTypeMismatchFindings = async (
@@ -183,11 +201,11 @@ export const wordPartContentTypeMismatchFindings = async (
                 (segment === "header" || segment === "footer") &&
                 mediaType === asciiLowercase(expectedContentTypesFor(segment === "header" ? "footer" : "header")[0]!),
         );
-        // Read story XML for a possible swap, the session 53 footer
+        // Read story XML for a possible swap, the read header/footer
         // co-reach, or competing relationship types. Unrelated parts need no
         // usage lookup; an eager read also interferes with staged-directory
         // write-back failures after repair (#412).
-        if (swaps.length > 0 || entries.length > 1 || entries.some(({ segment }) => segment === "footer")) {
+        if (swaps.length > 0 || entries.length > 1 || entries.some(({ segment }) => segment === "header" || segment === "footer")) {
             readKeys ??= new Set(
                 (await wordReadTypedTargets(ctx, profile)).map(
                     (target) => `${target.via ?? "main"}\n${canonicalPartName(target.part)}\n${target.segment}`,
@@ -206,20 +224,22 @@ export const wordPartContentTypeMismatchFindings = async (
         // reach is judged over all of the part's entries, not over `judged`
         // (#739).
         const storyExempt = readEntries.some(({ segment }) => matches(segment));
-        // Session 53's footer co-reach: a read footer typed with the main
-        // document, numbering or styles type, which no matching reach exempts.
-        const isFooterCoreach = (entry: (typeof entries)[number]): boolean =>
-            entry.segment === "footer" &&
+        // The read header/footer co-reach (#739, #778): a header or footer
+        // relationship the body references whose part is typed with one of
+        // the observed pairs' mapped types, which no matching reach exempts.
+        const isHeaderFooterCoreach = (entry: (typeof entries)[number]): boolean =>
+            (entry.segment === "footer" || entry.segment === "header") &&
             entry.via !== "glossary" &&
-            FOOTER_COREACH_TYPES.has(mediaType) &&
             asciiLowercase(declared) === mediaType &&
-            readKeys?.has(`${entry.via ?? "main"}\n${canonical}\nfooter`) === true;
+            readKeys?.has(`${entry.via ?? "main"}\n${canonical}\n${entry.segment}`) === true &&
+            HEADER_FOOTER_COREACH_SESSIONS.has(`${entry.segment}\n${segmentForMediaType(mediaType)}`);
         // The observed set covers the read header/footer swaps, the eagerly
         // parsed reaches — the main document and the main document's own
         // styles, settings and numbering relationships, which need no usage
-        // lookup — and session 53's footer co-reach. Header and footer keep
-        // the swap shape `swaps` pins, read through the swapping segment, and
-        // the citation names the session that showed the finding's pair.
+        // lookup — and the read header/footer co-reach. Header and footer
+        // keep the swap shape `swaps` pins, read through the swapping
+        // segment, and the citation names the session that showed the
+        // finding's pair.
         const observed =
             (storyExempt
                 ? undefined
@@ -235,7 +255,7 @@ export const wordPartContentTypeMismatchFindings = async (
                     !matches(segment) &&
                     OBSERVED_REACHES.has(`${via ?? "main"}\n${segment}`),
             ) ??
-            entries.find(isFooterCoreach);
+            entries.find(isHeaderFooterCoreach);
         const chosen = observed ?? (scope === "spec" && !judged.some(({ segment }) => matches(segment)) ? judged[0] : undefined);
         if (chosen === undefined) continue;
         const { segment, via } = chosen;
@@ -255,8 +275,8 @@ export const wordPartContentTypeMismatchFindings = async (
         const session =
             observed === undefined
                 ? undefined
-                : isFooterCoreach(observed)
-                  ? FOOTER_COREACH_SESSION
+                : isHeaderFooterCoreach(observed)
+                  ? HEADER_FOOTER_COREACH_SESSIONS.get(`${observed.segment}\n${segmentForMediaType(mediaType)}`)
                   : swaps.includes(observed)
                     ? OBSERVED_SESSIONS.get(`${observed.via ?? "main"}\n${observed.segment}`)
                     : OBSERVED_SESSIONS.get(`${observed.via ?? "main"}\n${observed.segment}\n${segmentForMediaType(mediaType)}`);

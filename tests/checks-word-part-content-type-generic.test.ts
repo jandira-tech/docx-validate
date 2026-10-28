@@ -1897,6 +1897,15 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
                 writeFileSync(file, await buildDocx(readFooter));
                 const strict = await validate(file, { profile: "strict" });
                 expect(inexactFindings(strict.issues)).toEqual([wanted]);
+                // Strict's spec scope also keeps the footer reach's mismatch,
+                // the finding it carried before #760, beside the inexact one.
+                expect(strict.issues.filter((issue) => issue.code === "word-part-content-type-mismatch")).toEqual([
+                    expect.objectContaining({
+                        severity: "error",
+                        path: "word/styles.xml",
+                        message: expect.stringContaining("named by the main document's footer relationship"),
+                    }),
+                ]);
                 expect(strict.valid).toBe(false);
                 const calibrationFile = path.join(dir, "styles-charset-calibration.docx");
                 writeFileSync(calibrationFile, await buildDocx(calibration));
