@@ -830,7 +830,10 @@ expect: not its own Word content type, not a generic XML type
 (`word-part-content-type-generic`'s class), and not another mapped Word
 part's type (`word-part-content-type-mismatch`'s class), so the four part
 content-type checks stay disjoint
-([#707](https://github.com/jandira-tech/docx-validate/issues/707)). Session
+([#707](https://github.com/jandira-tech/docx-validate/issues/707),
+[#719](https://github.com/jandira-tech/docx-validate/issues/719): an
+`invalid-*` declared value is `word-content-type-invalid`'s class alone).
+Session
 46 (chunk s46e in `docs/plans/evidence/word-probes-2026-10-24.md`) observed
 Word 16.115 offer recovery for the main document's `styles` relationship
 naming `word/styles.bin` typed `application/octet-stream` by a Default —
@@ -848,7 +851,8 @@ and an empty one with `word-content-type-invalid` on the main document and
 on the styles, settings and fontTable parts the main document relates
 ([#720](https://github.com/jandira-tech/docx-validate/issues/720); sessions
 22, 49 and 50); every other segment's empty Override was not shown to Word
-and stays unreported; lenient warns. One
+and stays unreported. An `invalid-*` declared value stays with
+`word-content-type-invalid` alone; lenient warns. One
 finding is reported per part, and when several relationship types reach it
 the observed reach names the finding whenever it exists. Full, quick and
 named runs agree.

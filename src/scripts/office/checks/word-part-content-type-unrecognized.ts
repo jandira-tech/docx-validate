@@ -24,7 +24,9 @@
  * a generic XML type is `word-part-content-type-generic`'s finding and
  * another mapped Word part's type is `word-part-content-type-mismatch`'s, so
  * the checks stay disjoint (#540, #600). An empty or undeclared type stays
- * with `word-content-type-invalid` and `ct-undeclared-part`.
+ * with `word-content-type-invalid` and `ct-undeclared-part`, and so does an
+ * `invalid-*` declared value — that check owns the class, reading the same
+ * raw spelling on the declaration itself (#719).
  *
  * Every mapped reach is judged — the same targets the generic, inexact and
  * mismatch checks walk — so an unobserved segment warns under word-valid
@@ -136,6 +138,12 @@ export const wordPartContentTypeUnrecognizedFindings = async (
         // `word-content-type-invalid`'s class; only the unrecognised remainder
         // lands here.
         if (mediaType === "" || GENERIC_CONTENT_TYPES.has(mediaType) || MAPPED_MEDIA_TYPES.has(mediaType)) {
+            continue;
+        }
+        // An `invalid-*` declared value is `word-content-type-invalid`'s class
+        // too (#719): that check reports the declaration itself — the same
+        // raw spelling, case-sensitively — so one defect draws one finding.
+        if (declared.startsWith("invalid-")) {
             continue;
         }
         const observed = entries.find(isObserved);
