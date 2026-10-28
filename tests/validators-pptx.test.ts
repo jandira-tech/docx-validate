@@ -258,6 +258,32 @@ describe("PPTXSchemaValidator.validateNotesSlideReferences", () => {
             expect(sharedIssue!.message).toContain("slide2");
         });
     });
+
+    // #991: a target whose last segment is `.` or `..`, or that ends in `/`,
+    // names a folder, which names no part (#962, #975), so it shares no notes
+    // slide with the plain target the stored part answers.
+    it.each(["../notesSlides/notesSlide1.xml/.", "../notesSlides/notesSlide1.xml/x/..", "../notesSlides/notesSlide1.xml/"])(
+        "does not count the folder target %s as a reference to the notes slide its path spells",
+        async (target) => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"),
+                    relsXml(
+                        '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesSlide" Target="../notesSlides/notesSlide1.xml"/>',
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "ppt", "slides", "_rels", "slide2.xml.rels"),
+                    relsXml(
+                        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesSlide" Target="${target}"/>`,
+                    ),
+                );
+                const result = await makeValidator(dir).validateNotesSlideReferences();
+                expect(result.issues).toEqual([]);
+                expect(result.valid).toBe(true);
+            });
+        },
+    );
 });
 
 describe("PPTXSchemaValidator.validate", () => {

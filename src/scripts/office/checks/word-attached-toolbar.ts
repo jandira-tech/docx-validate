@@ -41,7 +41,13 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { equivalentPartLookup, isRelationshipsFolderName, isRelationshipsPartName } from "../../../lib/content-types";
+import {
+    equivalentPartLookup,
+    isRelationshipsFolderName,
+    isRelationshipsPartName,
+    relationshipTargetFolder,
+    relationshipTargetPartName,
+} from "../../../lib/content-types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import path from "node:path";
@@ -146,18 +152,20 @@ const toolbarReferences = async function* (
 };
 
 const resolveToolbarTarget = (relsFile: string, target: string): string | null => {
-    // `\` reads as `/`, as it does everywhere in the package view (#350). A
-    // query, like a fragment, is not part of the path (#359). The sidecar's
-    // own `_rels` folder segment compares canonically, as the sidecar lookup
+    // The target reads as the read model and both file-reference walks read
+    // it (#991): `\` reads as `/`, as it does everywhere in the package view
+    // (#350); a query, like a fragment, is not part of the path (#359); a
+    // climb past the package root stops at the root (#984, #986); and a
+    // target naming a folder names no part (#962, #975). The sidecar's own
+    // `_rels` folder segment compares canonically, as the sidecar lookup
     // does (#772).
-    const [name] = target.replace(/\\/g, "/").split(/[?#]/, 1);
-    if (!name) {
-        return null;
-    }
     const relsDir = path.posix.dirname(relsFile);
     const baseDir = isRelationshipsFolderName(path.posix.basename(relsDir)) ? path.posix.dirname(relsDir) : relsDir;
-    const resolved = path.posix.normalize(name.startsWith("/") ? name.replace(/^\/+/, "") : path.posix.join(baseDir, name));
-    return resolved === ".." || resolved.startsWith("../") ? null : resolved;
+    const resolved = relationshipTargetPartName(baseDir, target);
+    if (resolved === undefined || relationshipTargetFolder(baseDir, target) !== undefined) {
+        return null;
+    }
+    return resolved.replace(/^\//, "");
 };
 
 export const WORD_ATTACHED_TOOLBAR_RELATIONSHIP = "word-attached-toolbar-relationship";
