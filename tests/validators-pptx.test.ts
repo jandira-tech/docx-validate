@@ -722,6 +722,23 @@ describe("the slide a notes-shared message names (#1038)", () => {
         });
     });
 
+    // Two equivalent spellings of one sidecar give one stem twice, so the
+    // message names their relationships parts instead (#1041).
+    it("names the relationships parts when two equivalent spellings give one stem (#1041)", async () => {
+        await withTempDir(async (dir) => {
+            await writeFile(path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"), notesSidecar());
+            await writeFile(path.join(dir, "ppt", "slides", "%5Frels", "slide1.xml.rels"), notesSidecar());
+            expect((await makeValidator(dir).validateNotesSlideReferences()).issues.map((issue) => [issue.code, issue.message])).toEqual([
+                [
+                    "notes-shared",
+                    "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: ppt/slides/%5Frels/slide1.xml.rels, ppt/slides/_rels/slide1.xml.rels",
+                ],
+                ["notes-shared-detail", "    - ppt/slides/%5Frels/slide1.xml.rels"],
+                ["notes-shared-detail", "    - ppt/slides/_rels/slide1.xml.rels"],
+            ]);
+        });
+    });
+
     // On Windows `\` is a path separator, so the file would land in the plain
     // folder and the row would test nothing (#1042).
     it.skipIf(process.platform === "win32")(

@@ -370,7 +370,12 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
 
         for (const { partName, references } of notesReferences.values()) {
             if (references.length <= 1) continue;
-            const slideNames = references.map((r) => r.slideName).join(", ");
+            // Two equivalent spellings of one sidecar give one stem twice:
+            // name each reference by its stored relationships part then, so
+            // the message never names one slide twice (#1041).
+            const stems = references.map((r) => r.slideName);
+            const names = new Set(stems).size === stems.length ? stems : references.map((r) => this.relPath(r.relsFile));
+            const slideNames = names.join(", ");
             issues.push({
                 severity: "error",
                 message: `Notes slide '${partName}' is referenced by multiple slides: ${slideNames}`,
