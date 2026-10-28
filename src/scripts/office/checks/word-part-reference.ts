@@ -119,7 +119,7 @@ import { canonicalPartName } from "../../../lib/content-types";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { sidecarOf, wordReadTypedTargets } from "../../../lib/word-read-parts";
-import { registerStoryReferenceIdentity } from "../story-reference-identity";
+import { otherRelationshipIds, registerStoryReferenceIdentity } from "../story-reference-identity";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
 
 const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
@@ -277,17 +277,13 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
                             code: WORD_PART_REFERENCE_RELATIONSHIP,
                         };
                         // #1074: the legacy walk's copy for either id pairs.
-                        const otherRids = [
-                            elem.getAttributeNS(OFFICE_RELATIONSHIPS_NAMESPACE, "id"),
-                            elem.getAttributeNS(OFFICE_RELATIONSHIPS_STRICT_NAMESPACE, "id"),
-                        ].filter((rid): rid is string => !!rid && rid !== id.rid);
                         registerStoryReferenceIdentity(issue, {
                             part: xmlFile,
                             namespaceURI: ns,
                             localName: "chart",
                             rid: id.rid,
                             ridNamespaceURI: id.namespaceURI,
-                            otherRids,
+                            otherRids: otherRelationshipIds(elem, relationshipNamespaces, id.rid),
                         });
                         issues.push(issue);
                         continue;
@@ -398,12 +394,14 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
                     path: xmlFile,
                     code: WORD_PART_REFERENCE_RELATIONSHIP,
                 };
+                // #1079: the legacy walk's copy for either id pairs.
                 registerStoryReferenceIdentity(issue, {
                     part: xmlFile,
                     namespaceURI: OFFICE_NAMESPACE,
                     localName: "OLEObject",
                     rid: id.rid,
                     ridNamespaceURI: id.namespaceURI,
+                    otherRids: otherRelationshipIds(elem, relationshipNamespaces, id.rid),
                 });
                 issues.push(issue);
             }

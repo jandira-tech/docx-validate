@@ -317,4 +317,41 @@ describe("word-attached-toolbar-relationship (#716; session 48)", { timeout: 600
             expect(strict.issues.some((issue) => issue.severity === "error" && issue.code === CODE)).toBe(true);
         });
     });
+
+    // #1079: ids in both relationships namespaces, neither naming a
+    // relationship. The legacy walk copies each outside lenient (#1065), and
+    // the rule's one finding drops both, as #1074's does for the chart.
+    it("reports a dual-namespace toolbarData naming no relationship once (#1079)", async () => {
+        await withTempDir(async (dir) => {
+            const zip = await JSZip.loadAsync(await fs.readFile(CLEAN));
+            const part = "word/customizations.xml";
+            const text = await zip.file(part)!.async("string");
+            const reference = '<wne:toolbarData r:id="rId1"/>';
+            if (text.split(reference).length !== 2) throw new Error(`expected exactly one ${reference} in ${part}`);
+            zip.file(
+                part,
+                text
+                    .replace("<wne:tcg ", '<wne:tcg xmlns:rs="http://purl.oclc.org/ooxml/officeDocument/relationships" ')
+                    .replace(reference, '<wne:toolbarData r:id="rId5" rs:id="rId6"/>'),
+            );
+            const { wordValid, strict } = await run(
+                dir,
+                "toolbar-dual-namespace",
+                await zip.generateAsync({ type: "uint8array", compression: "DEFLATE" }),
+            );
+            for (const [profile, result] of [
+                ["word-valid", wordValid],
+                ["strict", strict],
+            ] as const) {
+                expect(
+                    result.issues.filter((issue) => issue.code === CODE),
+                    profile,
+                ).toHaveLength(1);
+                expect(
+                    result.issues.filter((issue) => issue.code === "rels-id-missing"),
+                    profile,
+                ).toEqual([]);
+            }
+        });
+    });
 });

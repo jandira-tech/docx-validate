@@ -1071,6 +1071,27 @@ describe(`${CODE} (selectors and the rels-id-missing hand-off)`, { timeout: 240_
     });
 
     /**
+     * #1079: the `o:OLEObject` twin of #1074's rows. The rule judges the
+     * first non-empty id; the legacy copy of the other id pairs with its
+     * finding too. `rId9` is the package's chart relationship, a mistyped
+     * id for an OLE object.
+     */
+    it.each([
+        ["word-valid", 'r:id="rId5" rs:id="rId6"'],
+        ["strict", 'r:id="rId5" rs:id="rId6"'],
+        ["word-valid", 'r:id="rId9" rs:id="rId6"'],
+        ["strict", 'r:id="rId9" rs:id="rId6"'],
+    ] as const)("reports the OLE object once under %s for %s (#1079)", async (profile, ids) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "dual-namespace-ole-object.docx");
+            writeFileSync(file, await buildDocx(s55ChartIdsPackage(s55OleObject(ids))));
+            const result = await validate(file, { profile });
+            expect(result.issues.filter((issue) => issue.code === CODE)).toHaveLength(1);
+            expect(result.issues.filter((issue) => issue.code === "rels-id-missing" || issue.code === "rels-id-mismatch")).toEqual([]);
+        });
+    });
+
+    /**
      * #727: the element sits in both branches of one `mc:AlternateContent`
      * whose Choice Word does not select. The legacy walk reads the raw
      * part, so it sees two elements and makes two `rels-id-missing` copies;

@@ -3513,8 +3513,9 @@ export function withoutRepeatedCompatibilityFindings(schema: ValidationResult, r
  * the issue object when they created it (#616): part path (normalized on
  * registration, as `withoutRepeatedCompatibilityFindings` compares paths),
  * element namespace URI, local name and the raw `r:id` all match; a
- * session 55 dual-namespace `c:chart` finding also lists its other id
- * (`otherRids`), so the legacy copy of either id pairs (#1074). The
+ * finding also lists the element's other ids (`otherRids`), so the
+ * legacy copy of an id in either relationships namespace pairs (#1074,
+ * #1079). The
  * namespace URI the `r:id` was read in is deliberately not part of the
  * pairing (#727): the Word rule reads the markup-compatibility view and the
  * legacy walk the raw part, so an element with an `mc:Choice` and an

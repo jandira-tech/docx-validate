@@ -71,7 +71,7 @@ import path from "node:path";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
-import { registerStoryReferenceIdentity } from "../story-reference-identity";
+import { otherRelationshipIds, registerStoryReferenceIdentity } from "../story-reference-identity";
 
 const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
@@ -209,7 +209,14 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                             // #619: the full run's hand-off pairs this finding
                             // with rels-id-missing's copy through the
                             // registered element identity, never the prose.
-                            registerStoryReferenceIdentity(issue, { part: root.part, namespaceURI: ns, localName, rid, ridNamespaceURI });
+                            registerStoryReferenceIdentity(issue, {
+                                part: root.part,
+                                namespaceURI: ns,
+                                localName,
+                                rid,
+                                ridNamespaceURI,
+                                otherRids: otherRelationshipIds(elem, relationshipNamespaces, rid),
+                            });
                             issues.push(issue);
                             continue;
                         }
@@ -228,7 +235,14 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                         // #616: the full run's hand-off pairs this finding with
                         // rels-id-mismatch's copy through the registered element
                         // identity, never the message prose.
-                        registerStoryReferenceIdentity(issue, { part: root.part, namespaceURI: ns, localName, rid, ridNamespaceURI });
+                        registerStoryReferenceIdentity(issue, {
+                            part: root.part,
+                            namespaceURI: ns,
+                            localName,
+                            rid,
+                            ridNamespaceURI,
+                            otherRids: otherRelationshipIds(elem, relationshipNamespaces, rid),
+                        });
                         issues.push(issue);
                     }
                 }

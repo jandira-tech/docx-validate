@@ -51,7 +51,7 @@ import {
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import path from "node:path";
-import { registerStoryReferenceIdentity } from "../story-reference-identity";
+import { otherRelationshipIds, registerStoryReferenceIdentity } from "../story-reference-identity";
 import { wordExactTypeTargets } from "../../../lib/word-read-parts";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
 import { isXmlPartName } from "./xml";
@@ -73,6 +73,8 @@ type ToolbarReference = {
     readonly rid: string;
     /** The relationships namespace the `r:id` was read in; `""` for a literal `r:id`. */
     readonly ridNamespaceURI: string;
+    /** The element's other non-empty ids in the relationships namespaces (#1079). */
+    readonly otherRids: readonly string[];
     /** The Relationship element `rid` names, or `undefined` when the sidecar holds none. */
     readonly relationship: Element | undefined;
 };
@@ -145,6 +147,8 @@ const toolbarReferences = async function* (
                 elem,
                 rid,
                 ridNamespaceURI,
+                // #1079: the legacy walk's copy for either id pairs.
+                otherRids: otherRelationshipIds(elem, relationshipNamespaces, rid),
                 relationship: relationships.find((rel) => rel.getAttribute("Id") === rid),
             };
         }
@@ -179,7 +183,7 @@ export const wordAttachedToolbarRelationshipCheck: CheckDefinition = {
     run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
         const lookup = equivalentPartLookup(ctx.partNames);
-        for await (const { xmlFile, elem, rid, ridNamespaceURI, relationship } of toolbarReferences(ctx, lookup, profile)) {
+        for await (const { xmlFile, elem, rid, ridNamespaceURI, otherRids, relationship } of toolbarReferences(ctx, lookup, profile)) {
             if (relationship !== undefined && (relationship.getAttribute("Type") ?? "") === ATTACHED_TOOLBARS_RELATIONSHIP_TYPE) {
                 continue;
             }
@@ -205,6 +209,7 @@ export const wordAttachedToolbarRelationshipCheck: CheckDefinition = {
                 localName: "toolbarData",
                 rid,
                 ridNamespaceURI,
+                otherRids,
             });
             issues.push(issue);
         }

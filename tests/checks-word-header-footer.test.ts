@@ -1197,6 +1197,50 @@ describe("#619: a story reference whose r:id names no Relationship (Word 16.115 
             });
         },
     );
+
+    // #1079: a reference carrying ids in both relationships namespaces gets a
+    // legacy copy for each outside lenient (#1065); the rule's one finding
+    // drops both, as #1074's does for the chart. When the rule accepts the
+    // first id it reports nothing, so the second id's copy stays.
+    it.each([
+        ["word-valid", "headerReference"],
+        ["strict", "headerReference"],
+        ["word-valid", "footerReference"],
+        ["strict", "footerReference"],
+    ] as const)("a dangling dual-namespace reference is one report under %s for %s (#1079)", async (profile, reference) => {
+        await withTempDir(async (dir) => {
+            const parts = danglingReferenceParts(reference);
+            parts["word/document.xml"] = parts["word/document.xml"]!.replace(
+                "<w:document ",
+                `<w:document xmlns:rs="${STRICT_REL}" `,
+            ).replace(' r:id="rId9"', ' r:id="rId9" rs:id="rId8"');
+            const file = path.join(dir, "dual-namespace-dangling.docx");
+            writeFileSync(file, await buildDocx(parts));
+            const result = await validate(file, { profile });
+            expect(result.issues.filter((issue) => issue.code === CODE)).toHaveLength(1);
+            expect(result.issues.filter((issue) => LEGACY_REFERENCE_CODES.has(issue.code ?? ""))).toEqual([]);
+        });
+    });
+
+    it.each(["word-valid", "strict"] as const)(
+        "keeps the second id's rels-id-missing when the rule accepts the first under %s (#1079)",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                const parts = cleanFooterParts();
+                parts["word/document.xml"] = parts["word/document.xml"]!.replace(
+                    "<w:document ",
+                    `<w:document xmlns:rs="${STRICT_REL}" `,
+                ).replace(' r:id="rIdX"', ' r:id="rIdX" rs:id="rId8"');
+                const file = path.join(dir, "dual-namespace-second-dangling.docx");
+                writeFileSync(file, await buildDocx(parts));
+                const result = await validate(file, { profile });
+                expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+                const missing = result.issues.filter((issue) => issue.code === "rels-id-missing");
+                expect(missing).toHaveLength(1);
+                expect(missing[0]?.message).toContain("'rId8'");
+            });
+        },
+    );
 });
 
 /** Session 33 (#623): only the relationships-namespace id attribute changes. */

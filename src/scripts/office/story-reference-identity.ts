@@ -58,12 +58,21 @@ export interface StoryReferenceIdentity {
     /**
      * The element's other non-empty id values, when one finding stands for
      * ids in both relationships namespaces: session 55's dual-namespace
-     * `c:chart` (#756). Since #1065 the legacy walk makes a copy for each id
-     * outside lenient, and the hand-off drops the copy for any of them
-     * (#1074).
+     * `c:chart` (#756, #1074), and every element a Word rule judges by its
+     * first non-empty id (#1079). Since #1065 the legacy walk makes a copy
+     * for each id outside lenient, and the hand-off drops the copy for any
+     * of them.
      */
     readonly otherRids?: readonly string[];
 }
+
+/**
+ * The non-empty `id` values `elem` carries in `namespaces` other than the
+ * judged `rid`: the `otherRids` of a finding that stands for the whole
+ * element (#1074, #1079).
+ */
+export const otherRelationshipIds = (elem: Element, namespaces: readonly string[], rid: string): string[] =>
+    namespaces.map((ns) => elem.getAttributeNS(ns, "id")).filter((value): value is string => !!value && value !== rid);
 
 /** Identity by issue object, so a copied issue is an unregistered issue (#616). */
 const identities = new WeakMap<ValidationIssue, StoryReferenceIdentity>();
