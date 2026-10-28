@@ -2910,9 +2910,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * `ffffffff` in one part and `FFFFFFFF` in the other name one id and get
      * one new value (#904).
      *
-     * `numbering.xml` is unchanged by the remap: its decimal durableIds
+     * The decimal durableIds of `numbering.xml` are outside the remap: they
      * are self-contained (no part references them), so each keeps its own
-     * per-element renumbering, independent of the preflight below.
+     * per-element renumbering, independent of the preflight below. A hex
+     * durableId stored in `numbering.xml` is renamed like any other, which
+     * makes it a part carrying a hex rename (#942).
      * Every part the hex rewrite would write must be decodable and writable;
      * otherwise only the decimal renumbering runs. A failed or refused write
      * of a part carrying a hex rename stops the remaining hex renames and
