@@ -66,6 +66,7 @@ import {
     wordTypedRelationshipTargets,
     wordUnobservedRelationshipTargets,
     glossaryTypedRelationshipTargets,
+    wordMainReachedParts,
 } from "../../../lib/word-read-parts";
 import {
     hasWordRelationshipReference,
@@ -3080,8 +3081,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * own styles part for (#698): a reached glossary document — a
      * `glossaryDocument` target of the main document's relationships — and
      * every part only the glossary's own relationships reach
-     * (`glossaryTypedRelationshipTargets`, `via: "glossary"`), never a part the
-     * main document also reaches, which stays the main document's. Each maps to
+     * (`glossaryTypedRelationshipTargets`, `via: "glossary"`), never the main
+     * document itself, wherever it is stored, nor a part the main document
+     * also reaches, which stays the main document's (`wordMainReachedParts`:
+     * every relationship's target, whatever its type, so a part the main
+     * document reaches through a non-story type cannot be claimed through a
+     * story one, #742). Each maps to
      * the styles part that root relates; `undefined` when the root relates none
      * — or relates one that is not XML — so the part is not judged. An empty
      * map — no reached glossary, or a package view that cannot be read — keeps
@@ -3107,11 +3112,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 rootByPart.set(canonicalPartName(root.part), canonicalPartName(root.part));
                 storedByPart.set(canonicalPartName(root.part), root.part);
             }
-            const mainReached = new Set(
-                (await wordTypedRelationshipTargets(context, STORY_TEXT_SEGMENTS, this.profile)).map((target) =>
-                    canonicalPartName(target.part),
-                ),
-            );
+            // The main document is never a glossary's story part, wherever it
+            // is stored, and neither is any part the main document's own
+            // relationships reach, whatever their type (#742).
+            const mainReached = await wordMainReachedParts(context, this.profile);
             for (const target of await glossaryTypedRelationshipTargets(context, STORY_TEXT_SEGMENTS, this.profile)) {
                 const part = canonicalPartName(target.part);
                 if (target.root === undefined || rootByPart.has(part) || mainReached.has(part)) continue;
