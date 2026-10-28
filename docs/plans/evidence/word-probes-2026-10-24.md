@@ -23586,3 +23586,439 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
 `````
 
 </details>
+
+### Session 69: 05:01Z–05:01Z on 2026-10-27, validator columns at bc09dc1d
+
+The open question of [#896](https://github.com/jandira-tech/docx-validate/issues/896): whether a comments part that no relationship names defines the comment the body references. At this revision the comment checks fell back to `word/comments.xml` by name whenever no relationship of the main document named a comments part. Session 61 refused the notes twin. One chunk, with the minimal control twice. It ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 8 of 8 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd`).
+
+The driver opens files in name order, and the control names sort last, so both runs opened the two controls 7th and 8th, after every specimen, not one first and one last as in session 68. The two calibrations opened 2nd and 6th, on either side of the two refused rows (3rd and 5th), and opened clean in both runs, so Word opened packages clean before and after each refusal.
+
+- **(a), (b).** A body `w:commentReference` to comment 0, which only a `word/comments.xml` typed comments by its Override but named by no relationship defines, gets the recovery offer, both with no `word/_rels/document.xml.rels` and beside one relating only `styles.xml`. Word-valid at bc09dc1d accepts both: two false negatives, from the by-name fallback.
+- **(c) and the no-sidecar calibration.** The same package with a comments relationship naming the part opens clean, and so does the minimal package with no main-document relationships part and no comments.
+- **(d).** Row (b) with the range markers only, no `w:commentReference`, opens clean. Range markers naming no comment stay word-valid warnings (#784), so this row is consistent with Word reading no comments part.
+- **#895.** The no-relationships tree after layer 242's `addComment` for comment 0, which creates `word/_rels/document.xml.rels` and relates and types its four comment parts, opens clean with the body then marked.
+
+Word defines comments only from the part a `comments` relationship names, as session 61 showed for notes. Word-valid at bc09dc1d matches Word on 6 of 8 rows.
+
+| Run    | Observed             | Specimen                        | Shape                                                                                                                                                                 | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at bc09dc1d | strict at bc09dc1d                                                                      |
+| ------ | -------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ---------------------- | --------------------------------------------------------------------------------------- |
+| `s69a` | 05:01:21Z, 05:01:43Z | `s69a-control-minimal`          | control                                                                                                                                                               | `a48d5d56efc5f279` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                                                   |
+| `s69a` | 05:01:21Z, 05:01:43Z | `no-sidecar-calibration`        | calibration: the minimal package with no word/_rels/document.xml.rels (styles.xml and its Override removed too); no comments                                          | `a0022ea217743491` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                                                   |
+| `s69a` | 05:01:21Z, 05:01:43Z | `comments-unrelated-no-sidecar` | (a) no word/_rels/document.xml.rels; word/comments.xml defines comment 0 (typed comments); the body marks its range and references it                                 | `ecb58be137353ee3` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `rels-unreferenced`, `paraid-missing-element`                                  |
+| `s69a` | 05:01:21Z, 05:01:43Z | `comments-unrelated-sidecar`    | (b) word/_rels/document.xml.rels relates only styles.xml; word/comments.xml defines comment 0 (typed comments); the body marks its range and references it            | `8cf51fe50aea75e3` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `rels-unreferenced`, `paraid-missing-element`                                  |
+| `s69a` | 05:01:21Z, 05:01:43Z | `comments-related-calibration`  | (c) calibration: the same package with a comments relationship naming word/comments.xml                                                                               | `0faa70dd0017e774` | clean-open     | clean-open     | clean-open                 | valid                  | invalid: `paraid-missing-element`                                                       |
+| `s69a` | 05:01:21Z, 05:01:43Z | `comments-unrelated-range-only` | (d) row (b) with the range markers only, no w:commentReference                                                                                                        | `eccc32180b53f9ce` | clean-open     | clean-open     | clean-open                 | valid                  | invalid: `rels-unreferenced`, `comment-thread-count-mismatch`, `paraid-missing-element` |
+| `s69a` | 05:01:21Z, 05:01:43Z | `addcomment-created-sidecar`    | #895: the no-relationships tree after layer 242's addComment for comment 0 (it creates word/_rels/document.xml.rels and its four comment parts), then the body marked | `0f3958a89c064d8a` | clean-open     | clean-open     | clean-open                 | valid                  | invalid: `style-reference-undefined`                                                    |
+| `s69a` | 05:01:21Z, 05:01:43Z | `s69a-control-minimal-end`      | control                                                                                                                                                               | `a48d5d56efc5f279` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                                                   |
+
+<details><summary>Raw records, session 69</summary>
+
+```jsonl
+{"run": "s69a", "pass": 1, "name": "s69a-control-minimal", "sha256": "a48d5d56efc5f2794e68345ba4883d90328a85faf9f10de08ee81ee5adc02c54", "validatorRevision": "bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd", "observedAt": "2026-10-27T05:01:21+00:00", "staged": "00007__wfv__s69a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s69a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s69a", "pass": 2, "name": "s69a-control-minimal", "sha256": "a48d5d56efc5f2794e68345ba4883d90328a85faf9f10de08ee81ee5adc02c54", "validatorRevision": "bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd", "observedAt": "2026-10-27T05:01:43+00:00", "staged": "00007__wfv__s69a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s69a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s69a", "pass": 1, "name": "no-sidecar-calibration", "sha256": "a0022ea21774349181afb8d13f68db00feeac00fcdcd3ad799a2b94c77c1ba3d", "validatorRevision": "bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd", "observedAt": "2026-10-27T05:01:21+00:00", "staged": "00005__wfv__no-sidecar-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF no-sidecar-calibration_byword.pdf (8282 bytes), no dialog named the file"]}
+{"run": "s69a", "pass": 2, "name": "no-sidecar-calibration", "sha256": "a0022ea21774349181afb8d13f68db00feeac00fcdcd3ad799a2b94c77c1ba3d", "validatorRevision": "bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd", "observedAt": "2026-10-27T05:01:43+00:00", "staged": "00005__wfv__no-sidecar-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF no-sidecar-calibration_byword.pdf (8282 bytes), no dialog named the file"]}
+{"run": "s69a", "pass": 1, "name": "comments-unrelated-no-sidecar", "sha256": "ecb58be137353ee3a145a6807dbc34f770ffa7ae6a49e98dc8410dc5743c9ec4", "validatorRevision": "bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd", "observedAt": "2026-10-27T05:01:21+00:00", "staged": "00002__wfv__comments-unrelated-no-sidecar.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 01:01:14.908 'Word found unreadable content in 00002__wfv__comments-unrelated-no-sidecar.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'", "2026-10-27 01:01:15.702 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__comments-unrelated-no-sid...)\""]}
+{"run": "s69a", "pass": 2, "name": "comments-unrelated-no-sidecar", "sha256": "ecb58be137353ee3a145a6807dbc34f770ffa7ae6a49e98dc8410dc5743c9ec4", "validatorRevision": "bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd", "observedAt": "2026-10-27T05:01:43+00:00", "staged": "00002__wfv__comments-unrelated-no-sidecar.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 01:01:37.485 'Word found unreadable content in 00002__wfv__comments-unrelated-no-sidecar.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'", "2026-10-27 01:01:37.974 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__comments-unrelated-no-sid...)\""]}
+{"run": "s69a", "pass": 1, "name": "comments-unrelated-sidecar", "sha256": "8cf51fe50aea75e372ce266b7402d7a9cc82c51b0fe40f444b47d6211e5b190e", "validatorRevision": "bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd", "observedAt": "2026-10-27T05:01:21+00:00", "staged": "00004__wfv__comments-unrelated-sidecar.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 01:01:19.235 'Word found unreadable content in 00004__wfv__comments-unrelated-sidecar.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-27 01:01:19.768 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__comments-unrelated-sideca...)\""]}
+{"run": "s69a", "pass": 2, "name": "comments-unrelated-sidecar", "sha256": "8cf51fe50aea75e372ce266b7402d7a9cc82c51b0fe40f444b47d6211e5b190e", "validatorRevision": "bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd", "observedAt": "2026-10-27T05:01:43+00:00", "staged": "00004__wfv__comments-unrelated-sidecar.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 01:01:41.703 'Word found unreadable content in 00004__wfv__comments-unrelated-sidecar.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-27 01:01:42.202 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__comments-unrelated-sideca...)\""]}
+{"run": "s69a", "pass": 1, "name": "comments-related-calibration", "sha256": "0faa70dd0017e77457f27bd2ddca40af4019315f73248979f0e81e5c5c983478", "validatorRevision": "bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd", "observedAt": "2026-10-27T05:01:21+00:00", "staged": "00001__wfv__comments-related-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-related-calibration_byword.pdf (36447 bytes), no dialog named the file"]}
+{"run": "s69a", "pass": 2, "name": "comments-related-calibration", "sha256": "0faa70dd0017e77457f27bd2ddca40af4019315f73248979f0e81e5c5c983478", "validatorRevision": "bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd", "observedAt": "2026-10-27T05:01:43+00:00", "staged": "00001__wfv__comments-related-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-related-calibration_byword.pdf (36447 bytes), no dialog named the file"]}
+{"run": "s69a", "pass": 1, "name": "comments-unrelated-range-only", "sha256": "eccc32180b53f9cef1818a8ae31a74e1c58799debda731abfd0f4548a6739f89", "validatorRevision": "bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd", "observedAt": "2026-10-27T05:01:21+00:00", "staged": "00003__wfv__comments-unrelated-range-only.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-unrelated-range-only_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s69a", "pass": 2, "name": "comments-unrelated-range-only", "sha256": "eccc32180b53f9cef1818a8ae31a74e1c58799debda731abfd0f4548a6739f89", "validatorRevision": "bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd", "observedAt": "2026-10-27T05:01:43+00:00", "staged": "00003__wfv__comments-unrelated-range-only.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-unrelated-range-only_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s69a", "pass": 1, "name": "addcomment-created-sidecar", "sha256": "0f3958a89c064d8a62a6a5e8670cfe8ec59f9adda7b3086ae3fe55a8f68d16eb", "validatorRevision": "bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd", "observedAt": "2026-10-27T05:01:21+00:00", "staged": "00000__wfv__addcomment-created-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF addcomment-created-sidecar_byword.pdf (24928 bytes), no dialog named the file"]}
+{"run": "s69a", "pass": 2, "name": "addcomment-created-sidecar", "sha256": "0f3958a89c064d8a62a6a5e8670cfe8ec59f9adda7b3086ae3fe55a8f68d16eb", "validatorRevision": "bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd", "observedAt": "2026-10-27T05:01:43+00:00", "staged": "00000__wfv__addcomment-created-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF addcomment-created-sidecar_byword.pdf (24928 bytes), no dialog named the file"]}
+{"run": "s69a", "pass": 1, "name": "s69a-control-minimal-end", "sha256": "a48d5d56efc5f2794e68345ba4883d90328a85faf9f10de08ee81ee5adc02c54", "validatorRevision": "bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd", "observedAt": "2026-10-27T05:01:21+00:00", "staged": "00006__wfv__s69a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s69a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s69a", "pass": 2, "name": "s69a-control-minimal-end", "sha256": "a48d5d56efc5f2794e68345ba4883d90328a85faf9f10de08ee81ee5adc02c54", "validatorRevision": "bc09dc1dc98f69fcf522dd2a9b2e883afea5a1cd", "observedAt": "2026-10-27T05:01:43+00:00", "staged": "00006__wfv__s69a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s69a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 69 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s69builder.mts`:
+
+```ts
+// Session 69 (2026-10-27): does Word read a comments part no relationship names (#896)?
+// The comment checks fall back to word/comments.xml by name when no relationship of the main document names a comments
+// part, so a body w:commentReference to a comment only that part defines draws no comment-marker-missing. Session 61
+// refused the notes twin (a note only an unrelated word/footnotes.xml defines). This chunk asks the same of comments,
+// with and without a main-document relationships part, and checks the part #895's addComment fix now creates.
+// Every row records the validator revision it was judged at (`validatorRevision`); the verdict helper is s67builder.mts's.
+// The builder empties the chunk's specimens.jsonl once before its row loop (promised on #825).
+// Run from a worktree root: CHUNK=s69a pnpm exec node --import tsx <this file>
+// (the imports are absolute, so the file needs no copy into the worktree; `git rev-parse` reads the cwd's worktree).
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { promises as fs } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const WT = process.cwd();
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const { addComment } = await import(path.join(WT, "src/scripts/comment.ts"));
+const { MINIMAL_PARTS, buildDocx } = await import(path.join(WT, "tests/support/minimal-docx.ts"));
+const REVISION = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+const HELLO = "<w:r><w:t>Hello</w:t></w:r>";
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+
+/** The main document with comment 0's range around "Hello", and its w:commentReference when `reference`. */
+const marked = (main: string, reference: boolean) =>
+    replaceOnce(
+        main,
+        HELLO,
+        `<w:commentRangeStart w:id="0"/>${HELLO}<w:commentRangeEnd w:id="0"/>${reference ? `<w:r><w:commentReference w:id="0"/></w:r>` : ""}`,
+    );
+const COMMENTS_XML = `${XML_DECL}<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="a" w:initials="a"><w:p><w:r><w:t>Comment</w:t></w:r></w:p></w:comment></w:comments>`;
+
+/** The minimal parts with no main-document relationships part; styles.xml and its Override go too, so nothing is left unrelated. */
+const noSidecar = (): Record<string, string> => {
+    const next: Record<string, string> = {
+        ...P,
+        [CT]: replaceOnce(P[CT]!, `<Override PartName="/word/styles.xml" ContentType="${WML}.styles+xml"/>`, ""),
+    };
+    delete next[SIDECAR];
+    delete next["word/styles.xml"];
+    return next;
+};
+/** `parts` with word/comments.xml (comment 0, typed comments), related by the main document when `related`, and the body marked. */
+const withComments = (parts: Record<string, string>, related: boolean, reference: boolean): Record<string, string> => {
+    const next: Record<string, string> = {
+        ...parts,
+        "word/comments.xml": COMMENTS_XML,
+        [CT]: overrides(parts[CT]!, ["word/comments.xml", `${WML}.comments+xml`]),
+        [MAIN]: marked(parts[MAIN]!, reference),
+    };
+    if (related) next[SIDECAR] = appendRels(parts[SIDECAR]!, relationship("rIdC", "comments", "comments.xml"));
+    return next;
+};
+
+/** The parts as `addComment` leaves them for a first comment on the no-relationships tree, with the body then marked (#895). */
+const viaAddComment = async (chunk: string): Promise<Record<string, string>> => {
+    const work = path.join(ROOT, chunk, "work");
+    rmSync(work, { recursive: true, force: true });
+    for (const [name, text] of Object.entries(noSidecar())) {
+        mkdirSync(path.dirname(path.join(work, name)), { recursive: true });
+        writeFileSync(path.join(work, name), text);
+    }
+    const result = await addComment({
+        unpackedDir: work,
+        commentId: 0,
+        text: "Comment",
+        author: "a",
+        initials: "a",
+        date: new Date(Date.UTC(2026, 9, 27, 0, 0, 0)),
+    });
+    if (!result.message.startsWith("Added comment 0")) throw new Error(`addComment: ${result.message}`);
+    const parts: Record<string, string> = {};
+    const walk = async (dir: string): Promise<void> => {
+        for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
+            const full = path.join(dir, entry.name);
+            if (entry.isDirectory()) await walk(full);
+            else parts[path.relative(work, full)] = await fs.readFile(full, "utf8");
+        }
+    };
+    await walk(work);
+    parts[MAIN] = marked(parts[MAIN]!, true);
+    return parts;
+};
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const control = () => buildDocx({ ...P });
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+
+const chunks: Record<string, Row[]> = {
+    s69a: withControls("s69a", [
+        [
+            "no-sidecar-calibration",
+            "calibration: the minimal package with no word/_rels/document.xml.rels (styles.xml and its Override removed too); no comments",
+            () => buildDocx(noSidecar()),
+        ],
+        [
+            "comments-unrelated-no-sidecar",
+            "(a) no word/_rels/document.xml.rels; word/comments.xml defines comment 0 (typed comments); the body marks its range and references it",
+            () => buildDocx(withComments(noSidecar(), false, true)),
+        ],
+        [
+            "comments-unrelated-sidecar",
+            "(b) word/_rels/document.xml.rels relates only styles.xml; word/comments.xml defines comment 0 (typed comments); the body marks its range and references it",
+            () => buildDocx(withComments({ ...P }, false, true)),
+        ],
+        [
+            "comments-related-calibration",
+            "(c) calibration: the same package with a comments relationship naming word/comments.xml",
+            () => buildDocx(withComments({ ...P }, true, true)),
+        ],
+        [
+            "comments-unrelated-range-only",
+            "(d) row (b) with the range markers only, no w:commentReference",
+            () => buildDocx(withComments({ ...P }, false, false)),
+        ],
+        [
+            "addcomment-created-sidecar",
+            "#895: the no-relationships tree after layer 242's addComment for comment 0 (it creates word/_rels/document.xml.rels and its four comment parts), then the body marked",
+            async () => buildDocx(await viaAddComment("s69a")),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+    }
+};
+
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-69 chunk: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s69a",)
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0], "unknown") if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s69/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-69 parts of docs/plans/evidence/word-probes-2026-10-24.md into s69/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796).
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s69a",)
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s69/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                                   "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                                   "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+
+REFUSED = ("comments-unrelated-no-sidecar.docx", "comments-unrelated-sidecar.docx")
+# Where each run opened each row, from the driver's manifests (in open order, #671): the narrative states it, so check it
+# here rather than trust the names' sort order. The control names sort last, so both controls opened after every specimen.
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        opened = [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()]
+        assert len(opened) == 8, (run, opened)
+        assert opened[6:] == [f"{label}-control-minimal-end.docx", f"{label}-control-minimal.docx"], (run, opened)
+        assert opened[1] == "comments-related-calibration.docx" and opened[5] == "no-sidecar-calibration.docx", (run, opened)
+        assert (opened[2], opened[4]) == REFUSED, (run, opened)
+# The narrative's claims about outcomes, checked against results.json.
+for (label, file), r in results.items():
+    if file in REFUSED:
+        assert r["outcome"] == "unreadable-content-warning" and r["wordValid"] is True and not r["validatorMatchesWord"], (file, r)
+    else:
+        assert r["outcome"] == "clean-open" and r["validatorMatchesWord"], (file, r)
+assert agreed == len(rows) == 8, (agreed, len(rows))
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}", (min(starts), max(ends))
+out = [
+    f"### Session 69: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {at}",
+    "",
+    "The open question of [#896](https://github.com/jandira-tech/docx-validate/issues/896): whether a comments part that "
+    "no relationship names defines the comment the body references. At this revision the comment checks fell back to "
+    "`word/comments.xml` by name whenever no relationship of the main document named a comments part. Session 61 refused "
+    "the notes twin. One chunk, with the minimal control twice. It ran twice, as two separate driver runs of byte-identical "
+    "copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by "
+    f"`wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` "
+    f"otherwise; {agreed} of {len(rows)} rows agree. The two times in Observed are the ends of the first and second runs. "
+    f"Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`{rev}`).",
+    "",
+    "The driver opens files in name order, and the control names sort last, so both runs opened the two controls 7th and "
+    "8th, after every specimen, not one first and one last as in session 68. The two calibrations opened 2nd and 6th, on "
+    "either side of the two refused rows (3rd and 5th), and opened clean in both runs, so Word opened packages clean before "
+    "and after each refusal.",
+    "",
+    "- **(a), (b).** A body `w:commentReference` to comment 0, which only a `word/comments.xml` typed comments by its "
+    "Override but named by no relationship defines, gets the recovery offer, both with no `word/_rels/document.xml.rels` "
+    f"and beside one relating only `styles.xml`. Word-valid at {at} accepts both: two false negatives, from the by-name "
+    "fallback.",
+    "- **(c) and the no-sidecar calibration.** The same package with a comments relationship naming the part opens clean, "
+    "and so does the minimal package with no main-document relationships part and no comments.",
+    "- **(d).** Row (b) with the range markers only, no `w:commentReference`, opens clean. Range markers naming no "
+    "comment stay word-valid warnings (#784), so this row is consistent with Word reading no comments part.",
+    "- **#895.** The no-relationships tree after layer 242's `addComment` for comment 0, which creates "
+    "`word/_rels/document.xml.rels` and relates and types its four comment parts, opens clean with the body then marked.",
+    "",
+    "Word defines comments only from the part a `comments` relationship names, as session 61 showed for notes. Word-valid "
+    f"at {at} matches Word on 6 of 8 rows.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 69</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 69 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s69builder.mts", ROOT / "s69builder.mts", "ts"), ("compare.py", ROOT / "s69/compare.py", "python"),
+                         ("section.py", ROOT / "s69/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s69/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>

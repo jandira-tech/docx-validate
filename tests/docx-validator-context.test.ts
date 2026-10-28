@@ -62,11 +62,17 @@ describe("DOCXSchemaValidator over the shared validation context", { timeout: 60
     const withMarkers = (markers: string): string =>
         MINIMAL_PARTS["word/document.xml"]!.replace("<w:r><w:t>Hello</w:t></w:r>", `${markers}<w:r><w:t>Hello</w:t></w:r>`);
     const PAIRED = '<w:commentRangeStart w:id="0"/><w:commentRangeEnd w:id="0"/><w:r><w:commentReference w:id="0"/></w:r>';
+    // Related, so the part defines its comment (#896).
+    const RELATED = MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+        "</Relationships>",
+        '<Relationship Id="rIdC" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" Target="comments.xml"/></Relationships>',
+    );
 
     it("reads the package afresh for each direct comment-marker call", async () => {
         await withTempDir(async (dir) => {
             writeParts(dir, {
                 ...MINIMAL_PARTS,
+                "word/_rels/document.xml.rels": RELATED,
                 "word/comments.xml": COMMENTS,
                 "word/document.xml": withMarkers('<w:commentRangeEnd w:id="0"/>'),
             });
@@ -79,7 +85,7 @@ describe("DOCXSchemaValidator over the shared validation context", { timeout: 60
 
     it("reads the package afresh for each direct comment-threading call", async () => {
         await withTempDir(async (dir) => {
-            writeParts(dir, { ...MINIMAL_PARTS, "word/comments.xml": COMMENTS });
+            writeParts(dir, { ...MINIMAL_PARTS, "word/_rels/document.xml.rels": RELATED, "word/comments.xml": COMMENTS });
             const validator = new DOCXSchemaValidator({ unpackedDir: dir });
             expect((await validator.validateCommentThreading()).issues.map((i) => i.code)).toContain("comment-thread-count-mismatch");
             writeFileSync(path.join(dir, "word", "document.xml"), withMarkers(PAIRED));

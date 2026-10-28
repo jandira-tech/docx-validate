@@ -470,13 +470,14 @@ describe("repair plan vs repair() coverage (#622)", () => {
     const commentsExtensibleXml = (inner: string): string =>
         `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>${inner}</w16cex:commentsExtensible>`;
 
-    /** MINIMAL_PARTS plus comments.xml and the optional threading parts, wired by content types. */
+    /** MINIMAL_PARTS plus comments.xml, related by the main document (#896), and the optional threading parts, wired by content types. */
     function withCommentParts(opts: { ids?: string; extensible?: string }): Record<string, string> {
         const parts: Record<string, string> = {
             ...MINIMAL_PARTS,
             "word/document.xml": specDoc(COMMENT_MARKERS),
             "word/comments.xml": COMMENTS_XML,
         };
+        parts["word/_rels/document.xml.rels"] = addDocRel(parts["word/_rels/document.xml.rels"]!, "rIdC", "comments", "comments.xml");
         parts["[Content_Types].xml"] = addOverride(parts["[Content_Types].xml"]!, "word/comments.xml", `${WMLT}.comments+xml`);
         if (opts.ids !== undefined) {
             parts["word/commentsIds.xml"] = opts.ids;
