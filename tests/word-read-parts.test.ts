@@ -2324,6 +2324,9 @@ describe("wordPossiblyReadParts (#1116, #1125)", () => {
         ["an escaped spelling", STRAY, "header%39.xml"],
         ["a climb past the package root", STRAY, "../../word/header9.xml"],
         ["a package-absolute target", STRAY, "/word/header9.xml"],
+        // #1134: a target resolves with its query or fragment dropped (#361).
+        ["a target with a fragment", STRAY, "header9.xml#frag"],
+        ["a target with a query", STRAY, "header9.xml?v=1"],
     ])("lists a part %s names", async (_label, part, target) => {
         expect(await named(withHeaders({ [part]: relationships(header("rId9", target)) }))).toContain(HEADER9);
     });
@@ -2340,6 +2343,26 @@ describe("wordPossiblyReadParts (#1116, #1125)", () => {
     it("does not list a part only an External relationship names", async () => {
         const external = relationships(header("rId9", "header9.xml", ' TargetMode="External"'));
         expect(await named(withHeaders({ [STRAY]: external }))).not.toContain(HEADER9);
+    });
+
+    // #1134: only the exact spelling External is skipped. Whether Word reads
+    // another spelling as External is unprobed, so the relationship stays
+    // internal and the list errs wide.
+    it.each([' TargetMode="external"', ' TargetMode=" External "'])("lists a part a relationship with%s names", async (mode) => {
+        expect(await named(withHeaders({ [STRAY]: relationships(header("rId9", "header9.xml", mode)) }))).toContain(HEADER9);
+    });
+
+    // #1134: a relationship of any type names its part, an Office type or not,
+    // in a stray relationships part and among the main document's own.
+    it("lists a part only a relationship of a custom type names", async () => {
+        const custom = '<Relationship Id="rId9" Type="urn:custom:hdr" Target="header9.xml"/>';
+        expect(await named(withHeaders({ [STRAY]: relationships(custom) }))).toContain(HEADER9);
+        const parts = withHeaders();
+        parts["word/_rels/document.xml.rels"] = (parts["word/_rels/document.xml.rels"] as string).replace(
+            "</Relationships>",
+            `${custom}</Relationships>`,
+        );
+        expect(await named(parts)).toContain(HEADER9);
     });
 
     // The DOM parser decodes invalid UTF-8 with replacement characters and

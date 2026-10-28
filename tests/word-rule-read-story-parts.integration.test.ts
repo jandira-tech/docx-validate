@@ -538,6 +538,22 @@ describe("markup compatibility in a word/ part Word does not read warns under wo
         },
     );
 
+    // #1134 (review 1126 F8): the blocking half keys the finding's part
+    // canonically. A used header stored as word/Hdr7.XML and named hdr7.xml
+    // is the part the relationship names, so its finding blocks.
+    it.each(RUNS)(
+        "%s run keeps mce-must-understand an error in a used header stored under an OPC-equivalent spelling (#1134)",
+        async (_label, checks) => {
+            const STORED = "word/Hdr7.XML";
+            const parts = relateHeader(mustUnderstandHeader(), true);
+            parts.set(STORED, textOf(parts, UNRELATED));
+            parts.delete(UNRELATED);
+            parts.set(CT, once(textOf(parts, CT), `PartName="/${UNRELATED}"`, 'PartName="/word/hdr7.xml"'));
+            parts.set(MAIN_RELS, once(textOf(parts, MAIN_RELS), 'Target="header83.xml"', 'Target="hdr7.xml"'));
+            expect((await mceRun(parts, "word-valid", checks)).mce).toEqual([`mce-must-understand:error@${STORED}`]);
+        },
+    );
+
     it("strict keeps mce-malformed an error in a header the main document relates but does not use", async () => {
         const choice = relateHeader(withUnrelatedHeader(await load(CHOICE_CLEAN), await load(CHOICE_BROKEN)), false);
         expect((await mceRun(choice, "strict")).mce).toContain(`mce-malformed:error@${UNRELATED}`);
