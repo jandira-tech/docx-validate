@@ -2712,7 +2712,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let repairs = 0;
         for (const id of missing) {
-            const fragment = WELL_KNOWN_STYLE_DEFINITIONS[id];
+            // Object.hasOwn: a style id named for an Object.prototype key is
+            // not well known (#1071).
+            const fragment = Object.hasOwn(WELL_KNOWN_STYLE_DEFINITIONS, id) ? WELL_KNOWN_STYLE_DEFINITIONS[id] : undefined;
             if (!fragment) continue;
             // Append the fragment as a child of <w:styles>.
             const actualNamespace = stylesRoot.namespaceURI ?? WORD_2006_NAMESPACE;
@@ -2896,7 +2898,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                             surviving.push(prefix);
                             continue;
                         }
-                        const uri = KNOWN_OOXML_PREFIX_URIS[prefix];
+                        // Object.hasOwn: a token named for an Object.prototype
+                        // key is unknown, so it is dropped (#1071).
+                        const uri = Object.hasOwn(KNOWN_OOXML_PREFIX_URIS, prefix) ? KNOWN_OOXML_PREFIX_URIS[prefix] : undefined;
                         if (uri !== undefined) {
                             // Declare on the root and keep the Ignorable entry.
                             root.setAttribute(`xmlns:${prefix}`, uri);

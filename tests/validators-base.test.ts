@@ -256,6 +256,20 @@ describe("BaseSchemaValidator", () => {
                 expect(result.valid).toBe(true);
             });
         });
+
+        // #1071: the requirement table is read by own key, so an element named
+        // for an Object.prototype key has no id requirement.
+        it.each(["constructor", "__proto__"])("requires no unique id of an element named %s", async (name) => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} xmlns:x="urn:example:extension">` +
+                        `<x:${name} x:id="0"/><x:${name} x:id="0"/></w:comments>`,
+                );
+                const result = await new HarnessValidator({ unpackedDir: dir }).validateUniqueIds();
+                expect(result).toEqual({ valid: true, issues: [] });
+            });
+        });
     });
 
     describe("validateFileReferences", () => {

@@ -946,7 +946,9 @@ export class BaseSchemaValidator {
 
             for (const elem of iterElements(root)) {
                 const tag = localName(elem.tagName ?? elem.nodeName).toLowerCase();
-                const requirement = UNIQUE_ID_REQUIREMENTS[tag];
+                // Object.hasOwn: an element named for an Object.prototype key
+                // has no requirement (#1071).
+                const requirement = Object.hasOwn(UNIQUE_ID_REQUIREMENTS, tag) ? UNIQUE_ID_REQUIREMENTS[tag] : undefined;
                 if (!requirement) continue;
 
                 if (hasExcludedAncestor(elem)) continue;

@@ -1819,6 +1819,52 @@ describe("DOCXSchemaValidator", () => {
                 expect(await fs.readFile(filePath, "utf-8")).toContain("xmlns:w15=");
             });
         });
+
+        // #1071: the well-known table is read by own key, so a token named for
+        // an Object.prototype key is unknown and dropped, never declared.
+        it.each(["constructor", "toString", "__proto__"])("drops an undeclared %s token instead of declaring it", async (token) => {
+            await withTempDir(async (dir) => {
+                const filePath = path.join(dir, "word", "document.xml");
+                const mcNs = `xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"`;
+                await writeFile(
+                    filePath,
+                    `<?xml version="1.0"?><w:document ${W_NS} ${mcNs} mc:Ignorable="${token}"><w:body/></w:document>`,
+                );
+                expect(await new DOCXSchemaValidator({ unpackedDir: dir }).repairIgnorable()).toBe(1);
+                const after = await fs.readFile(filePath, "utf-8");
+                expect(after).not.toContain(`xmlns:${token}`);
+                expect(after).not.toContain("mc:Ignorable=");
+            });
+        });
+    });
+
+    // #1071: the well-known style table is read by own key, so a reference
+    // named for an Object.prototype key gets no definition: the repair writes
+    // what it writes for the same package without that reference.
+    describe("repairMissingStyleDefinitions with a style id named for an Object.prototype key", () => {
+        const repaired = async (dir: string, extra: string): Promise<[number, string]> => {
+            await writeFile(
+                path.join(dir, "word", "document.xml"),
+                wrapDocument(`<w:p>${extra}<w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:t>x</w:t></w:r></w:p>`),
+            );
+            const stylesPath = path.join(dir, "word", "styles.xml");
+            await writeFile(
+                stylesPath,
+                `<?xml version="1.0"?><w:styles ${W_NS}><w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/></w:style></w:styles>`,
+            );
+            const repairs = await new DOCXSchemaValidator({ unpackedDir: dir }).repairMissingStyleDefinitions();
+            return [repairs, await fs.readFile(stylesPath, "utf-8")];
+        };
+
+        it.each(["constructor", "toString", "__proto__"])("writes for %s only what the package without it gets", async (id) => {
+            await withTempDir(async (base) => {
+                await withTempDir(async (dir) => {
+                    const [baseRepairs, baseStyles] = await repaired(base, "");
+                    expect(baseStyles).toContain('w:styleId="CommentReference"');
+                    expect(await repaired(dir, `<w:pPr><w:pStyle w:val="${id}"/></w:pPr>`)).toEqual([baseRepairs, baseStyles]);
+                });
+            });
+        });
     });
 
     describe("repairExtendedPropertiesWhitespace", () => {
