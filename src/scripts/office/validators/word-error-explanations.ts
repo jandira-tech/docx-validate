@@ -36,6 +36,8 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "Word applies markup compatibility to relationships parts and opened each tested shape of this markup clean (a Fallback over a Choice it does not understand, an understood w14 Choice, and an Ignorable foreign child, in the main document's and the package's relationships); other shapes are untested. For strict OPC conformance, store those Relationship children directly under Relationships and remove the compatibility markup.",
     "word-content-type-invalid":
         "A part's content type in [Content_Types].xml is missing or wrong, so Word cannot load that part. Add the correct <Override>/<Default> content-type entry.",
+    "word-part-content-type-unrecognized":
+        "A part Word reads has a content type that is neither its own Word type, nor generic XML, nor another Word part's type, so Word cannot load that part. Word 16.115 offered recovery for the main document's styles part typed application/octet-stream (session 46); other parts are unobserved. Give the part the content type its relationship expects.",
     "ct-uncovered-part":
         "A package part has no content type in [Content_Types].xml. Word offers to recover the file. Remove the part, or add a Default or Override that covers it.",
     "word-drawing-scalar-whitespace":

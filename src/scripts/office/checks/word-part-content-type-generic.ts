@@ -98,7 +98,7 @@ import { glossaryTypedRelationshipTargets, wordTypedRelationshipTargets } from "
 export const WORD_PART_CONTENT_TYPE_GENERIC = "word-part-content-type-generic";
 
 /** The generic XML content types this check judges, compared ASCII case-insensitively (#517). */
-const GENERIC_CONTENT_TYPES: ReadonlySet<string> = new Set(["application/xml", "text/xml"]);
+export const GENERIC_CONTENT_TYPES: ReadonlySet<string> = new Set(["application/xml", "text/xml"]);
 
 /** The relationship segments Word was observed to reject on a generic XML type, and the content type each part needs. */
 export const EXPECTED_CONTENT_TYPES: ReadonlyMap<string, string> = new Map([
