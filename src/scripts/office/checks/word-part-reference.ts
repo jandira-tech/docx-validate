@@ -51,6 +51,17 @@
  * alone, naming the real relationship, opens clean (the s52d confound),
  * as an `o:OLEObject` naming an External `package` relationship does (B1).
  *
+ * A `c:chart` carrying an id attribute in BOTH relationships namespaces —
+ * `r:id` and the ISO Strict `rs:id` together, whatever their values,
+ * empty or real — cannot be opened: Word 16.115 reports an open error
+ * with no recovery offer (session 55, chunks s55b and s55d, two runs, all
+ * readings agree; #756), while `rs:id` alone on the Transitional element
+ * opens clean and draws the chart. Word refuses the second namespace,
+ * not the empty id. The same pair on `o:OLEObject`, `dgm:relIds` and
+ * `w:headerReference`/`w:footerReference` was not shown to Word —
+ * session 33 showed only a non-empty Strict id alone on a Transitional
+ * header reference opening clean — so those elements keep their verdicts.
+ *
  * Word reads the selected markup-compatibility view, so this check judges
  * `ctx.effectiveXml` and each part's own sidecar: an unparseable one is
  * skipped for xml-syntax to report, and a part with no relationships part
@@ -236,6 +247,33 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
                 for (const elem of getElementsByTagNameNSAll(dom, ns, "chart")) {
                     const id = relationshipId(elem, "id", relationshipNamespaces);
                     if (!id) {
+                        continue;
+                    }
+                    // Session 55 (s55b/s55d, #756): an id attribute in BOTH
+                    // relationships namespaces is an open error whatever
+                    // the values — the element is refused before its id is
+                    // looked up.
+                    if (
+                        elem.hasAttributeNS(OFFICE_RELATIONSHIPS_NAMESPACE, "id") &&
+                        elem.hasAttributeNS(OFFICE_RELATIONSHIPS_STRICT_NAMESPACE, "id")
+                    ) {
+                        const issue: ValidationIssue = {
+                            severity: "error",
+                            message:
+                                `<c:chart> carries an id attribute in both relationships namespaces (r:id="${elem.getAttributeNS(OFFICE_RELATIONSHIPS_NAMESPACE, "id")}" rs:id="${elem.getAttributeNS(OFFICE_RELATIONSHIPS_STRICT_NAMESPACE, "id")}"). ` +
+                                "Microsoft Word cannot open the file. " +
+                                "Keep only one id attribute, naming an internal chart relationship.",
+                            path: xmlFile,
+                            code: WORD_PART_REFERENCE_RELATIONSHIP,
+                        };
+                        registerStoryReferenceIdentity(issue, {
+                            part: xmlFile,
+                            namespaceURI: ns,
+                            localName: "chart",
+                            rid: id.rid,
+                            ridNamespaceURI: id.namespaceURI,
+                        });
+                        issues.push(issue);
                         continue;
                     }
                     const rel = rels?.get(id.rid);
