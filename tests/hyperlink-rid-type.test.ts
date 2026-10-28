@@ -176,3 +176,30 @@ describe("validateAllRelationshipIds — r:link is never type-checked (#1072)", 
         });
     });
 });
+
+// #1080: the other side of #1072's rows. r:link feeds rels-id-missing, so a
+// link naming no relationship is reported once, and outside lenient so is a
+// Strict rs:link; lenient reads only the Transitional namespace (#1065).
+describe("validateAllRelationshipIds — a dangling r:link draws rels-id-missing (#1080)", () => {
+    const STRICT_R = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+    it.each([
+        ["r:link", "lenient", 1],
+        ["r:link", "word-valid", 1],
+        ["r:link", "strict", 1],
+        ["rs:link", "lenient", 0],
+        ["rs:link", "word-valid", 1],
+        ["rs:link", "strict", 1],
+    ] as const)("a w:hyperlink %s naming no relationship under %s draws %i rels-id-missing", async (attribute, profile, count) => {
+        await withTempDir(async (dir) => {
+            await buildDocx(
+                dir,
+                `<w:p><w:hyperlink xmlns:rs="${STRICT_R}" ${attribute}="rId8"><w:r><w:t>link</w:t></w:r></w:hyperlink></w:p>`,
+                [{ id: "rId7", type: `${RT}/header`, target: "header1.xml" }],
+            );
+            const result = await new DOCXSchemaValidator({ unpackedDir: dir, profile }).validateAllRelationshipIds();
+            const missing = result.issues.filter((i) => i.code === "rels-id-missing");
+            expect(missing).toHaveLength(count);
+            for (const issue of missing) expect(issue.message).toContain("'rId8'");
+        });
+    });
+});
