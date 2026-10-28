@@ -979,6 +979,10 @@ session 62 (s62a/s62d, same evidence, two runs, all readings agree) offered
 recovery for a dangling footnote or endnote reference in a main document stored
 as `word/main.xml`, and opened clean an unrelated `word/header9.xml` holding
 one.
+References in a read header are not judged (session 62 s62d/s62e,
+[#806](https://github.com/jandira-tech/docx-validate/issues/806)); dangling
+references in footers, comments, nested notes beyond session 16's exclusion
+and reached glossaries stay judged but are unprobed.
 
 Named `word-math-parse` runs and full runs that cannot stage the archive retain
 the positioned XML diagnostics without repeating `word-math-parse` for the same
