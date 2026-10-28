@@ -149,6 +149,15 @@ PPTX keeps the `lenient` default and its existing XSD validator. The Word-valid
 behavior below applies to DOCX/DOCM. Pass `{ profile: "lenient" }` (CLI:
 `--profile lenient`) to retain the earlier DOCX policy.
 
+The PPTX slide and master checks judge every slide and slide master the
+presentation relates, wherever it is stored, beside `ppt/slides/` and
+`ppt/slideMasters/`. These are `notes-shared` (a notes slide two slides
+relate), `slide-layout-duplicate` (a slide with more than one `slideLayout`
+relationship) and `sldlayout-missing-rid` / `sldlayout-missing-rels` (a master's
+`sldLayoutId` naming no `slideLayout` relationship). The presentation is the
+part the package's `officeDocument` relationship names
+([#1013](https://github.com/jandira-tech/docx-validate/issues/1013)).
+
 The `strict` profile runs the Word rules and applicable XSD schemas. Schema
 conformance is stricter than Word openability. A leading BOM is at most a warning
 under every profile and never fails a document on its own:
