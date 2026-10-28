@@ -176,6 +176,81 @@ const RENAMED_THREAD_PARTS: Record<string, string> = {
     "word/commentsExtensible.xml": commentsExtensibleXml("0000DDDD"),
 };
 
+const NON_XML = "application/octet-stream";
+
+/**
+ * The main document relates its font table as `word/fonts.bin`, stored with
+ * a non-XML content type; a reached glossary at `word/glossary/` relates its
+ * own empty `fontTable.xml` (#693).
+ */
+const NON_XML_FONT_TABLE: Record<string, string> = {
+    ...MINIMAL_PARTS,
+    "[Content_Types].xml": withOverrides(
+        override("word/fonts.bin", NON_XML),
+        override("word/glossary/document.xml", GLOSSARY_DOCUMENT_TYPE),
+        override("word/glossary/fontTable.xml", FONT_TABLE_TYPE),
+    ),
+    "word/_rels/document.xml.rels": relationships(
+        relationship("rId1", "styles", "styles.xml"),
+        relationship("rId2", "fontTable", "fonts.bin"),
+        relationship("rId9", "glossaryDocument", "glossary/document.xml"),
+    ),
+    "word/fonts.bin": FULL_FONT_TABLE,
+    "word/glossary/document.xml": GLOSSARY_DOCUMENT,
+    "word/glossary/_rels/document.xml.rels": relationships(relationship("rId1", "fontTable", "fontTable.xml")),
+    "word/glossary/fontTable.xml": EMPTY_FONT_TABLE,
+};
+
+/**
+ * The main document relates its comments as `word/comments.bin` (non-XML);
+ * a reached glossary at `word/glossary/` holds a `comments.xml` and a
+ * `commentsIds.xml` that disagree (#693).
+ */
+const NON_XML_COMMENTS: Record<string, string> = {
+    ...MINIMAL_PARTS,
+    "[Content_Types].xml": withOverrides(
+        override("word/comments.bin", NON_XML),
+        override("word/glossary/document.xml", GLOSSARY_DOCUMENT_TYPE),
+        override("word/glossary/comments.xml", COMMENTS_TYPE),
+        override("word/glossary/commentsIds.xml", COMMENTS_IDS_TYPE),
+    ),
+    "word/_rels/document.xml.rels": relationships(
+        relationship("rId1", "styles", "styles.xml"),
+        relationship("rId2", "comments", "comments.bin"),
+        relationship("rId9", "glossaryDocument", "glossary/document.xml"),
+    ),
+    "word/comments.bin": commentsXml("0000AAAA"),
+    "word/glossary/document.xml": GLOSSARY_DOCUMENT,
+    "word/glossary/_rels/document.xml.rels": relationships(
+        relationship("rId1", "comments", "comments.xml"),
+        typedRelationship("rId2", MS_COMMENTS_IDS_TYPE, "commentsIds.xml"),
+    ),
+    "word/glossary/comments.xml": commentsXml("0000BBBB"),
+    "word/glossary/commentsIds.xml": commentsIdsXml("0000CCCC", "0000CCCC"),
+};
+
+/**
+ * The main document relates `word/comments.xml` and its commentsIds as
+ * `word/ids.bin` (non-XML), beside an unrelated `word/commentsIds.xml`
+ * whose ids disagree with the main comments (#693).
+ */
+const NON_XML_COMMENTS_IDS: Record<string, string> = {
+    ...MINIMAL_PARTS,
+    "[Content_Types].xml": withOverrides(
+        override("word/comments.xml", COMMENTS_TYPE),
+        override("word/ids.bin", NON_XML),
+        override("word/commentsIds.xml", COMMENTS_IDS_TYPE),
+    ),
+    "word/_rels/document.xml.rels": relationships(
+        relationship("rId1", "styles", "styles.xml"),
+        relationship("rId2", "comments", "comments.xml"),
+        typedRelationship("rId3", MS_COMMENTS_IDS_TYPE, "ids.bin"),
+    ),
+    "word/comments.xml": commentsXml("0000AAAA"),
+    "word/ids.bin": commentsIdsXml("0000BBBB", "0000BBBB"),
+    "word/commentsIds.xml": commentsIdsXml("0000BBBB", "0000BBBB"),
+};
+
 /** No comments relationship at all: the by-name pair in `word/` is still repaired. */
 const UNRELATED_COMMENTS: Record<string, string> = {
     ...MINIMAL_PARTS,
@@ -277,6 +352,36 @@ describe("the comment-thread repair pairs parts within the main document (#690)"
             expect(repairs).toBe(2);
             const mainIds = await fs.readFile(path.join(dir, "word", "commentsIds.xml"), "utf-8");
             expect(mainIds).toContain('w16cid:paraId="0000AAAA"');
+        });
+    });
+});
+
+describe("a relationship naming a stored non-XML part judges and repairs nothing by name (#693)", () => {
+    it.each(PROFILES)("the glossary's empty font table is not judged for the main document (%s)", async (profile) => {
+        const issues = await validated(NON_XML_FONT_TABLE, profile);
+        expect(codesAt(issues, "font-table-empty")).toEqual([]);
+    });
+
+    it("the comment-thread repair leaves a glossary's pair alone when the main comments part is not XML", async () => {
+        await withTempDir(async (dir) => {
+            await writeParts(dir, NON_XML_COMMENTS);
+            const glossaryIds = path.join(dir, "word", "glossary", "commentsIds.xml");
+            const before = await fs.readFile(glossaryIds, "utf-8");
+            const repairs = await new DOCXSchemaValidator({ unpackedDir: dir }).repairCommentThreading();
+            expect(repairs).toBe(0);
+            expect(await fs.readFile(glossaryIds, "utf-8")).toBe(before);
+        });
+    });
+
+    it("the comment-thread repair leaves a by-name commentsIds alone when the related one is not XML", async () => {
+        await withTempDir(async (dir) => {
+            await writeParts(dir, NON_XML_COMMENTS_IDS);
+            const decoy = path.join(dir, "word", "commentsIds.xml");
+            const before = await fs.readFile(decoy, "utf-8");
+            const repairs = await new DOCXSchemaValidator({ unpackedDir: dir }).repairCommentThreading();
+            expect(repairs).toBe(0);
+            expect(await fs.readFile(decoy, "utf-8")).toBe(before);
+            expect(await fs.readFile(path.join(dir, "word", "ids.bin"), "utf-8")).toBe(NON_XML_COMMENTS_IDS["word/ids.bin"]);
         });
     });
 });

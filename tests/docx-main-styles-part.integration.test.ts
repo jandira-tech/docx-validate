@@ -94,6 +94,29 @@ const UNRELATED_STYLES: Record<string, string> = {
     "word/styles.xml": MAIN_STYLES,
 };
 
+/**
+ * The main document relates its styles as `word/xstyles.bin`, stored with a
+ * non-XML content type; a reached glossary at `word/glossary/` holds the
+ * package's only `styles.xml` (#693).
+ */
+const nonXmlStyles = (document = DOCUMENT): Record<string, string> => ({
+    ...Object.fromEntries(Object.entries(MINIMAL_PARTS).filter(([name]) => name !== "word/styles.xml")),
+    "[Content_Types].xml": withOverrides(
+        override("word/xstyles.bin", "application/octet-stream"),
+        override("word/glossary/document.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml"),
+        override("word/glossary/styles.xml", STYLES_TYPE),
+    ),
+    "word/_rels/document.xml.rels": relationships(
+        relationship("rId1", "styles", "xstyles.bin"),
+        relationship("rId9", "glossaryDocument", "glossary/document.xml"),
+    ),
+    "word/document.xml": document,
+    "word/xstyles.bin": MAIN_STYLES,
+    "word/glossary/document.xml": GLOSSARY_DOCUMENT,
+    "word/glossary/_rels/document.xml.rels": relationships(relationship("rId1", "styles", "styles.xml")),
+    "word/glossary/styles.xml": OTHER_STYLES,
+});
+
 const validated = async (
     parts: Record<string, string>,
     profile: "strict" | "lenient" | "word-valid",
@@ -158,6 +181,28 @@ describe("style checks read the styles part the main document relates (#688)", (
             expect(repairs).toBe(1);
             expect(await fs.readFile(path.join(dir, "word/styles.xml"), "utf-8")).toContain(`w:styleId="CommentReference"`);
             expect(await fs.readFile(path.join(dir, "word/zglossary/styles.xml"), "utf-8")).toBe(OTHER_STYLES);
+        });
+    });
+});
+
+describe("a styles relationship naming a stored non-XML part judges nothing by name (#693)", () => {
+    it.each(PROFILES)("the glossary's styles part is not judged for the main document (%s)", async (profile) => {
+        const issues = await validated(nonXmlStyles(), profile);
+        expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
+        expect(issues.filter((issue) => issue.path === "word/glossary/styles.xml").map((issue) => issue.code)).toEqual([]);
+    });
+
+    it("repair writes no definition into the glossary's styles part", async () => {
+        await withTempDir(async (dir) => {
+            const document = DOCUMENT.replace("<w:t>Title</w:t>", `<w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:t>Title</w:t>`);
+            for (const [name, content] of Object.entries(nonXmlStyles(document))) {
+                await fs.mkdir(path.dirname(path.join(dir, name)), { recursive: true });
+                await fs.writeFile(path.join(dir, name), content, "utf-8");
+            }
+            const repairs = await new DOCXSchemaValidator({ unpackedDir: dir }).repairMissingStyleDefinitions();
+            expect(repairs).toBe(0);
+            expect(await fs.readFile(path.join(dir, "word/glossary/styles.xml"), "utf-8")).toBe(OTHER_STYLES);
+            expect(await fs.readFile(path.join(dir, "word/xstyles.bin"), "utf-8")).toBe(MAIN_STYLES);
         });
     });
 });
