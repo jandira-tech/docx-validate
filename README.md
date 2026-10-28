@@ -2134,8 +2134,8 @@ typing it but not the others got no Override for them
 A first comment is refused with an error naming the part, changing nothing, when
 the tree has no `[Content_Types].xml`, or when `_rels/.rels` cannot be decoded
 or parsed, names no `officeDocument` relationship that is not External, names a
-target outside the package (a URI) or one whose path is empty (no `Target`, or
-only a query or fragment), each with its own message
+target outside the package (a URI) or one whose path is empty (no `Target`, an
+empty `Target`, or only a query or fragment), each with its own message
 ([#1002](https://github.com/jandira-tech/docx-validate/issues/1002)), or names a
 main document that is not stored — the
 conventional `word/document.xml` included; before, a missing `word/document.xml`
