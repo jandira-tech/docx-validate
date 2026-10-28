@@ -143,7 +143,11 @@ describe("writeXmlPart", () => {
 
             await fs.writeFile(file, `${DECLARATION}${BODY}`, "utf8");
             const part = await readXmlPart(file);
-            expect(await writeXmlPart(file, parseXml(part!.text), part!)).toBe(true);
+            const dom = parseXml(part!.text);
+            dom.getElementsByTagName("body")[0]!.appendChild(dom.createElement("p"));
+            expect(await writeXmlPart(file, dom, part!)).toBe(true);
+            // `true` must mean the change reached disk (#894).
+            expect((await fs.readFile(file)).toString("utf8")).toContain("<body><p/></body>");
         }));
 });
 
