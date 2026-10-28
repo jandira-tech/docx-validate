@@ -4,31 +4,35 @@
  */
 
 /**
- * Two theme relationships in one .rels part make Word offer recovery.
- * Either theme alone opens clean; rewriting an absolute target still warns.
+ * Two theme relationships in a story root's relationships part make
+ * Word offer recovery. Either theme alone opens clean; rewriting an
+ * absolute target still warns.
  * Fixture: tests/fixtures/broken/package.word-duplicate-theme.docx.
  *
- * Two `fontTable` relationships in one `.rels` part make Word offer to
- * recover the file. A second relationship that targets the same
- * `fontTable.xml` as the first still warns. Rewriting an absolute
- * `/word/...` target to a relative path still warns. One font table
- * relationship opens clean. The extra part and its content type are
- * not required for the warning.
+ * Two `fontTable` relationships in a story root's relationships part
+ * make Word offer to recover the file. A second relationship that
+ * targets the same `fontTable.xml` as the first still warns. Rewriting
+ * an absolute `/word/...` target to a relative path still warns. One
+ * font table relationship opens clean. The extra part and its content
+ * type are not required for the warning.
  *
- * Two `webSettings` relationships in one `.rels` part make Word offer to
- * recover the file. A second relationship that targets the same
- * `webSettings.xml` as the first still warns. One web settings
- * relationship opens clean. The extra part is not required for the warning.
+ * Two `webSettings` relationships in a story root's relationships part
+ * make Word offer to recover the file. A second relationship that
+ * targets the same `webSettings.xml` as the first still warns. One web
+ * settings relationship opens clean. The extra part is not required for
+ * the warning.
  *
- * Two settings relationships in one .rels part make Word offer
- * recovery (fixture 0689). A second relationship that targets
+ * Two settings relationships in a story root's relationships part make
+ * Word offer recovery (fixture 0689). A second relationship that targets
  * the same settings.xml still warns. One settings relationship
  * opens clean.
  *
- * Two `styles` relationships in one `.rels` part make Word offer
- * to recover the file, to two parts in either order — listed in
- * Id order or against it — and to the same part (#694; session
- * 45). One styles relationship opens clean. A type counts only
+ * Two `styles` relationships in the main document's relationships part
+ * make Word offer to recover the file, to two parts in either order —
+ * listed in Id order or against it — and to the same part (#694; session
+ * 45); the real styles relationship beside one or two External styles
+ * relationships is refused too (session 49). One styles relationship
+ * opens clean. A type counts only
  * as the namespace plus the one segment — Word reads Types
  * exactly (session 27) — so `…/relationships/custom/styles` is
  * no styles type (#519); session 47 opened a suffix-only Type
@@ -38,14 +42,85 @@
  * recover the file the same way; one opens clean.
  * Two `footnotes` relationships open clean, so footnotes keeps
  * no check of its own.
+ *
+ * Scope (#717; sessions 49 and 50, Word 16.115): two of one kind in a
+ * reached glossary's own relationships part — to two parts in its
+ * folder — is refused for styles, numbering, settings and fontTable,
+ * while the same pair in `_rels/.rels` opens clean for styles,
+ * numbering, settings and theme, and in a referenced header's sidecar
+ * for all six kinds. Every rule here therefore judges only the
+ * relationships part of each story root — the main document and every
+ * glossary document a main-document `glossaryDocument` relationship
+ * reaches, found by relationship as `wordStoryRootParts` finds them —
+ * and a relationships part no story root owns is not judged. The
+ * fontTable and webSettings cells in `_rels/.rels` and the webSettings
+ * and theme cells in a glossary sidecar were not shown to Word; they
+ * follow the same rule. Lenient output is unchanged.
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { isRelationshipsPartName } from "../../../lib/content-types";
 import type { ValidationContext } from "../../../lib/validation-context";
-import type { ValidationIssue } from "../../../lib/types";
-import { officeRelationshipTypeSegment } from "../../../lib/word-read-parts";
+import type { Profile, ValidationIssue } from "../../../lib/types";
+import { officeRelationshipTypeSegment, sidecarOf, wordStoryRootParts } from "../../../lib/word-read-parts";
 import { getRelationshipChildren } from "../../../lib/xml-helpers";
+
+/**
+ * The stored spellings of the relationships parts these rules judge: the
+ * sidecar of every story root — each main document and each reached
+ * glossary document — found by relationship (#717), once each. A package
+ * whose package relationships cannot be read yields nothing, as every
+ * other reach-based rule yields nothing (#388).
+ */
+const storyRootRelsParts = async (ctx: ValidationContext, profile?: Profile): Promise<readonly string[]> => {
+    const parts: string[] = [];
+    const seen = new Set<string>();
+    for (const root of await wordStoryRootParts(ctx, profile)) {
+        const sidecar = sidecarOf(ctx.partNames, root);
+        if (sidecar !== undefined && !seen.has(sidecar)) {
+            seen.add(sidecar);
+            parts.push(sidecar);
+        }
+    }
+    return parts;
+};
+
+/** One finding per judged relationships part holding two or more `segment` relationships of exact Type. */
+const duplicateFindings = (
+    ctx: ValidationContext,
+    relsParts: readonly string[],
+    segment: string,
+    label: string,
+    code: string,
+): ValidationIssue[] => {
+    const issues: ValidationIssue[] = [];
+    for (const relsFile of relsParts) {
+        const parsed = ctx.effectiveXml(relsFile);
+        if (!parsed?.ok) {
+            continue;
+        }
+        const rels = getRelationshipChildren(parsed.document);
+        const ids: string[] = [];
+        for (const rel of rels) {
+            const type = rel.getAttribute("Type") ?? "";
+            if (officeRelationshipTypeSegment(type) !== segment) {
+                continue;
+            }
+            ids.push(rel.getAttribute("Id") ?? "");
+        }
+        if (ids.length < 2) {
+            continue;
+        }
+        issues.push({
+            severity: "error",
+            message:
+                `${relsFile} contains ${ids.length} ${label} relationships ` +
+                `(${ids.join(", ")}). Microsoft Word offers to recover the file. Keep one ${label} relationship.`,
+            path: relsFile,
+            code,
+        });
+    }
+    return issues;
+};
 
 export const wordDuplicateThemeRelationshipCheck: CheckDefinition = {
     id: "word-duplicate-theme-relationship",
@@ -53,42 +128,8 @@ export const wordDuplicateThemeRelationshipCheck: CheckDefinition = {
     groups: ["relationships"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
-        const issues: ValidationIssue[] = [];
-
-        for (const relsFile of ctx.partNames) {
-            if (!isRelationshipsPartName(relsFile)) {
-                continue;
-            }
-            const parsed = ctx.effectiveXml(relsFile);
-            if (!parsed?.ok) {
-                continue;
-            }
-            const dom = parsed.document;
-            const rels = getRelationshipChildren(dom);
-            const themeIds: string[] = [];
-            for (const rel of rels) {
-                const type = rel.getAttribute("Type") ?? "";
-                if (officeRelationshipTypeSegment(type) !== "theme") {
-                    continue;
-                }
-                themeIds.push(rel.getAttribute("Id") ?? "");
-            }
-            if (themeIds.length < 2) {
-                continue;
-            }
-            issues.push({
-                severity: "error",
-                message:
-                    `${relsFile} contains ${themeIds.length} theme relationships ` +
-                    `(${themeIds.join(", ")}). Microsoft Word offers to recover the file. Keep one theme relationship.`,
-                path: relsFile,
-                code: "word-duplicate-theme-relationship",
-            });
-        }
-
-        return issues;
-    },
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> =>
+        duplicateFindings(ctx, await storyRootRelsParts(ctx, profile), "theme", "theme", "word-duplicate-theme-relationship"),
 };
 
 export const wordDuplicateFontTableRelationshipCheck: CheckDefinition = {
@@ -97,42 +138,8 @@ export const wordDuplicateFontTableRelationshipCheck: CheckDefinition = {
     groups: ["relationships"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
-        const issues: ValidationIssue[] = [];
-
-        for (const relsFile of ctx.partNames) {
-            if (!isRelationshipsPartName(relsFile)) {
-                continue;
-            }
-            const parsed = ctx.effectiveXml(relsFile);
-            if (!parsed?.ok) {
-                continue;
-            }
-            const dom = parsed.document;
-            const rels = getRelationshipChildren(dom);
-            const fontIds: string[] = [];
-            for (const rel of rels) {
-                const type = rel.getAttribute("Type") ?? "";
-                if (officeRelationshipTypeSegment(type) !== "fontTable") {
-                    continue;
-                }
-                fontIds.push(rel.getAttribute("Id") ?? "");
-            }
-            if (fontIds.length < 2) {
-                continue;
-            }
-            issues.push({
-                severity: "error",
-                message:
-                    `${relsFile} contains ${fontIds.length} font table relationships ` +
-                    `(${fontIds.join(", ")}). Microsoft Word offers to recover the file. Keep one font table relationship.`,
-                path: relsFile,
-                code: "word-duplicate-font-table-relationship",
-            });
-        }
-
-        return issues;
-    },
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> =>
+        duplicateFindings(ctx, await storyRootRelsParts(ctx, profile), "fontTable", "font table", "word-duplicate-font-table-relationship"),
 };
 
 export const wordDuplicateWebSettingsRelationshipCheck: CheckDefinition = {
@@ -141,42 +148,14 @@ export const wordDuplicateWebSettingsRelationshipCheck: CheckDefinition = {
     groups: ["relationships"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
-        const issues: ValidationIssue[] = [];
-
-        for (const relsFile of ctx.partNames) {
-            if (!isRelationshipsPartName(relsFile)) {
-                continue;
-            }
-            const parsed = ctx.effectiveXml(relsFile);
-            if (!parsed?.ok) {
-                continue;
-            }
-            const dom = parsed.document;
-            const rels = getRelationshipChildren(dom);
-            const webIds: string[] = [];
-            for (const rel of rels) {
-                const type = rel.getAttribute("Type") ?? "";
-                if (officeRelationshipTypeSegment(type) !== "webSettings") {
-                    continue;
-                }
-                webIds.push(rel.getAttribute("Id") ?? "");
-            }
-            if (webIds.length < 2) {
-                continue;
-            }
-            issues.push({
-                severity: "error",
-                message:
-                    `${relsFile} contains ${webIds.length} web settings relationships ` +
-                    `(${webIds.join(", ")}). Microsoft Word offers to recover the file. Keep one web settings relationship.`,
-                path: relsFile,
-                code: "word-duplicate-web-settings-relationship",
-            });
-        }
-
-        return issues;
-    },
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> =>
+        duplicateFindings(
+            ctx,
+            await storyRootRelsParts(ctx, profile),
+            "webSettings",
+            "web settings",
+            "word-duplicate-web-settings-relationship",
+        ),
 };
 
 export const wordDuplicateSettingsRelationshipCheck: CheckDefinition = {
@@ -185,42 +164,8 @@ export const wordDuplicateSettingsRelationshipCheck: CheckDefinition = {
     groups: ["relationships"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
-        const issues: ValidationIssue[] = [];
-
-        for (const relsFile of ctx.partNames) {
-            if (!isRelationshipsPartName(relsFile)) {
-                continue;
-            }
-            const parsed = ctx.effectiveXml(relsFile);
-            if (!parsed?.ok) {
-                continue;
-            }
-            const dom = parsed.document;
-            const rels = getRelationshipChildren(dom);
-            const settingsIds: string[] = [];
-            for (const rel of rels) {
-                const type = rel.getAttribute("Type") ?? "";
-                if (officeRelationshipTypeSegment(type) !== "settings") {
-                    continue;
-                }
-                settingsIds.push(rel.getAttribute("Id") ?? "");
-            }
-            if (settingsIds.length < 2) {
-                continue;
-            }
-            issues.push({
-                severity: "error",
-                message:
-                    `${relsFile} contains ${settingsIds.length} settings relationships ` +
-                    `(${settingsIds.join(", ")}). Microsoft Word offers to recover the file. Keep one settings relationship.`,
-                path: relsFile,
-                code: "word-duplicate-settings-relationship",
-            });
-        }
-
-        return issues;
-    },
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> =>
+        duplicateFindings(ctx, await storyRootRelsParts(ctx, profile), "settings", "settings", "word-duplicate-settings-relationship"),
 };
 
 export const wordDuplicateStylesRelationshipCheck: CheckDefinition = {
@@ -229,42 +174,8 @@ export const wordDuplicateStylesRelationshipCheck: CheckDefinition = {
     groups: ["relationships"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
-        const issues: ValidationIssue[] = [];
-
-        for (const relsFile of ctx.partNames) {
-            if (!isRelationshipsPartName(relsFile)) {
-                continue;
-            }
-            const parsed = ctx.effectiveXml(relsFile);
-            if (!parsed?.ok) {
-                continue;
-            }
-            const dom = parsed.document;
-            const rels = getRelationshipChildren(dom);
-            const stylesIds: string[] = [];
-            for (const rel of rels) {
-                const type = rel.getAttribute("Type") ?? "";
-                if (officeRelationshipTypeSegment(type) !== "styles") {
-                    continue;
-                }
-                stylesIds.push(rel.getAttribute("Id") ?? "");
-            }
-            if (stylesIds.length < 2) {
-                continue;
-            }
-            issues.push({
-                severity: "error",
-                message:
-                    `${relsFile} contains ${stylesIds.length} styles relationships ` +
-                    `(${stylesIds.join(", ")}). Microsoft Word offers to recover the file. Keep one styles relationship.`,
-                path: relsFile,
-                code: "word-duplicate-styles-relationship",
-            });
-        }
-
-        return issues;
-    },
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> =>
+        duplicateFindings(ctx, await storyRootRelsParts(ctx, profile), "styles", "styles", "word-duplicate-styles-relationship"),
 };
 
 export const wordDuplicateNumberingRelationshipCheck: CheckDefinition = {
@@ -273,40 +184,6 @@ export const wordDuplicateNumberingRelationshipCheck: CheckDefinition = {
     groups: ["relationships"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
-        const issues: ValidationIssue[] = [];
-
-        for (const relsFile of ctx.partNames) {
-            if (!isRelationshipsPartName(relsFile)) {
-                continue;
-            }
-            const parsed = ctx.effectiveXml(relsFile);
-            if (!parsed?.ok) {
-                continue;
-            }
-            const dom = parsed.document;
-            const rels = getRelationshipChildren(dom);
-            const numberingIds: string[] = [];
-            for (const rel of rels) {
-                const type = rel.getAttribute("Type") ?? "";
-                if (officeRelationshipTypeSegment(type) !== "numbering") {
-                    continue;
-                }
-                numberingIds.push(rel.getAttribute("Id") ?? "");
-            }
-            if (numberingIds.length < 2) {
-                continue;
-            }
-            issues.push({
-                severity: "error",
-                message:
-                    `${relsFile} contains ${numberingIds.length} numbering relationships ` +
-                    `(${numberingIds.join(", ")}). Microsoft Word offers to recover the file. Keep one numbering relationship.`,
-                path: relsFile,
-                code: "word-duplicate-numbering-relationship",
-            });
-        }
-
-        return issues;
-    },
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> =>
+        duplicateFindings(ctx, await storyRootRelsParts(ctx, profile), "numbering", "numbering", "word-duplicate-numbering-relationship"),
 };

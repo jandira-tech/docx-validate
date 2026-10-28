@@ -20,6 +20,15 @@ import {
     wordDuplicateNumberingRelationshipCheck,
 } from "../src/scripts/office/checks/word-duplicate-relationships";
 
+// These rules judge only a story root's relationships part (#717), so every
+// context needs the package reach: `_rels/.rels` naming the main document.
+const packageEntries = (sidecar: string, extra: Record<string, string | Uint8Array> = {}): Record<string, string | Uint8Array> => ({
+    "_rels/.rels": rels(relation("rId0", "officeDocument", "", "word/document.xml")),
+    "word/document.xml": document(""),
+    "word/_rels/document.xml.rels": sidecar,
+    ...extra,
+});
+
 describe("direct relationship duplicate counts (#434)", () => {
     it.each([
         [wordDuplicateThemeRelationshipCheck, "theme"],
@@ -29,18 +38,16 @@ describe("direct relationship duplicate counts (#434)", () => {
         [wordDuplicateStylesRelationshipCheck, "styles"],
         [wordDuplicateNumberingRelationshipCheck, "numbering"],
     ] as const)("ignores a nested second %s / %s relationship", async (check, type) => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(relation("direct", type) + `<x:Wrap xmlns:x="urn:x">${relation("nested", type)}</x:Wrap>`),
-        });
+        const ctx = ValidationContext.fromEntries(
+            packageEntries(rels(relation("direct", type) + `<x:Wrap xmlns:x="urn:x">${relation("nested", type)}</x:Wrap>`)),
+        );
         expect(await check.run(ctx)).toEqual([]);
     });
 });
 
 describe("word-duplicate-theme-relationship", () => {
     it("reports the Word-rejected shape with unchanged issue details", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(relation("rId1", "theme") + relation("rId2", "theme")),
-        });
+        const ctx = ValidationContext.fromEntries(packageEntries(rels(relation("rId1", "theme") + relation("rId2", "theme"))));
         expect(await wordDuplicateThemeRelationshipCheck.run(ctx)).toEqual([
             {
                 severity: "error",
@@ -57,13 +64,14 @@ describe("word-duplicate-theme-relationship", () => {
         // The check reads the stream after Markup Compatibility processing;
         // that processor applies the relationships vocabulary, so an
         // Ignorable naming the stream's own namespace hides nothing (#493).
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels":
+        const ctx = ValidationContext.fromEntries(
+            packageEntries(
                 `<Relationships xmlns="${PR}" xmlns:mc="${MC}" xmlns:pr="${PR}" mc:Ignorable="pr">` +
-                relation("rId1", "theme") +
-                relation("rId2", "theme") +
-                `</Relationships>`,
-        });
+                    relation("rId1", "theme") +
+                    relation("rId2", "theme") +
+                    `</Relationships>`,
+            ),
+        );
         expect(await wordDuplicateThemeRelationshipCheck.run(ctx)).toEqual([
             {
                 severity: "error",
@@ -75,26 +83,23 @@ describe("word-duplicate-theme-relationship", () => {
         ]);
     });
     it("accepts the repaired control", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(relation("rId1", "theme") + relation("other", "image") + `<Relationship/>`),
-            "word/document.xml": document(""),
-        });
+        const ctx = ValidationContext.fromEntries(
+            packageEntries(rels(relation("rId1", "theme") + relation("other", "image") + `<Relationship/>`)),
+        );
         expect(await wordDuplicateThemeRelationshipCheck.run(ctx)).toEqual([]);
     });
     it("skips absent, irrelevant and unparseable parts", async () => {
         expect(await wordDuplicateThemeRelationshipCheck.run(ValidationContext.fromEntries({}))).toEqual([]);
         expect(
             await wordDuplicateThemeRelationshipCheck.run(
-                ValidationContext.fromEntries({ "word/_rels/document.xml.rels": "<broken", "customXml/item.xml": document("") }),
+                ValidationContext.fromEntries(packageEntries("<broken", { "customXml/item.xml": document("") })),
             ),
         ).toEqual([]);
     });
 });
 describe("word-duplicate-font-table-relationship", () => {
     it("reports the Word-rejected shape with unchanged issue details", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(relation("rId1", "fontTable") + relation("rId2", "fontTable")),
-        });
+        const ctx = ValidationContext.fromEntries(packageEntries(rels(relation("rId1", "fontTable") + relation("rId2", "fontTable"))));
         expect(await wordDuplicateFontTableRelationshipCheck.run(ctx)).toEqual([
             {
                 severity: "error",
@@ -106,26 +111,23 @@ describe("word-duplicate-font-table-relationship", () => {
         ]);
     });
     it("accepts the repaired control", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(relation("rId1", "fontTable") + relation("other", "image") + `<Relationship/>`),
-            "word/document.xml": document(""),
-        });
+        const ctx = ValidationContext.fromEntries(
+            packageEntries(rels(relation("rId1", "fontTable") + relation("other", "image") + `<Relationship/>`)),
+        );
         expect(await wordDuplicateFontTableRelationshipCheck.run(ctx)).toEqual([]);
     });
     it("skips absent, irrelevant and unparseable parts", async () => {
         expect(await wordDuplicateFontTableRelationshipCheck.run(ValidationContext.fromEntries({}))).toEqual([]);
         expect(
             await wordDuplicateFontTableRelationshipCheck.run(
-                ValidationContext.fromEntries({ "word/_rels/document.xml.rels": "<broken", "customXml/item.xml": document("") }),
+                ValidationContext.fromEntries(packageEntries("<broken", { "customXml/item.xml": document("") })),
             ),
         ).toEqual([]);
     });
 });
 describe("word-duplicate-web-settings-relationship", () => {
     it("reports the Word-rejected shape with unchanged issue details", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(relation("rId1", "webSettings") + relation("rId2", "webSettings")),
-        });
+        const ctx = ValidationContext.fromEntries(packageEntries(rels(relation("rId1", "webSettings") + relation("rId2", "webSettings"))));
         expect(await wordDuplicateWebSettingsRelationshipCheck.run(ctx)).toEqual([
             {
                 severity: "error",
@@ -137,26 +139,23 @@ describe("word-duplicate-web-settings-relationship", () => {
         ]);
     });
     it("accepts the repaired control", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(relation("rId1", "webSettings") + relation("other", "image") + `<Relationship/>`),
-            "word/document.xml": document(""),
-        });
+        const ctx = ValidationContext.fromEntries(
+            packageEntries(rels(relation("rId1", "webSettings") + relation("other", "image") + `<Relationship/>`)),
+        );
         expect(await wordDuplicateWebSettingsRelationshipCheck.run(ctx)).toEqual([]);
     });
     it("skips absent, irrelevant and unparseable parts", async () => {
         expect(await wordDuplicateWebSettingsRelationshipCheck.run(ValidationContext.fromEntries({}))).toEqual([]);
         expect(
             await wordDuplicateWebSettingsRelationshipCheck.run(
-                ValidationContext.fromEntries({ "word/_rels/document.xml.rels": "<broken", "customXml/item.xml": document("") }),
+                ValidationContext.fromEntries(packageEntries("<broken", { "customXml/item.xml": document("") })),
             ),
         ).toEqual([]);
     });
 });
 describe("word-duplicate-settings-relationship", () => {
     it("reports the Word-rejected shape with unchanged issue details", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(relation("rId1", "settings") + relation("rId2", "settings")),
-        });
+        const ctx = ValidationContext.fromEntries(packageEntries(rels(relation("rId1", "settings") + relation("rId2", "settings"))));
         expect(await wordDuplicateSettingsRelationshipCheck.run(ctx)).toEqual([
             {
                 severity: "error",
@@ -168,17 +167,16 @@ describe("word-duplicate-settings-relationship", () => {
         ]);
     });
     it("accepts the repaired control", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(relation("rId1", "settings") + relation("other", "image") + `<Relationship/>`),
-            "word/document.xml": document(""),
-        });
+        const ctx = ValidationContext.fromEntries(
+            packageEntries(rels(relation("rId1", "settings") + relation("other", "image") + `<Relationship/>`)),
+        );
         expect(await wordDuplicateSettingsRelationshipCheck.run(ctx)).toEqual([]);
     });
     it("skips absent, irrelevant and unparseable parts", async () => {
         expect(await wordDuplicateSettingsRelationshipCheck.run(ValidationContext.fromEntries({}))).toEqual([]);
         expect(
             await wordDuplicateSettingsRelationshipCheck.run(
-                ValidationContext.fromEntries({ "word/_rels/document.xml.rels": "<broken", "customXml/item.xml": document("") }),
+                ValidationContext.fromEntries(packageEntries("<broken", { "customXml/item.xml": document("") })),
             ),
         ).toEqual([]);
     });
@@ -200,31 +198,31 @@ describe("duplicate checks count exact Types (session 47, #708)", () => {
     // clean beside a real relationship of the segment, as #694's styles and
     // numbering checks already read it.
     it.each(EXACT_TYPE_CHECKS)("draws nothing from one %s relationship beside a `custom/%s` type", async (segment, check) => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(
-                relation("rId2", segment, "", `${segment}.xml`) + relationOfType("rId3", `${R}/custom/${segment}`, `${segment}2.xml`),
+        const ctx = ValidationContext.fromEntries(
+            packageEntries(
+                rels(relation("rId2", segment, "", `${segment}.xml`) + relationOfType("rId3", `${R}/custom/${segment}`, `${segment}2.xml`)),
             ),
-        });
+        );
         expect(await check.run(ctx)).toEqual([]);
     });
 
     it.each(EXACT_TYPE_CHECKS)("draws nothing from one %s relationship beside a foreign %s-suffixed type", async (segment, check) => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(
-                relation("rId2", segment, "", `${segment}.xml`) +
-                    relationOfType("rId3", `http://example.com/${segment}`, `${segment}2.xml`),
+        const ctx = ValidationContext.fromEntries(
+            packageEntries(
+                rels(
+                    relation("rId2", segment, "", `${segment}.xml`) +
+                        relationOfType("rId3", `http://example.com/${segment}`, `${segment}2.xml`),
+                ),
             ),
-        });
+        );
         expect(await check.run(ctx)).toEqual([]);
     });
 
     it.each(EXACT_TYPE_CHECKS)("counts the ISO Strict %s type URI", async (segment, check) => {
         const strict = `${RS}/${segment}`;
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(
-                relationOfType("rId2", strict, `${segment}.xml`) + relationOfType("rId3", strict, `${segment}2.xml`),
-            ),
-        });
+        const ctx = ValidationContext.fromEntries(
+            packageEntries(rels(relationOfType("rId2", strict, `${segment}.xml`) + relationOfType("rId3", strict, `${segment}2.xml`))),
+        );
         const issues = await check.run(ctx);
         expect(issues).toHaveLength(1);
         expect(issues[0]?.code).toBe(check.id);
@@ -243,10 +241,10 @@ describe("OPC-equivalent duplicate relationship checks (#398)", () => {
         await withTempDir(async (dir) => {
             const run = async (extension: string) => {
                 const file = path.join(dir, `${extension}.docx`);
-                await fs.writeFile(
-                    file,
-                    await buildDocx({ [`word/_rels/document.xml.${extension}`]: rels(relation("rId1", type) + relation("rId2", type)) }),
-                );
+                const parts: Record<string, string> = { ...MINIMAL_PARTS };
+                delete parts["word/_rels/document.xml.rels"];
+                parts[`word/_rels/document.xml.${extension}`] = rels(relation("rId1", type) + relation("rId2", type));
+                await fs.writeFile(file, await buildDocx(parts));
                 return check.run(await ValidationContext.fromArchive(await fs.readFile(file)));
             };
             const control = await run("rels");

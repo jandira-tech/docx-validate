@@ -12,7 +12,7 @@ import type { CheckDefinition } from "../src/lib/check-registry";
 import { ValidationContext } from "../src/lib/validation-context";
 import { WORD_RULE_CHECKS } from "../src/scripts/office/checks/index";
 import { validate } from "../src/scripts/office/validate";
-import { rels, relation, R, RS } from "./support/word-rule-test-xml";
+import { document, rels, relation, R, RS } from "./support/word-rule-test-xml";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BROKEN_STYLES = path.join(HERE, "fixtures", "broken", "package.word-duplicate-styles.docx");
@@ -24,6 +24,15 @@ const STYLES_WITH_EFFECTS = "http://schemas.microsoft.com/office/2007/relationsh
 
 const relationOfType = (id: string, type: string, target = "part.xml"): string =>
     `<Relationship Id="${id}" Type="${type}" Target="${target}"/>`;
+
+// These rules judge only a story root's relationships part (#717), so every
+// context needs the package reach: `_rels/.rels` naming the main document.
+const packageEntries = (sidecar: string, extra: Record<string, string | Uint8Array> = {}): Record<string, string | Uint8Array> => ({
+    "_rels/.rels": rels(relation("rId0", "officeDocument", "", "word/document.xml")),
+    "word/document.xml": document(""),
+    "word/_rels/document.xml.rels": sidecar,
+    ...extra,
+});
 
 const registeredCheck = (id: string): CheckDefinition => {
     const check = WORD_RULE_CHECKS.find((rule) => rule.id === id);
@@ -87,9 +96,7 @@ describe("word-valid duplicate numbering relationship", { timeout: 30000 }, () =
 
 describe("word-duplicate-styles-relationship", () => {
     it("reports the Word-rejected shape with unchanged issue details", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(relation("rId1", "styles") + relation("rId2", "styles")),
-        });
+        const ctx = ValidationContext.fromEntries(packageEntries(rels(relation("rId1", "styles") + relation("rId2", "styles"))));
         expect(await registeredCheck("word-duplicate-styles-relationship").run(ctx)).toEqual([
             {
                 severity: "error",
@@ -101,11 +108,9 @@ describe("word-duplicate-styles-relationship", () => {
         ]);
     });
     it("still reports two styles relationships to the same target", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(
-                relation("rId1", "styles", "", "styles.xml") + relation("rId2", "styles", "", "styles.xml"),
-            ),
-        });
+        const ctx = ValidationContext.fromEntries(
+            packageEntries(rels(relation("rId1", "styles", "", "styles.xml") + relation("rId2", "styles", "", "styles.xml"))),
+        );
         expect(await registeredCheck("word-duplicate-styles-relationship").run(ctx)).toEqual([
             {
                 severity: "error",
@@ -117,41 +122,35 @@ describe("word-duplicate-styles-relationship", () => {
         ]);
     });
     it("draws nothing from one styles relationship beside a Microsoft stylesWithEffects relationship", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(
-                relation("rId1", "styles") + relationOfType("rId2", STYLES_WITH_EFFECTS, "stylesWithEffects.xml"),
-            ),
-        });
+        const ctx = ValidationContext.fromEntries(
+            packageEntries(rels(relation("rId1", "styles") + relationOfType("rId2", STYLES_WITH_EFFECTS, "stylesWithEffects.xml"))),
+        );
         expect(await registeredCheck("word-duplicate-styles-relationship").run(ctx)).toEqual([]);
     });
     // A type counts only as the namespace plus the one segment — Word reads
     // Types exactly (session 27) — so `custom/styles` is no styles type
     // (#519), and a foreign styles-suffixed type is none either.
     it("draws nothing from one styles relationship beside a `custom/styles` type", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(relation("rId1", "styles") + relationOfType("rId2", `${R}/custom/styles`, "custom.xml")),
-        });
+        const ctx = ValidationContext.fromEntries(
+            packageEntries(rels(relation("rId1", "styles") + relationOfType("rId2", `${R}/custom/styles`, "custom.xml"))),
+        );
         expect(await registeredCheck("word-duplicate-styles-relationship").run(ctx)).toEqual([]);
     });
     it("draws nothing from one styles relationship beside a foreign styles-suffixed type", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(relation("rId1", "styles") + relationOfType("rId2", "http://example.com/styles")),
-        });
+        const ctx = ValidationContext.fromEntries(
+            packageEntries(rels(relation("rId1", "styles") + relationOfType("rId2", "http://example.com/styles"))),
+        );
         expect(await registeredCheck("word-duplicate-styles-relationship").run(ctx)).toEqual([]);
     });
     it("draws nothing from one styles relationship beside a footnotes relationship", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(relation("rId1", "styles") + relation("rId2", "footnotes")),
-        });
+        const ctx = ValidationContext.fromEntries(packageEntries(rels(relation("rId1", "styles") + relation("rId2", "footnotes"))));
         expect(await registeredCheck("word-duplicate-styles-relationship").run(ctx)).toEqual([]);
     });
     it("counts the ISO Strict styles type URI", async () => {
         const strict = `${RS}/styles`;
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(
-                relationOfType("rId1", strict, "styles.xml") + relationOfType("rId2", strict, "styles.xml"),
-            ),
-        });
+        const ctx = ValidationContext.fromEntries(
+            packageEntries(rels(relationOfType("rId1", strict, "styles.xml") + relationOfType("rId2", strict, "styles.xml"))),
+        );
         expect(await registeredCheck("word-duplicate-styles-relationship").run(ctx)).toEqual([
             {
                 severity: "error",
@@ -166,9 +165,7 @@ describe("word-duplicate-styles-relationship", () => {
 
 describe("word-duplicate-numbering-relationship", () => {
     it("reports the Word-rejected shape with unchanged issue details", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(relation("rId1", "numbering") + relation("rId2", "numbering")),
-        });
+        const ctx = ValidationContext.fromEntries(packageEntries(rels(relation("rId1", "numbering") + relation("rId2", "numbering"))));
         expect(await registeredCheck("word-duplicate-numbering-relationship").run(ctx)).toEqual([
             {
                 severity: "error",
@@ -180,20 +177,16 @@ describe("word-duplicate-numbering-relationship", () => {
         ]);
     });
     it("draws nothing from one numbering relationship beside a `custom/numbering` type", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(
-                relation("rId1", "numbering") + relationOfType("rId2", `${R}/custom/numbering`, "custom.xml"),
-            ),
-        });
+        const ctx = ValidationContext.fromEntries(
+            packageEntries(rels(relation("rId1", "numbering") + relationOfType("rId2", `${R}/custom/numbering`, "custom.xml"))),
+        );
         expect(await registeredCheck("word-duplicate-numbering-relationship").run(ctx)).toEqual([]);
     });
     it("counts the ISO Strict numbering type URI", async () => {
         const strict = `${RS}/numbering`;
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(
-                relationOfType("rId1", strict, "numbering.xml") + relationOfType("rId2", strict, "numbering.xml"),
-            ),
-        });
+        const ctx = ValidationContext.fromEntries(
+            packageEntries(rels(relationOfType("rId1", strict, "numbering.xml") + relationOfType("rId2", strict, "numbering.xml"))),
+        );
         expect(await registeredCheck("word-duplicate-numbering-relationship").run(ctx)).toEqual([
             {
                 severity: "error",
@@ -210,9 +203,7 @@ describe("duplicate footnotes relationships stay unchecked", () => {
     // Session 45 (s45g): two footnotes relationships opened clean, so
     // footnotes keeps no duplicate check (#694).
     it("draws nothing from either check for two footnotes relationships", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/_rels/document.xml.rels": rels(relation("rId1", "footnotes") + relation("rId2", "footnotes")),
-        });
+        const ctx = ValidationContext.fromEntries(packageEntries(rels(relation("rId1", "footnotes") + relation("rId2", "footnotes"))));
         expect(await registeredCheck("word-duplicate-styles-relationship").run(ctx)).toEqual([]);
         expect(await registeredCheck("word-duplicate-numbering-relationship").run(ctx)).toEqual([]);
     });
