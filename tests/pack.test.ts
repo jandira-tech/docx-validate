@@ -296,4 +296,29 @@ describe("pack", () => {
             expect(body.toString("utf16le")).toContain("Hello");
         });
     });
+
+    it.each(["le", "be"] as const)(
+        "packs a UTF-16%s part without a byte order mark under a declaration naming its byte order (#878)",
+        async (endian) => {
+            await withTempDir(async (dir) => {
+                const inputDir = path.join(dir, "src");
+                const packed = path.join(dir, "packed.docx");
+                const declared = endian === "le" ? "UTF-16LE" : "UTF-16BE";
+                await writeUnpacked(inputDir, { document: "<w:body><w:p><w:r><w:t>Hello</w:t></w:r></w:p></w:body>" });
+                const docPath = path.join(inputDir, "word", "document.xml");
+                const document = (await fs.readFile(docPath, "utf8")).replace('encoding="UTF-8"', `encoding="${declared}"`);
+                await fs.writeFile(docPath, utf16Part(document, endian).subarray(2));
+
+                expect((await pack(inputDir, packed, { validate: false })).ok).toBe(true);
+
+                const zip = await JSZip.loadAsync(await fs.readFile(packed));
+                const bytes = Buffer.from(await zip.file("word/document.xml")!.async("uint8array"));
+                expect([...bytes.subarray(0, 2)]).toEqual(endian === "le" ? [0x3c, 0x00] : [0x00, 0x3c]);
+                if (endian === "be") bytes.swap16();
+                const text = bytes.toString("utf16le");
+                expect(text).toMatch(new RegExp(`^<\\?xml[^>]*encoding="${declared}"`));
+                expect(text).toContain("Hello");
+            });
+        },
+    );
 });

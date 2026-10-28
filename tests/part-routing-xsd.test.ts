@@ -288,7 +288,7 @@ describe("schema routing of PresentationML parts below ppt/ (#864)", { timeout: 
                 const result = await validate(file, { profile });
                 expect(result.valid).toBe(true);
                 expect(result.xsdWalk.parts).toContain(part);
-                expect(result.issues.filter((issue) => issue.code === "xsd-no-schema" && issue.path === part)).toEqual([]);
+                expect(result.issues.filter((issue) => issue.path === part)).toEqual([]);
             });
         });
     });

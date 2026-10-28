@@ -197,10 +197,21 @@ const withBom = (bom: XmlEncoding | undefined, body: Uint8Array): Uint8Array => 
  * The encoding name a part's XML declaration must name for the bytes it is
  * written in.
  *
- * A UTF-16 part declares `UTF-16` — the byte order mark says which way round
- * the bytes are — and a UTF-8 part declares `UTF-8`.
+ * A UTF-8 part declares `UTF-8`. A UTF-16 part with a byte order mark
+ * declares `UTF-16`, as the mark says which way round the bytes are. A UTF-16
+ * part without one declares `UTF-16LE` or `UTF-16BE`: XML 1.0 §4.3.3 requires
+ * the mark of an entity declared `UTF-16`, so without it only the
+ * declaration can name the byte order (#878).
  */
-export const xmlDeclarationEncoding = (encoding: XmlEncoding): string => (encoding === "utf-8" ? "UTF-8" : "UTF-16");
+export const xmlDeclarationEncoding = (part: XmlPartEncoding): string => {
+    if (part.encoding === "utf-8") {
+        return "UTF-8";
+    }
+    if (part.bom !== undefined) {
+        return "UTF-16";
+    }
+    return part.encoding === "utf-16le" ? "UTF-16LE" : "UTF-16BE";
+};
 
 /**
  * Byte-level decoding for the DOM layer. `@xmldom` takes a JavaScript string,

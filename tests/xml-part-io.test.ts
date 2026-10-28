@@ -71,7 +71,9 @@ describe("writeXmlPart", () => {
 
             const bytes = await fs.readFile(file);
             expect([...bytes.subarray(0, 2)]).toEqual([0xff, 0xfe]);
-            expect(Buffer.from(bytes.subarray(2)).toString("utf16le")).toContain('encoding="UTF-16"');
+            const text = Buffer.from(bytes.subarray(2)).toString("utf16le");
+            expect(text).toContain('encoding="UTF-16"');
+            expect(text).toContain("<body/>");
         }));
 
     it("writes a UTF-8 part back as UTF-8", async () =>
@@ -98,6 +100,27 @@ describe("writeXmlPart", () => {
             const bytes = await fs.readFile(file);
             expect([...bytes.subarray(0, 2)]).toEqual([0xff, 0xfe]);
         }));
+
+    it.each(["le", "be"] as const)(
+        "writes a UTF-16%s part with no byte order mark back without one, its declaration naming the byte order (#878)",
+        async (endian) =>
+            withTempDir(async (dir) => {
+                const file = path.join(dir, "document.xml");
+                const declared = endian === "le" ? "UTF-16LE" : "UTF-16BE";
+                await fs.writeFile(file, utf16Part(`<?xml version="1.0" encoding="${declared}"?>${BODY}`, endian).subarray(2));
+                const part = await readXmlPart(file);
+
+                // The auto-repair writers hold only a DOM, so the bytes on disk decide.
+                await writeXmlPart(file, parseXml(part!.text));
+
+                const bytes = await fs.readFile(file);
+                expect([...bytes.subarray(0, 2)]).toEqual(endian === "le" ? [0x3c, 0x00] : [0x00, 0x3c]);
+                if (endian === "be") bytes.swap16();
+                const text = bytes.toString("utf16le");
+                expect(text).toMatch(new RegExp(`^<\\?xml[^>]*encoding="${declared}"`));
+                expect(text).toContain("<body/>");
+            }),
+    );
 
     it("leaves a part it cannot decode untouched", async () =>
         withTempDir(async (dir) => {

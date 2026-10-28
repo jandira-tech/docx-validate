@@ -168,7 +168,7 @@ async function appendXml(xmlPath: string, rootTag: string, content: string): Pro
             root.appendChild(dom.importNode(child, true));
         }
     }
-    const output = encodeSmartQuotes(serializeXml(dom, xmlDeclarationEncoding(part.encoding)));
+    const output = encodeSmartQuotes(serializeXml(dom, xmlDeclarationEncoding(part)));
     await writeXmlText(xmlPath, output, part);
     return true;
 }
