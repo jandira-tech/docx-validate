@@ -503,6 +503,41 @@ describe("markup compatibility in a word/ part Word does not read warns under wo
         },
     );
 
+    // #1135 (review 1126 F7): a header relationship the read model cannot see
+    // still names the header. Word's reading of such a relationships part is
+    // unprobed, so the list errs wide and the used header's finding blocks.
+    it.each(
+        RUNS.flatMap(
+            ([label, checks]) =>
+                [
+                    [
+                        "in no namespace",
+                        label,
+                        checks,
+                        (rels: string) => once(rels, 'Target="header83.xml"/>', 'Target="header83.xml" xmlns=""/>'),
+                    ],
+                    [
+                        "under a root outside the package-relationships namespace",
+                        label,
+                        checks,
+                        (rels: string) =>
+                            once(
+                                rels,
+                                '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">',
+                                '<Relationships xmlns="urn:not-pr">',
+                            ),
+                    ],
+                ] as const,
+        ),
+    )(
+        "keeps mce-must-understand an error in a used header a relationship %s names (%s run, #1135)",
+        async (_shape, _label, checks, spell) => {
+            const parts = relateHeader(mustUnderstandHeader(), true);
+            parts.set(MAIN_RELS, spell(textOf(parts, MAIN_RELS)));
+            expect((await mceRun(parts, "word-valid", checks)).mce).toEqual([`mce-must-understand:error@${UNRELATED}`]);
+        },
+    );
+
     it("strict keeps mce-malformed an error in a header the main document relates but does not use", async () => {
         const choice = relateHeader(withUnrelatedHeader(await load(CHOICE_CLEAN), await load(CHOICE_BROKEN)), false);
         expect((await mceRun(choice, "strict")).mce).toContain(`mce-malformed:error@${UNRELATED}`);

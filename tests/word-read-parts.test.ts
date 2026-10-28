@@ -2290,6 +2290,36 @@ describe("wordPossiblyReadParts (#1116, #1125)", () => {
         expect(await named(withHeaders({ [STRAY]: relationships(header("rId9", "header9.xml")) }))).toContain(HEADER9);
     });
 
+    // #1135: the read model reads only the package-relationships namespace's
+    // Relationship children of a Relationships root in that namespace. Any
+    // other Relationship element names its part, used or not, so a reading
+    // the model cannot make never narrows the list (review 1126 F7).
+    it.each([
+        ["in no namespace", (rels: string) => rels.replace('Target="header1.xml"/>', 'Target="header1.xml" xmlns=""/>')],
+        [
+            "under a root outside the package-relationships namespace",
+            (rels: string) => rels.replace(`<Relationships xmlns="${RELS_NS}">`, '<Relationships xmlns="urn:not-pr">'),
+        ],
+        [
+            "in the package-relationships namespace under a root outside it",
+            (rels: string) =>
+                rels
+                    .replace(`<Relationships xmlns="${RELS_NS}">`, '<Relationships xmlns="urn:not-pr">')
+                    .replace('<Relationship Id="rIdH"', `<Relationship xmlns="${RELS_NS}" Id="rIdH"`),
+        ],
+        [
+            "in a foreign namespace under the package-relationships root",
+            (rels: string) => rels.replace('<Relationship Id="rIdH"', '<x:Relationship xmlns:x="urn:x" Id="rIdH"'),
+        ],
+    ])("lists a header the main document's relationships part names %s, used or not (#1135)", async (_label, spell) => {
+        for (const document of [documentUsingHeader("rIdH"), MINIMAL_PARTS["word/document.xml"]!]) {
+            const parts = withHeaders({ "word/document.xml": document });
+            parts["word/_rels/document.xml.rels"] = spell(parts["word/_rels/document.xml.rels"] as string);
+            expect(parts["word/_rels/document.xml.rels"]).not.toBe(withHeaders()["word/_rels/document.xml.rels"]);
+            expect(await named(parts)).toContain(HEADER1);
+        }
+    });
+
     it.each([
         ["an escaped spelling", STRAY, "header%39.xml"],
         ["a climb past the package root", STRAY, "../../word/header9.xml"],

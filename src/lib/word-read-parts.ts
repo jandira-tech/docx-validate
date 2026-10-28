@@ -103,7 +103,7 @@ import {
     isRelationshipsPartName,
     resolveTarget,
 } from "./content-types";
-import { NS, type Profile } from "./types";
+import type { Profile } from "./types";
 import type { ValidationContext, XmlPart } from "./validation-context";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "./xml-helpers";
 import { checkXmlSyntax } from "./xml-syntax";
@@ -733,7 +733,11 @@ export const wordReadTypedTargets = async (context: ValidationContext, profile?:
  * stays out (session 84 s84a). Every other `Relationship` element of the
  * stored DOM counts, nested ones included, so a relationship inside a Choice
  * Word does not select still names its part: the list can be too wide, never
- * too narrow. A target spelling a URI scheme names the part word-valid's
+ * too narrow. That holds in any namespace: the read model reads only the
+ * package-relationships `Relationship` children of a `Relationships` root in
+ * that namespace, so it decides nothing about one in no namespace, in
+ * another, or under a root outside it, and that one names its part (#1135). A
+ * target spelling a URI scheme names the part word-valid's
  * file-reference walk resolves it to: every scheme but `http:`, `https:` and
  * `mailto:` reads as a relative reference (#988, #1008), which the read model
  * does not follow, so a story root's own story relationship to one counts
@@ -763,20 +767,15 @@ export const wordPossiblyReadParts = async (context: ValidationContext, profile?
         }
         const rootSidecar = rootSidecars.has(canonicalPartName(name));
         const baseDir = relationshipsBaseDir(name);
-        for (const relationship of getElementsByTagNameNSAll(parsed.document, NS.PR, "Relationship")) {
+        const readable = new Set(getRelationshipChildren(parsed.document));
+        for (const relationship of getElementsByTagNameNSAll(parsed.document, "*", "Relationship")) {
             if (relationship.getAttribute("TargetMode") === "External") {
                 continue;
             }
             const reference = relationship.getAttribute("Target") ?? "";
             const target = resolveTarget(lookup, baseDir, reference);
             const segment = officeRelationshipTypeSegment(relationship.getAttribute("Type") ?? "");
-            if (
-                target !== undefined &&
-                rootSidecar &&
-                segment !== undefined &&
-                LAZY_TYPES.has(segment) &&
-                relationship.parentNode === parsed.document.documentElement
-            ) {
+            if (target !== undefined && rootSidecar && segment !== undefined && LAZY_TYPES.has(segment) && readable.has(relationship)) {
                 continue;
             }
             const part = target ?? schemeTargetPart(lookup, baseDir, reference);
