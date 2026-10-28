@@ -259,6 +259,56 @@ describe("PPTXSchemaValidator.validateNotesSlideReferences", () => {
         });
     });
 
+    // #1007: the key is the part the target names, under OPC part-name
+    // equivalence, so two slides sharing one notes slide through equivalent
+    // spellings are reported, under the part's name.
+    it.each([
+        "../../ppt/notesSlides/notesSlide1.xml",
+        "/ppt/notesSlides/notesSlide1.xml",
+        "../notesSlides//notesSlide1.xml",
+        "../notesSlides/notesSlide1.xml?x",
+        "../notesSlides/notesSlide1.xml#x",
+        "..\\notesSlides\\notesSlide1.xml",
+        "../notesSlides/NotesSlide1.xml",
+        "../notesSlides/notesSlide%31.xml",
+    ])("flags a notes slide two slides reference through the spelling %s and the plain one", async (target) => {
+        await withTempDir(async (dir) => {
+            await writeFile(
+                path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"),
+                relsXml(
+                    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesSlide" Target="../notesSlides/notesSlide1.xml"/>',
+                ),
+            );
+            await writeFile(
+                path.join(dir, "ppt", "slides", "_rels", "slide2.xml.rels"),
+                relsXml(
+                    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesSlide" Target="${target}"/>`,
+                ),
+            );
+            const result = await makeValidator(dir).validateNotesSlideReferences();
+            expect(result.valid).toBe(false);
+            expect(result.issues.filter((i) => i.code === "notes-shared").map((i) => i.message)).toEqual([
+                "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: slide1, slide2",
+            ]);
+        });
+    });
+
+    it("keeps two notes slides two slides reference apart", async () => {
+        await withTempDir(async (dir) => {
+            for (const n of [1, 2]) {
+                await writeFile(
+                    path.join(dir, "ppt", "slides", "_rels", `slide${n}.xml.rels`),
+                    relsXml(
+                        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesSlide" Target="../notesSlides/notesSlide${n}.xml"/>`,
+                    ),
+                );
+            }
+            const result = await makeValidator(dir).validateNotesSlideReferences();
+            expect(result.issues).toEqual([]);
+            expect(result.valid).toBe(true);
+        });
+    });
+
     // #991: a target whose last segment is `.` or `..`, or that ends in `/`,
     // names a folder, which names no part (#962, #975), so it shares no notes
     // slide with the plain target the stored part answers.
