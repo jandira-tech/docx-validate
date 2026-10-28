@@ -1029,22 +1029,48 @@ describe("a notes relationship target escaping the package (#830, sessions 63 s6
         });
     });
 
-    // Unprobed: since #947 a package-absolute target's dot segments resolve
-    // as a relative target's do, so its climb stops at the package root the
-    // same way. Word has not been probed with a package-absolute climb;
-    // session 70 probed package-absolute officeDocument targets only (#962).
+    // Since #947 a package-absolute target's dot segments resolve as a
+    // relative target's do, so its climb stops at the package root the same
+    // way. Session 74 (s74a, two runs, all readings agree) opened each of
+    // these clean with the note rendered, so Word reads the part the climb
+    // stops at (#982).
     it.each([
-        ["footnote", "/../footnotes.xml"],
-        ["endnote", "/../endnotes.xml"],
-    ] as const)("accepts the %s reference the package-absolute target %s resolves at the package root (#947)", async (kind, target) => {
+        ["footnote", "footnotes.xml", "/../footnotes.xml"],
+        ["footnote", "footnotes.xml", "/../../footnotes.xml"],
+        ["footnote", "word/footnotes.xml", "/../word/footnotes.xml"],
+        ["endnote", "endnotes.xml", "/../endnotes.xml"],
+    ] as const)(
+        "accepts the %s reference stored at %s that the package-absolute target %s resolves (#947, session 74)",
+        async (kind, stored, target) => {
+            await withTempDir(async (dir) => {
+                const code = `word-${kind}-reference-missing`;
+                const file = path.join(dir, "absolute-escaping.docx");
+                await writeFile(file, await notesAt(kind, stored, target));
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.issues.filter((issue) => issue.code === code)).toEqual([]);
+                expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+                expect(result.valid).toBe(true);
+            });
+        },
+    );
+
+    // The climb names the root's part, not the source folder's: session 74
+    // offered recovery for `/../footnotes.xml` with the note only in
+    // `word/footnotes.xml`, as session 64 did for the relative climb (#982).
+    it("rejects the footnote reference the package-absolute climb /../footnotes.xml leaves dangling beside word/footnotes.xml (session 74)", async () => {
         await withTempDir(async (dir) => {
-            const code = `word-${kind}-reference-missing`;
-            const file = path.join(dir, "absolute-escaping.docx");
-            await writeFile(file, await notesAt(kind, `${kind}s.xml`, target));
+            const code = "word-footnote-reference-missing";
+            const file = path.join(dir, "absolute-escaping-word-folder.docx");
+            await writeFile(file, await notesAt("footnote", "word/footnotes.xml", "/../footnotes.xml"));
             const result = await validate(file, { profile: "word-valid" });
-            expect(result.issues.filter((issue) => issue.code === code)).toEqual([]);
-            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
-            expect(result.valid).toBe(true);
+            expect(result.valid).toBe(false);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([
+                expect.objectContaining({
+                    code,
+                    path: "word/document.xml",
+                    message: expect.stringContaining("footnote reference uses id 1"),
+                }),
+            ]);
         });
     });
 

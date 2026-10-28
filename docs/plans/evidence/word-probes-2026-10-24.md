@@ -25830,3 +25830,430 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
 `````
 
 </details>
+
+### Session 74: 23:07Z–23:07Z on 2026-10-27, validator columns at 37a94dd4
+
+A package-absolute notes target that climbs above the package root. [#947](https://github.com/jandira-tech/docx-validate/issues/947) made the resolvers stop a package-absolute target's `..` segments at the root, as sessions 63 and 64 showed Word stopping a relative climb, so `/../footnotes.xml` reads the note at `/footnotes.xml`; no session had shown Word such a target. One chunk: s74a names a footnotes part, which holds footnote 1 that the body references, by `/footnotes.xml`, `/../footnotes.xml`, `/../../footnotes.xml` and `/../word/footnotes.xml`, names it by `/../footnotes.xml` with the note only in `word/footnotes.xml`, names an endnotes part by `/../endnotes.xml`, and repeats session 64's relative `../../footnotes.xml`. It ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 9 of 9 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`37a94dd493d2d3376e4c0baecb70a586e4d3365f`), so the validator columns are a prediction this session tests.
+
+The driver opens files in name order, so the minimal controls were queued last and opened clean. Every clean notes row's PDF holds `Hello`, the note's mark (`1` for a footnote, `i` for an endnote) and `Note text`, so Word read the note from the part the climb stops at, and the controls hold `Hello` (`pdftotext`, both runs).
+
+- **A package-absolute climb stops at the root.** `/../footnotes.xml` and `/../../footnotes.xml` with the note in `/footnotes.xml`, `/../word/footnotes.xml` with it in `word/footnotes.xml`, and the endnotes twin `/../endnotes.xml` open clean and render the note, as `/footnotes.xml` and the relative `../../footnotes.xml` do.
+- **The climb names the root's part, not the source folder's.** `/../footnotes.xml` with the note only in `word/footnotes.xml` gets the recovery offer: the reference dangles, as session 64's relative climb did with the note in `word/`.
+
+Word-valid at 37a94dd4 accepts every clean row and rejects the refused one with `word-footnote-reference-missing`, matching Word on 9 of 9 rows. Strict reports `rels-broken` for each climb, as it did before #947.
+
+| Run    | Observed             | Specimen                                                | Shape                                                                                                                                    | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at 37a94dd4                     | strict at 37a94dd4                                                                                                              |
+| ------ | -------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `s74a` | 23:07:12Z, 23:07:38Z | `s74a-control-minimal`                                  | control                                                                                                                                  | `87bd9294f06a8638` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                                                                                                           |
+| `s74a` | 23:07:12Z, 23:07:38Z | `footnotes-absolute-at-root-calibration`                | calibration: the only footnotes relationship targets /footnotes.xml (package-absolute, no climb); footnote 1 sits in /footnotes.xml      | `a8c07c196f1cfd64` | clean-open     | clean-open     | clean-open                 | valid                                      | invalid: `paraid-missing-element`                                                                                               |
+| `s74a` | 23:07:12Z, 23:07:38Z | `footnotes-absolute-climb-one-note-at-root`             | #947: the only footnotes relationship targets /../footnotes.xml; footnote 1 sits in /footnotes.xml (stopped at the root: /footnotes.xml) | `a887441bd2989a23` | clean-open     | clean-open     | clean-open                 | valid                                      | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing`                                    |
+| `s74a` | 23:07:12Z, 23:07:38Z | `footnotes-absolute-climb-two-note-at-root`             | #947: the only footnotes relationship targets /../../footnotes.xml; footnote 1 sits in /footnotes.xml                                    | `6d0702930ad6199f` | clean-open     | clean-open     | clean-open                 | valid                                      | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing`                                    |
+| `s74a` | 23:07:12Z, 23:07:38Z | `footnotes-absolute-climb-one-note-in-word-folder`      | #947: the only footnotes relationship targets /../footnotes.xml; footnote 1 sits only in word/footnotes.xml (no /footnotes.xml)          | `1d84992d54c1db97` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-footnote-reference-missing` | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing`, `word-footnote-reference-missing` |
+| `s74a` | 23:07:12Z, 23:07:38Z | `footnotes-absolute-climb-into-word-folder`             | #947: the only footnotes relationship targets /../word/footnotes.xml; footnote 1 sits in word/footnotes.xml                              | `15a1c4e7565655b9` | clean-open     | clean-open     | clean-open                 | valid                                      | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing`                                    |
+| `s74a` | 23:07:12Z, 23:07:38Z | `endnotes-absolute-climb-one-note-at-root`              | #947 endnotes twin: the only endnotes relationship targets /../endnotes.xml; endnote 1 sits in /endnotes.xml                             | `f560f08f17ec39c8` | clean-open     | clean-open     | clean-open                 | valid                                      | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing`                                    |
+| `s74a` | 23:07:12Z, 23:07:38Z | `footnotes-relative-climb-two-note-at-root-calibration` | calibration, repeat of s64a: the only footnotes relationship targets ../../footnotes.xml from word/; footnote 1 sits in /footnotes.xml   | `3ba73f90655a7d66` | clean-open     | clean-open     | clean-open                 | valid                                      | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing`                                    |
+| `s74a` | 23:07:12Z, 23:07:38Z | `s74a-control-minimal-end`                              | control                                                                                                                                  | `87bd9294f06a8638` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                                                                                                           |
+
+<details><summary>Raw records, session 74</summary>
+
+```jsonl
+{"run": "s74a", "pass": 1, "name": "s74a-control-minimal", "sha256": "87bd9294f06a86384a524fc88ce8c8c6209e83b5bcc20f4bb388a6a235272667", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:12+00:00", "staged": "00008__wfv__s74a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s74a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s74a", "pass": 2, "name": "s74a-control-minimal", "sha256": "87bd9294f06a86384a524fc88ce8c8c6209e83b5bcc20f4bb388a6a235272667", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:38+00:00", "staged": "00008__wfv__s74a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s74a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s74a", "pass": 1, "name": "footnotes-absolute-at-root-calibration", "sha256": "a8c07c196f1cfd64d92dd7219d21279f4ef55c3334b951855f03cf1f46ccad2f", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:12+00:00", "staged": "00001__wfv__footnotes-absolute-at-root-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-absolute-at-root-calibration_byword.pdf (15684 bytes), no dialog named the file"]}
+{"run": "s74a", "pass": 2, "name": "footnotes-absolute-at-root-calibration", "sha256": "a8c07c196f1cfd64d92dd7219d21279f4ef55c3334b951855f03cf1f46ccad2f", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:38+00:00", "staged": "00001__wfv__footnotes-absolute-at-root-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-absolute-at-root-calibration_byword.pdf (15684 bytes), no dialog named the file"]}
+{"run": "s74a", "pass": 1, "name": "footnotes-absolute-climb-one-note-at-root", "sha256": "a887441bd2989a23c8123691cae027548c39307c037e465fa5642c53ef732c8d", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:12+00:00", "staged": "00003__wfv__footnotes-absolute-climb-one-note-at-root.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-absolute-climb-one-note-at-root_byword.pdf (15684 bytes), no dialog named the file"]}
+{"run": "s74a", "pass": 2, "name": "footnotes-absolute-climb-one-note-at-root", "sha256": "a887441bd2989a23c8123691cae027548c39307c037e465fa5642c53ef732c8d", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:38+00:00", "staged": "00003__wfv__footnotes-absolute-climb-one-note-at-root.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-absolute-climb-one-note-at-root_byword.pdf (15684 bytes), no dialog named the file"]}
+{"run": "s74a", "pass": 1, "name": "footnotes-absolute-climb-two-note-at-root", "sha256": "6d0702930ad6199fb445e640bfb2ee175774d974ea4a359dcf88d0b88cb814df", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:12+00:00", "staged": "00005__wfv__footnotes-absolute-climb-two-note-at-root.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-absolute-climb-two-note-at-root_byword.pdf (15684 bytes), no dialog named the file"]}
+{"run": "s74a", "pass": 2, "name": "footnotes-absolute-climb-two-note-at-root", "sha256": "6d0702930ad6199fb445e640bfb2ee175774d974ea4a359dcf88d0b88cb814df", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:38+00:00", "staged": "00005__wfv__footnotes-absolute-climb-two-note-at-root.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-absolute-climb-two-note-at-root_byword.pdf (15684 bytes), no dialog named the file"]}
+{"run": "s74a", "pass": 1, "name": "footnotes-absolute-climb-one-note-in-word-folder", "sha256": "1d84992d54c1db97dde28a8b7676a418b15263b1eae569575293c6c8206625a4", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:12+00:00", "staged": "00004__wfv__footnotes-absolute-climb-one-note-in-word-folder.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 19:06:59.480 'Word found unreadable content in 00004__wfv__footnotes-absolute-climb-one-note-in-word-folder.... D … ? If you trust the source of this document, click Yes.'", "2026-10-27 19:07:00.087 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__footnotes-absolute-climb-...)\""]}
+{"run": "s74a", "pass": 2, "name": "footnotes-absolute-climb-one-note-in-word-folder", "sha256": "1d84992d54c1db97dde28a8b7676a418b15263b1eae569575293c6c8206625a4", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:38+00:00", "staged": "00004__wfv__footnotes-absolute-climb-one-note-in-word-folder.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 19:07:26.881 'Word found unreadable content in 00004__wfv__footnotes-absolute-climb-one-note-in-word-folder.... D … ? If you trust the source of this document, click Yes.'", "2026-10-27 19:07:27.508 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__footnotes-absolute-climb-...)\""]}
+{"run": "s74a", "pass": 1, "name": "footnotes-absolute-climb-into-word-folder", "sha256": "15a1c4e7565655b94e60d48b6a256866648d1da990c6070f5ad4218ed2da0d73", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:12+00:00", "staged": "00002__wfv__footnotes-absolute-climb-into-word-folder.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-absolute-climb-into-word-folder_byword.pdf (15684 bytes), no dialog named the file"]}
+{"run": "s74a", "pass": 2, "name": "footnotes-absolute-climb-into-word-folder", "sha256": "15a1c4e7565655b94e60d48b6a256866648d1da990c6070f5ad4218ed2da0d73", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:38+00:00", "staged": "00002__wfv__footnotes-absolute-climb-into-word-folder.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-absolute-climb-into-word-folder_byword.pdf (15684 bytes), no dialog named the file"]}
+{"run": "s74a", "pass": 1, "name": "endnotes-absolute-climb-one-note-at-root", "sha256": "f560f08f17ec39c888f2e83ab82a03a68b9c5d4f1ef396b1570680e3574e21ff", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:12+00:00", "staged": "00000__wfv__endnotes-absolute-climb-one-note-at-root.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-absolute-climb-one-note-at-root_byword.pdf (15959 bytes), no dialog named the file"]}
+{"run": "s74a", "pass": 2, "name": "endnotes-absolute-climb-one-note-at-root", "sha256": "f560f08f17ec39c888f2e83ab82a03a68b9c5d4f1ef396b1570680e3574e21ff", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:38+00:00", "staged": "00000__wfv__endnotes-absolute-climb-one-note-at-root.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-absolute-climb-one-note-at-root_byword.pdf (15959 bytes), no dialog named the file"]}
+{"run": "s74a", "pass": 1, "name": "footnotes-relative-climb-two-note-at-root-calibration", "sha256": "3ba73f90655a7d6623975410cdfc3a2149e98189dea57c33390947a934b59f87", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:12+00:00", "staged": "00006__wfv__footnotes-relative-climb-two-note-at-root-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-relative-climb-two-note-at-root-calibration_byword.pdf (15684 bytes), no dialog named the file"]}
+{"run": "s74a", "pass": 2, "name": "footnotes-relative-climb-two-note-at-root-calibration", "sha256": "3ba73f90655a7d6623975410cdfc3a2149e98189dea57c33390947a934b59f87", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:38+00:00", "staged": "00006__wfv__footnotes-relative-climb-two-note-at-root-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-relative-climb-two-note-at-root-calibration_byword.pdf (15684 bytes), no dialog named the file"]}
+{"run": "s74a", "pass": 1, "name": "s74a-control-minimal-end", "sha256": "87bd9294f06a86384a524fc88ce8c8c6209e83b5bcc20f4bb388a6a235272667", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:12+00:00", "staged": "00007__wfv__s74a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s74a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s74a", "pass": 2, "name": "s74a-control-minimal-end", "sha256": "87bd9294f06a86384a524fc88ce8c8c6209e83b5bcc20f4bb388a6a235272667", "validatorRevision": "37a94dd493d2d3376e4c0baecb70a586e4d3365f", "observedAt": "2026-10-27T23:07:38+00:00", "staged": "00007__wfv__s74a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s74a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 74 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s74builder.mts`:
+
+```ts
+// Session 74 (2026-10-27): a package-absolute notes target that climbs above the root. #947 made the resolvers stop a
+// package-absolute target's `..` segments at the package root, so `/../footnotes.xml` reads the note at /footnotes.xml,
+// and CLAUDE.md note 27 says Word has not been probed with such a target (session 70 showed Word reading a
+// package-absolute officeDocument target from the root; sessions 63 and 64 showed it stopping a relative climb there).
+// s74a: footnotes targets `/footnotes.xml`, `/../footnotes.xml`, `/../../footnotes.xml` and `/../word/footnotes.xml`,
+// the climb with the note only in word/footnotes.xml, the endnotes twin, and session 64's relative climb repeated.
+// Every row records the validator revision it was judged at (`validatorRevision`); the verdict helper is s67builder.mts's,
+// the notes helpers s64builder.mts's.
+// The builder empties the chunk's specimens.jsonl once before its row loop (promised on #825).
+// Run from a worktree root: CHUNK=s74a pnpm exec node --import tsx <this file>
+// (the imports are absolute, so the file needs no copy into the worktree; `git rev-parse` reads the cwd's worktree).
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const WT = process.cwd();
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const { MINIMAL_PARTS, buildDocx } = await import(path.join(WT, "tests/support/minimal-docx.ts"));
+const REVISION = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+const TEXT_P = "<w:p><w:r><w:t>Note text</w:t></w:r></w:p>";
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+
+type Kind = "footnote" | "endnote";
+const notesXml = (kind: Kind, held: string) =>
+    `${XML_DECL}<w:${kind}s xmlns:w="${W}"><w:${kind} w:id="${held}">${TEXT_P}</w:${kind}></w:${kind}s>`;
+const noteRef = (kind: Kind, id: string) => `<w:r><w:${kind}Reference w:id="${id}"/></w:r>`;
+/** `parts` with `run` appended inside the main document's only paragraph. */
+const mainWith = (parts: Record<string, string>, run: string): Record<string, string> => ({
+    ...parts,
+    [MAIN]: replaceOnce(parts[MAIN]!, "</w:r></w:p>", `</w:r>${run}</w:p>`),
+});
+/** Note 1 of `kind` stored at `stored`, typed as `kind`s, named only by a `<kind>s` relationship with `target`; the body references it. */
+const notesAt = (kind: Kind, stored: string, target: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [stored]: notesXml(kind, "1"),
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", `${kind}s`, target)),
+                [CT]: overrides(P[CT]!, [stored, `${WML}.${kind}s+xml`]),
+            },
+            noteRef(kind, "1"),
+        ),
+    );
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const control = () => buildDocx({ ...P });
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+
+const chunks: Record<string, Row[]> = {
+    s74a: withControls("s74a", [
+        [
+            "footnotes-absolute-at-root-calibration",
+            "calibration: the only footnotes relationship targets /footnotes.xml (package-absolute, no climb); footnote 1 sits in /footnotes.xml",
+            () => notesAt("footnote", "footnotes.xml", "/footnotes.xml"),
+        ],
+        [
+            "footnotes-absolute-climb-one-note-at-root",
+            "#947: the only footnotes relationship targets /../footnotes.xml; footnote 1 sits in /footnotes.xml (stopped at the root: /footnotes.xml)",
+            () => notesAt("footnote", "footnotes.xml", "/../footnotes.xml"),
+        ],
+        [
+            "footnotes-absolute-climb-two-note-at-root",
+            "#947: the only footnotes relationship targets /../../footnotes.xml; footnote 1 sits in /footnotes.xml",
+            () => notesAt("footnote", "footnotes.xml", "/../../footnotes.xml"),
+        ],
+        [
+            "footnotes-absolute-climb-one-note-in-word-folder",
+            "#947: the only footnotes relationship targets /../footnotes.xml; footnote 1 sits only in word/footnotes.xml (no /footnotes.xml)",
+            () => notesAt("footnote", "word/footnotes.xml", "/../footnotes.xml"),
+        ],
+        [
+            "footnotes-absolute-climb-into-word-folder",
+            "#947: the only footnotes relationship targets /../word/footnotes.xml; footnote 1 sits in word/footnotes.xml",
+            () => notesAt("footnote", "word/footnotes.xml", "/../word/footnotes.xml"),
+        ],
+        [
+            "endnotes-absolute-climb-one-note-at-root",
+            "#947 endnotes twin: the only endnotes relationship targets /../endnotes.xml; endnote 1 sits in /endnotes.xml",
+            () => notesAt("endnote", "endnotes.xml", "/../endnotes.xml"),
+        ],
+        [
+            "footnotes-relative-climb-two-note-at-root-calibration",
+            "calibration, repeat of s64a: the only footnotes relationship targets ../../footnotes.xml from word/; footnote 1 sits in /footnotes.xml",
+            () => notesAt("footnote", "footnotes.xml", "../../footnotes.xml"),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+    }
+};
+
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-74 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s74a",)
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0], "unknown") if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s74/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-74 parts of docs/plans/evidence/word-probes-2026-10-24.md into s74/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796). The text Word rendered is read from its own
+PDFs with pdftotext, so the narrative's "rendered" claims are checked here.
+"""
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s74a",)
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s74/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+def rendered(run, file):
+    pdf = run / "pdf" / (Path(file).stem + "_byword.pdf")
+    return " ".join(subprocess.run(["pdftotext", str(pdf), "-"], check=True, capture_output=True, text=True).stdout.split())
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                                   "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                                   "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+
+REFUSED = {"footnotes-absolute-climb-one-note-in-word-folder.docx"}
+# The narrative's claims about outcomes, checked against results.json: Word refused the climb whose note sits only in
+# word/ and word-valid rejected it; every other row opened clean with word-valid accepting it.
+for (label, file), r in results.items():
+    if file in REFUSED:
+        assert r["outcome"] == "unreadable-content-warning", (file, r)
+        assert r["wordValid"] is False and r["validatorMatchesWord"] is True, (file, r)
+    else:
+        assert r["outcome"] == "clean-open" and r["validatorMatchesWord"], (file, r)
+assert agreed == len(rows) == 9, (agreed, len(rows))
+# Where each run opened each row, from the driver's manifests (in open order, #671). The driver opens in name order, so
+# the endnotes row opened first and the controls last.
+ORDER = {
+    "s74a": ["endnotes-absolute-climb-one-note-at-root.docx", "footnotes-absolute-at-root-calibration.docx",
+             "footnotes-absolute-climb-into-word-folder.docx", "footnotes-absolute-climb-one-note-at-root.docx",
+             "footnotes-absolute-climb-one-note-in-word-folder.docx", "footnotes-absolute-climb-two-note-at-root.docx",
+             "footnotes-relative-climb-two-note-at-root-calibration.docx", "s74a-control-minimal-end.docx",
+             "s74a-control-minimal.docx"],
+}
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        opened = [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()]
+        assert opened == ORDER[label], (run, opened)
+# The text Word rendered in each clean row, both runs: the main document's "Hello", then the note's mark and its text,
+# "1" for a footnote and "i" for an endnote, so Word read the note part the target names; the controls hold "Hello" only.
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for file in ORDER[label]:
+            if file in REFUSED:
+                continue
+            text = rendered(run, file)
+            expected = "Hello" if "control" in file else ("Helloi Note text" if file.startswith("endnotes") else "Hello1 Note text")
+            assert text == expected, (run, file, text)
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}", (min(starts), max(ends))
+matches = sum(r["validatorMatchesWord"] for r in results.values())
+out = [
+    f"### Session 74: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {at}",
+    "",
+    "A package-absolute notes target that climbs above the package root. "
+    "[#947](https://github.com/jandira-tech/docx-validate/issues/947) made the resolvers stop a package-absolute target's "
+    "`..` segments at the root, as sessions 63 and 64 showed Word stopping a relative climb, so `/../footnotes.xml` reads "
+    "the note at `/footnotes.xml`; no session had shown Word such a target. One chunk: s74a names a footnotes part, which "
+    "holds footnote 1 that the body references, by `/footnotes.xml`, `/../footnotes.xml`, `/../../footnotes.xml` and "
+    "`/../word/footnotes.xml`, names it by `/../footnotes.xml` with the note only in `word/footnotes.xml`, names an "
+    "endnotes part by `/../endnotes.xml`, and repeats session 64's relative `../../footnotes.xml`. It ran twice, as two "
+    "separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session "
+    "41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings "
+    f"agree, and `unknown` otherwise; {agreed} of {len(rows)} rows agree. The two times in Observed are the ends of the "
+    "first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator "
+    f"revision in every row (`{rev}`), so the validator columns are a prediction this session tests.",
+    "",
+    "The driver opens files in name order, so the minimal controls were queued last and opened clean. Every clean notes "
+    "row's PDF holds `Hello`, the note's mark (`1` for a footnote, `i` for an endnote) and `Note text`, so Word read the "
+    "note from the part the climb stops at, and the controls hold `Hello` (`pdftotext`, both runs).",
+    "",
+    "- **A package-absolute climb stops at the root.** `/../footnotes.xml` and `/../../footnotes.xml` with the note in "
+    "`/footnotes.xml`, `/../word/footnotes.xml` with it in `word/footnotes.xml`, and the endnotes twin `/../endnotes.xml` "
+    "open clean and render the note, as `/footnotes.xml` and the relative `../../footnotes.xml` do.",
+    "- **The climb names the root's part, not the source folder's.** `/../footnotes.xml` with the note only in "
+    "`word/footnotes.xml` gets the recovery offer: the reference dangles, as session 64's relative climb did with the note "
+    "in `word/`.",
+    "",
+    f"Word-valid at {at} accepts every clean row and rejects the refused one with `word-footnote-reference-missing`, "
+    f"matching Word on {matches} of {len(rows)} rows. Strict reports `rels-broken` for each climb, as it did before #947.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 74</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 74 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s74builder.mts", ROOT / "s74builder.mts", "ts"), ("compare.py", ROOT / "s74/compare.py", "python"),
+                         ("section.py", ROOT / "s74/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s74/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>

@@ -1185,9 +1185,15 @@ calibration opened clean
 ([#830](https://github.com/jandira-tech/docx-validate/issues/830)). A
 package-absolute target's climb is stopped at the root the same way since
 [#947](https://github.com/jandira-tech/docx-validate/issues/947), so
-`/../footnotes.xml` reads the note at `/footnotes.xml`; Word has not been probed
-with a package-absolute target. Other rules' relationship resolution keeps
-dropping an escaping target; those readings are unprobed.
+`/../footnotes.xml` reads the note at `/footnotes.xml`, as Word does: Word
+session 74 opened clean, with the note rendered, `/../footnotes.xml` and
+`/../../footnotes.xml` with the note at `/footnotes.xml`,
+`/../word/footnotes.xml` with it in `word/footnotes.xml` and the endnotes twin
+`/../endnotes.xml`, and offered recovery for `/../footnotes.xml` with the note
+only in `word/footnotes.xml`
+([#982](https://github.com/jandira-tech/docx-validate/issues/982)). Other rules'
+relationship resolution keeps dropping an escaping target; those readings are
+unprobed.
 
 `word-shared-story-part` rejects a comments, footnotes or endnotes part that
 the read model lists for both a main-document entry and a glossary entry
@@ -2003,9 +2009,12 @@ package-absolute target's dot segments now resolve as a relative target's do;
 before, `/word/../word/main.xml` named no part, so the read model found no main
 document and `addComment` refused it or added a second set of comment
 relationships
-([#947](https://github.com/jandira-tech/docx-validate/issues/947)); Word has not
-been probed with such a target, though it read the package-absolute
-`/word//main.xml` from the root (session 70). Either kind also collapses an empty segment, as
+([#947](https://github.com/jandira-tech/docx-validate/issues/947)). Word read
+the package-absolute `/word//main.xml` from the root (session 70), and stopped
+a package-absolute notes target's climb at the root as #947 does, reading
+`/../word/footnotes.xml` as `word/footnotes.xml` (session 74,
+[#982](https://github.com/jandira-tech/docx-validate/issues/982)); a
+package-absolute main-document target with dot segments is unprobed. Either kind also collapses an empty segment, as
 `path.posix.join` does, so `word//main.xml` and `/word//main.xml` name
 `word/main.xml`, as Word read them (session 70); a final `.` or `..` segment
 leaves a folder, as RFC 3986 does, so `word/main.xml/.` and
