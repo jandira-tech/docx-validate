@@ -57,6 +57,8 @@ import { mergeResults, NS } from "../../../lib/types";
 import { promoteFullCheckIssue } from "../../../lib/mode-policy";
 import { propertiesParts } from "../../../lib/properties-parts";
 import {
+    COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE,
+    COMMENTS_IDS_RELATIONSHIP_TYPE,
     wordExactTypeTargets,
     wordReferenceLoadedSources,
     wordReadParts,
@@ -216,15 +218,6 @@ const KNOWN_OOXML_PREFIX_URIS: Readonly<Record<string, string>> = {
     am3d: "http://schemas.microsoft.com/office/drawing/2017/model3d",
     oel: "http://schemas.microsoft.com/office/2019/extlst",
 };
-
-/**
- * The Microsoft relationship types that pair a `comments.xml` part with its
- * id and extension parts (#690). They live under `schemas.microsoft.com`,
- * so `wordTypedRelationshipTargets` never reaches their targets and
- * `wordExactTypeTargets` reads them by exact Type.
- */
-const COMMENTS_IDS_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2016/09/relationships/commentsIds";
-const COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible";
 
 /**
  * Canonical `<w:style>` definitions for well-known styleIds that writers
