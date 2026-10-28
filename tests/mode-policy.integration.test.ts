@@ -195,6 +195,9 @@ describe("quick mode runs the common-defect preset and discloses its omissions",
             "word-duplicate-numbering-relationship",
             "word-hyperlink-relationship",
             "word-header-footer-relationship",
+            // A Word-blocking reference-type rule in the relationships and
+            // drawings groups (#705), so quick runs it.
+            "word-part-reference-relationship",
             "word-cell-ends-with-table",
             "word-empty-drawing",
             "word-anchor-missing-attribute",

@@ -266,6 +266,13 @@ export const isWordBlockingIssue = (
         // other story's (#606; session 26 in
         // docs/plans/evidence/word-probes-2026-10-24.md).
         case "word-header-footer-relationship":
+        // Word 16.115 offers recovery for a c:chart, a dgm:relIds r:dm or an
+        // o:OLEObject whose r:id names a relationship of another type — an
+        // image, diagramData, package, chart or External relationship — or an
+        // Id no relationship has, while the matching internal relationship
+        // opens clean (#705; sessions 45 and 46 in
+        // docs/plans/evidence/word-probes-2026-10-24.md).
+        case "word-part-reference-relationship":
         case "word-duplicate-theme-relationship":
         case "word-duplicate-font-table-relationship":
         case "word-duplicate-web-settings-relationship":

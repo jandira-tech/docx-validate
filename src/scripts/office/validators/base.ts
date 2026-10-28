@@ -1071,7 +1071,9 @@ export class BaseSchemaValidator {
      * (`withoutRepeatedHeaderFooterFindings` in docx.ts), through the
      * structured story reference identity this method registers on each
      * `headerReference`/`footerReference` mismatch (#616) and on each such
-     * `rels-id-missing` (#619) — never through the message prose.
+     * `rels-id-missing` (#619), and the same hand-off pairs a dangling
+     * `c:chart`/`o:OLEObject` r:id with `word-part-reference-relationship`
+     * (#705) — never through the message prose.
      */
     async validateAllRelationshipIds(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];

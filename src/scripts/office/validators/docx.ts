@@ -94,6 +94,7 @@ import { runChecks } from "../../../lib/check-scheduler";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
 import { WORD_HEADER_FOOTER_RELATIONSHIP } from "../checks/word-header-footer";
+import { WORD_PART_REFERENCE_RELATIONSHIP } from "../checks/word-part-reference";
 import { type StoryReferenceIdentity, storyReferenceIdentity } from "../story-reference-identity";
 import { WORD_PART_CONTENT_TYPE_GENERIC, wordPartContentTypeGenericFindings } from "../checks/word-part-content-type-generic";
 import { contextFromDirectory, openDirectoryContext, packageExtractFailedIssue, storedNamesRun } from "../package-context";
@@ -3018,7 +3019,9 @@ export function withoutRepeatedCompatibilityFindings(schema: ValidationResult, r
  * once — through that rule — so the same run's `validateAllRelationshipIds`
  * result drops its `rels-id-mismatch` copy, and for an `r:id` naming no
  * Relationship its `rels-id-missing` copy, of each reported element (#612,
- * #619). The pairing is the structured identity both producers registered on
+ * #619); a dangling Transitional `r:id` on a `c:chart` or an
+ * `o:OLEObject` pairs the same way with `word-part-reference-relationship`
+ * (#705, sessions 45 and 46). The pairing is the structured identity both producers registered on
  * the issue object when they created it (#616): part path (normalized on
  * registration, as `withoutRepeatedCompatibilityFindings` compares paths),
  * element namespace URI, local name, raw `r:id` and the namespace URI the
@@ -3038,7 +3041,7 @@ export function withoutRepeatedHeaderFooterFindings(relationshipIds: ValidationR
         `${identity.part}\u0000${identity.namespaceURI}\u0000${identity.localName}\u0000${identity.rid}\u0000${identity.ridNamespaceURI}`;
     const reported = new Map<string, number>();
     for (const issue of rules.issues) {
-        if (issue.code !== WORD_HEADER_FOOTER_RELATIONSHIP) continue;
+        if (issue.code !== WORD_HEADER_FOOTER_RELATIONSHIP && issue.code !== WORD_PART_REFERENCE_RELATIONSHIP) continue;
         const identity = storyReferenceIdentity(issue);
         if (!identity) continue;
         reported.set(key(identity), (reported.get(key(identity)) ?? 0) + 1);
