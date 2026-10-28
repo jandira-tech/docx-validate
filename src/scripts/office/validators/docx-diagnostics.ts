@@ -603,14 +603,7 @@ function directWordChildren(parent: Element, local: string): Element[] {
     return out;
 }
 
-function hasWordAncestor(elem: Element, local: string): boolean {
-    for (let node = elem.parentNode; node; node = node.parentNode) {
-        if (node.nodeType !== 1) continue;
-        const parent = node as Element;
-        if (isWordElement(parent) && localName(parent) === local) return true;
-    }
-    return false;
-}
+
 
 function isWordElement(elem: Element): boolean {
     return WORD_NAMESPACES.has(elem.namespaceURI ?? "");
