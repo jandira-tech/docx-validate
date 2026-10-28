@@ -6,6 +6,7 @@
 import type { CheckDefinition } from "../../../lib/check-registry";
 import type { ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
+import { wordReadStoryParts } from "../../../lib/word-read-parts";
 
 const PICTURE_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/picture";
 
@@ -16,9 +17,9 @@ const missingPictureChildCheck = (id: string, childName: string, position: strin
     groups: ["drawings"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx): ValidationIssue[] => {
+    run: async (ctx, profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
-        for (const part of ctx.storyParts()) {
+        for (const part of await wordReadStoryParts(ctx, profile)) {
             const parsed = ctx.effectiveXml(part);
             if (!parsed?.ok) {
                 continue;

@@ -6,6 +6,7 @@
 import type { CheckDefinition } from "../../../lib/check-registry";
 import type { ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
+import { wordReadStoryParts } from "../../../lib/word-read-parts";
 import { MATH_NAMESPACES, WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 
 export const mathRunDeletionCheck: CheckDefinition = {
@@ -14,12 +15,12 @@ export const mathRunDeletionCheck: CheckDefinition = {
     groups: ["math", "tracked-changes"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx): ValidationIssue[] => {
+    run: async (ctx, profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
         // Math runs occur in stories, not in the styles content model. Both
         // conformance classes carry the defect: Transitional and Strict spell
         // the WML and math namespaces differently but share CT_R.
-        for (const part of ctx.storyParts()) {
+        for (const part of await wordReadStoryParts(ctx, profile)) {
             const parsed = ctx.effectiveXml(part);
             if (!parsed?.ok) {
                 continue;

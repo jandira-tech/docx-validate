@@ -12,8 +12,9 @@
 
 import type { CheckDefinition } from "../../../lib/check-registry";
 import type { ValidationContext } from "../../../lib/validation-context";
-import type { ValidationIssue } from "../../../lib/types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
+import { wordReadStoryParts } from "../../../lib/word-read-parts";
 
 const WP_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
 const DRAWINGML_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
@@ -57,10 +58,10 @@ export const wordDrawingScalarWhitespaceCheck: CheckDefinition = {
     groups: ["drawings"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
 
-        for (const xmlFile of ctx.storyParts()) {
+        for (const xmlFile of await wordReadStoryParts(ctx, profile)) {
             const parsed = ctx.effectiveXml(xmlFile);
             if (!parsed?.ok) {
                 continue;
@@ -101,10 +102,10 @@ export const wordDrawingArcRadiusCheck: CheckDefinition = {
     groups: ["drawings"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
 
-        for (const xmlFile of ctx.storyParts()) {
+        for (const xmlFile of await wordReadStoryParts(ctx, profile)) {
             const parsed = ctx.effectiveXml(xmlFile);
             if (!parsed?.ok) {
                 continue;
@@ -139,10 +140,10 @@ export const wordDrawingExtentNegativeCheck: CheckDefinition = {
     groups: ["drawings"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
 
-        for (const xmlFile of ctx.storyParts()) {
+        for (const xmlFile of await wordReadStoryParts(ctx, profile)) {
             const parsed = ctx.effectiveXml(xmlFile);
             if (!parsed?.ok) {
                 continue;

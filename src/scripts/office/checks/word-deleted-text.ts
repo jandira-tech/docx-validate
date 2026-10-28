@@ -20,7 +20,8 @@
 
 import type { CheckDefinition } from "../../../lib/check-registry";
 import type { ValidationContext } from "../../../lib/validation-context";
-import type { ValidationIssue } from "../../../lib/types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
+import { wordReadStoryParts } from "../../../lib/word-read-parts";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 
 const MC_NAMESPACE = "http://schemas.openxmlformats.org/markup-compatibility/2006";
@@ -101,10 +102,10 @@ export const wordTextboxDeletedTextCheck: CheckDefinition = {
     groups: ["tracked-changes"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
 
-        for (const xmlFile of ctx.storyParts()) {
+        for (const xmlFile of await wordReadStoryParts(ctx, profile)) {
             const parsed = ctx.effectiveXml(xmlFile);
             if (!parsed?.ok) {
                 continue;
@@ -131,10 +132,10 @@ export const wordMoveFromDeletedTextCheck: CheckDefinition = {
     groups: ["tracked-changes"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
 
-        for (const xmlFile of ctx.storyParts()) {
+        for (const xmlFile of await wordReadStoryParts(ctx, profile)) {
             const parsed = ctx.effectiveXml(xmlFile);
             if (!parsed?.ok) {
                 continue;

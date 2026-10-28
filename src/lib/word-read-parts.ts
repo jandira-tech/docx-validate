@@ -722,6 +722,53 @@ export const wordStoryRootParts = async (context: ValidationContext, profile?: P
 export const wordReadTypedTargets = async (context: ValidationContext, profile?: Profile): Promise<readonly WordTypedTarget[]> =>
     (await wordStoryReadTargets(context, profile))?.targets ?? [];
 
+/** The lazily read stories, beside the story roots' own `officeDocument` entries. */
+const STORY_SEGMENTS: ReadonlySet<string> = new Set(["header", "footer", "comments", "footnotes", "endnotes"]);
+
+/** One computation per context and profile: twenty-odd Word rules walk the same list in a run. */
+const readStoryPartsCache = new WeakMap<ValidationContext, Map<string, Promise<readonly string[]>>>();
+
+/**
+ * The story parts Word reads (#1106, #1113): every main document and
+ * reached glossary wherever stored, and the header, footer, comments and
+ * notes parts their references make Word read, each once, in the context's
+ * part-name order, as the by-name list keeps them.
+ * Word refused a hyperlink's shape (session 82) and eleven rules' shapes
+ * (session 83) in a main document stored as `word/main.xml`, and opened them
+ * clean in an unrelated `word/header9.xml` or `word/header83.xml`. With no
+ * main document the read model reads nothing, so the parts named like a story
+ * stand in, as the note checks fall back (#816); that reading is unprobed.
+ */
+export const wordReadStoryParts = (context: ValidationContext, profile?: Profile): Promise<readonly string[]> => {
+    const byProfile = readStoryPartsCache.get(context) ?? new Map<string, Promise<readonly string[]>>();
+    readStoryPartsCache.set(context, byProfile);
+    const key = profile ?? "";
+    const cached = byProfile.get(key);
+    if (cached !== undefined) {
+        return cached;
+    }
+    const parts = readStoryParts(context, profile);
+    byProfile.set(key, parts);
+    return parts;
+};
+
+const readStoryParts = async (context: ValidationContext, profile?: Profile): Promise<readonly string[]> => {
+    const targets = await wordReadTypedTargets(context, profile);
+    if (!targets.some((target) => target.segment === "officeDocument")) {
+        return context.storyParts();
+    }
+    const read = new Map<string, string>();
+    for (const target of targets) {
+        const canonical = canonicalPartName(target.part);
+        if ((target.segment === "officeDocument" || STORY_SEGMENTS.has(target.segment)) && !read.has(canonical)) {
+            read.set(canonical, target.part);
+        }
+    }
+    const order = new Map(context.partNames.map((name, index) => [name, index]));
+    const position = (part: string): number => order.get(part) ?? context.partNames.length;
+    return [...read.values()].sort((a, b) => position(a) - position(b));
+};
+
 /**
  * Canonical names of the parts a known Office relationship of an unobserved
  * type names from any relationships part, wherever they are stored: the

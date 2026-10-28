@@ -29939,3 +29939,689 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed,", matches, 
 `````
 
 </details>
+
+### Session 83: 13:05Z–13:09Z on 2026-10-28, validator columns at 568d746a
+
+Whether Word judges [#1113](https://github.com/jandira-tech/docx-validate/issues/1113)'s Word-blocking rules in the parts it reads, as session 82 found for the hyperlink relationship. Twenty Word-rule checks judge the parts named like a story wherever stored (`STORY_PART`), not the parts Word reads. Eleven of them have a Word-refused fixture whose finding is only in `word/document.xml` and a clean twin (session 41's pairs; the `-shape` pair for `word-textbox-deleted-text`, whose plain fixture holds its defect in a footer). Each pair gives three rows: `-main` is the broken fixture with its main document stored as `word/main.xml`, with `_rels/.rels`, the content-types Override and the part's own relationships following the name; `-main-calibration` is the clean twin renamed the same way; `-unrelated-header` is the clean twin plus `word/header83.xml`, typed header by its Override, which no relationship names, holding the broken fixture's body under a `w:hdr` root with its `w:sectPr` removed, and the broken main document's relationships as its own. Chunk s83a holds `word-row-without-cell`, `word-cell-ends-with-table` and `word-drawing-arc-radius`; s83b `word-drawing-extent-negative`, `word-empty-drawing` and `word-anchor-missing-attribute`; s83c `word-text-contains-paragraph`, `word-textbox-deleted-text` and `word-move-from-deleted-text`; s83d `word-sdt-id-empty` and `word-choice-requires-undeclared`. Each chunk ends with a minimal control. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 37 of 37 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`568d746adf4aaa478735b82672c3bbd66c858355`). The strict column names only the rule findings beyond the fixtures' own paraId, XSD and unreferenced-part findings.
+
+Every calibration and control opened clean. Each unrelated header's PDF holds exactly its calibration's text in both runs (`pdftotext`; the `word-empty-drawing` and `word-choice-requires-undeclared` twins render no text), and each control's holds `Hello`. No refused row left a PDF.
+
+- **Word judges the eleven shapes in a main document whatever its name.** It refused all eleven renamed main documents, as it did in `word/document.xml` (session 41): an open error for 7 (`word-row-without-cell`, `word-drawing-arc-radius`, `word-drawing-extent-negative`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-text-contains-paragraph`, `word-sdt-id-empty`) and an offer to recover unreadable content for 4 (`word-cell-ends-with-table`, `word-textbox-deleted-text`, `word-move-from-deleted-text`, `word-choice-requires-undeclared`).
+- **It does not judge them in a part it does not read.** It opened every shape clean in the unrelated `word/header83.xml`, as the read model says it reads no part that no relationship names (#726).
+
+Word-valid at 568d746a judged by name, so it matches Word on 16 of 37 rows: it passes ten of the renamed main documents and rejects all eleven unrelated headers. It rejects the renamed `word-choice-requires-undeclared` row only through `mce-malformed`, which judges every part: that rule also rejects the unrelated header Word opened clean. [#1113](https://github.com/jandira-tech/docx-validate/issues/1113) moves the rules onto the read model.
+
+| Run    | Observed             | Specimen                                      | Shape                                                                                                                                                                                                 | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at 568d746a                                                                                         | strict at 568d746a                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------ | -------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `s83a` | 13:05:05Z, 13:05:42Z | `row-without-cell-main`                       | #1113 word-row-without-cell: broken/package.word-row-without-cell.docx with its main document stored as word/main.xml                                                                                 | `6898506a85f56ac0` | open-error     | open-error     | open-error                 | valid                                                                                                          | invalid: fixture findings only                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `s83a` | 13:05:05Z, 13:05:42Z | `row-without-cell-main-calibration`           | calibration: working/package.word-row-without-cell-repaired.docx renamed the same way                                                                                                                 | `e29855811614e44f` | clean-open     | clean-open     | clean-open                 | valid                                                                                                          | invalid: fixture findings only                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `s83a` | 13:05:05Z, 13:05:42Z | `row-without-cell-unrelated-header`           | #1113 word-row-without-cell: working/package.word-row-without-cell-repaired.docx plus an unrelated word/header83.xml holding broken/package.word-row-without-cell.docx's body                         | `88918eb4f9770908` | clean-open     | clean-open     | clean-open                 | invalid: `word-row-without-cell@word/header83.xml`                                                             | invalid: `word-row-without-cell@word/header83.xml`                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `s83a` | 13:05:05Z, 13:05:42Z | `cell-ends-with-table-main`                   | #1113 word-cell-ends-with-table: broken/package.word-cell-ends-with-table.docx with its main document stored as word/main.xml                                                                         | `78dd9459bb1a9999` | repair-warning | repair-warning | unreadable-content-warning | valid                                                                                                          | invalid: fixture findings only                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `s83a` | 13:05:05Z, 13:05:42Z | `cell-ends-with-table-main-calibration`       | calibration: working/package.word-cell-ends-with-table-repaired.docx renamed the same way                                                                                                             | `9a5ed31160c7cf4a` | clean-open     | clean-open     | clean-open                 | valid                                                                                                          | invalid: fixture findings only                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `s83a` | 13:05:05Z, 13:05:42Z | `cell-ends-with-table-unrelated-header`       | #1113 word-cell-ends-with-table: working/package.word-cell-ends-with-table-repaired.docx plus an unrelated word/header83.xml holding broken/package.word-cell-ends-with-table.docx's body             | `79866adac23a0c41` | clean-open     | clean-open     | clean-open                 | invalid: `word-cell-ends-with-table@word/header83.xml`                                                         | invalid: `word-cell-ends-with-table@word/header83.xml`                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `s83a` | 13:05:05Z, 13:05:42Z | `arc-radius-main`                             | #1113 word-drawing-arc-radius: broken/package.drawing-arc-radius.docx with its main document stored as word/main.xml                                                                                  | `9ae79c73217b4984` | open-error     | open-error     | open-error                 | valid                                                                                                          | invalid: `style-default-missing@word/styles.xml`                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `s83a` | 13:05:05Z, 13:05:42Z | `arc-radius-main-calibration`                 | calibration: working/package.drawing-arc-radius-integer.docx renamed the same way                                                                                                                     | `56caf5d371a45434` | clean-open     | clean-open     | clean-open                 | valid                                                                                                          | invalid: `style-default-missing@word/styles.xml`                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `s83a` | 13:05:05Z, 13:05:42Z | `arc-radius-unrelated-header`                 | #1113 word-drawing-arc-radius: working/package.drawing-arc-radius-integer.docx plus an unrelated word/header83.xml holding broken/package.drawing-arc-radius.docx's body                              | `bf1c31d01064ecc1` | clean-open     | clean-open     | clean-open                 | invalid: `word-drawing-arc-radius@word/header83.xml`                                                           | invalid: `style-default-missing@word/styles.xml`, `word-drawing-arc-radius@word/header83.xml`                                                                                                                                                                                                                                                                                                                                                            |
+| `s83a` | 13:05:05Z, 13:05:42Z | `s83a-control-minimal`                        | control                                                                                                                                                                                               | `35ccde0e908ed032` | clean-open     | clean-open     | clean-open                 | valid                                                                                                          | valid                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `s83b` | 13:06:30Z, 13:07:09Z | `extent-negative-main`                        | #1113 word-drawing-extent-negative: broken/package.word-drawing-extent-negative.docx with its main document stored as word/main.xml                                                                   | `d50ca2b9d3bf2bc4` | open-error     | open-error     | open-error                 | valid                                                                                                          | invalid: `style-default-missing@word/styles.xml`                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `s83b` | 13:06:30Z, 13:07:09Z | `extent-negative-main-calibration`            | calibration: working/package.word-drawing-extent-positive.docx renamed the same way                                                                                                                   | `19385147d608bb97` | clean-open     | clean-open     | clean-open                 | valid                                                                                                          | invalid: `style-default-missing@word/styles.xml`                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `s83b` | 13:06:30Z, 13:07:09Z | `extent-negative-unrelated-header`            | #1113 word-drawing-extent-negative: working/package.word-drawing-extent-positive.docx plus an unrelated word/header83.xml holding broken/package.word-drawing-extent-negative.docx's body             | `8abb3984c8c5832d` | clean-open     | clean-open     | clean-open                 | invalid: `word-drawing-extent-negative@word/header83.xml`                                                      | invalid: `style-default-missing@word/styles.xml`, `word-drawing-extent-negative@word/header83.xml`                                                                                                                                                                                                                                                                                                                                                       |
+| `s83b` | 13:06:30Z, 13:07:09Z | `empty-drawing-main`                          | #1113 word-empty-drawing: broken/package.word-empty-drawing.docx with its main document stored as word/main.xml                                                                                       | `aa3d14e4acb6e648` | open-error     | open-error     | open-error                 | valid                                                                                                          | valid                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `s83b` | 13:06:30Z, 13:07:09Z | `empty-drawing-main-calibration`              | calibration: working/package.word-empty-drawing-removed.docx renamed the same way                                                                                                                     | `7a753ec7b3b73c77` | clean-open     | clean-open     | clean-open                 | valid                                                                                                          | valid                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `s83b` | 13:06:30Z, 13:07:09Z | `empty-drawing-unrelated-header`              | #1113 word-empty-drawing: working/package.word-empty-drawing-removed.docx plus an unrelated word/header83.xml holding broken/package.word-empty-drawing.docx's body                                   | `8a209e173789b41f` | clean-open     | clean-open     | clean-open                 | invalid: `word-empty-drawing@word/header83.xml`                                                                | invalid: `word-empty-drawing@word/header83.xml`                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `s83b` | 13:06:30Z, 13:07:09Z | `anchor-open-main`                            | #1113 word-anchor-missing-attribute: broken/package.word-anchor-open.docx with its main document stored as word/main.xml                                                                              | `7c47ed53a8c75213` | open-error     | open-error     | open-error                 | valid                                                                                                          | invalid: `style-default-missing@word/styles.xml`                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `s83b` | 13:06:30Z, 13:07:09Z | `anchor-open-main-calibration`                | calibration: working/package.word-anchor-open-repaired.docx renamed the same way                                                                                                                      | `b2a392056dcc0fbf` | clean-open     | clean-open     | clean-open                 | valid                                                                                                          | invalid: `style-default-missing@word/styles.xml`                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `s83b` | 13:06:30Z, 13:07:09Z | `anchor-open-unrelated-header`                | #1113 word-anchor-missing-attribute: working/package.word-anchor-open-repaired.docx plus an unrelated word/header83.xml holding broken/package.word-anchor-open.docx's body                           | `841dcc38c6666414` | clean-open     | clean-open     | clean-open                 | invalid: `word-anchor-missing-attribute@word/header83.xml`, `word-position-offset-and-align@word/header83.xml` | invalid: `style-default-missing@word/styles.xml`, `word-anchor-missing-attribute@word/header83.xml`, `word-position-offset-and-align@word/header83.xml`                                                                                                                                                                                                                                                                                                  |
+| `s83b` | 13:06:30Z, 13:07:09Z | `s83b-control-minimal`                        | control                                                                                                                                                                                               | `b816c3963669bf1d` | clean-open     | clean-open     | clean-open                 | valid                                                                                                          | valid                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `s83c` | 13:07:48Z, 13:08:23Z | `text-contains-paragraph-main`                | #1113 word-text-contains-paragraph: broken/package.word-text-contains-paragraph.docx with its main document stored as word/main.xml                                                                   | `95e3630dd34985bd` | open-error     | open-error     | open-error                 | valid                                                                                                          | invalid: `style-default-missing@word/styles.xml`                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `s83c` | 13:07:48Z, 13:08:23Z | `text-contains-paragraph-main-calibration`    | calibration: working/package.word-text-contains-paragraph-lifted.docx renamed the same way                                                                                                            | `357aabbb9ef96df7` | clean-open     | clean-open     | clean-open                 | valid                                                                                                          | invalid: `style-default-missing@word/styles.xml`                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `s83c` | 13:07:48Z, 13:08:23Z | `text-contains-paragraph-unrelated-header`    | #1113 word-text-contains-paragraph: working/package.word-text-contains-paragraph-lifted.docx plus an unrelated word/header83.xml holding broken/package.word-text-contains-paragraph.docx's body      | `212be1c5fd0b93a3` | clean-open     | clean-open     | clean-open                 | invalid: `word-text-contains-paragraph@word/header83.xml`                                                      | invalid: `ws-missing-preserve@word/document.xml`, `style-default-missing@word/styles.xml`, `word-text-contains-paragraph@word/header83.xml`                                                                                                                                                                                                                                                                                                              |
+| `s83c` | 13:07:48Z, 13:08:23Z | `textbox-deleted-text-main`                   | #1113 word-textbox-deleted-text: broken/package.word-textbox-deleted-text-shape.docx with its main document stored as word/main.xml                                                                   | `3046841f76c1612d` | repair-warning | repair-warning | unreadable-content-warning | valid                                                                                                          | invalid: `comment-thread-count-mismatch@word/main.xml`                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `s83c` | 13:07:48Z, 13:08:23Z | `textbox-deleted-text-main-calibration`       | calibration: working/package.word-textbox-deleted-text-shape-repaired.docx renamed the same way                                                                                                       | `f39d2f0e8f8c2b73` | clean-open     | clean-open     | clean-open                 | valid                                                                                                          | invalid: `comment-thread-count-mismatch@word/main.xml`                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `s83c` | 13:07:48Z, 13:08:23Z | `textbox-deleted-text-unrelated-header`       | #1113 word-textbox-deleted-text: working/package.word-textbox-deleted-text-shape-repaired.docx plus an unrelated word/header83.xml holding broken/package.word-textbox-deleted-text-shape.docx's body | `5e20e1795aa52ddd` | clean-open     | clean-open     | clean-open                 | invalid: `word-textbox-deleted-text@word/header83.xml`                                                         | invalid: `comment-thread-count-mismatch@word/document.xml`, `word-textbox-deleted-text@word/header83.xml`                                                                                                                                                                                                                                                                                                                                                |
+| `s83c` | 13:07:48Z, 13:08:23Z | `move-from-deleted-text-main`                 | #1113 word-move-from-deleted-text: broken/package.word-move-from-deleted-text.docx with its main document stored as word/main.xml                                                                     | `c66eb457385e0f41` | repair-warning | repair-warning | unreadable-content-warning | valid                                                                                                          | valid                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `s83c` | 13:07:48Z, 13:08:23Z | `move-from-deleted-text-main-calibration`     | calibration: working/package.word-move-from-text.docx renamed the same way                                                                                                                            | `27708437f8db8a5c` | clean-open     | clean-open     | clean-open                 | valid                                                                                                          | valid                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `s83c` | 13:07:48Z, 13:08:23Z | `move-from-deleted-text-unrelated-header`     | #1113 word-move-from-deleted-text: working/package.word-move-from-text.docx plus an unrelated word/header83.xml holding broken/package.word-move-from-deleted-text.docx's body                        | `dea5c6100fbdd61b` | clean-open     | clean-open     | clean-open                 | invalid: `word-move-from-deleted-text@word/header83.xml`                                                       | invalid: `word-move-from-deleted-text@word/header83.xml`                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `s83c` | 13:07:48Z, 13:08:23Z | `s83c-control-minimal`                        | control                                                                                                                                                                                               | `c23724cc657168b0` | clean-open     | clean-open     | clean-open                 | valid                                                                                                          | valid                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `s83d` | 13:08:54Z, 13:09:24Z | `sdt-id-empty-main`                           | #1113 word-sdt-id-empty: broken/package.word-sdt-id-empty.docx with its main document stored as word/main.xml                                                                                         | `00c1ae4b3f9789cd` | open-error     | open-error     | open-error                 | valid                                                                                                          | invalid: `textid-missing-element@word/footer1.xml`, `textid-missing-element@word/footer2.xml`, `textid-missing-element@word/footnotes.xml`, `textid-missing-element@word/header1.xml`, `textid-missing-element@word/header2.xml`, `style-reference-undefined@word/footnotes.xml`, `style-default-missing@word/styles.xml`                                                                                                                                |
+| `s83d` | 13:08:54Z, 13:09:24Z | `sdt-id-empty-main-calibration`               | calibration: working/package.word-sdt-id-empty-repaired.docx renamed the same way                                                                                                                     | `0b87300a94b9d569` | clean-open     | clean-open     | clean-open                 | valid                                                                                                          | invalid: `textid-missing-element@word/footer1.xml`, `textid-missing-element@word/footer2.xml`, `textid-missing-element@word/footnotes.xml`, `textid-missing-element@word/header1.xml`, `textid-missing-element@word/header2.xml`, `style-reference-undefined@word/footnotes.xml`, `style-default-missing@word/styles.xml`                                                                                                                                |
+| `s83d` | 13:08:54Z, 13:09:24Z | `sdt-id-empty-unrelated-header`               | #1113 word-sdt-id-empty: working/package.word-sdt-id-empty-repaired.docx plus an unrelated word/header83.xml holding broken/package.word-sdt-id-empty.docx's body                                     | `e2bbd4661852c77d` | clean-open     | clean-open     | clean-open                 | invalid: `word-sdt-id-empty@word/header83.xml`                                                                 | invalid: `textid-missing-element@word/document.xml`, `textid-missing-element@word/footer1.xml`, `textid-missing-element@word/footer2.xml`, `textid-missing-element@word/footnotes.xml`, `textid-missing-element@word/header1.xml`, `textid-missing-element@word/header2.xml`, `textid-missing-element@word/header83.xml`, `style-reference-undefined@word/footnotes.xml`, `style-default-missing@word/styles.xml`, `word-sdt-id-empty@word/header83.xml` |
+| `s83d` | 13:08:54Z, 13:09:24Z | `choice-requires-undeclared-main`             | #1113 word-choice-requires-undeclared: broken/package.word-choice-requires-undeclared.docx with its main document stored as word/main.xml                                                             | `04c7580a39bb3768` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-malformed@word/main.xml`                                                                         | invalid: `mce-malformed@word/main.xml`                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `s83d` | 13:08:54Z, 13:09:24Z | `choice-requires-undeclared-main-calibration` | calibration: working/package.word-choice-requires-declared.docx renamed the same way                                                                                                                  | `3b8a895d745a7516` | clean-open     | clean-open     | clean-open                 | valid                                                                                                          | invalid: fixture findings only                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `s83d` | 13:08:54Z, 13:09:24Z | `choice-requires-undeclared-unrelated-header` | #1113 word-choice-requires-undeclared: working/package.word-choice-requires-declared.docx plus an unrelated word/header83.xml holding broken/package.word-choice-requires-undeclared.docx's body      | `8aeee434603a730f` | clean-open     | clean-open     | clean-open                 | invalid: `mce-malformed@word/header83.xml`, `word-choice-requires-undeclared@word/header83.xml`                | invalid: `mce-malformed@word/header83.xml`, `word-choice-requires-undeclared@word/header83.xml`                                                                                                                                                                                                                                                                                                                                                          |
+| `s83d` | 13:08:54Z, 13:09:24Z | `s83d-control-minimal`                        | control                                                                                                                                                                                               | `a7fde1a84a917de2` | clean-open     | clean-open     | clean-open                 | valid                                                                                                          | valid                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+
+<details><summary>Raw records, session 83</summary>
+
+```jsonl
+{"run": "s83a", "pass": 1, "name": "row-without-cell-main", "sha256": "6898506a85f56ac02408ba9bc6d3833cbc737e5031067d264f0368f9d9cde1e5", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:05+00:00", "staged": "00007__wfv__row-without-cell-main.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-28 09:04:33.568 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00007__wfv__row-without-cell-main.docx)\""], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00007__wfv__row-without-cell-main.docx; refusing to guess"}
+{"run": "s83a", "pass": 2, "name": "row-without-cell-main", "sha256": "6898506a85f56ac02408ba9bc6d3833cbc737e5031067d264f0368f9d9cde1e5", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:42+00:00", "staged": "00007__wfv__row-without-cell-main.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-28 09:05:28.491 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … y converter.\\n(00007__wfv__row-without-cell-main.docx)'"], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00007__wfv__row-without-cell-main.docx; refusing to guess"}
+{"run": "s83a", "pass": 1, "name": "row-without-cell-main-calibration", "sha256": "e29855811614e44f698eb1287adcd5b44d534dd3a80d1dba68d0751f0f0dd4c6", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:05+00:00", "staged": "00006__wfv__row-without-cell-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF row-without-cell-main-calibration_byword.pdf (31738 bytes), no dialog named the file"]}
+{"run": "s83a", "pass": 2, "name": "row-without-cell-main-calibration", "sha256": "e29855811614e44f698eb1287adcd5b44d534dd3a80d1dba68d0751f0f0dd4c6", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:42+00:00", "staged": "00006__wfv__row-without-cell-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF row-without-cell-main-calibration_byword.pdf (31738 bytes), no dialog named the file"]}
+{"run": "s83a", "pass": 1, "name": "row-without-cell-unrelated-header", "sha256": "88918eb4f9770908ab8277e607fce4f68af213d367f251fb98077ad090caab14", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:05+00:00", "staged": "00008__wfv__row-without-cell-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF row-without-cell-unrelated-header_byword.pdf (31738 bytes), no dialog named the file"]}
+{"run": "s83a", "pass": 2, "name": "row-without-cell-unrelated-header", "sha256": "88918eb4f9770908ab8277e607fce4f68af213d367f251fb98077ad090caab14", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:42+00:00", "staged": "00008__wfv__row-without-cell-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF row-without-cell-unrelated-header_byword.pdf (31738 bytes), no dialog named the file"]}
+{"run": "s83a", "pass": 1, "name": "cell-ends-with-table-main", "sha256": "78dd9459bb1a9999f5783bb5ac147e63b2add4837652128c42cae4019b619484", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:05+00:00", "staged": "00004__wfv__cell-ends-with-table-main.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 09:04:19.527 \"Word found unreadable content in 00004__wfv__cell-ends-with-table-main.docx. Do you want to recover … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s83a", "pass": 2, "name": "cell-ends-with-table-main", "sha256": "78dd9459bb1a9999f5783bb5ac147e63b2add4837652128c42cae4019b619484", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:42+00:00", "staged": "00004__wfv__cell-ends-with-table-main.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 09:05:24.056 'Word found unreadable content in 00004__wfv__cell-ends-with-table-main.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-28 09:05:24.547 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__cell-ends-with-table-main...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s83a", "pass": 1, "name": "cell-ends-with-table-main-calibration", "sha256": "9a5ed31160c7cf4a1c8085d28f94c9d32fc67f9ae374ba64ebec31fbb1424f70", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:05+00:00", "staged": "00003__wfv__cell-ends-with-table-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF cell-ends-with-table-main-calibration_byword.pdf (220866 bytes), no dialog named the file"]}
+{"run": "s83a", "pass": 2, "name": "cell-ends-with-table-main-calibration", "sha256": "9a5ed31160c7cf4a1c8085d28f94c9d32fc67f9ae374ba64ebec31fbb1424f70", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:42+00:00", "staged": "00003__wfv__cell-ends-with-table-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF cell-ends-with-table-main-calibration_byword.pdf (220866 bytes), no dialog named the file"]}
+{"run": "s83a", "pass": 1, "name": "cell-ends-with-table-unrelated-header", "sha256": "79866adac23a0c41a52b19bfdef7edea9fa104a4746dee6dcabaff7a9280a59d", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:05+00:00", "staged": "00005__wfv__cell-ends-with-table-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF cell-ends-with-table-unrelated-header_byword.pdf (220866 bytes), no dialog named the file"]}
+{"run": "s83a", "pass": 2, "name": "cell-ends-with-table-unrelated-header", "sha256": "79866adac23a0c41a52b19bfdef7edea9fa104a4746dee6dcabaff7a9280a59d", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:42+00:00", "staged": "00005__wfv__cell-ends-with-table-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF cell-ends-with-table-unrelated-header_byword.pdf (220866 bytes), no dialog named the file"]}
+{"run": "s83a", "pass": 1, "name": "arc-radius-main", "sha256": "9ae79c73217b4984d15f8ee9ca1be564de95d01a90f8c7e2bbebc7b72bb1c5a6", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:05+00:00", "staged": "00001__wfv__arc-radius-main.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-28 09:04:05.293 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … Recovery converter. (00001__wfv__arc-radius-main.docx)\""], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00001__wfv__arc-radius-main.docx; refusing to guess"}
+{"run": "s83a", "pass": 2, "name": "arc-radius-main", "sha256": "9ae79c73217b4984d15f8ee9ca1be564de95d01a90f8c7e2bbebc7b72bb1c5a6", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:42+00:00", "staged": "00001__wfv__arc-radius-main.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-28 09:05:19.705 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … ecovery converter.\\n(00001__wfv__arc-radius-main.docx)'"], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00001__wfv__arc-radius-main.docx; refusing to guess"}
+{"run": "s83a", "pass": 1, "name": "arc-radius-main-calibration", "sha256": "56caf5d371a45434f1bb4a299ac2fbffc2da32ba18f4e2e58b89f6d31e3865a0", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:05+00:00", "staged": "00000__wfv__arc-radius-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF arc-radius-main-calibration_byword.pdf (100921 bytes), no dialog named the file"]}
+{"run": "s83a", "pass": 2, "name": "arc-radius-main-calibration", "sha256": "56caf5d371a45434f1bb4a299ac2fbffc2da32ba18f4e2e58b89f6d31e3865a0", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:42+00:00", "staged": "00000__wfv__arc-radius-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF arc-radius-main-calibration_byword.pdf (100921 bytes), no dialog named the file"]}
+{"run": "s83a", "pass": 1, "name": "arc-radius-unrelated-header", "sha256": "bf1c31d01064ecc18aa9b8deb27fbb4dcaece81a55165ad46ed3ed1b8d24f576", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:05+00:00", "staged": "00002__wfv__arc-radius-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF arc-radius-unrelated-header_byword.pdf (100921 bytes), no dialog named the file"]}
+{"run": "s83a", "pass": 2, "name": "arc-radius-unrelated-header", "sha256": "bf1c31d01064ecc18aa9b8deb27fbb4dcaece81a55165ad46ed3ed1b8d24f576", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:42+00:00", "staged": "00002__wfv__arc-radius-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF arc-radius-unrelated-header_byword.pdf (100921 bytes), no dialog named the file"]}
+{"run": "s83a", "pass": 1, "name": "s83a-control-minimal", "sha256": "35ccde0e908ed032a538ac7adf2e21662c25765eaba53a10425b034f8eb5984b", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:05+00:00", "staged": "00009__wfv__s83a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s83a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s83a", "pass": 2, "name": "s83a-control-minimal", "sha256": "35ccde0e908ed032a538ac7adf2e21662c25765eaba53a10425b034f8eb5984b", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:05:42+00:00", "staged": "00009__wfv__s83a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s83a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s83b", "pass": 1, "name": "extent-negative-main", "sha256": "d50ca2b9d3bf2bc43df277b11afd7004d487d21a35600c19a3afae27691ba645", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:06:30+00:00", "staged": "00007__wfv__extent-negative-main.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-28 09:06:11.908 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … ry converter.\\n(00007__wfv__extent-negative-main.docx)'"], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00007__wfv__extent-negative-main.docx; refusing to guess"}
+{"run": "s83b", "pass": 2, "name": "extent-negative-main", "sha256": "d50ca2b9d3bf2bc43df277b11afd7004d487d21a35600c19a3afae27691ba645", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:09+00:00", "staged": "00007__wfv__extent-negative-main.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-28 09:06:51.689 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … ry converter.\\n(00007__wfv__extent-negative-main.docx)'"], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00007__wfv__extent-negative-main.docx; refusing to guess"}
+{"run": "s83b", "pass": 1, "name": "extent-negative-main-calibration", "sha256": "19385147d608bb978994e8a32bdced09a96b56bcfa82ac6aa9e6b46757a5f158", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:06:30+00:00", "staged": "00006__wfv__extent-negative-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF extent-negative-main-calibration_byword.pdf (85498 bytes), no dialog named the file"]}
+{"run": "s83b", "pass": 2, "name": "extent-negative-main-calibration", "sha256": "19385147d608bb978994e8a32bdced09a96b56bcfa82ac6aa9e6b46757a5f158", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:09+00:00", "staged": "00006__wfv__extent-negative-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF extent-negative-main-calibration_byword.pdf (85498 bytes), no dialog named the file"]}
+{"run": "s83b", "pass": 1, "name": "extent-negative-unrelated-header", "sha256": "8abb3984c8c5832d73c8db8a69ad6197572c2fd7728d9cdb4186dc28cfc6ab32", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:06:30+00:00", "staged": "00008__wfv__extent-negative-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF extent-negative-unrelated-header_byword.pdf (85498 bytes), no dialog named the file"]}
+{"run": "s83b", "pass": 2, "name": "extent-negative-unrelated-header", "sha256": "8abb3984c8c5832d73c8db8a69ad6197572c2fd7728d9cdb4186dc28cfc6ab32", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:09+00:00", "staged": "00008__wfv__extent-negative-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF extent-negative-unrelated-header_byword.pdf (85498 bytes), no dialog named the file"]}
+{"run": "s83b", "pass": 1, "name": "empty-drawing-main", "sha256": "aa3d14e4acb6e6486d5bebafa480bb44afe99f3664c98a6163feb8e8bae8ab0b", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:06:30+00:00", "staged": "00004__wfv__empty-drawing-main.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-28 09:06:07.732 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … very converter.\\n(00004__wfv__empty-drawing-main.docx)'"], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00004__wfv__empty-drawing-main.docx; refusing to guess"}
+{"run": "s83b", "pass": 2, "name": "empty-drawing-main", "sha256": "aa3d14e4acb6e6486d5bebafa480bb44afe99f3664c98a6163feb8e8bae8ab0b", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:09+00:00", "staged": "00004__wfv__empty-drawing-main.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-28 09:06:47.490 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … very converter.\\n(00004__wfv__empty-drawing-main.docx)'"], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00004__wfv__empty-drawing-main.docx; refusing to guess"}
+{"run": "s83b", "pass": 1, "name": "empty-drawing-main-calibration", "sha256": "7a753ec7b3b73c771af501a1b052808fe44ab360f462742684e9eae334308fd4", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:06:30+00:00", "staged": "00003__wfv__empty-drawing-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF empty-drawing-main-calibration_byword.pdf (4923 bytes), no dialog named the file"]}
+{"run": "s83b", "pass": 2, "name": "empty-drawing-main-calibration", "sha256": "7a753ec7b3b73c771af501a1b052808fe44ab360f462742684e9eae334308fd4", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:09+00:00", "staged": "00003__wfv__empty-drawing-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF empty-drawing-main-calibration_byword.pdf (4923 bytes), no dialog named the file"]}
+{"run": "s83b", "pass": 1, "name": "empty-drawing-unrelated-header", "sha256": "8a209e173789b41f07be7024c993a6a79e6af6eee1043fc04367b9bce0d2712e", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:06:30+00:00", "staged": "00005__wfv__empty-drawing-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF empty-drawing-unrelated-header_byword.pdf (4923 bytes), no dialog named the file"]}
+{"run": "s83b", "pass": 2, "name": "empty-drawing-unrelated-header", "sha256": "8a209e173789b41f07be7024c993a6a79e6af6eee1043fc04367b9bce0d2712e", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:09+00:00", "staged": "00005__wfv__empty-drawing-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF empty-drawing-unrelated-header_byword.pdf (4923 bytes), no dialog named the file"]}
+{"run": "s83b", "pass": 1, "name": "anchor-open-main", "sha256": "7c47ed53a8c752137871eec0491a514e3a13107f55b4d82816f07a1715b40c71", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:06:30+00:00", "staged": "00001__wfv__anchor-open-main.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-28 09:06:03.272 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … covery converter.\\n(00001__wfv__anchor-open-main.docx)'"], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00001__wfv__anchor-open-main.docx; refusing to guess"}
+{"run": "s83b", "pass": 2, "name": "anchor-open-main", "sha256": "7c47ed53a8c752137871eec0491a514e3a13107f55b4d82816f07a1715b40c71", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:09+00:00", "staged": "00001__wfv__anchor-open-main.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-28 09:06:43.022 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … covery converter.\\n(00001__wfv__anchor-open-main.docx)'"], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00001__wfv__anchor-open-main.docx; refusing to guess"}
+{"run": "s83b", "pass": 1, "name": "anchor-open-main-calibration", "sha256": "b2a392056dcc0fbf2416ab49b96c6502457ed665f94090f3be9cebb1bd9f5365", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:06:30+00:00", "staged": "00000__wfv__anchor-open-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF anchor-open-main-calibration_byword.pdf (167146 bytes), no dialog named the file"]}
+{"run": "s83b", "pass": 2, "name": "anchor-open-main-calibration", "sha256": "b2a392056dcc0fbf2416ab49b96c6502457ed665f94090f3be9cebb1bd9f5365", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:09+00:00", "staged": "00000__wfv__anchor-open-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF anchor-open-main-calibration_byword.pdf (167146 bytes), no dialog named the file"]}
+{"run": "s83b", "pass": 1, "name": "anchor-open-unrelated-header", "sha256": "841dcc38c6666414fe136f7a9b3e2f315b583e3412803a918a6b56a3dd5c265b", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:06:30+00:00", "staged": "00002__wfv__anchor-open-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF anchor-open-unrelated-header_byword.pdf (167146 bytes), no dialog named the file"]}
+{"run": "s83b", "pass": 2, "name": "anchor-open-unrelated-header", "sha256": "841dcc38c6666414fe136f7a9b3e2f315b583e3412803a918a6b56a3dd5c265b", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:09+00:00", "staged": "00002__wfv__anchor-open-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF anchor-open-unrelated-header_byword.pdf (167146 bytes), no dialog named the file"]}
+{"run": "s83b", "pass": 1, "name": "s83b-control-minimal", "sha256": "b816c3963669bf1d8be772d2a137abee64601e8f5c3b8392f6248329591dc745", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:06:30+00:00", "staged": "00009__wfv__s83b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s83b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s83b", "pass": 2, "name": "s83b-control-minimal", "sha256": "b816c3963669bf1d8be772d2a137abee64601e8f5c3b8392f6248329591dc745", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:09+00:00", "staged": "00009__wfv__s83b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s83b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s83c", "pass": 1, "name": "text-contains-paragraph-main", "sha256": "95e3630dd34985bd98dd945dd4d1c048736ea444a6d9df075b7a7f5da0f9442e", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:48+00:00", "staged": "00005__wfv__text-contains-paragraph-main.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-28 09:07:34.957 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00005__wfv__text-contains-paragraph-m...)'"], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00005__wfv__text-contains-paragraph-main.docx; refusing to guess"}
+{"run": "s83c", "pass": 2, "name": "text-contains-paragraph-main", "sha256": "95e3630dd34985bd98dd945dd4d1c048736ea444a6d9df075b7a7f5da0f9442e", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:23+00:00", "staged": "00005__wfv__text-contains-paragraph-main.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-28 09:08:07.234 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00005__wfv__text-contains-paragraph-m...)'"], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00005__wfv__text-contains-paragraph-main.docx; refusing to guess"}
+{"run": "s83c", "pass": 1, "name": "text-contains-paragraph-main-calibration", "sha256": "357aabbb9ef96df7664eeb3699f3b1e024fd955edf28a3dc87d13745da30e8ac", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:48+00:00", "staged": "00004__wfv__text-contains-paragraph-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF text-contains-paragraph-main-calibration_byword.pdf (104002 bytes), no dialog named the file"]}
+{"run": "s83c", "pass": 2, "name": "text-contains-paragraph-main-calibration", "sha256": "357aabbb9ef96df7664eeb3699f3b1e024fd955edf28a3dc87d13745da30e8ac", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:23+00:00", "staged": "00004__wfv__text-contains-paragraph-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF text-contains-paragraph-main-calibration_byword.pdf (104002 bytes), no dialog named the file"]}
+{"run": "s83c", "pass": 1, "name": "text-contains-paragraph-unrelated-header", "sha256": "212be1c5fd0b93a38d4cd982048ff1b345f5232b20301793cbbde220c2a0377b", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:48+00:00", "staged": "00006__wfv__text-contains-paragraph-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF text-contains-paragraph-unrelated-header_byword.pdf (104002 bytes), no dialog named the file"]}
+{"run": "s83c", "pass": 2, "name": "text-contains-paragraph-unrelated-header", "sha256": "212be1c5fd0b93a38d4cd982048ff1b345f5232b20301793cbbde220c2a0377b", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:23+00:00", "staged": "00006__wfv__text-contains-paragraph-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF text-contains-paragraph-unrelated-header_byword.pdf (104002 bytes), no dialog named the file"]}
+{"run": "s83c", "pass": 1, "name": "textbox-deleted-text-main", "sha256": "3046841f76c1612d162e18e0eb52ef207c7467ef648f8e908a64d07fbdb541cf", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:48+00:00", "staged": "00008__wfv__textbox-deleted-text-main.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 09:07:39.193 'Word found unreadable content in 00008__wfv__textbox-deleted-text-main.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-28 09:07:39.717 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00008__wfv__textbox-deleted-text-main...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s83c", "pass": 2, "name": "textbox-deleted-text-main", "sha256": "3046841f76c1612d162e18e0eb52ef207c7467ef648f8e908a64d07fbdb541cf", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:23+00:00", "staged": "00008__wfv__textbox-deleted-text-main.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 09:08:11.460 'Word found unreadable content in 00008__wfv__textbox-deleted-text-main.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-28 09:08:11.963 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00008__wfv__textbox-deleted-text-main...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s83c", "pass": 1, "name": "textbox-deleted-text-main-calibration", "sha256": "f39d2f0e8f8c2b73691c4739c357bbaee744765a6933fe415dd50cdc0e6189a0", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:48+00:00", "staged": "00007__wfv__textbox-deleted-text-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF textbox-deleted-text-main-calibration_byword.pdf (23501 bytes), no dialog named the file"]}
+{"run": "s83c", "pass": 2, "name": "textbox-deleted-text-main-calibration", "sha256": "f39d2f0e8f8c2b73691c4739c357bbaee744765a6933fe415dd50cdc0e6189a0", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:23+00:00", "staged": "00007__wfv__textbox-deleted-text-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF textbox-deleted-text-main-calibration_byword.pdf (23501 bytes), no dialog named the file"]}
+{"run": "s83c", "pass": 1, "name": "textbox-deleted-text-unrelated-header", "sha256": "5e20e1795aa52ddd33d7671105c78a817ae6230bb066530d29165a185c1e586f", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:48+00:00", "staged": "00009__wfv__textbox-deleted-text-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF textbox-deleted-text-unrelated-header_byword.pdf (23501 bytes), no dialog named the file"]}
+{"run": "s83c", "pass": 2, "name": "textbox-deleted-text-unrelated-header", "sha256": "5e20e1795aa52ddd33d7671105c78a817ae6230bb066530d29165a185c1e586f", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:23+00:00", "staged": "00009__wfv__textbox-deleted-text-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF textbox-deleted-text-unrelated-header_byword.pdf (23501 bytes), no dialog named the file"]}
+{"run": "s83c", "pass": 1, "name": "move-from-deleted-text-main", "sha256": "c66eb457385e0f412039b713458ea0d43e7c2ac0a2cc30739df63efe6a8b1ee6", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:48+00:00", "staged": "00001__wfv__move-from-deleted-text-main.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 09:07:30.640 'Word found unreadable content in 00001__wfv__move-from-deleted-text-main.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-28 09:07:31.147 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__move-from-deleted-text-ma...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s83c", "pass": 2, "name": "move-from-deleted-text-main", "sha256": "c66eb457385e0f412039b713458ea0d43e7c2ac0a2cc30739df63efe6a8b1ee6", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:23+00:00", "staged": "00001__wfv__move-from-deleted-text-main.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 09:08:02.907 'Word found unreadable content in 00001__wfv__move-from-deleted-text-main.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-28 09:08:03.414 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__move-from-deleted-text-ma...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s83c", "pass": 1, "name": "move-from-deleted-text-main-calibration", "sha256": "27708437f8db8a5c4d06a56b05d7024cefd924e5d8582eda395882aa3d48356c", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:48+00:00", "staged": "00000__wfv__move-from-deleted-text-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF move-from-deleted-text-main-calibration_byword.pdf (7080 bytes), no dialog named the file"]}
+{"run": "s83c", "pass": 2, "name": "move-from-deleted-text-main-calibration", "sha256": "27708437f8db8a5c4d06a56b05d7024cefd924e5d8582eda395882aa3d48356c", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:23+00:00", "staged": "00000__wfv__move-from-deleted-text-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF move-from-deleted-text-main-calibration_byword.pdf (7080 bytes), no dialog named the file"]}
+{"run": "s83c", "pass": 1, "name": "move-from-deleted-text-unrelated-header", "sha256": "dea5c6100fbdd61b6f4bf290365e9a2fa286f77b80d574f87380d47e9e396565", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:48+00:00", "staged": "00002__wfv__move-from-deleted-text-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF move-from-deleted-text-unrelated-header_byword.pdf (7080 bytes), no dialog named the file"]}
+{"run": "s83c", "pass": 2, "name": "move-from-deleted-text-unrelated-header", "sha256": "dea5c6100fbdd61b6f4bf290365e9a2fa286f77b80d574f87380d47e9e396565", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:23+00:00", "staged": "00002__wfv__move-from-deleted-text-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF move-from-deleted-text-unrelated-header_byword.pdf (7080 bytes), no dialog named the file"]}
+{"run": "s83c", "pass": 1, "name": "s83c-control-minimal", "sha256": "c23724cc657168b0cfdb8fbdd8e4de954b597186d97479192575d93af5533b39", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:07:48+00:00", "staged": "00003__wfv__s83c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s83c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s83c", "pass": 2, "name": "s83c-control-minimal", "sha256": "c23724cc657168b0cfdb8fbdd8e4de954b597186d97479192575d93af5533b39", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:23+00:00", "staged": "00003__wfv__s83c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s83c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s83d", "pass": 1, "name": "sdt-id-empty-main", "sha256": "00c1ae4b3f9789cdc20d30730f63f938c1b83ae15282f9bdba9819275f3bf0ff", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:54+00:00", "staged": "00005__wfv__sdt-id-empty-main.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-28 09:08:44.873 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … overy converter.\\n(00005__wfv__sdt-id-empty-main.docx)'"], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00005__wfv__sdt-id-empty-main.docx; refusing to guess"}
+{"run": "s83d", "pass": 2, "name": "sdt-id-empty-main", "sha256": "00c1ae4b3f9789cdc20d30730f63f938c1b83ae15282f9bdba9819275f3bf0ff", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:09:24+00:00", "staged": "00005__wfv__sdt-id-empty-main.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-28 09:09:14.431 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … overy converter.\\n(00005__wfv__sdt-id-empty-main.docx)'"], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00005__wfv__sdt-id-empty-main.docx; refusing to guess"}
+{"run": "s83d", "pass": 1, "name": "sdt-id-empty-main-calibration", "sha256": "0b87300a94b9d5690a958e1b2e8f194c69c75337b94a2ee3a8d734f12e19afcb", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:54+00:00", "staged": "00004__wfv__sdt-id-empty-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF sdt-id-empty-main-calibration_byword.pdf (721672 bytes), no dialog named the file"]}
+{"run": "s83d", "pass": 2, "name": "sdt-id-empty-main-calibration", "sha256": "0b87300a94b9d5690a958e1b2e8f194c69c75337b94a2ee3a8d734f12e19afcb", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:09:24+00:00", "staged": "00004__wfv__sdt-id-empty-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF sdt-id-empty-main-calibration_byword.pdf (721672 bytes), no dialog named the file"]}
+{"run": "s83d", "pass": 1, "name": "sdt-id-empty-unrelated-header", "sha256": "e2bbd4661852c77d06eb3d8c1f2dc4915dded47a7acb8903b4cdc77e1d38eb13", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:54+00:00", "staged": "00006__wfv__sdt-id-empty-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF sdt-id-empty-unrelated-header_byword.pdf (721672 bytes), no dialog named the file"]}
+{"run": "s83d", "pass": 2, "name": "sdt-id-empty-unrelated-header", "sha256": "e2bbd4661852c77d06eb3d8c1f2dc4915dded47a7acb8903b4cdc77e1d38eb13", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:09:24+00:00", "staged": "00006__wfv__sdt-id-empty-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF sdt-id-empty-unrelated-header_byword.pdf (721672 bytes), no dialog named the file"]}
+{"run": "s83d", "pass": 1, "name": "choice-requires-undeclared-main", "sha256": "04c7580a39bb3768005d191c1daa811c5ff1ccf08a82df393ce37ea0f1d929bd", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:54+00:00", "staged": "00001__wfv__choice-requires-undeclared-main.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 09:08:40.272 'Word found unreadable content in 00001__wfv__choice-requires-undeclared-main.docx. Do you want to r … ? If you trust the source of this document, click Yes.'", "2026-10-28 09:08:40.767 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__choice-requires-undeclare...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s83d", "pass": 2, "name": "choice-requires-undeclared-main", "sha256": "04c7580a39bb3768005d191c1daa811c5ff1ccf08a82df393ce37ea0f1d929bd", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:09:24+00:00", "staged": "00001__wfv__choice-requires-undeclared-main.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 09:09:10.122 'Word found unreadable content in 00001__wfv__choice-requires-undeclared-main.docx. Do you want to r … ? If you trust the source of this document, click Yes.'", "2026-10-28 09:09:10.647 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__choice-requires-undeclare...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s83d", "pass": 1, "name": "choice-requires-undeclared-main-calibration", "sha256": "3b8a895d745a7516e3c45eb92ac044d770aeadde49716e1c34e665b88c261a32", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:54+00:00", "staged": "00000__wfv__choice-requires-undeclared-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF choice-requires-undeclared-main-calibration_byword.pdf (11571 bytes), no dialog named the file"]}
+{"run": "s83d", "pass": 2, "name": "choice-requires-undeclared-main-calibration", "sha256": "3b8a895d745a7516e3c45eb92ac044d770aeadde49716e1c34e665b88c261a32", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:09:24+00:00", "staged": "00000__wfv__choice-requires-undeclared-main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF choice-requires-undeclared-main-calibration_byword.pdf (11571 bytes), no dialog named the file"]}
+{"run": "s83d", "pass": 1, "name": "choice-requires-undeclared-unrelated-header", "sha256": "8aeee434603a730fd0c5eb51daae77f12d521335f688b077d3aeded0bbed1357", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:54+00:00", "staged": "00002__wfv__choice-requires-undeclared-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF choice-requires-undeclared-unrelated-header_byword.pdf (11571 bytes), no dialog named the file"]}
+{"run": "s83d", "pass": 2, "name": "choice-requires-undeclared-unrelated-header", "sha256": "8aeee434603a730fd0c5eb51daae77f12d521335f688b077d3aeded0bbed1357", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:09:24+00:00", "staged": "00002__wfv__choice-requires-undeclared-unrelated-header.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF choice-requires-undeclared-unrelated-header_byword.pdf (11571 bytes), no dialog named the file"]}
+{"run": "s83d", "pass": 1, "name": "s83d-control-minimal", "sha256": "a7fde1a84a917de2ba3ed35197c1f846f6b33307a59f6c29f499474774d0a4d3", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:08:54+00:00", "staged": "00003__wfv__s83d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s83d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s83d", "pass": 2, "name": "s83d-control-minimal", "sha256": "a7fde1a84a917de2ba3ed35197c1f846f6b33307a59f6c29f499474774d0a4d3", "validatorRevision": "568d746adf4aaa478735b82672c3bbd66c858355", "observedAt": "2026-10-28T13:09:24+00:00", "staged": "00003__wfv__s83d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s83d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 83 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s83builder.mts`:
+
+```ts
+// Session 83 (2026-10-28): which parts Word judges the by-name story rules' shapes in (#1113).
+// Twenty check files walk `ctx.storyParts()`, the parts named like a story wherever stored, not the parts Word reads.
+// Session 82 (#1106) showed the cost for `word-hyperlink-relationship`: Word refused its shape in a main document stored
+// as word/main.xml and opened it clean in an unrelated word/header9.xml. This session asks the same of the Word-blocking
+// rules whose refused shape session 41 attributes to one fixture pair (a broken fixture Word refused, a twin it opened
+// clean). For each pair, three rows:
+// - `<rule>-main`: the broken fixture with its main document stored as word/main.xml (_rels/.rels, the content-types
+//   Override and the sidecar's name follow), whose shape the by-name list does not judge;
+// - `<rule>-main-calibration`: the clean twin renamed the same way;
+// - `<rule>-unrelated-header`: the clean twin plus word/header83.xml (session 82 used header9, which one fixture
+//   stores), typed header by its Override, which no relationship names,
+//   holding the broken main document's body (its w:sectPr elements dropped) under a w:hdr root with the document root's
+//   attributes, and a copy of the broken main document's relationships as its sidecar. The by-name list judges it.
+// Each pair's broken fixture must hold the rule's finding in word/document.xml (the builder checks it), so session 41's
+// word-textbox-deleted-text pair is its `-shape` one: the plain fixture's defect sits in footer1.xml.
+// Every row records the validator revision it was judged at (`validatorRevision`); the verdict helper is s82builder.mts's.
+// The builder empties the chunk's specimens.jsonl once before its row loop (promised on #825), and its src (#985).
+// Run from a worktree root: CHUNK=s83a pnpm exec node --import tsx <this file>
+// (the imports are absolute, so the file needs no copy into the worktree; `git rev-parse` reads the cwd's worktree).
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { createRequire } from "node:module";
+import { appendFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const WT = process.cwd();
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const { parseXml } = await import(path.join(WT, "src/lib/xml-helpers.ts"));
+const { MINIMAL_PARTS, buildDocx } = await import(path.join(WT, "tests/support/minimal-docx.ts"));
+const JSZip = createRequire(path.join(WT, "package.json"))("jszip");
+const REVISION = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+const FIXTURES = path.join(WT, "tests/fixtures");
+
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const MAIN_RELS = "word/_rels/document.xml.rels";
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n`;
+
+const replaceOnce = (text: string, from: string | RegExp, to: string) => {
+    const count = typeof from === "string" ? text.split(from).length - 1 : (text.match(new RegExp(from.source, "g")) ?? []).length;
+    if (count !== 1) throw new Error(`expected exactly one ${from}, found ${count}`);
+    return text.replace(from, to);
+};
+
+type Parts = Map<string, Uint8Array>;
+const utf8 = new TextDecoder("utf-8");
+const encoder = new TextEncoder();
+const textOf = (parts: Parts, name: string) => {
+    const bytes = parts.get(name);
+    if (!bytes) throw new Error(`no ${name}`);
+    const text = utf8.decode(bytes);
+    return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+};
+
+/** The fixture's parts in stored order. */
+const load = async (rel: string): Promise<Parts> => {
+    const zip = await JSZip.loadAsync(readFileSync(path.join(FIXTURES, rel)));
+    const parts: Parts = new Map();
+    for (const name of Object.keys(zip.files)) {
+        if (!zip.files[name].dir) parts.set(name, await zip.files[name].async("uint8array"));
+    }
+    return parts;
+};
+const pack = async (parts: Parts): Promise<Uint8Array> => {
+    const zip = new JSZip();
+    for (const [name, bytes] of parts) zip.file(name, bytes, { compression: "DEFLATE" });
+    return zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
+};
+
+/** The package with its main document stored as word/main.xml; every name that points at it follows. */
+const renameMain = (parts: Parts): Parts => {
+    if (!parts.has(MAIN)) throw new Error("no word/document.xml");
+    const out: Parts = new Map();
+    for (const [name, bytes] of parts) {
+        if (name === MAIN) out.set("word/main.xml", bytes);
+        else if (name === MAIN_RELS) out.set("word/_rels/main.xml.rels", bytes);
+        else if (name === "_rels/.rels")
+            out.set(
+                name,
+                encoder.encode(replaceOnce(textOf(parts, name), /Target="(\/?)word\/document\.xml"/, 'Target="$1word/main.xml"')),
+            );
+        else if (name === CT)
+            out.set(name, encoder.encode(replaceOnce(textOf(parts, name), 'PartName="/word/document.xml"', 'PartName="/word/main.xml"')));
+        else out.set(name, bytes);
+    }
+    return out;
+};
+
+/** `text` without its outermost `<tag>` elements, nested ones (a w:sectPr inside a w:sectPrChange) counted, not matched. */
+const withoutElements = (text: string, tag: string): string => {
+    const token = new RegExp(`<${tag}\\b[^>]*?(/?)>|</${tag}>`, "g");
+    let out = "";
+    let depth = 0;
+    let start = 0;
+    let cut = 0;
+    for (let match = token.exec(text); match; match = token.exec(text)) {
+        const closing = match[0].startsWith("</");
+        const selfClosing = !closing && match[1] === "/";
+        if (depth === 0 && !closing) {
+            out += text.slice(cut, match.index);
+            start = match.index;
+            if (selfClosing) {
+                cut = token.lastIndex;
+                continue;
+            }
+            depth = 1;
+        } else if (closing) {
+            depth -= 1;
+            if (depth < 0) throw new Error(`unbalanced </${tag}>`);
+            if (depth === 0) cut = token.lastIndex;
+        } else if (!selfClosing) {
+            depth += 1;
+        }
+    }
+    if (depth !== 0) throw new Error(`unclosed <${tag}> at ${start}`);
+    return out + text.slice(cut);
+};
+
+/** `broken`'s main-document body as a header part: the w:document root's attributes on w:hdr, its w:sectPr elements dropped. */
+const bodyAsHeader = (doc: string): string => {
+    const attributes = doc.match(/<w:document\b([^>]*)>/)?.[1];
+    const body = doc.match(/<w:body>([\s\S]*)<\/w:body>/)?.[1];
+    if (attributes === undefined || body === undefined) throw new Error("no w:document root or w:body");
+    const inner = withoutElements(body, "w:sectPr");
+    if (!/<w:(p|tbl|sdt)\b/.test(inner)) throw new Error("the body holds no block-level content");
+    const header = `${XML_DECL}<w:hdr${attributes}>${inner}</w:hdr>`;
+    parseXml(header);
+    return header;
+};
+
+const UNRELATED = "header83.xml";
+/** The clean twin plus word/header83.xml, typed header and named by no relationship, holding the broken body. */
+const withUnrelatedHeader = (clean: Parts, broken: Parts): Parts => {
+    if ([...clean.keys()].some((name) => name.toLowerCase().includes(UNRELATED))) throw new Error(`the twin already stores ${UNRELATED}`);
+    const out: Parts = new Map(clean);
+    out.set(
+        CT,
+        encoder.encode(
+            replaceOnce(textOf(clean, CT), "</Types>", `<Override PartName="/word/${UNRELATED}" ContentType="${WML}.header+xml"/></Types>`),
+        ),
+    );
+    out.set(`word/${UNRELATED}`, encoder.encode(bodyAsHeader(textOf(broken, MAIN))));
+    out.set(`word/_rels/${UNRELATED}.rels`, broken.get(MAIN_RELS)!);
+    return out;
+};
+
+/** Session 41's pairs: the rule, the fixture Word refused, and the twin it opened clean. */
+const PAIRS: Record<string, [string, string, string]> = {
+    "row-without-cell": [
+        "word-row-without-cell",
+        "broken/package.word-row-without-cell.docx",
+        "working/package.word-row-without-cell-repaired.docx",
+    ],
+    "cell-ends-with-table": [
+        "word-cell-ends-with-table",
+        "broken/package.word-cell-ends-with-table.docx",
+        "working/package.word-cell-ends-with-table-repaired.docx",
+    ],
+    "arc-radius": ["word-drawing-arc-radius", "broken/package.drawing-arc-radius.docx", "working/package.drawing-arc-radius-integer.docx"],
+    "extent-negative": [
+        "word-drawing-extent-negative",
+        "broken/package.word-drawing-extent-negative.docx",
+        "working/package.word-drawing-extent-positive.docx",
+    ],
+    "empty-drawing": ["word-empty-drawing", "broken/package.word-empty-drawing.docx", "working/package.word-empty-drawing-removed.docx"],
+    "anchor-open": [
+        "word-anchor-missing-attribute",
+        "broken/package.word-anchor-open.docx",
+        "working/package.word-anchor-open-repaired.docx",
+    ],
+    "text-contains-paragraph": [
+        "word-text-contains-paragraph",
+        "broken/package.word-text-contains-paragraph.docx",
+        "working/package.word-text-contains-paragraph-lifted.docx",
+    ],
+    "textbox-deleted-text": [
+        "word-textbox-deleted-text",
+        "broken/package.word-textbox-deleted-text-shape.docx",
+        "working/package.word-textbox-deleted-text-shape-repaired.docx",
+    ],
+    "move-from-deleted-text": [
+        "word-move-from-deleted-text",
+        "broken/package.word-move-from-deleted-text.docx",
+        "working/package.word-move-from-text.docx",
+    ],
+    "sdt-id-empty": ["word-sdt-id-empty", "broken/package.word-sdt-id-empty.docx", "working/package.word-sdt-id-empty-repaired.docx"],
+    "choice-requires-undeclared": [
+        "word-choice-requires-undeclared",
+        "broken/package.word-choice-requires-undeclared.docx",
+        "working/package.word-choice-requires-declared.docx",
+    ],
+};
+
+type Row = [string, string, () => Promise<Uint8Array>];
+/** The three rows for one pair. */
+const rowsFor = (key: string): Row[] => {
+    const [rule, broken, clean] = PAIRS[key]!;
+    return [
+        [
+            `${key}-main`,
+            `#1113 ${rule}: ${broken} with its main document stored as word/main.xml`,
+            async () => pack(renameMain(await load(broken))),
+        ],
+        [`${key}-main-calibration`, `calibration: ${clean} renamed the same way`, async () => pack(renameMain(await load(clean)))],
+        [
+            `${key}-unrelated-header`,
+            `#1113 ${rule}: ${clean} plus an unrelated word/${UNRELATED} holding ${broken}'s body`,
+            async () => pack(withUnrelatedHeader(await load(clean), await load(broken))),
+        ],
+    ];
+};
+const control = () => buildDocx({ ...(MINIMAL_PARTS as Record<string, string>) });
+const withControl = (chunk: string, keys: string[]): Row[] => [...keys.flatMap(rowsFor), [`${chunk}-control-minimal`, "control", control]];
+
+const chunks: Record<string, Row[]> = {
+    s83a: withControl("s83a", ["row-without-cell", "cell-ends-with-table", "arc-radius"]),
+    s83b: withControl("s83b", ["extent-negative", "empty-drawing", "anchor-open"]),
+    s83c: withControl("s83c", ["text-contains-paragraph", "textbox-deleted-text", "move-from-deleted-text"]),
+    s83d: withControl("s83d", ["sdt-id-empty", "choice-requires-undeclared"]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+// A rerun starts from an empty src, so a removed or renamed row leaves no stale specimen (CodeRabbit on #985).
+rmSync(dir, { recursive: true, force: true });
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+    }
+};
+
+for (const key of Object.keys(PAIRS)) {
+    if (!specimens.some(([name]) => name.startsWith(`${key}-`))) continue;
+    const [rule, broken] = PAIRS[key]!;
+    const found = (await validate(path.join(FIXTURES, broken), { profile: "word-valid" })).issues.filter(
+        (x: { code: string }) => x.code === rule,
+    );
+    if (found.length === 0 || found.some((x: { path?: string }) => x.path !== MAIN))
+        throw new Error(`${broken}: ${rule} is not only in ${MAIN}`);
+}
+
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        control: issue === "control",
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-83 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s83a", "s83b", "s83c", "s83d")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0], "unknown") if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
+                     # A match needs agreed readings: an unknown row matches nothing (CodeRabbit on #985).
+                     "validatorMatchesWord": agreed and ((all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True))})
+(ROOT / "s83/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-83 parts of docs/plans/evidence/word-probes-2026-10-24.md into s83/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796). The text Word rendered is read from its own
+PDFs with pdftotext, so the narrative's "rendered" claims are checked here.
+"""
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s83a", "s83b", "s83c", "s83d")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s83/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e}`" for e in v["errors"])
+
+
+def strict_cell(v):
+    # Strict also reports the fixtures' own paraId, XSD and unreferenced-part findings; name only the rule codes that are
+    # not those, with their parts, so the column shows whether strict judged the probed rule.
+    if v["valid"] is None:
+        return cell(v)
+    noise = ("rels-unreferenced@", "paraid-missing-element@", "xsd-summary@", "xsd-error@")
+    rules = [e for e in v["errors"] if not e.startswith(noise)]
+    if v["valid"]:
+        return "valid"
+    return "invalid: " + (", ".join(f"`{e}`" for e in rules) if rules else "fixture findings only")
+
+
+def manifest(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return row
+    raise KeyError(file)
+
+
+def run_at(run, file):
+    return datetime.fromisoformat(manifest(run, file)["run_at"]).astimezone(timezone.utc)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+def rendered(run, file):
+    pdf = run / "pdf" / (Path(file).stem + "_byword.pdf")
+    if not pdf.exists():
+        return None
+    return " ".join(subprocess.run(["pdftotext", str(pdf), "-"], check=True, capture_output=True, text=True).stdout.split())
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {strict_cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            record = {"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                      "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                      "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                      "pdf": row["pdf"], "evidence": row["evidence"]}
+            error = manifest(r, s["file"]).get("error")
+            if error:
+                record["error"] = error
+            raw.append(json.dumps(record, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+
+KEYS = ("row-without-cell", "cell-ends-with-table", "arc-radius", "extent-negative", "empty-drawing", "anchor-open",
+        "text-contains-paragraph", "textbox-deleted-text", "move-from-deleted-text", "sdt-id-empty", "choice-requires-undeclared")
+REFUSED = {f"{k}-main.docx" for k in KEYS}
+UNRELATED = {f"{k}-unrelated-header.docx" for k in KEYS}
+# word-valid at the probed revision misses every renamed main document but one (mce-malformed judges every part, so it
+# rejects the renamed choice-requires row), and rejects every unrelated header.
+CAUGHT = {"choice-requires-undeclared-main.docx"}
+# The narrative's claims about outcomes, checked against results.json: every row's four readings agree, the renamed main
+# documents were refused and every other row opened clean, and word-valid at the probed revision gets exactly the
+# renamed main documents it passes and the unrelated headers wrong.
+for (label, file), r in results.items():
+    assert r["agreed"], (label, file, r)
+    if file in REFUSED:
+        assert r["everyReadingRejects"], (label, file, r)
+    else:
+        assert set(r["readings"]) == {"clean-open"}, (label, file, r)
+    assert r["wordValid"] is ((file not in CAUGHT) and file not in UNRELATED), (label, file, r)
+    assert r["validatorMatchesWord"] is (file not in (REFUSED - CAUGHT) | UNRELATED), (label, file, r)
+assert agreed == len(rows) == 37, (agreed, len(rows))
+assert {f for (_, f) in results} >= REFUSED | UNRELATED
+# The driver opens files in name order (#671).
+for label in CHUNKS:
+    files = sorted(json.loads(l)["file"] for l in (ROOT / label / "specimens.jsonl").read_text().splitlines())
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        opened = [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()]
+        assert opened == files, (run, opened)
+# The text Word rendered, both runs: each unrelated header renders exactly what its main-document calibration renders
+# (both are the clean twin; Word did not read header83), each control renders "Hello", and a refused row left no PDF.
+texts = {}
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+            file = json.loads(line)["original_filename"]
+            text = rendered(run, file)
+            texts.setdefault(file, set()).add(text)
+            if file in REFUSED:
+                assert text is None, (run, file, text)
+            else:
+                assert text is not None, (run, file)
+for key in KEYS:
+    assert texts[f"{key}-unrelated-header.docx"] == texts[f"{key}-main-calibration.docx"], key
+    assert len(texts[f"{key}-main-calibration.docx"]) == 1, key
+for label in CHUNKS:
+    assert texts[f"{label}-control-minimal.docx"] == {"Hello"}, (label, texts[f"{label}-control-minimal.docx"])
+textless = sorted(k for k in KEYS if texts[f"{k}-main-calibration.docx"] == {""})
+assert textless == ["choice-requires-undeclared", "empty-drawing"], textless
+RULES = {"row-without-cell": "word-row-without-cell", "cell-ends-with-table": "word-cell-ends-with-table",
+         "arc-radius": "word-drawing-arc-radius", "extent-negative": "word-drawing-extent-negative",
+         "empty-drawing": "word-empty-drawing", "anchor-open": "word-anchor-missing-attribute",
+         "text-contains-paragraph": "word-text-contains-paragraph", "textbox-deleted-text": "word-textbox-deleted-text",
+         "move-from-deleted-text": "word-move-from-deleted-text", "sdt-id-empty": "word-sdt-id-empty",
+         "choice-requires-undeclared": "word-choice-requires-undeclared"}
+outcome_of = {f: r["outcome"] for (_, f), r in results.items()}
+OPEN_ERROR = [k for k in KEYS if outcome_of[f"{k}-main.docx"] == "open-error"]
+WARNED = [k for k in KEYS if outcome_of[f"{k}-main.docx"] == "unreadable-content-warning"]
+assert len(OPEN_ERROR) + len(WARNED) == len(KEYS), (OPEN_ERROR, WARNED)
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}", (min(starts), max(ends))
+matches = sum(r["validatorMatchesWord"] for r in results.values())
+out = [
+    f"### Session 83: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {at}",
+    "",
+    "Whether Word judges [#1113](https://github.com/jandira-tech/docx-validate/issues/1113)'s Word-blocking rules in the "
+    "parts it reads, as session 82 found for the hyperlink relationship. Twenty Word-rule checks judge the parts named "
+    "like a story wherever stored (`STORY_PART`), not the parts Word reads. Eleven of them have a Word-refused fixture "
+    "whose finding is only in `word/document.xml` and a clean twin (session 41's pairs; the `-shape` pair for "
+    "`word-textbox-deleted-text`, whose plain fixture holds its defect in a footer). Each pair gives three rows: `-main` is "
+    "the broken fixture with its main document stored as `word/main.xml`, with `_rels/.rels`, the content-types Override "
+    "and the part's own relationships following the name; `-main-calibration` is the clean twin renamed the same way; "
+    "`-unrelated-header` is the clean twin plus `word/header83.xml`, typed header by its Override, which no relationship "
+    "names, holding the broken fixture's body under a `w:hdr` root with its `w:sectPr` removed, and the broken main "
+    "document's relationships as its own. Chunk s83a holds `word-row-without-cell`, `word-cell-ends-with-table` and "
+    "`word-drawing-arc-radius`; s83b `word-drawing-extent-negative`, `word-empty-drawing` and "
+    "`word-anchor-missing-attribute`; s83c `word-text-contains-paragraph`, `word-textbox-deleted-text` and "
+    "`word-move-from-deleted-text`; s83d `word-sdt-id-empty` and `word-choice-requires-undeclared`. Each chunk ends with "
+    "a minimal control. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows "
+    "were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the "
+    f"manifest spelling when both runs and both readings agree, and `unknown` otherwise; {agreed} of {len(rows)} rows "
+    "agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of "
+    f"the specimen. The builder recorded the validator revision in every row (`{rev}`). The strict column names only the "
+    "rule findings beyond the fixtures' own paraId, XSD and unreferenced-part findings.",
+    "",
+    "Every calibration and control opened clean. Each unrelated header's PDF holds exactly its calibration's text in "
+    "both runs (`pdftotext`; the `word-empty-drawing` and `word-choice-requires-undeclared` twins render no text), and "
+    "each control's holds `Hello`. No refused row left a PDF.",
+    "",
+    "- **Word judges the eleven shapes in a main document whatever its name.** It refused all eleven renamed main "
+    f"documents, as it did in `word/document.xml` (session 41): an open error for {len(OPEN_ERROR)} "
+    f"({', '.join(f'`{RULES[k]}`' for k in OPEN_ERROR)}) and an offer to recover unreadable content for "
+    f"{len(WARNED)} ({', '.join(f'`{RULES[k]}`' for k in WARNED)}).",
+    "- **It does not judge them in a part it does not read.** It opened every shape clean in the unrelated "
+    "`word/header83.xml`, as the read model says it reads no part that no relationship names (#726).",
+    "",
+    f"Word-valid at {at} judged by name, so it matches Word on {matches} of {len(rows)} rows: it passes ten of the "
+    "renamed main documents and rejects all eleven unrelated headers. It rejects the renamed "
+    "`word-choice-requires-undeclared` row only through `mce-malformed`, which judges every part: that rule also rejects "
+    "the unrelated header Word opened clean. "
+    "[#1113](https://github.com/jandira-tech/docx-validate/issues/1113) moves the rules onto the read model.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 83</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 83 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s83builder.mts", ROOT / "s83builder.mts", "ts"), ("compare.py", ROOT / "s83/compare.py", "python"),
+                         ("section.py", ROOT / "s83/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s83/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed,", matches, "match")
+`````
+
+</details>

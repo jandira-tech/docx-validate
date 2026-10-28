@@ -33,6 +33,7 @@ import {
     wordExactTypeTargets,
     wordMainReachedParts,
     wordReadParts,
+    wordReadStoryParts,
     wordReadTypedTargets,
     wordStoryRootParts,
     wordTypedRelationshipTargets,
@@ -1996,5 +1997,82 @@ describe("wordUnobservedRelationshipTargets (#638)", () => {
             "../charts/chart1.xml",
         );
         expect(await wordUnobservedRelationshipTargets(ValidationContext.fromEntries(noMain))).toEqual(new Set());
+    });
+});
+
+describe("wordReadStoryParts (#1106, #1113)", () => {
+    const HEADER_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml";
+    const HEADER = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:hdr xmlns:w="${W}"><w:p/></w:hdr>`;
+
+    /**
+     * The minimal package plus word/header1.xml, which the main document
+     * relates as rIdH and its w:sectPr references when `used`, and
+     * word/header9.xml, which no relationship names (sessions 82 and 83).
+     */
+    const withHeaders = (used: boolean): Parts => ({
+        ...MINIMAL_PARTS,
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="/word/header1.xml" ContentType="${HEADER_TYPE}"/><Override PartName="/word/header9.xml" ContentType="${HEADER_TYPE}"/></Types>`,
+        ),
+        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdH" Type="${R}/header" Target="header1.xml"/></Relationships>`,
+        ),
+        "word/document.xml": used
+            ? MINIMAL_PARTS["word/document.xml"]!.replace(
+                  "<w:sectPr>",
+                  `<w:sectPr><w:headerReference xmlns:r="${R}" w:type="default" r:id="rIdH"/>`,
+              )
+            : MINIMAL_PARTS["word/document.xml"]!,
+        "word/header1.xml": HEADER,
+        "word/header9.xml": HEADER,
+    });
+
+    /** `parts` with the main document stored as word/main.xml, every name pointing at it following. */
+    const renamed = (parts: Parts): Parts => {
+        const { "word/document.xml": main, "word/_rels/document.xml.rels": sidecar, ...rest } = parts;
+        return {
+            ...rest,
+            "[Content_Types].xml": (rest["[Content_Types].xml"] as string).replace(
+                'PartName="/word/document.xml"',
+                'PartName="/word/main.xml"',
+            ),
+            "_rels/.rels": (rest["_rels/.rels"] as string).replace('Target="word/document.xml"', 'Target="word/main.xml"'),
+            "word/main.xml": main!,
+            "word/_rels/main.xml.rels": sidecar!,
+        };
+    };
+
+    it("reads a main document stored as word/main.xml and no part no relationship names (sessions 82 and 83)", async () => {
+        expect(await wordReadStoryParts(ValidationContext.fromEntries(renamed(withHeaders(false))))).toEqual(["word/main.xml"]);
+    });
+
+    it.each([
+        [true, ["word/document.xml", "word/header1.xml"]],
+        [false, ["word/document.xml"]],
+    ] as const)("reads the related header only when a section references it (used: %s)", async (used, expected) => {
+        expect(await wordReadStoryParts(ValidationContext.fromEntries(withHeaders(used)))).toEqual(expected);
+    });
+
+    it("lists the parts in the context's part-name order, as the by-name list does, not in read order", async () => {
+        expect(await wordReadStoryParts(ValidationContext.fromEntries(renamed(withHeaders(true))))).toEqual([
+            "word/header1.xml",
+            "word/main.xml",
+        ]);
+    });
+
+    it("falls back to the parts named like a story when the officeDocument relationship names no stored part (#816)", async () => {
+        const parts = withHeaders(true);
+        parts["_rels/.rels"] = (parts["_rels/.rels"] as string).replace('Target="word/document.xml"', 'Target="word/missing.xml"');
+        const ctx = ValidationContext.fromEntries(parts);
+        expect(await wordReadStoryParts(ctx)).toEqual(ctx.storyParts());
+        expect(ctx.storyParts()).toEqual(["word/document.xml", "word/header1.xml", "word/header9.xml"]);
+    });
+
+    it("computes the list once per context and profile", async () => {
+        const ctx = ValidationContext.fromEntries(withHeaders(true));
+        expect(wordReadStoryParts(ctx, "word-valid")).toBe(wordReadStoryParts(ctx, "word-valid"));
+        expect(wordReadStoryParts(ctx, "strict")).not.toBe(wordReadStoryParts(ctx, "word-valid"));
     });
 });

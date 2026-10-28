@@ -677,6 +677,46 @@ names and input bytes unchanged.
 | `comments`                | `comment-markers`, `comment-threading`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `schema`                  | `word-unknown-element`, `word-link-without-namespace`                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
+Twenty-six rules in this table judge the markup of the story parts Word reads
+([#1113](https://github.com/jandira-tech/docx-validate/issues/1113)), as
+`word-hyperlink-relationship` does: every main document and every glossary a
+main-document relationship reaches, wherever stored, and the headers,
+footers, comments, footnotes and endnotes their references make Word read.
+Before, they judged every part named like a story, wherever stored.
+
+Word session 83 (s83a–s83d, two runs each, all readings agree) put eleven of
+their shapes in two placements. It refused all eleven in a main document
+stored as `word/main.xml`, which the rules missed, and opened all eleven clean
+in an unrelated `word/header83.xml`, which they rejected. The eleven are
+`word-row-without-cell`, `word-cell-ends-with-table`,
+`word-drawing-arc-radius`, `word-drawing-extent-negative`,
+`word-empty-drawing`, `word-anchor-missing-attribute`,
+`word-text-contains-paragraph`, `word-textbox-deleted-text`,
+`word-move-from-deleted-text`, `word-sdt-id-empty` and
+`word-choice-requires-undeclared`.
+
+The other fifteen are `word-table-properties-required`,
+`word-table-properties-misplaced`, `word-grid-column-attributes`,
+`word-cell-margin-order`, `word-drawing-extent-missing`,
+`word-drawing-extent-misplaced`, `word-drawing-scalar-whitespace`,
+`word-position-offset-and-align`, `word-picture-nvpicpr-missing`,
+`word-picture-sppr-missing`, `word-textbox-content-namespace`,
+`word-math-run-deletion`, `word-math-run-insertion`,
+`word-page-margin-attributes` and `word-shading-color`. They read the same
+parts, and their shapes in these placements are unprobed.
+
+Some of them also read parts by name:
+
+- `word-cell-margin-order` also reads `word/styles.xml`;
+- `word-shading-color` also reads the parts named `styles.xml` or
+  `numbering.xml`;
+- `word-table-properties-misplaced` judges the order inside a `w:tblPr` or
+  `w:tblPrEx` in the read stories, and a table-property element outside its
+  containers in every WordprocessingML part.
+
+When the package names no stored main document, the rules keep the parts
+named like a story, as the note checks do (#816); that reading is unprobed.
+
 `word-duplicate-endnotes-relationship` reports the main document's relationships part when it holds two or more exact-Type `endnotes` relationships and that main document's own content holds a `w:endnoteReference`: Word 16.115 offered recovery for every such shape probed — whichever part held the note, and whether the second part was typed `endnotes+xml` or `application/octet-stream` — and opened the same pair with no endnote reference clean ([#807](https://github.com/jandira-tech/docx-validate/issues/807); session 62, `s62c` and `s62e`, in [docs/plans/evidence/word-probes-2026-10-24.md](docs/plans/evidence/word-probes-2026-10-24.md)), while a referenced pair in a reached glossary's own sidecar is unprobed and stays unjudged. The count reads exact Types whatever their target or `TargetMode`, in either relationship namespace, so two relationships to the same part, an internal plus an External one and a Strict-Type pair are judged too; session 62's rows are two internal Transitional relationships to distinct parts, so those shapes are unprobed.
 
 `word-duplicate-footnotes-relationship` reports the main document's relationships part when it holds two or more exact-Type `footnotes` relationships and that main document's own content holds a `w:footnoteReference`: Word 16.115 offered recovery for every such shape probed — whether the second part held another footnote id or the same footnote — and opened the unreferenced pair clean ([#827](https://github.com/jandira-tech/docx-validate/issues/827); session 63, `s63d`, and session 45, `s45g`, in [docs/plans/evidence/word-probes-2026-10-24.md](docs/plans/evidence/word-probes-2026-10-24.md)), while a referenced pair in a reached glossary's own sidecar and a reference only in a header, footer, endnote or comment are unprobed and stay unjudged. The count reads exact Types whatever their target or `TargetMode`, in either relationship namespace, so two relationships to the same part, an internal plus an External one and a Strict-Type pair are judged too; session 63's `s63d` rows are two internal Transitional relationships to distinct parts, so those shapes are unprobed.

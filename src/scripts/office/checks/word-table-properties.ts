@@ -46,6 +46,7 @@
 import type { CheckDefinition } from "../../../lib/check-registry";
 import type { ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
+import { wordReadStoryParts } from "../../../lib/word-read-parts";
 import { type WmlPartDocument, WORDPROCESSINGML_NAMESPACE as W, wmlPartDocuments } from "./wml-parts";
 
 /**
@@ -164,8 +165,8 @@ export const wordTablePropertiesMisplacedCheck: CheckDefinition = {
     groups: ["tables"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx): ValidationIssue[] => {
-        const storyParts = new Set(ctx.storyParts());
+    run: async (ctx, profile): Promise<ValidationIssue[]> => {
+        const storyParts = new Set(await wordReadStoryParts(ctx, profile));
         return wmlPartDocuments(ctx).flatMap((partDocument) => tablePropertyIssues(partDocument, storyParts));
     },
 };

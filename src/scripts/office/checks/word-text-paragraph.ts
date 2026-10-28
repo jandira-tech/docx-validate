@@ -9,9 +9,10 @@
 
 import type { CheckDefinition } from "../../../lib/check-registry";
 import type { ValidationContext } from "../../../lib/validation-context";
-import type { ValidationIssue } from "../../../lib/types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
+import { wordReadStoryParts } from "../../../lib/word-read-parts";
 
 export const wordTextContainsParagraphCheck: CheckDefinition = {
     id: "word-text-contains-paragraph",
@@ -19,10 +20,10 @@ export const wordTextContainsParagraphCheck: CheckDefinition = {
     groups: ["story"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
 
-        for (const xmlFile of ctx.storyParts()) {
+        for (const xmlFile of await wordReadStoryParts(ctx, profile)) {
             const parsed = ctx.effectiveXml(xmlFile);
             if (!parsed?.ok) {
                 continue;

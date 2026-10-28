@@ -28,6 +28,7 @@
 import type { CheckDefinition } from "../../../lib/check-registry";
 import type { ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
+import { wordReadStoryParts } from "../../../lib/word-read-parts";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 
 /** `ST_HexColorRGB`: a 3-byte hexBinary, lexically six hexadecimal digits. */
@@ -115,7 +116,7 @@ const COLOUR_ATTRIBUTES: ReadonlyMap<string, ColourSpace> = new Map(
     } satisfies Record<string, ColourSpace>),
 );
 
-/** Story parts plus styles.xml and numbering.xml, where `CT_Shd` may legally appear. */
+/** The story parts Word reads (#1113) plus styles.xml and numbering.xml, where `CT_Shd` may legally appear. */
 const shadingParts = (storyParts: readonly string[], partNames: readonly string[]): readonly string[] => [
     ...storyParts,
     ...partNames.filter((name) => /(?:^|\/)(?:styles|numbering)\.xml$/i.test(name)),
@@ -128,9 +129,9 @@ export const wordShadingColorCheck: CheckDefinition = {
     groups: ["story"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx): ValidationIssue[] => {
+    run: async (ctx, profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
-        for (const part of shadingParts(ctx.storyParts(), ctx.partNames)) {
+        for (const part of shadingParts(await wordReadStoryParts(ctx, profile), ctx.partNames)) {
             const parsed = ctx.effectiveXml(part);
             if (!parsed?.ok) continue;
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {

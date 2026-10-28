@@ -32,10 +32,9 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { canonicalPartName } from "../../../lib/content-types";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
-import { sidecarOf, wordReadTypedTargets } from "../../../lib/word-read-parts";
+import { sidecarOf, wordReadStoryParts } from "../../../lib/word-read-parts";
 import { targetModeRelationshipParts } from "./opc-relationships-target-mode";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
@@ -81,36 +80,6 @@ const externalHyperlinkRelationshipIds = (
     return out;
 };
 
-/** The lazily read stories, beside the story roots' own `officeDocument` entries. */
-const STORY_SEGMENTS: ReadonlySet<string> = new Set(["header", "footer", "comments", "footnotes", "endnotes"]);
-
-/**
- * The parts Word reads a hyperlink in (#1106, session 82): every main
- * document and reached glossary wherever stored, and the stories their
- * references make Word read, each once. With no main document the read model
- * reads nothing, so the check keeps the parts named like a story, as the note
- * checks fall back (#816); that reading is unprobed.
- */
-const hyperlinkParts = async (ctx: ValidationContext, profile?: Profile): Promise<readonly string[]> => {
-    const targets = await wordReadTypedTargets(ctx, profile);
-    if (!targets.some((target) => target.segment === "officeDocument")) {
-        return ctx.storyParts();
-    }
-    const seen = new Set<string>();
-    const parts: string[] = [];
-    for (const target of targets) {
-        if (target.segment !== "officeDocument" && !STORY_SEGMENTS.has(target.segment)) {
-            continue;
-        }
-        const canonical = canonicalPartName(target.part);
-        if (!seen.has(canonical)) {
-            seen.add(canonical);
-            parts.push(target.part);
-        }
-    }
-    return parts;
-};
-
 export const WORD_HYPERLINK_RELATIONSHIP = "word-hyperlink-relationship";
 
 export const wordHyperlinkRelationshipCheck: CheckDefinition = {
@@ -124,7 +93,7 @@ export const wordHyperlinkRelationshipCheck: CheckDefinition = {
         const targetModeParts = await targetModeRelationshipParts(ctx, profile);
 
         const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
-        for (const xmlFile of await hyperlinkParts(ctx, profile)) {
+        for (const xmlFile of await wordReadStoryParts(ctx, profile)) {
             const parsed = ctx.effectiveXml(xmlFile);
             if (!parsed?.ok) {
                 continue;

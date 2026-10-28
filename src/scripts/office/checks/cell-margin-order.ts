@@ -28,9 +28,10 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
-import type { ValidationIssue } from "../../../lib/types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { getElementsByTagNameNSAll, getLocalName } from "../../../lib/xml-helpers";
+import { wordReadStoryParts } from "../../../lib/word-read-parts";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 
 /** The six sequence slots, in the order the bundled XSD declares them. */
@@ -49,14 +50,14 @@ const MARGIN_PARENTS: Readonly<Record<string, readonly string[]>> = {
 };
 
 /**
- * Parts that can carry the construct: every Word story, plus `word/styles.xml`,
+ * Parts that can carry the construct: every story Word reads (#1113), plus `word/styles.xml`,
  * where `CT_Style/w:tblPr` (wml.xsd:3256) and `CT_TblStylePr/w:tblPr`
  * (wml.xsd:3218) hold the same margin elements.
  */
 const STYLES_PART = "word/styles.xml";
 
-const marginParts = (ctx: ValidationContext): readonly string[] =>
-    [...ctx.storyParts(), STYLES_PART].filter((part, index, all) => ctx.has(part) && all.indexOf(part) === index);
+const marginParts = async (ctx: ValidationContext, profile?: Profile): Promise<readonly string[]> =>
+    [...(await wordReadStoryParts(ctx, profile)), STYLES_PART].filter((part, index, all) => ctx.has(part) && all.indexOf(part) === index);
 
 /** Direct element children, in document order. */
 const childElements = (element: Element): readonly Element[] => {
@@ -109,9 +110,9 @@ export const wordCellMarginOrderCheck: CheckDefinition = {
     groups: ["tables"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx): ValidationIssue[] => {
+    run: async (ctx, profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
-        for (const part of marginParts(ctx)) {
+        for (const part of await marginParts(ctx, profile)) {
             const parsed = ctx.effectiveXml(part);
             if (!parsed?.ok) {
                 continue;
