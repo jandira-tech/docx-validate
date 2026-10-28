@@ -31,17 +31,20 @@ describe("word error explanations", () => {
             );
         },
     );
-    // #1155: session 85 showed Word the unused footer, comments and notes
-    // parts, and the comments and notes parts only a header references, all
-    // clean with a root MustUnderstand; #1145's exception is gone.
-    it.each(["mce-malformed", "mce-must-understand"])("explains %s's footer, comments and notes warning by session 85 (#1155)", (code) => {
-        const explanation = explainWordError(code);
-        expect(explanation).toContain(
-            "It warns too in a footer, comments or notes part a story root relates but does not use; a comments or notes part only a header or footer references counts as unused. Word opened a root MustUnderstand clean in each such part it was shown, the reference from a header included (session 85, #1155); a reference from a footer, and malformed compatibility in these parts, are unprobed.",
-        );
-        expect(explanation).not.toContain("#1145");
-        expect(explanation).not.toContain("which Word was not shown");
-    });
+    // #1155, #1164: sessions 85 and 86 showed Word the unused footer, comments
+    // and notes parts, and the comments and notes parts only a header or a
+    // footer references, in the main document or a reached glossary, all clean.
+    it.each(["mce-malformed", "mce-must-understand"])(
+        "explains %s's footer, comments and notes warning by sessions 85 and 86 (#1164)",
+        (code) => {
+            const explanation = explainWordError(code);
+            expect(explanation).toContain(
+                "It warns too in a footer, comments or notes part a story root relates but does not use; a comments or notes part only a header or footer references counts as unused. Word opened each such part clean with a root MustUnderstand, the reference in a header or a footer, in the main document or a reached glossary (sessions 85 and 86, #1155, #1164), and with an undeclared Choice Requires in a notes part only a header references (session 86).",
+            );
+            expect(explanation).not.toContain("#1145");
+            expect(explanation).not.toContain("a reference from a footer");
+        },
+    );
     it("explains a package root that unwraps to the Relationships element as accepted (#646)", () => {
         const explanation = explainWordError("mce-malformed");
         expect(explanation).not.toContain("still rejects");

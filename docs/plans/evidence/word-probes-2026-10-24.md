@@ -32005,3 +32005,681 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed,", matches, 
 `````
 
 </details>
+
+### Session 86: 18:05Z–18:23Z on 2026-10-28, validator columns at ddf9a18f
+
+The placements [#1155](https://github.com/jandira-tech/docx-validate/issues/1155) and [#1158](https://github.com/jandira-tech/docx-validate/issues/1158) decide by the read model, which sessions 34, 84 and 85 bracket but did not show Word ([#1164](https://github.com/jandira-tech/docx-validate/issues/1164), review 1156 F4). Three chunks, on the minimal package. Every `mc:MustUnderstand="foo"` names an unknown `urn:foo`, which Word refused in a read header and in a body-referenced notes or comments part (sessions 84 and 85).
+
+- **s86a, [#1155](https://github.com/jandira-tech/docx-validate/issues/1155).** A footnotes, endnotes or comments part the main document relates, with the attribute on its root, whose only reference sits in a used footer (`-mu-footer-reference`). The same part referenced from the body (`-mu-body-reference`) and the footer-referenced part without the attribute (`-footer-reference-calibration`) are calibrations.
+- **s86b, [#1155](https://github.com/jandira-tech/docx-validate/issues/1155).** The main document relates `word/glossary/document.xml`, whose docPartBody `w:sectPr` uses `word/glossary/header1.xml` (session 26's glossaryRef shape). `glossary-header-mu-used` puts the attribute on that header, to show whether Word reads it; `glossary-header-calibration` leaves it off. Per kind, the glossary relates a part with the attribute whose only reference sits in that header (`glossary-<kind>s-mu-header-reference`) or in the docPartBody (`-mu-body-reference`).
+- **s86c, [#1155](https://github.com/jandira-tech/docx-validate/issues/1155) and [#1158](https://github.com/jandira-tech/docx-validate/issues/1158).** `footnotes-malformed-header-reference` puts an undeclared-`Requires` Choice (`mce-malformed`) in a footnotes part whose only reference sits in a read header; `-body-reference` is its calibration. The `header-mu-` rows relate a header with the attribute through a relationship inside a selected `mc:Fallback`, or an understood `mc:Choice` (`Requires="w14"`), of the main document's relationships part, the header unused or referenced by the section.
+
+Each chunk ends with a minimal control. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. The first s86c run left no evidence for `header-mu-used-fallback`: the driver's AppleEvent timed out. That row ran a third time from byte-identical bytes, beside the control, and its two runs below are the second and third; the raw records keep the first, marked excluded. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 26 of 26 rows agree. The two times in Observed are the ends of the row's two runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`ddf9a18ffec7a8e683c68d02e79a970b4da797c8`). The strict column names the markup-compatibility, XML-syntax and relationship findings, and counts the others.
+
+Every calibration Word was meant to open, and every control, opened clean. Every row Word opened renders the main document's `Hello` (`pdftotext`), after `Header 86` where the section uses a header and before `Footer 86` where it uses a footer. No glossary text and no note's or comment's `Text 86` renders. No refused row left a PDF.
+
+- **Word does not read a notes or comments part whose only reference is in a footer either.** It opened clean all three `-mu-footer-reference` rows, and offered to recover unreadable content for the same parts referenced from the body.
+- **Word reads a reached glossary's used header, and not a notes or comments part only that header references.** It offered recovery for `glossary-header-mu-used`, opened clean the three glossary `-mu-header-reference` rows, and offered recovery for the same parts referenced from the docPartBody.
+- **Malformed compatibility follows the same rule.** Word opened clean the undeclared-`Requires` Choice in a footnotes part only a read header references, and offered recovery for it referenced from the body.
+- **A relationship markup compatibility selects relates a header as a direct one does.** Word opened clean the header related through a selected Fallback or an understood Choice and unused, and offered recovery for each used.
+
+Word-valid at ddf9a18f matches Word on 26 of 26 rows. At 07450f03, before [#1158](https://github.com/jandira-tech/docx-validate/issues/1158), it rejected `header-mu-unused-fallback` and `header-mu-unused-choice` (`mce-must-understand` an error in `word/header1.xml`), both of which Word opened clean.
+
+| Run    | Observed             | Specimen                                 | Shape                                                                                                                                        | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at ddf9a18f                                                                            | strict at ddf9a18f                                                           |
+| ------ | -------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `s86a` | 18:05:15Z, 18:09:13Z | `footnotes-mu-footer-reference`          | #1155: word/footnotes.xml related by the main document, root MustUnderstand urn:foo, its only reference in a used footer                     | `8ee465bc5df9fa8b` | clean-open     | clean-open     | clean-open                 | valid                                                                                             | invalid: `mce-must-understand@word/footnotes.xml`, 2 other findings          |
+| `s86a` | 18:05:15Z, 18:09:13Z | `footnotes-mu-body-reference`            | calibration: the same part referenced from the body                                                                                          | `af444af145193d0b` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-must-understand@word/footnotes.xml`                                                 | invalid: `mce-must-understand@word/footnotes.xml`, 1 other finding           |
+| `s86a` | 18:05:15Z, 18:09:13Z | `footnotes-footer-reference-calibration` | calibration: the footer-referenced part without MustUnderstand                                                                               | `79501003bcd0051a` | clean-open     | clean-open     | clean-open                 | valid                                                                                             | invalid: 2 other findings                                                    |
+| `s86a` | 18:05:15Z, 18:09:13Z | `endnotes-mu-footer-reference`           | #1155: word/endnotes.xml related by the main document, root MustUnderstand urn:foo, its only reference in a used footer                      | `e7dc40ecd8f1a297` | clean-open     | clean-open     | clean-open                 | valid                                                                                             | invalid: `mce-must-understand@word/endnotes.xml`, 2 other findings           |
+| `s86a` | 18:05:15Z, 18:09:13Z | `endnotes-mu-body-reference`             | calibration: the same part referenced from the body                                                                                          | `62cc50ba21a707aa` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-must-understand@word/endnotes.xml`                                                  | invalid: `mce-must-understand@word/endnotes.xml`, 1 other finding            |
+| `s86a` | 18:05:15Z, 18:09:13Z | `endnotes-footer-reference-calibration`  | calibration: the footer-referenced part without MustUnderstand                                                                               | `d9804b1624cac899` | clean-open     | clean-open     | clean-open                 | valid                                                                                             | invalid: 2 other findings                                                    |
+| `s86a` | 18:05:15Z, 18:09:13Z | `comments-mu-footer-reference`           | #1155: word/comments.xml related by the main document, root MustUnderstand urn:foo, its only reference in a used footer                      | `0622279f7f289b19` | clean-open     | clean-open     | clean-open                 | valid                                                                                             | invalid: `mce-must-understand@word/comments.xml`, 3 other findings           |
+| `s86a` | 18:05:15Z, 18:09:13Z | `comments-mu-body-reference`             | calibration: the same part referenced from the body                                                                                          | `88fc06231c25146c` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-must-understand@word/comments.xml`                                                  | invalid: `mce-must-understand@word/comments.xml`, 2 other findings           |
+| `s86a` | 18:05:15Z, 18:09:13Z | `comments-footer-reference-calibration`  | calibration: the footer-referenced part without MustUnderstand                                                                               | `34a4677d450099fa` | clean-open     | clean-open     | clean-open                 | valid                                                                                             | invalid: 3 other findings                                                    |
+| `s86a` | 18:05:15Z, 18:09:13Z | `s86a-control-minimal`                   | control                                                                                                                                      | `ce2c24e646762abd` | clean-open     | clean-open     | clean-open                 | valid                                                                                             | valid                                                                        |
+| `s86b` | 18:12:15Z, 18:14:38Z | `glossary-header-mu-used`                | calibration: the reached glossary's used header with root MustUnderstand urn:foo                                                             | `a78f998198c54d1c` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-must-understand@word/glossary/header1.xml`                                          | invalid: `mce-must-understand@word/glossary/header1.xml`, 2 other findings   |
+| `s86b` | 18:12:15Z, 18:14:38Z | `glossary-header-calibration`            | calibration: the reached glossary and its used header, no MustUnderstand                                                                     | `48968bcecb032185` | clean-open     | clean-open     | clean-open                 | valid                                                                                             | invalid: 2 other findings                                                    |
+| `s86b` | 18:12:15Z, 18:14:38Z | `glossary-footnotes-mu-header-reference` | #1155: a reached glossary relates word/glossary/footnotes.xml, root MustUnderstand urn:foo, its only reference in the glossary's used header | `90c32b9357d6b0c3` | clean-open     | clean-open     | clean-open                 | valid                                                                                             | invalid: `mce-must-understand@word/glossary/footnotes.xml`, 3 other findings |
+| `s86b` | 18:12:15Z, 18:14:38Z | `glossary-footnotes-mu-body-reference`   | calibration: the same part referenced from the glossary's docPartBody                                                                        | `b51e56bd24da8b2d` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-must-understand@word/glossary/footnotes.xml`                                        | invalid: `mce-must-understand@word/glossary/footnotes.xml`, 3 other findings |
+| `s86b` | 18:12:15Z, 18:14:38Z | `glossary-endnotes-mu-header-reference`  | #1155: a reached glossary relates word/glossary/endnotes.xml, root MustUnderstand urn:foo, its only reference in the glossary's used header  | `d7f7863020dc7b19` | clean-open     | clean-open     | clean-open                 | valid                                                                                             | invalid: `mce-must-understand@word/glossary/endnotes.xml`, 3 other findings  |
+| `s86b` | 18:12:15Z, 18:14:38Z | `glossary-endnotes-mu-body-reference`    | calibration: the same part referenced from the glossary's docPartBody                                                                        | `c6b27992a3a6237d` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-must-understand@word/glossary/endnotes.xml`                                         | invalid: `mce-must-understand@word/glossary/endnotes.xml`, 3 other findings  |
+| `s86b` | 18:12:15Z, 18:14:38Z | `glossary-comments-mu-header-reference`  | #1155: a reached glossary relates word/glossary/comments.xml, root MustUnderstand urn:foo, its only reference in the glossary's used header  | `99d7efe37eb7c18c` | clean-open     | clean-open     | clean-open                 | valid                                                                                             | invalid: `mce-must-understand@word/glossary/comments.xml`, 3 other findings  |
+| `s86b` | 18:12:15Z, 18:14:38Z | `glossary-comments-mu-body-reference`    | calibration: the same part referenced from the glossary's docPartBody                                                                        | `5c97cf181c69db20` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-must-understand@word/glossary/comments.xml`                                         | invalid: `mce-must-understand@word/glossary/comments.xml`, 3 other findings  |
+| `s86b` | 18:12:15Z, 18:14:38Z | `s86b-control-minimal`                   | control                                                                                                                                      | `1fdfc93382f9fb4e` | clean-open     | clean-open     | clean-open                 | valid                                                                                             | valid                                                                        |
+| `s86c` | 18:20:27Z, 18:22:17Z | `footnotes-malformed-header-reference`   | #1155: word/footnotes.xml holding an undeclared-Requires Choice, its only reference in a read header                                         | `8d44233267ef95a0` | clean-open     | clean-open     | clean-open                 | valid                                                                                             | invalid: `mce-malformed@word/footnotes.xml`, 2 other findings                |
+| `s86c` | 18:20:27Z, 18:22:17Z | `footnotes-malformed-body-reference`     | calibration: the same part referenced from the body                                                                                          | `df977144dd0d81b6` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-malformed@word/footnotes.xml`, `word-choice-requires-undeclared@word/footnotes.xml` | invalid: `mce-malformed@word/footnotes.xml`, 2 other findings                |
+| `s86c` | 18:20:27Z, 18:22:17Z | `header-mu-unused-fallback`              | #1158: a MustUnderstand header related through a relationship inside a selected mc:Fallback, unused                                          | `41c624faaeb00d26` | clean-open     | clean-open     | clean-open                 | valid                                                                                             | invalid: `mce-must-understand@word/header1.xml`, 2 other findings            |
+| `s86c` | 18:22:17Z, 18:23:31Z | `header-mu-used-fallback`                | calibration: the same header used                                                                                                            | `c810ce29bb589a8b` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-must-understand@word/header1.xml`                                                   | invalid: `mce-must-understand@word/header1.xml`, 2 other findings            |
+| `s86c` | 18:20:27Z, 18:22:17Z | `header-mu-unused-choice`                | #1158: the header related through an understood mc:Choice (Requires="w14"), unused                                                           | `dd6c542b5aaa3d3e` | clean-open     | clean-open     | clean-open                 | valid                                                                                             | invalid: `mce-must-understand@word/header1.xml`, 2 other findings            |
+| `s86c` | 18:20:27Z, 18:22:17Z | `header-mu-used-choice`                  | calibration: the same header used                                                                                                            | `12495fc0640830fe` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-must-understand@word/header1.xml`                                                   | invalid: `mce-must-understand@word/header1.xml`, 2 other findings            |
+| `s86c` | 18:20:27Z, 18:22:17Z | `s86c-control-minimal`                   | control                                                                                                                                      | `fc4290bd6a17ce1c` | clean-open     | clean-open     | clean-open                 | valid                                                                                             | valid                                                                        |
+
+<details><summary>Raw records, session 86</summary>
+
+```jsonl
+{"run": "s86a", "pass": 1, "name": "footnotes-mu-footer-reference", "sha256": "8ee465bc5df9fa8b1ad05e84ee957b66aead9a283b8b85530e5342b36ba4dbce", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:05:15+00:00", "staged": "00008__wfv__footnotes-mu-footer-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-mu-footer-reference_byword.pdf (15673 bytes), no dialog named the file"]}
+{"run": "s86a", "pass": 2, "name": "footnotes-mu-footer-reference", "sha256": "8ee465bc5df9fa8b1ad05e84ee957b66aead9a283b8b85530e5342b36ba4dbce", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:09:13+00:00", "staged": "00008__wfv__footnotes-mu-footer-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-mu-footer-reference_byword.pdf (15673 bytes), no dialog named the file"]}
+{"run": "s86a", "pass": 1, "name": "footnotes-mu-body-reference", "sha256": "af444af145193d0baabb068e80761e4943ef05203e4f8fea3ffb2c25d375002d", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:05:15+00:00", "staged": "00007__wfv__footnotes-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:05:14.209 \"Word found unreadable content in 00007__wfv__footnotes-mu-body-reference.docx. Do you want to recov … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00007__wfv__footnotes-mu-body-reference.docx; refusing to guess"}
+{"run": "s86a", "pass": 2, "name": "footnotes-mu-body-reference", "sha256": "af444af145193d0baabb068e80761e4943ef05203e4f8fea3ffb2c25d375002d", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:09:13+00:00", "staged": "00007__wfv__footnotes-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:09:11.330 \"Word found unreadable content in 00007__wfv__footnotes-mu-body-reference.docx. Do you want to recov … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00007__wfv__footnotes-mu-body-reference.docx; refusing to guess"}
+{"run": "s86a", "pass": 1, "name": "footnotes-footer-reference-calibration", "sha256": "79501003bcd0051a1891fbe347a2a942cf3424b3708e8a7eeefa4b0628f56448", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:05:15+00:00", "staged": "00006__wfv__footnotes-footer-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-footer-reference-calibration_byword.pdf (15673 bytes), no dialog named the file"]}
+{"run": "s86a", "pass": 2, "name": "footnotes-footer-reference-calibration", "sha256": "79501003bcd0051a1891fbe347a2a942cf3424b3708e8a7eeefa4b0628f56448", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:09:13+00:00", "staged": "00006__wfv__footnotes-footer-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-footer-reference-calibration_byword.pdf (15673 bytes), no dialog named the file"]}
+{"run": "s86a", "pass": 1, "name": "endnotes-mu-footer-reference", "sha256": "e7dc40ecd8f1a29770338ec9f6fd88923cba167b0011baa2f955e5edbcfe5a44", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:05:15+00:00", "staged": "00005__wfv__endnotes-mu-footer-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-mu-footer-reference_byword.pdf (15673 bytes), no dialog named the file"]}
+{"run": "s86a", "pass": 2, "name": "endnotes-mu-footer-reference", "sha256": "e7dc40ecd8f1a29770338ec9f6fd88923cba167b0011baa2f955e5edbcfe5a44", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:09:13+00:00", "staged": "00005__wfv__endnotes-mu-footer-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-mu-footer-reference_byword.pdf (15673 bytes), no dialog named the file"]}
+{"run": "s86a", "pass": 1, "name": "endnotes-mu-body-reference", "sha256": "62cc50ba21a707aa99d162407db0750dfa1b34479877fcc05c1de5fcfc7557a0", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:05:15+00:00", "staged": "00004__wfv__endnotes-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:04:58.124 \"Word found unreadable content in 00004__wfv__endnotes-mu-body-reference.docx. Do you want to recove … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00004__wfv__endnotes-mu-body-reference.docx; refusing to guess"}
+{"run": "s86a", "pass": 2, "name": "endnotes-mu-body-reference", "sha256": "62cc50ba21a707aa99d162407db0750dfa1b34479877fcc05c1de5fcfc7557a0", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:09:13+00:00", "staged": "00004__wfv__endnotes-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:06:21.682 \"Word found unreadable content in 00004__wfv__endnotes-mu-body-reference.docx. Do you want to recove … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00004__wfv__endnotes-mu-body-reference.docx; refusing to guess"}
+{"run": "s86a", "pass": 1, "name": "endnotes-footer-reference-calibration", "sha256": "d9804b1624cac899e080cb32995380f7345e95bc0133b86d5907b0a60e5b06e1", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:05:15+00:00", "staged": "00003__wfv__endnotes-footer-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-footer-reference-calibration_byword.pdf (15673 bytes), no dialog named the file"]}
+{"run": "s86a", "pass": 2, "name": "endnotes-footer-reference-calibration", "sha256": "d9804b1624cac899e080cb32995380f7345e95bc0133b86d5907b0a60e5b06e1", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:09:13+00:00", "staged": "00003__wfv__endnotes-footer-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-footer-reference-calibration_byword.pdf (15673 bytes), no dialog named the file"]}
+{"run": "s86a", "pass": 1, "name": "comments-mu-footer-reference", "sha256": "0622279f7f289b19442afe927585e1a3459acde9565d4dfe24f86fc4692acb03", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:05:15+00:00", "staged": "00002__wfv__comments-mu-footer-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-mu-footer-reference_byword.pdf (15673 bytes), no dialog named the file"]}
+{"run": "s86a", "pass": 2, "name": "comments-mu-footer-reference", "sha256": "0622279f7f289b19442afe927585e1a3459acde9565d4dfe24f86fc4692acb03", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:09:13+00:00", "staged": "00002__wfv__comments-mu-footer-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-mu-footer-reference_byword.pdf (15673 bytes), no dialog named the file"]}
+{"run": "s86a", "pass": 1, "name": "comments-mu-body-reference", "sha256": "88fc06231c25146c48d62e3e814db2c71bbc96129d693a3348f376c4087caff9", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:05:15+00:00", "staged": "00001__wfv__comments-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:04:40.121 \"Word found unreadable content in 00001__wfv__comments-mu-body-reference.docx. Do you want to recove … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__comments-mu-body-reference.docx; refusing to guess"}
+{"run": "s86a", "pass": 2, "name": "comments-mu-body-reference", "sha256": "88fc06231c25146c48d62e3e814db2c71bbc96129d693a3348f376c4087caff9", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:09:13+00:00", "staged": "00001__wfv__comments-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:05:56.810 \"Word found unreadable content in 00001__wfv__comments-mu-body-reference.docx. Do you want to recove … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__comments-mu-body-reference.docx; refusing to guess"}
+{"run": "s86a", "pass": 1, "name": "comments-footer-reference-calibration", "sha256": "34a4677d450099fa7f644a58a2d69b9d5f0ec431793dce93a5ec362fb90717c9", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:05:15+00:00", "staged": "00000__wfv__comments-footer-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-footer-reference-calibration_byword.pdf (15673 bytes), no dialog named the file"]}
+{"run": "s86a", "pass": 2, "name": "comments-footer-reference-calibration", "sha256": "34a4677d450099fa7f644a58a2d69b9d5f0ec431793dce93a5ec362fb90717c9", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:09:13+00:00", "staged": "00000__wfv__comments-footer-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-footer-reference-calibration_byword.pdf (15673 bytes), no dialog named the file"]}
+{"run": "s86a", "pass": 1, "name": "s86a-control-minimal", "sha256": "ce2c24e646762abd0788f47fd1366d2e2c040ba74399d51b3e691294824359f1", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:05:15+00:00", "staged": "00009__wfv__s86a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s86a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86a", "pass": 2, "name": "s86a-control-minimal", "sha256": "ce2c24e646762abd0788f47fd1366d2e2c040ba74399d51b3e691294824359f1", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:09:13+00:00", "staged": "00009__wfv__s86a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s86a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86b", "pass": 1, "name": "glossary-header-mu-used", "sha256": "a78f998198c54d1c6e7e9649a23aa15de7700eb795dc635a2e0b896d0e90ad63", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:12:15+00:00", "staged": "00007__wfv__glossary-header-mu-used.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:11:23.336 \"Word found unreadable content in 00007__wfv__glossary-header-mu-used.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.\"", "2026-10-28 14:12:09.902 Microsoft Word, Word experienced an error trying to open the file. Try these suggestions. * Check th … y converter. (00007__wfv__glossary-header-mu-used.docx)"], "error": "repair prompt declined; Word could not read it"}
+{"run": "s86b", "pass": 2, "name": "glossary-header-mu-used", "sha256": "a78f998198c54d1c6e7e9649a23aa15de7700eb795dc635a2e0b896d0e90ad63", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:14:38+00:00", "staged": "00007__wfv__glossary-header-mu-used.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:14:37.397 \"Word found unreadable content in 00007__wfv__glossary-header-mu-used.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00007__wfv__glossary-header-mu-used.docx; refusing to guess"}
+{"run": "s86b", "pass": 1, "name": "glossary-header-calibration", "sha256": "48968bcecb032185f3cad85a585c0286dea17db5cb7a5b3ad26a7e8190ff0ac4", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:12:15+00:00", "staged": "00006__wfv__glossary-header-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF glossary-header-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86b", "pass": 2, "name": "glossary-header-calibration", "sha256": "48968bcecb032185f3cad85a585c0286dea17db5cb7a5b3ad26a7e8190ff0ac4", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:14:38+00:00", "staged": "00006__wfv__glossary-header-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF glossary-header-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86b", "pass": 1, "name": "glossary-footnotes-mu-header-reference", "sha256": "90c32b9357d6b0c3feee6d5494a5bf6f9c9364d1a7539d150e6895d5cab1cc46", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:12:15+00:00", "staged": "00005__wfv__glossary-footnotes-mu-header-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF glossary-footnotes-mu-header-reference_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86b", "pass": 2, "name": "glossary-footnotes-mu-header-reference", "sha256": "90c32b9357d6b0c3feee6d5494a5bf6f9c9364d1a7539d150e6895d5cab1cc46", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:14:38+00:00", "staged": "00005__wfv__glossary-footnotes-mu-header-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF glossary-footnotes-mu-header-reference_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86b", "pass": 1, "name": "glossary-footnotes-mu-body-reference", "sha256": "b51e56bd24da8b2d6b172c034117044d87cf51073ec146fbff3970b550f648ee", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:12:15+00:00", "staged": "00004__wfv__glossary-footnotes-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:11:11.488 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00004__wfv__glossary-footnotes-mu-bod...)'", "2026-10-28 14:11:11.685 \"Word found unreadable content in 00004__wfv__glossary-footnotes-mu-body-reference.docx. Do you want … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00004__wfv__glossary-footnotes-mu-body-reference.docx; refusing to guess"}
+{"run": "s86b", "pass": 2, "name": "glossary-footnotes-mu-body-reference", "sha256": "b51e56bd24da8b2d6b172c034117044d87cf51073ec146fbff3970b550f648ee", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:14:38+00:00", "staged": "00004__wfv__glossary-footnotes-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:14:15.493 \"Word found unreadable content in 00004__wfv__glossary-footnotes-mu-body-reference.docx. Do you want … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00004__wfv__glossary-footnotes-mu-body-reference.docx; refusing to guess"}
+{"run": "s86b", "pass": 1, "name": "glossary-endnotes-mu-header-reference", "sha256": "d7f7863020dc7b193984aae4c6ce33095a33090b576127c7024db409c606ff95", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:12:15+00:00", "staged": "00003__wfv__glossary-endnotes-mu-header-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF glossary-endnotes-mu-header-reference_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86b", "pass": 2, "name": "glossary-endnotes-mu-header-reference", "sha256": "d7f7863020dc7b193984aae4c6ce33095a33090b576127c7024db409c606ff95", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:14:38+00:00", "staged": "00003__wfv__glossary-endnotes-mu-header-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF glossary-endnotes-mu-header-reference_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86b", "pass": 1, "name": "glossary-endnotes-mu-body-reference", "sha256": "c6b27992a3a6237dbd273b18dab1929a54541aa774de8f537eaf027c25ec92e2", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:12:15+00:00", "staged": "00002__wfv__glossary-endnotes-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:10:52.343 'Word found unreadable content in 00002__wfv__glossary-endnotes-mu-body-reference.docx. Do you want  … ? If you trust the source of this document, click Yes.'", "2026-10-28 14:10:53.082 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__glossary-endnotes-mu-body...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s86b", "pass": 2, "name": "glossary-endnotes-mu-body-reference", "sha256": "c6b27992a3a6237dbd273b18dab1929a54541aa774de8f537eaf027c25ec92e2", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:14:38+00:00", "staged": "00002__wfv__glossary-endnotes-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:13:44.536 \"Word found unreadable content in 00002__wfv__glossary-endnotes-mu-body-reference.docx. Do you want  … ? If you trust the source of this document, click Yes.\"", "2026-10-28 14:13:55.905 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__glossary-endnotes-mu-body...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s86b", "pass": 1, "name": "glossary-comments-mu-header-reference", "sha256": "99d7efe37eb7c18c5043cbb613230f125d2bb5974cd1e6ff6b9959e6e371e6cb", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:12:15+00:00", "staged": "00001__wfv__glossary-comments-mu-header-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF glossary-comments-mu-header-reference_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86b", "pass": 2, "name": "glossary-comments-mu-header-reference", "sha256": "99d7efe37eb7c18c5043cbb613230f125d2bb5974cd1e6ff6b9959e6e371e6cb", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:14:38+00:00", "staged": "00001__wfv__glossary-comments-mu-header-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF glossary-comments-mu-header-reference_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86b", "pass": 1, "name": "glossary-comments-mu-body-reference", "sha256": "5c97cf181c69db204f15767021c7a38ceba3921b48a807c16c608d21581cdaaa", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:12:15+00:00", "staged": "00000__wfv__glossary-comments-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:09:52.598 'Word found unreadable content in 00000__wfv__glossary-comments-mu-body-reference.docx. Do you want  … ? If you trust the source of this document, click Yes.'", "2026-10-28 14:10:41.978 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__glossary-comments-mu-body...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s86b", "pass": 2, "name": "glossary-comments-mu-body-reference", "sha256": "5c97cf181c69db204f15767021c7a38ceba3921b48a807c16c608d21581cdaaa", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:14:38+00:00", "staged": "00000__wfv__glossary-comments-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:13:18.779 \"Word found unreadable content in 00000__wfv__glossary-comments-mu-body-reference.docx. Do you want  … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__glossary-comments-mu-body-reference.docx; refusing to guess"}
+{"run": "s86b", "pass": 1, "name": "s86b-control-minimal", "sha256": "1fdfc93382f9fb4e67597071afa261c4b85b6e4a869fe01fa1964a83979e75ea", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:12:15+00:00", "staged": "00008__wfv__s86b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s86b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86b", "pass": 2, "name": "s86b-control-minimal", "sha256": "1fdfc93382f9fb4e67597071afa261c4b85b6e4a869fe01fa1964a83979e75ea", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:14:38+00:00", "staged": "00008__wfv__s86b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s86b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86c", "pass": 1, "name": "footnotes-malformed-header-reference", "sha256": "8d44233267ef95a0c631d0e55abcb7202d8ed703d20973c2a4c9300a07739597", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:20:27+00:00", "staged": "00001__wfv__footnotes-malformed-header-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-malformed-header-reference_byword.pdf (16233 bytes), no dialog named the file"]}
+{"run": "s86c", "pass": 2, "name": "footnotes-malformed-header-reference", "sha256": "8d44233267ef95a0c631d0e55abcb7202d8ed703d20973c2a4c9300a07739597", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:22:17+00:00", "staged": "00001__wfv__footnotes-malformed-header-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-malformed-header-reference_byword.pdf (16233 bytes), no dialog named the file"]}
+{"run": "s86c", "pass": 1, "name": "footnotes-malformed-body-reference", "sha256": "df977144dd0d81b6cdfc66bde5f8366c2a176c98c6fa6f513817cdf5878dd912", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:20:27+00:00", "staged": "00000__wfv__footnotes-malformed-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:15:07.281 \"Word found unreadable content in 00000__wfv__footnotes-malformed-body-reference.docx. Do you want t … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__footnotes-malformed-body-reference.docx; refusing to guess"}
+{"run": "s86c", "pass": 2, "name": "footnotes-malformed-body-reference", "sha256": "df977144dd0d81b6cdfc66bde5f8366c2a176c98c6fa6f513817cdf5878dd912", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:22:17+00:00", "staged": "00000__wfv__footnotes-malformed-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:21:04.582 \"Word found unreadable content in 00000__wfv__footnotes-malformed-body-reference.docx. Do you want t … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__footnotes-malformed-body-reference.docx; refusing to guess"}
+{"run": "s86c", "pass": 1, "name": "header-mu-unused-fallback", "sha256": "41c624faaeb00d26d7d8bac47e88e529200cd539c65c7389c1aab09d51764dbb", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:20:27+00:00", "staged": "00003__wfv__header-mu-unused-fallback.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-mu-unused-fallback_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86c", "pass": 2, "name": "header-mu-unused-fallback", "sha256": "41c624faaeb00d26d7d8bac47e88e529200cd539c65c7389c1aab09d51764dbb", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:22:17+00:00", "staged": "00003__wfv__header-mu-unused-fallback.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-mu-unused-fallback_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86c", "pass": 1, "name": "header-mu-used-fallback", "sha256": "c810ce29bb589a8b0393e828079d02bd017908e5d452345909c8bf59faf69065", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:20:27+00:00", "staged": "00005__wfv__header-mu-used-fallback.docx", "logVerdict": "no-evidence", "tableVerdict": "other", "pdf": false, "evidence": [], "excluded": "no evidence: the driver's AppleEvent timed out", "error": "Microsoft Word got an error: AppleEvent timed out."}
+{"run": "s86c", "pass": 2, "name": "header-mu-used-fallback", "sha256": "c810ce29bb589a8b0393e828079d02bd017908e5d452345909c8bf59faf69065", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:22:17+00:00", "staged": "00005__wfv__header-mu-used-fallback.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:22:16.503 \"Word found unreadable content in 00005__wfv__header-mu-used-fallback.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00005__wfv__header-mu-used-fallback.docx; refusing to guess"}
+{"run": "s86c", "pass": 3, "name": "header-mu-used-fallback", "sha256": "c810ce29bb589a8b0393e828079d02bd017908e5d452345909c8bf59faf69065", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:23:31+00:00", "staged": "00000__wfv__header-mu-used-fallback.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:23:24.555 \"Word found unreadable content in 00000__wfv__header-mu-used-fallback.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__header-mu-used-fallback.docx; refusing to guess"}
+{"run": "s86c", "pass": 1, "name": "header-mu-unused-choice", "sha256": "dd6c542b5aaa3d3edc81a197e1fef5b6e2bb902500c8904fa0bbe433b26b30ab", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:20:27+00:00", "staged": "00002__wfv__header-mu-unused-choice.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-mu-unused-choice_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86c", "pass": 2, "name": "header-mu-unused-choice", "sha256": "dd6c542b5aaa3d3edc81a197e1fef5b6e2bb902500c8904fa0bbe433b26b30ab", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:22:17+00:00", "staged": "00002__wfv__header-mu-unused-choice.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-mu-unused-choice_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86c", "pass": 1, "name": "header-mu-used-choice", "sha256": "12495fc0640830fedb0240c976e5d7d9bca55ab76df7175b36770c87b681eb83", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:20:27+00:00", "staged": "00004__wfv__header-mu-used-choice.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:15:26.063 \"Word found unreadable content in 00004__wfv__header-mu-used-choice.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00004__wfv__header-mu-used-choice.docx; refusing to guess"}
+{"run": "s86c", "pass": 2, "name": "header-mu-used-choice", "sha256": "12495fc0640830fedb0240c976e5d7d9bca55ab76df7175b36770c87b681eb83", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:22:17+00:00", "staged": "00004__wfv__header-mu-used-choice.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 14:21:22.651 \"Word found unreadable content in 00004__wfv__header-mu-used-choice.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00004__wfv__header-mu-used-choice.docx; refusing to guess"}
+{"run": "s86c", "pass": 1, "name": "s86c-control-minimal", "sha256": "fc4290bd6a17ce1c68f01c6171c299c7c24e74555d3ebcb9d2c0eb1f4264d526", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:20:27+00:00", "staged": "00006__wfv__s86c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s86c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s86c", "pass": 2, "name": "s86c-control-minimal", "sha256": "fc4290bd6a17ce1c68f01c6171c299c7c24e74555d3ebcb9d2c0eb1f4264d526", "validatorRevision": "ddf9a18ffec7a8e683c68d02e79a970b4da797c8", "observedAt": "2026-10-28T18:22:17+00:00", "staged": "00006__wfv__s86c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s86c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 86 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged. The builder ran in the committed worktree, `WT` naming it.
+
+`s86builder.mts`:
+
+```ts
+// Session 86 (2026-10-28, #1164): the placements #1155 and #1158 decide by the read model without direct Word evidence,
+// on the minimal package (`tests/support/minimal-docx.ts`). Every MustUnderstand root names an unknown urn:foo, which
+// Word refused in a read header and a body-referenced notes or comments part (sessions 84, 85).
+// s86a, footer-held reference (#1155): a footnotes, endnotes or comments part the main document relates, its root
+//   carrying MustUnderstand, its only reference in a used footer (`-mu-footer-reference`); the same part referenced from
+//   the body (`-mu-body-reference`, expected refused); the footer-referenced part without MustUnderstand
+//   (`-footer-reference-calibration`).
+// s86b, reached glossary (#1155): the main document relates word/glossary/document.xml, whose docPartBody sectPr uses
+//   word/glossary/header1.xml (session 26's glossaryRef shape). Per kind, the glossary relates a MustUnderstand part
+//   whose only reference sits in that header (`glossary-<kind>s-mu-header-reference`) or in the docPartBody
+//   (`-mu-body-reference`). `glossary-header-mu-used` puts MustUnderstand on the used glossary header itself: does Word
+//   read the glossary's header at all?
+// s86c (#1155, #1158): `footnotes-malformed-header-reference` puts an undeclared-Requires Choice (`mce-malformed`) in
+//   a footnotes part whose only reference sits in a read header; `-body-reference` is its calibration. The
+//   `header-mu-*-fallback` and `-choice` rows relate a MustUnderstand header through a relationship inside a selected
+//   mc:Fallback, or an understood mc:Choice (Requires="w14"), of the main document's relationships part, unused or used.
+// Every chunk ends with a minimal control. Every row records the validator revision it was judged at
+// (`validatorRevision`, `git -C <tree> rev-parse HEAD`).
+// Run: WT=<tree> CHUNK=s86a tsx <abs path to this file>
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const WT = process.env.WT ?? process.cwd();
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const { MINIMAL_PARTS, buildDocx } = await import(path.join(WT, "tests/support/minimal-docx.ts"));
+const REVISION = execFileSync("git", ["-C", WT, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n`;
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
+const MU = ` xmlns:mc="${MC}" xmlns:foo="urn:foo" mc:MustUnderstand="foo"`;
+const P = MINIMAL_PARTS as Record<string, string>;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+/** `parts` with `r:` declared on the main document, `run` appended inside its only paragraph and `sect` first in its w:sectPr. */
+const mainWith = (parts: Record<string, string>, run: string, sect = ""): Record<string, string> => ({
+    ...parts,
+    [MAIN]: replaceOnce(
+        replaceOnce(replaceOnce(parts[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`), "<w:sectPr>", `<w:sectPr>${sect}`),
+        "</w:r></w:p>",
+        `</w:r>${run}</w:p>`,
+    ),
+});
+/** `parts` plus a part related by the main document as `segment`, typed `type`. */
+const withRelated = (
+    parts: Record<string, string>,
+    name: string,
+    xml: string,
+    id: string,
+    segment: string,
+    type: string,
+    target = name,
+) => ({
+    ...parts,
+    [`word/${name}`]: xml,
+    [SIDECAR]: appendRels(parts[SIDECAR]!, relationship(id, segment, target)),
+    [CT]: overrides(parts[CT]!, [`word/${name}`, type]),
+});
+
+// shared
+type Story = "footnote" | "endnote" | "comment";
+const TEXT_P = "<w:p><w:r><w:t>Text 86</w:t></w:r></w:p>";
+const storyXml = (kind: Story, root: string) =>
+    kind === "comment"
+        ? `${XML_DECL}<w:comments xmlns:w="${W}"${root}><w:comment w:id="0" w:author="a">${TEXT_P}</w:comment></w:comments>`
+        : `${XML_DECL}<w:${kind}s xmlns:w="${W}"${root}><w:${kind} w:id="1">${TEXT_P}</w:${kind}></w:${kind}s>`;
+const storyRef = (kind: Story) =>
+    kind === "comment" ? `<w:r><w:commentReference w:id="0"/></w:r>` : `<w:r><w:${kind}Reference w:id="1"/></w:r>`;
+const withStory = (parts: Record<string, string>, kind: Story, xml: string) =>
+    withRelated(parts, `${kind}s.xml`, xml, "rIdS", `${kind}s`, `${WML}.${kind}s+xml`);
+/** `parts` with a used `segment` story (`word/<segment>1.xml`, referenced by the section) holding `run` and carrying `root` on its root. */
+const withUsed = (parts: Record<string, string>, segment: "header" | "footer", run: string, root = "") => {
+    const tag = segment === "header" ? "hdr" : "ftr";
+    const id = segment === "header" ? "rIdH" : "rIdF";
+    const xml = `${XML_DECL}<w:${tag} xmlns:w="${W}"${root}><w:p><w:r><w:t>${segment === "header" ? "Header" : "Footer"} 86</w:t></w:r>${run}</w:p></w:${tag}>`;
+    return mainWith(
+        withRelated(parts, `${segment}1.xml`, xml, id, segment, `${WML}.${segment}+xml`),
+        "",
+        `<w:${segment}Reference w:type="default" r:id="${id}"/>`,
+    );
+};
+
+// s86a
+const footerRows = (kind: Story): Row[] => [
+    [
+        `${kind}s-mu-footer-reference`,
+        `#1155: word/${kind}s.xml related by the main document, root MustUnderstand urn:foo, its only reference in a used footer`,
+        () => buildDocx(withUsed(withStory(P, kind, storyXml(kind, MU)), "footer", storyRef(kind))),
+    ],
+    [
+        `${kind}s-mu-body-reference`,
+        "calibration: the same part referenced from the body",
+        () => buildDocx(mainWith(withStory(P, kind, storyXml(kind, MU)), storyRef(kind))),
+    ],
+    [
+        `${kind}s-footer-reference-calibration`,
+        "calibration: the footer-referenced part without MustUnderstand",
+        () => buildDocx(withUsed(withStory(P, kind, storyXml(kind, "")), "footer", storyRef(kind))),
+    ],
+];
+
+// s86b
+const GLOSSARY_TYPE = `${WML}.document.glossary+xml`;
+const glossary = (opts: { kind?: Story; bodyRun?: string; headerRun?: string; headerRoot?: string }) => {
+    const { kind, bodyRun = "", headerRun = "", headerRoot = "" } = opts;
+    const doc =
+        `${XML_DECL}<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+        `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E86}"/></w:docPartPr>` +
+        `<w:docPartBody><w:p><w:r><w:t>Part 86</w:t></w:r>${bodyRun}</w:p><w:sectPr><w:headerReference w:type="default" r:id="rIdH"/></w:sectPr></w:docPartBody>` +
+        `</w:docPart></w:docParts></w:glossaryDocument>`;
+    const rels = [relationship("rIdH", "header", "header1.xml"), kind ? relationship("rIdS", `${kind}s`, `${kind}s.xml`) : ""].join("");
+    const parts: Record<string, string> = {
+        ...P,
+        "word/glossary/document.xml": doc,
+        "word/glossary/_rels/document.xml.rels": `${XML_DECL}<Relationships xmlns="${PR}">${rels}</Relationships>`,
+        "word/glossary/header1.xml": `${XML_DECL}<w:hdr xmlns:w="${W}"${headerRoot}><w:p><w:r><w:t>Glossary header 86</w:t></w:r>${headerRun}</w:p></w:hdr>`,
+        [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdG", "glossaryDocument", "glossary/document.xml")),
+        [CT]: overrides(
+            P[CT]!,
+            ["word/glossary/document.xml", GLOSSARY_TYPE],
+            ["word/glossary/header1.xml", `${WML}.header+xml`],
+            ...(kind ? [[`word/glossary/${kind}s.xml`, `${WML}.${kind}s+xml`] as [string, string]] : []),
+        ),
+    };
+    if (kind) parts[`word/glossary/${kind}s.xml`] = storyXml(kind, MU);
+    return parts;
+};
+const glossaryRows = (kind: Story): Row[] => [
+    [
+        `glossary-${kind}s-mu-header-reference`,
+        `#1155: a reached glossary relates word/glossary/${kind}s.xml, root MustUnderstand urn:foo, its only reference in the glossary's used header`,
+        () => buildDocx(glossary({ kind, headerRun: storyRef(kind) })),
+    ],
+    [
+        `glossary-${kind}s-mu-body-reference`,
+        "calibration: the same part referenced from the glossary's docPartBody",
+        () => buildDocx(glossary({ kind, bodyRun: storyRef(kind) })),
+    ],
+];
+
+// s86c
+const MALFORMED = ` xmlns:mc="${MC}"`;
+const malformedFootnotes = () =>
+    `${XML_DECL}<w:footnotes xmlns:w="${W}"${MALFORMED}><w:footnote w:id="1"><w:p><mc:AlternateContent><mc:Choice Requires="zz"><w:r><w:t>A</w:t></w:r></mc:Choice><mc:Fallback><w:r><w:t>B</w:t></w:r></mc:Fallback></mc:AlternateContent></w:p></w:footnote></w:footnotes>`;
+const MCE_DECLS = `xmlns:mc="${MC}" xmlns:foo="urn:foo" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"`;
+const liftedHeader = (shape: "fallback" | "choice", used: boolean) => {
+    const xml = `${XML_DECL}<w:hdr xmlns:w="${W}"${MU}><w:p><w:r><w:t>Header 86</w:t></w:r></w:p></w:hdr>`;
+    const parts = withRelated(P, "header1.xml", xml, "rIdH", "header", `${WML}.header+xml`);
+    const rel = relationship("rIdH", "header", "header1.xml");
+    const wrapped =
+        shape === "fallback"
+            ? `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>${rel}</mc:Fallback></mc:AlternateContent>`
+            : `<mc:AlternateContent><mc:Choice Requires="w14">${rel}</mc:Choice><mc:Fallback/></mc:AlternateContent>`;
+    parts[SIDECAR] = replaceOnce(
+        replaceOnce(parts[SIDECAR]!, rel, wrapped),
+        `<Relationships xmlns="${PR}">`,
+        `<Relationships xmlns="${PR}" ${MCE_DECLS}>`,
+    );
+    return used ? mainWith(parts, "", `<w:headerReference w:type="default" r:id="rIdH"/>`) : parts;
+};
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const withControl = (chunk: string, rows: Row[]): Row[] => [...rows, [`${chunk}-control-minimal`, "control", () => buildDocx({ ...P })]];
+const chunks: Record<string, Row[]> = {
+    s86a: withControl("s86a", [...footerRows("footnote"), ...footerRows("endnote"), ...footerRows("comment")]),
+    s86b: withControl("s86b", [
+        [
+            "glossary-header-mu-used",
+            "calibration: the reached glossary's used header with root MustUnderstand urn:foo",
+            () => buildDocx(glossary({ headerRoot: MU })),
+        ],
+        [
+            "glossary-header-calibration",
+            "calibration: the reached glossary and its used header, no MustUnderstand",
+            () => buildDocx(glossary({})),
+        ],
+        ...glossaryRows("footnote"),
+        ...glossaryRows("endnote"),
+        ...glossaryRows("comment"),
+    ]),
+    s86c: withControl("s86c", [
+        [
+            "footnotes-malformed-header-reference",
+            "#1155: word/footnotes.xml holding an undeclared-Requires Choice, its only reference in a read header",
+            () => buildDocx(withUsed(withStory(P, "footnote", malformedFootnotes()), "header", storyRef("footnote"))),
+        ],
+        [
+            "footnotes-malformed-body-reference",
+            "calibration: the same part referenced from the body",
+            () => buildDocx(mainWith(withStory(P, "footnote", malformedFootnotes()), storyRef("footnote"))),
+        ],
+        [
+            "header-mu-unused-fallback",
+            "#1158: a MustUnderstand header related through a relationship inside a selected mc:Fallback, unused",
+            () => buildDocx(liftedHeader("fallback", false)),
+        ],
+        ["header-mu-used-fallback", "calibration: the same header used", () => buildDocx(liftedHeader("fallback", true))],
+        [
+            "header-mu-unused-choice",
+            '#1158: the header related through an understood mc:Choice (Requires="w14"), unused',
+            () => buildDocx(liftedHeader("choice", false)),
+        ],
+        ["header-mu-used-choice", "calibration: the same header used", () => buildDocx(liftedHeader("choice", true))],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+// A rerun starts from an empty src, so a removed or renamed row leaves no stale specimen (CodeRabbit on #985).
+rmSync(dir, { recursive: true, force: true });
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+    }
+};
+
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        control: issue === "control",
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join the two evidenced runs of the session-86 chunks: log verdicts, table verdicts, validator verdicts, hashes.
+
+Each row's runs are its chunk's first and second passes, except where the first pass left no evidence (the driver's
+AppleEvent timed out): there the row was rerun from byte-identical bytes as pass3, and its runs are pass2 and pass3.
+"""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s86a", "s86b", "s86c")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+
+
+def checks(run):
+    return {json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()}
+
+
+def runs_for(label, name):
+    """The two evidenced runs of a row, and the run whose first pass left no evidence, if any."""
+    first, second, third = ROOT / label, ROOT / label / "pass2", ROOT / label / "pass3"
+    if checks(first)[name]["logVerdict"] == "no-evidence":
+        assert third.exists() and name in checks(third), (label, name)
+        return [second, third], first
+    return [first, second], None
+
+
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    for name, spec in specs.items():
+        runs, dropped = runs_for(label, name)
+        for run in runs + ([dropped] if dropped else []):
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        p1, p2 = (checks(run)[name] for run in runs)
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0], "unknown") if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "runs": [str(r.relative_to(ROOT)) for r in runs],
+                     "noEvidenceRun": str(dropped.relative_to(ROOT)) if dropped else None, "readings": readings,
+                     "agreed": agreed, "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
+                     "validatorMatchesWord": agreed and ((all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True))})
+(ROOT / "s86/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<48} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']} runs={r['runs']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-86 part of docs/plans/evidence/word-probes-2026-10-24.md into s86/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+each run's logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes, which names each row's two
+evidenced runs. The validator label comes from the rows' `validatorRevision`, never from this script. The text Word
+rendered is read from its own PDFs with pdftotext, so the narrative's "rendered" claims are checked here.
+"""
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s86a", "s86b", "s86c")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s86/results.json").read_text())}
+
+
+def cell(v):
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e}`" for e in v["errors"])
+
+
+def strict_cell(v):
+    # The column names the markup-compatibility, XML-syntax and relationship findings, and counts the others.
+    if v["valid"] is None:
+        return cell(v)
+    if v["valid"]:
+        return "valid"
+    probed = [e for e in v["errors"] if e.startswith(("mce-", "xml-", "rels-"))]
+    rest = len(v["errors"]) - len(probed)
+    named = ", ".join(f"`{e}`" for e in probed)
+    if rest:
+        named = f"{named}{', ' if named else ''}{rest} other finding{'s' if rest > 1 else ''}"
+    return "invalid: " + named
+
+
+def manifest(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return row
+    raise KeyError(file)
+
+
+def run_at(run, file):
+    return datetime.fromisoformat(manifest(run, file)["run_at"]).astimezone(timezone.utc)
+
+
+def checks(run):
+    return {json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()}
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+def rendered(run, file):
+    pdf = run / "pdf" / (Path(file).stem + "_byword.pdf")
+    if not pdf.exists():
+        return None
+    return " ".join(subprocess.run(["pdftotext", str(pdf), "-"], check=True, capture_output=True, text=True).stdout.split())
+
+
+def record(label, n, s, run, row, t, **extra):
+    out = {"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"], "validatorRevision": s.get("validatorRevision"),
+           "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+           "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"], **extra}
+    error = manifest(run, s["file"]).get("error")
+    if error:
+        out["error"] = error
+    return json.dumps(out, ensure_ascii=False)
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    for s in specs:
+        result = results[(label, s["file"])]
+        runs = [ROOT / r for r in result["runs"]]
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        agreed += result["agreed"]
+        cs = [checks(r)[s["file"]] for r in runs]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(cs[0])} | {word_cell(cs[1])} | {result['outcome']} | {cell(s['wordValid'])} | {strict_cell(s['strict'])} |"
+        )
+        if result["noEvidenceRun"]:
+            dropped = ROOT / result["noEvidenceRun"]
+            raw.append(record(label, 1, s, dropped, checks(dropped)[s["file"]], run_at(dropped, s["file"]), excluded="no evidence: the driver's AppleEvent timed out"))
+        for r, c, t in zip(runs, cs, times):
+            n = {"": 1, "pass2": 2, "pass3": 3}[r.name if r.name.startswith("pass") else ""]
+            raw.append(record(label, n, s, r, c, t))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8]
+
+REFUSED = {"footnotes-mu-body-reference.docx", "endnotes-mu-body-reference.docx", "comments-mu-body-reference.docx",
+           "glossary-header-mu-used.docx", "glossary-footnotes-mu-body-reference.docx", "glossary-endnotes-mu-body-reference.docx",
+           "glossary-comments-mu-body-reference.docx", "footnotes-malformed-body-reference.docx", "header-mu-used-fallback.docx",
+           "header-mu-used-choice.docx"}
+# The narrative's claims, checked against results.json: every row's four readings agree; Word offered recovery for
+# exactly REFUSED and opened every other row clean; word-valid at the probed revision matches Word on every row.
+for (label, file), r in results.items():
+    assert r["agreed"], (label, file, r)
+    if file in REFUSED:
+        assert r["everyReadingRejects"] and r["outcome"] == "unreadable-content-warning", (label, file, r)
+    else:
+        assert set(r["readings"]) == {"clean-open"}, (label, file, r)
+    assert r["validatorMatchesWord"], (label, file, r)
+    assert (r["noEvidenceRun"] is not None) is (file == "header-mu-used-fallback.docx"), (label, file, r)
+assert agreed == len(rows) == 26, (agreed, len(rows))
+# The driver opens files in name order (#671).
+for label in CHUNKS:
+    files = sorted(json.loads(l)["file"] for l in (ROOT / label / "specimens.jsonl").read_text().splitlines())
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        opened = [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()]
+        assert opened == files, (run, opened)
+# The text Word rendered, every run: a used main-document footer renders "Footer 86" after "Hello", a read header
+# "Header 86" before it, a glossary nothing, and no row a note's or comment's "Text 86"; a refused row left no PDF.
+EXPECTED = {"s86a": lambda f: "Hello" if "control" in f else "Hello Footer 86",
+            "s86b": lambda f: "Hello",
+            "s86c": lambda f: "Header 86 Hello" if f == "footnotes-malformed-header-reference.docx" else "Hello"}
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2", ROOT / label / "pass3"):
+        if not run.exists():
+            continue
+        for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+            file = json.loads(line)["original_filename"]
+            text = rendered(run, file)
+            if file in REFUSED or (run.name == label and file == "header-mu-used-fallback.docx"):
+                assert text is None, (run, file, text)
+            else:
+                assert text == EXPECTED[label](file), (run, file, text)
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}", (min(starts), max(ends))
+matches = sum(r["validatorMatchesWord"] for r in results.values())
+I = "https://github.com/jandira-tech/docx-validate/issues/"
+out = [
+    f"### Session 86: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {at}",
+    "",
+    f"The placements [#1155]({I}1155) and [#1158]({I}1158) decide by the read model, which sessions 34, 84 and 85 "
+    f"bracket but did not show Word ([#1164]({I}1164), review 1156 F4). Three chunks, on the minimal package. Every "
+    "`mc:MustUnderstand=\"foo\"` names an unknown `urn:foo`, which Word refused in a read header and in a "
+    "body-referenced notes or comments part (sessions 84 and 85).",
+    "",
+    f"- **s86a, [#1155]({I}1155).** A footnotes, endnotes or comments part the main document relates, with the "
+    "attribute on its root, whose only reference sits in a used footer (`-mu-footer-reference`). The same part "
+    "referenced from the body (`-mu-body-reference`) and the footer-referenced part without the attribute "
+    "(`-footer-reference-calibration`) are calibrations.",
+    f"- **s86b, [#1155]({I}1155).** The main document relates `word/glossary/document.xml`, whose docPartBody `w:sectPr` "
+    "uses `word/glossary/header1.xml` (session 26's glossaryRef shape). `glossary-header-mu-used` puts the attribute on "
+    "that header, to show whether Word reads it; `glossary-header-calibration` leaves it off. Per kind, the glossary "
+    "relates a part with the attribute whose only reference sits in that header (`glossary-<kind>s-mu-header-reference`) "
+    "or in the docPartBody (`-mu-body-reference`).",
+    f"- **s86c, [#1155]({I}1155) and [#1158]({I}1158).** `footnotes-malformed-header-reference` puts an "
+    "undeclared-`Requires` Choice (`mce-malformed`) in a footnotes part whose only reference sits in a read header; "
+    "`-body-reference` is its calibration. The `header-mu-` rows relate a header with the attribute through a "
+    "relationship inside a selected `mc:Fallback`, or an understood `mc:Choice` (`Requires=\"w14\"`), of the main "
+    "document's relationships part, the header unused or referenced by the section.",
+    "",
+    "Each chunk ends with a minimal control. Each chunk ran twice, as two separate driver runs of byte-identical copies, "
+    "and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by "
+    "`wordpdf_outcomes.py`. The first s86c run left no evidence for `header-mu-used-fallback`: the driver's AppleEvent "
+    "timed out. That row ran a third time from byte-identical bytes, beside the control, and its two runs below are the "
+    "second and third; the raw records keep the first, marked excluded. Outcome is the manifest spelling when both runs "
+    f"and both readings agree, and `unknown` otherwise; {agreed} of {len(rows)} rows agree. The two times in Observed "
+    "are the ends of the row's two runs. Shape is the builder's description of the specimen. The builder recorded the "
+    f"validator revision in every row (`{rev}`). The strict column names the markup-compatibility, XML-syntax and "
+    "relationship findings, and counts the others.",
+    "",
+    "Every calibration Word was meant to open, and every control, opened clean. Every row Word opened renders the main "
+    "document's `Hello` (`pdftotext`), after `Header 86` where the section uses a header and before `Footer 86` where it "
+    "uses a footer. No glossary text and no note's or comment's `Text 86` renders. No refused row left a PDF.",
+    "",
+    "- **Word does not read a notes or comments part whose only reference is in a footer either.** It opened clean all "
+    "three `-mu-footer-reference` rows, and offered to recover unreadable content for the same parts referenced from "
+    "the body.",
+    "- **Word reads a reached glossary's used header, and not a notes or comments part only that header references.** "
+    "It offered recovery for `glossary-header-mu-used`, opened clean the three glossary `-mu-header-reference` rows, "
+    "and offered recovery for the same parts referenced from the docPartBody.",
+    "- **Malformed compatibility follows the same rule.** Word opened clean the undeclared-`Requires` Choice in a "
+    "footnotes part only a read header references, and offered recovery for it referenced from the body.",
+    "- **A relationship markup compatibility selects relates a header as a direct one does.** Word opened clean the "
+    "header related through a selected Fallback or an understood Choice and unused, and offered recovery for each used.",
+    "",
+    f"Word-valid at {at} matches Word on {matches} of {len(rows)} rows. At 07450f03, before [#1158]({I}1158), it rejected "
+    "`header-mu-unused-fallback` and `header-mu-unused-choice` (`mce-must-understand` an error in `word/header1.xml`), "
+    "both of which Word opened clean.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 86</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 86 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged. "
+    "The builder ran in the committed worktree, `WT` naming it.",
+    "",
+]
+for name, path, lang in (("s86builder.mts", ROOT / "s86builder.mts", "ts"), ("compare.py", ROOT / "s86/compare.py", "python"),
+                         ("section.py", ROOT / "s86/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s86/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed,", matches, "match")
+`````
+
+</details>

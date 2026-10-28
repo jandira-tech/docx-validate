@@ -735,13 +735,16 @@ export const wordReadTypedTargets = async (context: ValidationContext, profile?:
  * markup-compatibility view, where a relationship inside a selected Fallback
  * or Choice, or a processed wrapper, is a direct child (#634). A stored
  * relationship is the one it reads when it is in the package-relationships
- * namespace and its `Id`, `Type` and `Target` match (#1158). The read model decides a root's comments and
+ * namespace and its `Id`, `Type` and `Target` match (#1158); session 86
+ * (s86c) opened clean an unused header related through a selected Fallback
+ * or an understood Choice, and refused it used. The read model decides a root's comments and
  * notes use from the root alone, and so does Word: session 85 (s85a, s85b)
  * opened clean a related comments, footnotes or endnotes part holding an
  * unknown `mc:MustUnderstand` whose only reference sat in a read header, and
  * refused it referenced from the body, so such a part stays out too (#1155,
- * undoing #1145's conservative half); a footer holding the reference is
- * unprobed. A reference inside a notes or comments part names nothing either,
+ * undoing #1145's conservative half). Session 86 (s86a, s86b, s86c) showed
+ * the same for a reference in a used footer, for a reached glossary's used
+ * header, and for malformed compatibility (#1164). A reference inside a notes or comments part names nothing either,
  * as session 16 (s16a) opened clean a malformed endnotes part only a footnote
  * referenced. Every other `Relationship` element of the stored DOM counts,
  * nested ones included, so a relationship inside a Choice Word does not
