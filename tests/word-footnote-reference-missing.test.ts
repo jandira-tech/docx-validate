@@ -61,6 +61,73 @@ describe("dangling endnote references (#784, session 58 s58a)", { timeout: 30000
     });
 });
 
+describe("notes parts stored under another name (#793, session 60 s60a)", { timeout: 30000 }, () => {
+    /** The s60a builder's `notesAt`: a used notes part holding `held`, stored as `word/<name>` and related as rIdN; the body references note 1. */
+    const notesAt = (kind: "footnote" | "endnote", name: string, held: string): Promise<Buffer> =>
+        buildDocx({
+            ...MINIMAL_PARTS,
+            "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+                "</w:r></w:p>",
+                `</w:r><w:r><w:${kind}Reference w:id="1"/></w:r></w:p>`,
+            ),
+            [`word/${name}`]:
+                `<w:${kind}s xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+                `<w:${kind} w:id="${held}"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:${kind}></w:${kind}s>`,
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdN" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/${kind}s" Target="${name}"/></Relationships>`,
+            ),
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/word/${name}" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${kind}s+xml"/></Types>`,
+            ),
+        });
+
+    it.each([
+        ["footnote", "notes-foot.xml", "word-footnote-reference-missing"],
+        ["endnote", "notes-end.xml", "word-endnote-reference-missing"],
+    ] as const)("accepts the %ss part its relationship names, stored as word/%s", async (kind, name, code) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "renamed.docx");
+            await writeFile(file, await notesAt(kind, name, "1"));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+            const selected = await validate(file, { profile: "word-valid", checks: [code] });
+            expect(selected.valid).toBe(result.valid);
+            expect(selected.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+        });
+    });
+
+    it.each([
+        ["footnote", "footnotes.xml"],
+        ["endnote", "endnotes.xml"],
+    ] as const)("accepts the standard-name calibration (%s)", async (kind, name) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "standard-name.docx");
+            await writeFile(file, await notesAt(kind, name, "1"));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+        });
+    });
+
+    it.each([
+        ["footnote", "notes-foot.xml", "word-footnote-reference-missing", "footnote reference uses id 1"],
+        ["endnote", "notes-end.xml", "word-endnote-reference-missing", "endnote reference uses id 1"],
+    ] as const)("still rejects the %ss part stored as word/%s when it holds another id", async (kind, name, code, message) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "renamed-other-id.docx");
+            await writeFile(file, await notesAt(kind, name, "5"));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([
+                expect.objectContaining({ code, path: "word/document.xml", message: expect.stringContaining(message) }),
+            ]);
+        });
+    });
+});
+
 describe("word-valid dangling footnote reference", { timeout: 30000 }, () => {
     it("rejects a footnote reference whose id is not a footnote id", async () => {
         const result = await validate(BROKEN, { profile: "word-valid" });

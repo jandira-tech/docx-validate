@@ -11,13 +11,26 @@
  * footnote ids are not this defect. The same mechanism judges endnotes:
  * Word session 58 (s58a) offers recovery for a reference to endnote 1 when
  * the part holds only endnote 5; the matching-id calibration opens clean.
+ *
+ * The defined notes are collected from every part named `footnotes.xml`
+ * (respectively `endnotes.xml`) and from every part a `footnotes`
+ * (respectively `endnotes`) relationship of the main document, or of a
+ * reached glossary, names, whatever the part is called: Word session 60
+ * (s60a) opened clean a used notes part stored as `word/notes-foot.xml`
+ * and `word/notes-end.xml` and related by its relationship, while the
+ * name-only reading judged both references dangling (#793). The
+ * relationship walks are ungated by usage, so a related-but-unused part
+ * defines its ids too — this set only adds definitions, never a rejection —
+ * and the basename reading stays, since no Word session has shown a
+ * `word/footnotes.xml` no relationship names.
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
 import type { ValidationContext } from "../../../lib/validation-context";
-import type { ValidationIssue } from "../../../lib/types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 import path from "node:path";
+import { glossaryTypedRelationshipTargets, wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
 
 const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinition => ({
@@ -26,17 +39,14 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
     groups: ["story"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
 
         const defined = new Set<string>();
-        for (const xmlFile of ctx.partNames) {
-            if (path.posix.basename(xmlFile) !== `${kind}s.xml`) {
-                continue;
-            }
-            const parsed = ctx.effectiveXml(xmlFile);
+        const collect = (part: string): void => {
+            const parsed = ctx.effectiveXml(part);
             if (!parsed?.ok) {
-                continue;
+                return;
             }
             const dom = parsed.document;
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
@@ -48,6 +58,24 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
                     }
                 }
             }
+        };
+        for (const xmlFile of ctx.partNames) {
+            if (path.posix.basename(xmlFile) !== `${kind}s.xml`) {
+                continue;
+            }
+            collect(xmlFile);
+        }
+        // Word reads a notes part through its relationship whatever the
+        // part is called (session 60 s60a, #793), from the main document
+        // and from a reached glossary alike; the ungated typed walks keep a
+        // related-but-unused part defining its ids, as this set only adds
+        // definitions, never a rejection.
+        const segment = `${kind}s`;
+        for (const target of await wordTypedRelationshipTargets(ctx, new Set([segment]), profile)) {
+            collect(target.part);
+        }
+        for (const target of await glossaryTypedRelationshipTargets(ctx, new Set([segment]), profile)) {
+            collect(target.part);
         }
         for (const xmlFile of ctx.storyParts()) {
             const parsed = ctx.effectiveXml(xmlFile);
