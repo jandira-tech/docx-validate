@@ -67,7 +67,7 @@ import {
 import { opcNameIssueSeverity, wordObservedIssueSeverity } from "../../../lib/mode-policy";
 import { withTempDir } from "../../../lib/run-cli";
 import { VALIDATION_DEADLINE, type RunDeadline } from "../../../lib/run-deadline";
-import { indexByPartName, type ValidationContext } from "../../../lib/validation-context";
+import { indexByPartName, normalizePartName, type ValidationContext } from "../../../lib/validation-context";
 import type { PackageFormat, Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
 import { DEFAULT_PROFILE, NS, OK_RESULT } from "../../../lib/types";
 import { allowSchemaResourceRoot, createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
@@ -930,7 +930,8 @@ export class BaseSchemaValidator {
             const root = dom.documentElement;
             if (!root) continue;
 
-            const relsDir = path.dirname(relsFile);
+            const relsPath = path.join(this.unpackedDir, relsPart);
+            const relsDir = path.dirname(relsPath);
             const broken: string[] = [];
 
             const rels = this.relationshipElements(dom, relsPart);
@@ -948,7 +949,7 @@ export class BaseSchemaValidator {
                 let targetPath: string;
                 if (target.startsWith("/")) {
                     targetPath = path.join(this.unpackedDir, target.replace(/^\/+/, ""));
-                } else if (path.basename(relsFile) === ".rels") {
+                } else if (path.basename(relsPath) === ".rels") {
                     targetPath = path.join(this.unpackedDir, target);
                 } else {
                     targetPath = path.join(path.dirname(relsDir), target);
@@ -1123,7 +1124,7 @@ export class BaseSchemaValidator {
         }
 
         for (const xmlFile of this.xmlFiles) {
-            const part = this.entryName(xmlFile);
+            const part = normalizePartName(this.entryName(xmlFile));
             if (isRelationshipsPartName(part)) continue;
 
             const relsPart = findPart(path.posix.join(path.posix.dirname(part), "_rels", `${path.posix.basename(part)}.rels`));

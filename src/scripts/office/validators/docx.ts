@@ -91,7 +91,7 @@ import {
 } from "./base";
 
 import { runChecks } from "../../../lib/check-scheduler";
-import type { ValidationContext } from "../../../lib/validation-context";
+import { normalizePartName, type ValidationContext } from "../../../lib/validation-context";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
 import { WORD_HEADER_FOOTER_RELATIONSHIP } from "../checks/word-header-footer";
 import { WORD_PART_REFERENCE_RELATIONSHIP } from "../checks/word-part-reference";
@@ -470,7 +470,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const folder = await this.mainDocumentFolder();
         let byName: string | null = null;
         for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === fallbackName && path.posix.dirname(this.entryName(xmlFile)) === folder) byName = xmlFile;
+            if (
+                baseName(xmlFile) === fallbackName &&
+                canonicalPartName(path.posix.dirname(normalizePartName(this.entryName(xmlFile)))) === folder
+            )
+                byName = xmlFile;
         }
         return byName;
     }
@@ -486,17 +490,22 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     private async mainDocumentFolder(): Promise<string> {
         try {
             const [first] = await wordTypedRelationshipTargets(this.context(), new Set(["officeDocument"]), this.profile);
-            if (first !== undefined) return path.posix.dirname(first.part);
+            if (first !== undefined) return canonicalPartName(path.posix.dirname(normalizePartName(first.part)));
         } catch {
             // An unreadable package view is reported by its own checks.
         }
         return "word";
     }
 
-    /** The first of `parts` (stored names) that is one of the XML parts, or `undefined`. */
+    /** The first of `parts` that names an XML part by OPC equivalence, or `undefined`. */
     private xmlFileOf(parts: readonly string[]): string | undefined {
         for (const part of parts) {
-            const file = this.xmlFiles.find((xmlFile) => this.entryName(xmlFile) === part);
+            const file =
+                this.xmlFiles.find((xmlFile) => normalizePartName(this.entryName(xmlFile)) === normalizePartName(part)) ??
+                this.xmlFiles.find(
+                    (xmlFile) =>
+                        canonicalPartName(normalizePartName(this.entryName(xmlFile))) === canonicalPartName(normalizePartName(part)),
+                );
             if (file !== undefined) return file;
         }
         return undefined;
@@ -532,10 +541,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * root (#690). `null` when that folder holds none.
      */
     private sameFolderByName(partPath: string, name: string): string | null {
-        const folder = path.posix.dirname(this.entryName(partPath));
+        const folder = canonicalPartName(path.posix.dirname(normalizePartName(this.entryName(partPath))));
         let byName: string | null = null;
         for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === name && path.posix.dirname(this.entryName(xmlFile)) === folder) byName = xmlFile;
+            if (baseName(xmlFile) === name && canonicalPartName(path.posix.dirname(normalizePartName(this.entryName(xmlFile)))) === folder)
+                byName = xmlFile;
         }
         return byName;
     }
@@ -1739,7 +1749,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 const target = elem.getAttribute("Target");
                 if (!target) continue;
                 if (isExternalRelationship(elem, target)) continue;
-                const resolved = resolveRelationshipTargetPath(this.unpackedDir, xmlFile, target);
+                const resolved = resolveRelationshipTargetPath(this.unpackedDir, path.join(this.unpackedDir, name), target);
                 if (!resolved) {
                     issues.push({
                         severity: "error",
@@ -3083,7 +3093,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 }
             }
             // Canonical part name to its root's canonical name, and to the
-            // stored spelling `xmlFileOf` matches against.
+            // part spelling `xmlFileOf` resolves by OPC equivalence.
             const rootByPart = new Map<string, string>();
             const storedByPart = new Map<string, string>();
             for (const root of roots) {
