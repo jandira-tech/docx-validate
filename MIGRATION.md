@@ -99,7 +99,7 @@ Word-valid and errors in lenient/strict schema processing. `mce-malformed` and
 `mce-must-understand` remain Word-blocking in the `word/` parts Word may read.
 Full Word-valid warns in a part Word does not read: a `word/` part no
 relationship names (#1116), or a header, footer, comments or notes part a story
-root relates but does not use (#1125, #1145). Loss of a required main root in the
+root relates but does not use, counting a comments or notes part only a header or footer references as unused (#1125, #1155). Loss of a required main root in the
 schema view is `mce-main-root-ignored` (error), while an ignored non-main root
 remains `mce-root-ignored` (info). See README for the complete current compatibility
 code table, including both codes' rows, and named Word-rule catalogue.

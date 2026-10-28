@@ -31246,3 +31246,762 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed,", matches, 
 `````
 
 </details>
+
+### Session 85: 16:51Z–17:16Z on 2026-10-28, validator columns at 57e150ae
+
+Three open questions, on the minimal package. Five chunks; s85e was added after s85c's first run.
+
+- **s85a and s85b, [#1145](https://github.com/jandira-tech/docx-validate/issues/1145).** Does Word read a footnotes, endnotes or comments part the main document relates when the part's only reference sits in a used header? Each part's root carries `mc:MustUnderstand="foo"` for an unknown `urn:foo`, which Word refused on the main document's root and in a used header (session 84). Per kind: `-mu-header-reference` has a read header (`word/header1.xml`, referenced by the section) hold the part's only reference; `-mu-body-reference` references the same part from the body; `-header-reference-calibration` is the header-referenced part without the attribute; `-mu-unreferenced` relates the part and references it nowhere. s85b adds a footer holding the attribute, related and unused (`footer-mu-unused`) or referenced by the section (`footer-mu-used`).
+- **s85c and s85e, [#1127](https://github.com/jandira-tech/docx-validate/issues/1127).** Does Word read a part an internal target names through a scheme-like spelling? s85c relates a used header through `Target="ftp:header1.xml"` or `"httpfoo:header1.xml"`, stored as `word/ftp:header1.xml` or `word/httpfoo:header1.xml`, and the styles part through `ftp:styles.xml`, each with an unclosed root and `-wellformed`; the plain-name twins of the unclosed header and styles part are calibrations. s85e separates the stored name from the target: `colon-part-unrelated` stores a well-formed `word/ftp:header1.xml`, typed header and named by no relationship, and `colon-part-default-type` the same part with no Override; `ftp-target-plain-part` and `httpfoo-target-plain-part` relate a used header through the scheme-like target while the part is stored as plain `word/header1.xml`; `header-dotslash-ftp-wellformed` uses the stored `word/ftp:header1.xml` through `Target="./ftp:header1.xml"`, which names it without a scheme.
+- **s85d, [#1136](https://github.com/jandira-tech/docx-validate/issues/1136).** Does an unclosed relationships part Word never reads matter? Session 84's `mu-stray-foo` plus an unclosed `word/_rels/stray.xml.rels` with no source part, or plus a stray `word/x.xml` with an unclosed `word/_rels/x.xml.rels`; each broken sidecar alone; and `mu-stray-foo` again.
+
+Each chunk ends with a minimal control. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 37 of 37 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc`). The strict column names the markup-compatibility, XML-syntax and relationship findings, and counts the others.
+
+Every calibration Word was meant to open, and every control, opened clean. Every row Word opened renders the main document's `Hello` in both runs (`pdftotext`), after the header's `Header 85` where the section references a header, and never a note's or comment's `Text 85`. No refused row left a PDF.
+
+- **Word does not read a notes or comments part whose only reference is in a header.** It opened clean all three `-mu-header-reference` rows, and offered to recover unreadable content for the same parts referenced from the body. It opened clean the related, unreferenced part of each kind and the unused footer, and refused the used footer.
+- **Word refuses a stored part name holding a colon, read or not.** It offered recovery for `word/ftp:header1.xml` named by no relationship, with or without its Override, and for every scheme-like s85c row, well-formed or not. The unclosed plain-name header drew an open error and the unclosed plain styles part a recovery offer.
+- **It refuses a used header whose target spells a scheme, too.** With the part stored as plain `word/header1.xml` and no colon in any stored name, `Target="ftp:header1.xml"` and `"httpfoo:header1.xml"` drew the recovery offer. These rows do not show whether Word reads the target as a missing part or refuses the spelling.
+- **A broken relationships part Word never reads does not matter.** It opened clean every s85d row, `mu-stray-foo` beside either broken sidecar included.
+
+Word-valid at 57e150ae matches Word on 21 of 37 rows. It rejects the three header-only rows Word opened clean ([#1145](https://github.com/jandira-tech/docx-validate/issues/1145)'s conservative half, narrowed back by [#1155](https://github.com/jandira-tech/docx-validate/issues/1155)) and the two `mu-stray-foo` rows beside a broken sidecar ([#1136](https://github.com/jandira-tech/docx-validate/issues/1136)). It passes the eleven scheme-like and colon rows Word refused.
+
+| Run    | Observed             | Specimen                                 | Shape                                                                                                                    | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at 57e150ae                            | strict at 57e150ae                                                                                                                                                                              |
+| ------ | -------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------ | -------------- | -------------- | -------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `s85a` | 16:51:31Z, 16:52:20Z | `footnotes-mu-header-reference`          | #1145: word/footnotes.xml related by the main document, root MustUnderstand urn:foo, its only reference in a read header | `67420c3fd6920f0b` | clean-open     | clean-open     | clean-open                 | invalid: `mce-must-understand@word/footnotes.xml` | invalid: `mce-must-understand@word/footnotes.xml`, 2 other findings                                                                                                                             |
+| `s85a` | 16:51:31Z, 16:52:20Z | `footnotes-mu-body-reference`            | #1145 calibration: the same part referenced from the body                                                                | `11dfe31d37f8a6d4` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-must-understand@word/footnotes.xml` | invalid: `mce-must-understand@word/footnotes.xml`, 1 other finding                                                                                                                              |
+| `s85a` | 16:51:31Z, 16:52:20Z | `footnotes-header-reference-calibration` | calibration: the header-referenced part without MustUnderstand                                                           | `5ae261d3ccfb786f` | clean-open     | clean-open     | clean-open                 | valid                                             | invalid: 2 other findings                                                                                                                                                                       |
+| `s85a` | 16:51:31Z, 16:52:20Z | `footnotes-mu-unreferenced`              | #1146: the MustUnderstand part related by the main document, referenced by nothing                                       | `78c8433199f153c3` | clean-open     | clean-open     | clean-open                 | valid                                             | invalid: `mce-must-understand@word/footnotes.xml`, 1 other finding                                                                                                                              |
+| `s85a` | 16:51:31Z, 16:52:20Z | `endnotes-mu-header-reference`           | #1145: word/endnotes.xml related by the main document, root MustUnderstand urn:foo, its only reference in a read header  | `2a8ad97eb4770feb` | clean-open     | clean-open     | clean-open                 | invalid: `mce-must-understand@word/endnotes.xml`  | invalid: `mce-must-understand@word/endnotes.xml`, 2 other findings                                                                                                                              |
+| `s85a` | 16:51:31Z, 16:52:20Z | `endnotes-mu-body-reference`             | #1145 calibration: the same part referenced from the body                                                                | `fac2296887824d3d` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-must-understand@word/endnotes.xml`  | invalid: `mce-must-understand@word/endnotes.xml`, 1 other finding                                                                                                                               |
+| `s85a` | 16:51:31Z, 16:52:20Z | `endnotes-header-reference-calibration`  | calibration: the header-referenced part without MustUnderstand                                                           | `323f6068ad224f71` | clean-open     | clean-open     | clean-open                 | valid                                             | invalid: 2 other findings                                                                                                                                                                       |
+| `s85a` | 16:51:31Z, 16:52:20Z | `endnotes-mu-unreferenced`               | #1146: the MustUnderstand part related by the main document, referenced by nothing                                       | `77f933ee603b2ebd` | clean-open     | clean-open     | clean-open                 | valid                                             | invalid: `mce-must-understand@word/endnotes.xml`, 1 other finding                                                                                                                               |
+| `s85a` | 16:51:31Z, 16:52:20Z | `s85a-control-minimal`                   | control                                                                                                                  | `61bfad1e57ed38b4` | clean-open     | clean-open     | clean-open                 | valid                                             | valid                                                                                                                                                                                           |
+| `s85b` | 16:52:59Z, 16:53:39Z | `comments-mu-header-reference`           | #1145: word/comments.xml related by the main document, root MustUnderstand urn:foo, its only reference in a read header  | `30e2e39ba5012b9f` | clean-open     | clean-open     | clean-open                 | invalid: `mce-must-understand@word/comments.xml`  | invalid: `mce-must-understand@word/comments.xml`, 3 other findings                                                                                                                              |
+| `s85b` | 16:52:59Z, 16:53:39Z | `comments-mu-body-reference`             | #1145 calibration: the same part referenced from the body                                                                | `4962384abe66827b` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-must-understand@word/comments.xml`  | invalid: `mce-must-understand@word/comments.xml`, 2 other findings                                                                                                                              |
+| `s85b` | 16:52:59Z, 16:53:39Z | `comments-header-reference-calibration`  | calibration: the header-referenced part without MustUnderstand                                                           | `8f0a9bc031dd949a` | clean-open     | clean-open     | clean-open                 | valid                                             | invalid: 3 other findings                                                                                                                                                                       |
+| `s85b` | 16:52:59Z, 16:53:39Z | `comments-mu-unreferenced`               | #1146: the MustUnderstand part related by the main document, referenced by nothing                                       | `c80dd21027417896` | clean-open     | clean-open     | clean-open                 | valid                                             | invalid: `mce-must-understand@word/comments.xml`, 2 other findings                                                                                                                              |
+| `s85b` | 16:52:59Z, 16:53:39Z | `footer-mu-unused`                       | #1146: word/footer1.xml related by the main document, referenced by nothing, root MustUnderstand urn:foo                 | `5779f234c076f6be` | clean-open     | clean-open     | clean-open                 | valid                                             | invalid: `mce-must-understand@word/footer1.xml`, 1 other finding                                                                                                                                |
+| `s85b` | 16:52:59Z, 16:53:39Z | `footer-mu-used`                         | calibration: the same footer referenced by the section                                                                   | `9038370cc28717ca` | repair-warning | repair-warning | unreadable-content-warning | invalid: `mce-must-understand@word/footer1.xml`   | invalid: `mce-must-understand@word/footer1.xml`, 1 other finding                                                                                                                                |
+| `s85b` | 16:52:59Z, 16:53:39Z | `s85b-control-minimal`                   | control                                                                                                                  | `eee41e1d0a860fea` | clean-open     | clean-open     | clean-open                 | valid                                             | valid                                                                                                                                                                                           |
+| `s85c` | 17:04:35Z, 17:09:42Z | `header-ftp-unclosed`                    | #1127: a used header related by Target="ftp:header1.xml", stored as word/ftp:header1.xml with an unclosed root           | `c9fa87ee2373619c` | repair-warning | repair-warning | unreadable-content-warning | valid                                             | invalid: `xml-syntax@word/ftp:header1.xml`                                                                                                                                                      |
+| `s85c` | 17:04:35Z, 17:09:42Z | `header-ftp-wellformed`                  | #1127 twin: the same header closed                                                                                       | `86258800626d31e5` | repair-warning | repair-warning | unreadable-content-warning | valid                                             | valid                                                                                                                                                                                           |
+| `s85c` | 17:04:35Z, 17:09:42Z | `header-httpfoo-unclosed`                | #1127: a used header related by Target="httpfoo:header1.xml", stored as word/httpfoo:header1.xml with an unclosed root   | `f31c7e7953d45ffd` | repair-warning | repair-warning | unreadable-content-warning | valid                                             | invalid: `xml-syntax@word/httpfoo:header1.xml`                                                                                                                                                  |
+| `s85c` | 17:04:35Z, 17:09:42Z | `header-httpfoo-wellformed`              | #1127 twin: the same header closed                                                                                       | `6438740efba2aae1` | repair-warning | repair-warning | unreadable-content-warning | valid                                             | valid                                                                                                                                                                                           |
+| `s85c` | 17:04:35Z, 17:09:42Z | `styles-ftp-unclosed`                    | #1127: the styles relationship's Target "ftp:styles.xml", the part stored as word/ftp:styles.xml with an unclosed root   | `1310e3f1f6609c8a` | repair-warning | repair-warning | unreadable-content-warning | valid                                             | invalid: `xml-syntax@word/ftp:styles.xml`                                                                                                                                                       |
+| `s85c` | 17:04:35Z, 17:09:42Z | `styles-ftp-wellformed`                  | #1127 twin: the same styles part closed                                                                                  | `22bed2cfba597270` | repair-warning | repair-warning | unreadable-content-warning | valid                                             | valid                                                                                                                                                                                           |
+| `s85c` | 17:04:35Z, 17:09:42Z | `header-plain-unclosed`                  | calibration: the unclosed used header related by Target="header1.xml"                                                    | `a07069879e12d974` | open-error     | open-error     | open-error                 | invalid: `xml-syntax@word/header1.xml`            | invalid: `xml-syntax@word/header1.xml`                                                                                                                                                          |
+| `s85c` | 17:04:35Z, 17:09:42Z | `styles-plain-unclosed`                  | calibration: the minimal word/styles.xml with an unclosed root                                                           | `e10ed7cadf5e08ea` | repair-warning | repair-warning | unreadable-content-warning | invalid: `xml-syntax@word/styles.xml`             | invalid: `xml-syntax@word/styles.xml`                                                                                                                                                           |
+| `s85c` | 17:04:35Z, 17:09:42Z | `s85c-control-minimal`                   | control                                                                                                                  | `eee41e1d0a860fea` | clean-open     | clean-open     | clean-open                 | valid                                             | valid                                                                                                                                                                                           |
+| `s85d` | 17:05:26Z, 17:05:47Z | `mu-stray-foo-broken-stray-sidecar`      | #1136: s84a's mu-stray-foo plus an unclosed word/_rels/stray.xml.rels with no word/stray.xml                             | `5b3c2e719db53050` | clean-open     | clean-open     | clean-open                 | invalid: `mce-must-understand@word/foo.xml`       | invalid: `xml-syntax@word/_rels/stray.xml.rels`, `rels-unreferenced@word/foo.xml`, `mce-must-understand@word/foo.xml`, 1 other finding                                                          |
+| `s85d` | 17:05:26Z, 17:05:47Z | `mu-stray-foo-broken-x-sidecar`          | #1136: s84a's mu-stray-foo plus word/x.xml (no Override, no relationship) and an unclosed word/_rels/x.xml.rels          | `374a7063dafd63b2` | clean-open     | clean-open     | clean-open                 | invalid: `mce-must-understand@word/foo.xml`       | invalid: `xml-syntax@word/_rels/x.xml.rels`, `rels-unreferenced@word/foo.xml`, `rels-unreferenced@word/x.xml`, `rels-id-parse@word/x.xml`, `mce-must-understand@word/foo.xml`, 2 other findings |
+| `s85d` | 17:05:26Z, 17:05:47Z | `mu-stray-foo`                           | #1136 calibration: s84a's mu-stray-foo repeated                                                                          | `6fb510129c390be0` | clean-open     | clean-open     | clean-open                 | valid                                             | invalid: `rels-unreferenced@word/foo.xml`, `mce-must-understand@word/foo.xml`, 1 other finding                                                                                                  |
+| `s85d` | 17:05:26Z, 17:05:47Z | `broken-stray-sidecar-only`              | #1136 calibration: the unclosed word/_rels/stray.xml.rels alone                                                          | `3d67e43eb61f87cb` | clean-open     | clean-open     | clean-open                 | valid                                             | invalid: `xml-syntax@word/_rels/stray.xml.rels`                                                                                                                                                 |
+| `s85d` | 17:05:26Z, 17:05:47Z | `broken-x-sidecar-only`                  | #1136 calibration: word/x.xml with its unclosed sidecar alone                                                            | `82ece1e6cdd01451` | clean-open     | clean-open     | clean-open                 | valid                                             | invalid: `xml-syntax@word/_rels/x.xml.rels`, `rels-unreferenced@word/x.xml`, `rels-id-parse@word/x.xml`, 1 other finding                                                                        |
+| `s85d` | 17:05:26Z, 17:05:47Z | `s85d-control-minimal`                   | control                                                                                                                  | `5fcd2e7b39cc4da9` | clean-open     | clean-open     | clean-open                 | valid                                             | valid                                                                                                                                                                                           |
+| `s85e` | 17:12:25Z, 17:16:09Z | `colon-part-unrelated`                   | #1127 follow-up: minimal plus a well-formed word/ftp:header1.xml, typed header, named by no relationship                 | `50b91dc4c90153e7` | repair-warning | repair-warning | unreadable-content-warning | valid                                             | invalid: `rels-unreferenced@word/ftp:header1.xml`                                                                                                                                               |
+| `s85e` | 17:12:25Z, 17:16:09Z | `colon-part-default-type`                | #1127 follow-up: the same part with no Override                                                                          | `ba2ec5f0a4396f6f` | repair-warning | repair-warning | unreadable-content-warning | valid                                             | invalid: `rels-unreferenced@word/ftp:header1.xml`                                                                                                                                               |
+| `s85e` | 17:12:25Z, 17:16:09Z | `ftp-target-plain-part`                  | #1127 follow-up: a used header related by Target="ftp:header1.xml", stored as word/header1.xml                           | `411a7868d38f110d` | repair-warning | repair-warning | unreadable-content-warning | valid                                             | invalid: `rels-broken@word/_rels/document.xml.rels`, `rels-unreferenced@word/header1.xml`, 1 other finding                                                                                      |
+| `s85e` | 17:12:25Z, 17:16:09Z | `httpfoo-target-plain-part`              | #1127 follow-up: a used header related by Target="httpfoo:header1.xml", stored as word/header1.xml                       | `5c9885613d76b61f` | repair-warning | repair-warning | unreadable-content-warning | valid                                             | invalid: `rels-broken@word/_rels/document.xml.rels`, `rels-unreferenced@word/header1.xml`, 1 other finding                                                                                      |
+| `s85e` | 17:12:25Z, 17:16:09Z | `header-dotslash-ftp-wellformed`         | #1127 follow-up: the well-formed word/ftp:header1.xml used through Target="./ftp:header1.xml"                            | `f201015f873e39db` | repair-warning | repair-warning | unreadable-content-warning | valid                                             | valid                                                                                                                                                                                           |
+| `s85e` | 17:12:25Z, 17:16:09Z | `s85e-control-minimal`                   | control                                                                                                                  | `db2bec53e98f4253` | clean-open     | clean-open     | clean-open                 | valid                                             | valid                                                                                                                                                                                           |
+
+<details><summary>Raw records, session 85</summary>
+
+```jsonl
+{"run": "s85a", "pass": 1, "name": "footnotes-mu-header-reference", "sha256": "67420c3fd6920f0bac68cdc95b4db737dc753e5212b808160c5bc264952083f8", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:51:31+00:00", "staged": "00006__wfv__footnotes-mu-header-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-mu-header-reference_byword.pdf (16228 bytes), no dialog named the file"]}
+{"run": "s85a", "pass": 2, "name": "footnotes-mu-header-reference", "sha256": "67420c3fd6920f0bac68cdc95b4db737dc753e5212b808160c5bc264952083f8", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:52:20+00:00", "staged": "00006__wfv__footnotes-mu-header-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-mu-header-reference_byword.pdf (16228 bytes), no dialog named the file"]}
+{"run": "s85a", "pass": 1, "name": "footnotes-mu-body-reference", "sha256": "11dfe31d37f8a6d47a4aef00f8f8a77d08983ad3051408714f4219a810a5ab61", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:51:31+00:00", "staged": "00005__wfv__footnotes-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 12:51:26.781 'Word found unreadable content in 00005__wfv__footnotes-mu-body-reference.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-28 12:51:27.564 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__footnotes-mu-body-referen...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s85a", "pass": 2, "name": "footnotes-mu-body-reference", "sha256": "11dfe31d37f8a6d47a4aef00f8f8a77d08983ad3051408714f4219a810a5ab61", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:52:20+00:00", "staged": "00005__wfv__footnotes-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 12:52:18.121 'Word found unreadable content in 00005__wfv__footnotes-mu-body-reference.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'"], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00005__wfv__footnotes-mu-body-reference.docx; refusing to guess"}
+{"run": "s85a", "pass": 1, "name": "footnotes-header-reference-calibration", "sha256": "5ae261d3ccfb786f8046c90a2271628531c5d9db208ae7e1eda33efccd50e979", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:51:31+00:00", "staged": "00004__wfv__footnotes-header-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-header-reference-calibration_byword.pdf (16228 bytes), no dialog named the file"]}
+{"run": "s85a", "pass": 2, "name": "footnotes-header-reference-calibration", "sha256": "5ae261d3ccfb786f8046c90a2271628531c5d9db208ae7e1eda33efccd50e979", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:52:20+00:00", "staged": "00004__wfv__footnotes-header-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-header-reference-calibration_byword.pdf (16228 bytes), no dialog named the file"]}
+{"run": "s85a", "pass": 1, "name": "footnotes-mu-unreferenced", "sha256": "78c8433199f153c3dec698cc3acfbf67b7869df00d4cf9400b6a0bb6570e47bf", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:51:31+00:00", "staged": "00007__wfv__footnotes-mu-unreferenced.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-mu-unreferenced_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85a", "pass": 2, "name": "footnotes-mu-unreferenced", "sha256": "78c8433199f153c3dec698cc3acfbf67b7869df00d4cf9400b6a0bb6570e47bf", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:52:20+00:00", "staged": "00007__wfv__footnotes-mu-unreferenced.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-mu-unreferenced_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85a", "pass": 1, "name": "endnotes-mu-header-reference", "sha256": "2a8ad97eb4770feb96764a12c5c74f0d338900dba7aa265096d2df2171d7c9a5", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:51:31+00:00", "staged": "00002__wfv__endnotes-mu-header-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-mu-header-reference_byword.pdf (16228 bytes), no dialog named the file"]}
+{"run": "s85a", "pass": 2, "name": "endnotes-mu-header-reference", "sha256": "2a8ad97eb4770feb96764a12c5c74f0d338900dba7aa265096d2df2171d7c9a5", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:52:20+00:00", "staged": "00002__wfv__endnotes-mu-header-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-mu-header-reference_byword.pdf (16228 bytes), no dialog named the file"]}
+{"run": "s85a", "pass": 1, "name": "endnotes-mu-body-reference", "sha256": "fac2296887824d3def5b119b00d55e915ba273f07ea716a8697f77e173733e7f", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:51:31+00:00", "staged": "00001__wfv__endnotes-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 12:50:22.703 \"Word found unreadable content in 00001__wfv__endnotes-mu-body-reference.docx. Do you want to recove … ? If you trust the source of this document, click Yes.\"", "2026-10-28 12:50:22.704 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__endnotes-mu-body-referenc...)\""], "error": "Microsoft Word got an error: AppleEvent timed out."}
+{"run": "s85a", "pass": 2, "name": "endnotes-mu-body-reference", "sha256": "fac2296887824d3def5b119b00d55e915ba273f07ea716a8697f77e173733e7f", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:52:20+00:00", "staged": "00001__wfv__endnotes-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 12:51:57.279 'Word found unreadable content in 00001__wfv__endnotes-mu-body-reference.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-28 12:51:58.157 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__endnotes-mu-body-referenc...)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__endnotes-mu-body-reference.docx; refusing to guess"}
+{"run": "s85a", "pass": 1, "name": "endnotes-header-reference-calibration", "sha256": "323f6068ad224f71e2d5d5396e4c2c88a39cc18a32ef8c8b260d294476436f52", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:51:31+00:00", "staged": "00000__wfv__endnotes-header-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-header-reference-calibration_byword.pdf (16228 bytes), no dialog named the file"]}
+{"run": "s85a", "pass": 2, "name": "endnotes-header-reference-calibration", "sha256": "323f6068ad224f71e2d5d5396e4c2c88a39cc18a32ef8c8b260d294476436f52", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:52:20+00:00", "staged": "00000__wfv__endnotes-header-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-header-reference-calibration_byword.pdf (16228 bytes), no dialog named the file"]}
+{"run": "s85a", "pass": 1, "name": "endnotes-mu-unreferenced", "sha256": "77f933ee603b2ebd78f91a95e1943137b824820792314dd029d607f28c2519b0", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:51:31+00:00", "staged": "00003__wfv__endnotes-mu-unreferenced.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-mu-unreferenced_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85a", "pass": 2, "name": "endnotes-mu-unreferenced", "sha256": "77f933ee603b2ebd78f91a95e1943137b824820792314dd029d607f28c2519b0", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:52:20+00:00", "staged": "00003__wfv__endnotes-mu-unreferenced.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-mu-unreferenced_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85a", "pass": 1, "name": "s85a-control-minimal", "sha256": "61bfad1e57ed38b44a133dda758c1d48f0d33fa6093ba7f1cc2aaab8aed5f38a", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:51:31+00:00", "staged": "00008__wfv__s85a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s85a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85a", "pass": 2, "name": "s85a-control-minimal", "sha256": "61bfad1e57ed38b44a133dda758c1d48f0d33fa6093ba7f1cc2aaab8aed5f38a", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:52:20+00:00", "staged": "00008__wfv__s85a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s85a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85b", "pass": 1, "name": "comments-mu-header-reference", "sha256": "30e2e39ba5012b9f6683404195a89d5aafc0dbe3f08451ad6e859c8fa56bfc5c", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:52:59+00:00", "staged": "00002__wfv__comments-mu-header-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-mu-header-reference_byword.pdf (16228 bytes), no dialog named the file"]}
+{"run": "s85b", "pass": 2, "name": "comments-mu-header-reference", "sha256": "30e2e39ba5012b9f6683404195a89d5aafc0dbe3f08451ad6e859c8fa56bfc5c", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:53:39+00:00", "staged": "00002__wfv__comments-mu-header-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-mu-header-reference_byword.pdf (16228 bytes), no dialog named the file"]}
+{"run": "s85b", "pass": 1, "name": "comments-mu-body-reference", "sha256": "4962384abe66827b849678aac515d5df1a7c0589273e034579c43cf22fb3c5f1", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:52:59+00:00", "staged": "00001__wfv__comments-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 12:52:41.398 'Word found unreadable content in 00001__wfv__comments-mu-body-reference.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-28 12:52:42.243 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__comments-mu-body-referenc...)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__comments-mu-body-reference.docx; refusing to guess"}
+{"run": "s85b", "pass": 2, "name": "comments-mu-body-reference", "sha256": "4962384abe66827b849678aac515d5df1a7c0589273e034579c43cf22fb3c5f1", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:53:39+00:00", "staged": "00001__wfv__comments-mu-body-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 12:53:19.538 'Word found unreadable content in 00001__wfv__comments-mu-body-reference.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-28 12:53:20.375 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__comments-mu-body-referenc...)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__comments-mu-body-reference.docx; refusing to guess"}
+{"run": "s85b", "pass": 1, "name": "comments-header-reference-calibration", "sha256": "8f0a9bc031dd949aeced5b1f4a4a17c3e8c026e9ba7ffb5efefeb3a177f8b769", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:52:59+00:00", "staged": "00000__wfv__comments-header-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-header-reference-calibration_byword.pdf (16228 bytes), no dialog named the file"]}
+{"run": "s85b", "pass": 2, "name": "comments-header-reference-calibration", "sha256": "8f0a9bc031dd949aeced5b1f4a4a17c3e8c026e9ba7ffb5efefeb3a177f8b769", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:53:39+00:00", "staged": "00000__wfv__comments-header-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-header-reference-calibration_byword.pdf (16228 bytes), no dialog named the file"]}
+{"run": "s85b", "pass": 1, "name": "comments-mu-unreferenced", "sha256": "c80dd210274178968185c424304806f465d67206b13c51cc49b4c5e73290975b", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:52:59+00:00", "staged": "00003__wfv__comments-mu-unreferenced.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-mu-unreferenced_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85b", "pass": 2, "name": "comments-mu-unreferenced", "sha256": "c80dd210274178968185c424304806f465d67206b13c51cc49b4c5e73290975b", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:53:39+00:00", "staged": "00003__wfv__comments-mu-unreferenced.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-mu-unreferenced_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85b", "pass": 1, "name": "footer-mu-unused", "sha256": "5779f234c076f6be678b6f4685ed1c90fbf9583590c31b4a1a8f71369e40b991", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:52:59+00:00", "staged": "00004__wfv__footer-mu-unused.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footer-mu-unused_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85b", "pass": 2, "name": "footer-mu-unused", "sha256": "5779f234c076f6be678b6f4685ed1c90fbf9583590c31b4a1a8f71369e40b991", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:53:39+00:00", "staged": "00004__wfv__footer-mu-unused.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footer-mu-unused_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85b", "pass": 1, "name": "footer-mu-used", "sha256": "9038370cc28717cac08a5810578866d8f578de4509270b8b6f9ec89fae32a69f", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:52:59+00:00", "staged": "00005__wfv__footer-mu-used.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 12:52:59.270 \"Word found unreadable content in 00005__wfv__footer-mu-used.docx. Do you want to recover the conten … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00005__wfv__footer-mu-used.docx; refusing to guess"}
+{"run": "s85b", "pass": 2, "name": "footer-mu-used", "sha256": "9038370cc28717cac08a5810578866d8f578de4509270b8b6f9ec89fae32a69f", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:53:39+00:00", "staged": "00005__wfv__footer-mu-used.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 12:53:38.737 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … Recovery converter.\\n(00005__wfv__footer-mu-used.docx)'", "2026-10-28 12:53:38.976 \"Word found unreadable content in 00005__wfv__footer-mu-used.docx. Do you want to recover the conten … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00005__wfv__footer-mu-used.docx; refusing to guess"}
+{"run": "s85b", "pass": 1, "name": "s85b-control-minimal", "sha256": "eee41e1d0a860fead6fe60b68ab01d8e4e5b5ed122538eaf697d20c93fee2a2c", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:52:59+00:00", "staged": "00006__wfv__s85b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s85b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85b", "pass": 2, "name": "s85b-control-minimal", "sha256": "eee41e1d0a860fead6fe60b68ab01d8e4e5b5ed122538eaf697d20c93fee2a2c", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T16:53:39+00:00", "staged": "00006__wfv__s85b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s85b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85c", "pass": 1, "name": "header-ftp-unclosed", "sha256": "c9fa87ee2373619c753a34dd32c039eac7268532d891c295c1a046f247627af3", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:04:35+00:00", "staged": "00000__wfv__header-ftp-unclosed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 12:54:00.098 'Word found unreadable content in 00000__wfv__header-ftp-unclosed.docx. Do you want to recover the c … ? If you trust the source of this document, click Yes.'", "2026-10-28 12:54:00.887 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … very converter. (00000__wfv__header-ftp-unclosed.docx)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__header-ftp-unclosed.docx; refusing to guess"}
+{"run": "s85c", "pass": 2, "name": "header-ftp-unclosed", "sha256": "c9fa87ee2373619c753a34dd32c039eac7268532d891c295c1a046f247627af3", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:09:42+00:00", "staged": "00000__wfv__header-ftp-unclosed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:06:40.829 'Word found unreadable content in 00000__wfv__header-ftp-unclosed.docx. Do you want to recover the c … ? If you trust the source of this document, click Yes.'", "2026-10-28 13:06:47.362 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … very converter. (00000__wfv__header-ftp-unclosed.docx)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__header-ftp-unclosed.docx; refusing to guess"}
+{"run": "s85c", "pass": 1, "name": "header-ftp-wellformed", "sha256": "86258800626d31e56a22454d59f23696e160c086df9dea137930ac6a38ca6c92", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:04:35+00:00", "staged": "00001__wfv__header-ftp-wellformed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 12:54:53.551 Microsoft Word, Word found unreadable content in 00001__wfv__header-ftp-wellformed.docx. Do you want … t? If you trust the source of this document, click Yes.", "2026-10-28 12:55:00.056 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00001__wfv__header-ftp-wellformed.docx)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__header-ftp-wellformed.docx; refusing to guess"}
+{"run": "s85c", "pass": 2, "name": "header-ftp-wellformed", "sha256": "86258800626d31e56a22454d59f23696e160c086df9dea137930ac6a38ca6c92", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:09:42+00:00", "staged": "00001__wfv__header-ftp-wellformed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:07:44.087 Microsoft Word, Word found unreadable content in 00001__wfv__header-ftp-wellformed.docx. Do you want … t? If you trust the source of this document, click Yes."], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__header-ftp-wellformed.docx; refusing to guess"}
+{"run": "s85c", "pass": 1, "name": "header-httpfoo-unclosed", "sha256": "f31c7e7953d45ffd28be3a0a4dc3570cbe3fb3a379a283b4b5a0829a8eed7a37", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:04:35+00:00", "staged": "00002__wfv__header-httpfoo-unclosed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 12:55:55.276 Microsoft Word, Word found unreadable content in 00002__wfv__header-httpfoo-unclosed.docx. Do you wa … t? If you trust the source of this document, click Yes.", "2026-10-28 12:56:11.061 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__header-httpfoo-unclosed.docx)\""], "error": "Microsoft Word got an error: AppleEvent timed out."}
+{"run": "s85c", "pass": 2, "name": "header-httpfoo-unclosed", "sha256": "f31c7e7953d45ffd28be3a0a4dc3570cbe3fb3a379a283b4b5a0829a8eed7a37", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:09:42+00:00", "staged": "00002__wfv__header-httpfoo-unclosed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:08:36.267 Microsoft Word, Word found unreadable content in 00002__wfv__header-httpfoo-unclosed.docx. Do you wa … t? If you trust the source of this document, click Yes."], "error": "repair prompt declined; Word could not read it"}
+{"run": "s85c", "pass": 1, "name": "header-httpfoo-wellformed", "sha256": "6438740efba2aae10eed004b3bea1f97d48eaceae1c34df5f446e5f8fadc0796", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:04:35+00:00", "staged": "00003__wfv__header-httpfoo-wellformed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 12:56:23.948 'Word found unreadable content in 00003__wfv__header-httpfoo-wellformed.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-28 12:56:32.925 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__header-httpfoo-wellformed...)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00003__wfv__header-httpfoo-wellformed.docx; refusing to guess"}
+{"run": "s85c", "pass": 2, "name": "header-httpfoo-wellformed", "sha256": "6438740efba2aae10eed004b3bea1f97d48eaceae1c34df5f446e5f8fadc0796", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:09:42+00:00", "staged": "00003__wfv__header-httpfoo-wellformed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:08:41.174 'Word found unreadable content in 00003__wfv__header-httpfoo-wellformed.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-28 13:08:47.630 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__header-httpfoo-wellformed...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s85c", "pass": 1, "name": "styles-ftp-unclosed", "sha256": "1310e3f1f6609c8a36f6b281c06ef5a2ee9374505bd7d2791c7db8d49a0b31ef", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:04:35+00:00", "staged": "00006__wfv__styles-ftp-unclosed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 12:58:19.874 \"Word found unreadable content in 00006__wfv__styles-ftp-unclosed.docx. Do you want to recover the c … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00006__wfv__styles-ftp-unclosed.docx; refusing to guess"}
+{"run": "s85c", "pass": 2, "name": "styles-ftp-unclosed", "sha256": "1310e3f1f6609c8a36f6b281c06ef5a2ee9374505bd7d2791c7db8d49a0b31ef", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:09:42+00:00", "staged": "00006__wfv__styles-ftp-unclosed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:09:00.635 'Word found unreadable content in 00006__wfv__styles-ftp-unclosed.docx. Do you want to recover the c … ? If you trust the source of this document, click Yes.'", "2026-10-28 13:09:06.646 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … very converter. (00006__wfv__styles-ftp-unclosed.docx)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s85c", "pass": 1, "name": "styles-ftp-wellformed", "sha256": "22bed2cfba5972701792cf26fe3b8db92404dbc71c2a49372345bf60b043343f", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:04:35+00:00", "staged": "00007__wfv__styles-ftp-wellformed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 12:59:14.009 \"Word found unreadable content in 00007__wfv__styles-ftp-wellformed.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s85c", "pass": 2, "name": "styles-ftp-wellformed", "sha256": "22bed2cfba5972701792cf26fe3b8db92404dbc71c2a49372345bf60b043343f", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:09:42+00:00", "staged": "00007__wfv__styles-ftp-wellformed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:09:11.931 'Word found unreadable content in 00007__wfv__styles-ftp-wellformed.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.'", "2026-10-28 13:09:18.915 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00007__wfv__styles-ftp-wellformed.docx)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s85c", "pass": 1, "name": "header-plain-unclosed", "sha256": "a07069879e12d974341fad520a55ac9e29df710dc99ec1022db05cd30a38fa93", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:04:35+00:00", "staged": "00004__wfv__header-plain-unclosed.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-28 12:57:25.355 Microsoft Word, Word experienced an error trying to open the file. Try these suggestions. * Check th … ery converter. (00004__wfv__header-plain-unclosed.docx)"], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00004__wfv__header-plain-unclosed.docx; refusing to guess"}
+{"run": "s85c", "pass": 2, "name": "header-plain-unclosed", "sha256": "a07069879e12d974341fad520a55ac9e29df710dc99ec1022db05cd30a38fa93", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:09:42+00:00", "staged": "00004__wfv__header-plain-unclosed.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-28 13:08:54.641 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … y converter.\\n(00004__wfv__header-plain-unclosed.docx)'"], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00004__wfv__header-plain-unclosed.docx; refusing to guess"}
+{"run": "s85c", "pass": 1, "name": "styles-plain-unclosed", "sha256": "e10ed7cadf5e08ea4d4cecd6c520abaca939db346d82b3af3a40dae7ab5f7f4d", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:04:35+00:00", "staged": "00008__wfv__styles-plain-unclosed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 12:59:21.062 'Word found unreadable content in 00008__wfv__styles-plain-unclosed.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.'", "2026-10-28 12:59:31.084 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00008__wfv__styles-plain-unclosed.docx)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00008__wfv__styles-plain-unclosed.docx; refusing to guess"}
+{"run": "s85c", "pass": 2, "name": "styles-plain-unclosed", "sha256": "e10ed7cadf5e08ea4d4cecd6c520abaca939db346d82b3af3a40dae7ab5f7f4d", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:09:42+00:00", "staged": "00008__wfv__styles-plain-unclosed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:09:24.152 'Word found unreadable content in 00008__wfv__styles-plain-unclosed.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.'", "2026-10-28 13:09:30.013 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00008__wfv__styles-plain-unclosed.docx)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s85c", "pass": 1, "name": "s85c-control-minimal", "sha256": "eee41e1d0a860fead6fe60b68ab01d8e4e5b5ed122538eaf697d20c93fee2a2c", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:04:35+00:00", "staged": "00005__wfv__s85c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s85c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85c", "pass": 2, "name": "s85c-control-minimal", "sha256": "eee41e1d0a860fead6fe60b68ab01d8e4e5b5ed122538eaf697d20c93fee2a2c", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:09:42+00:00", "staged": "00005__wfv__s85c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s85c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85d", "pass": 1, "name": "mu-stray-foo-broken-stray-sidecar", "sha256": "5b3c2e719db530506c4a4405adf9ac439c701adfc0d8101141d1344d54124559", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:05:26+00:00", "staged": "00002__wfv__mu-stray-foo-broken-stray-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-stray-foo-broken-stray-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85d", "pass": 2, "name": "mu-stray-foo-broken-stray-sidecar", "sha256": "5b3c2e719db530506c4a4405adf9ac439c701adfc0d8101141d1344d54124559", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:05:47+00:00", "staged": "00002__wfv__mu-stray-foo-broken-stray-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-stray-foo-broken-stray-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85d", "pass": 1, "name": "mu-stray-foo-broken-x-sidecar", "sha256": "374a7063dafd63b20e624d7e71f622cecdd0a321f75f24935dddc76ce28d8c4d", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:05:26+00:00", "staged": "00003__wfv__mu-stray-foo-broken-x-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-stray-foo-broken-x-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85d", "pass": 2, "name": "mu-stray-foo-broken-x-sidecar", "sha256": "374a7063dafd63b20e624d7e71f622cecdd0a321f75f24935dddc76ce28d8c4d", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:05:47+00:00", "staged": "00003__wfv__mu-stray-foo-broken-x-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-stray-foo-broken-x-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85d", "pass": 1, "name": "mu-stray-foo", "sha256": "6fb510129c390be05e51597507d85f09a8561d7e090af6ce3960fc8a667682bf", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:05:26+00:00", "staged": "00004__wfv__mu-stray-foo.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-stray-foo_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85d", "pass": 2, "name": "mu-stray-foo", "sha256": "6fb510129c390be05e51597507d85f09a8561d7e090af6ce3960fc8a667682bf", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:05:47+00:00", "staged": "00004__wfv__mu-stray-foo.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-stray-foo_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85d", "pass": 1, "name": "broken-stray-sidecar-only", "sha256": "3d67e43eb61f87cbad4b9ae6bdf219cb6948d4e181f0743cb02788674057cebd", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:05:26+00:00", "staged": "00000__wfv__broken-stray-sidecar-only.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-stray-sidecar-only_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85d", "pass": 2, "name": "broken-stray-sidecar-only", "sha256": "3d67e43eb61f87cbad4b9ae6bdf219cb6948d4e181f0743cb02788674057cebd", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:05:47+00:00", "staged": "00000__wfv__broken-stray-sidecar-only.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-stray-sidecar-only_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85d", "pass": 1, "name": "broken-x-sidecar-only", "sha256": "82ece1e6cdd01451a46db340f97bb588e3ff29acfb8d36fed1c20b438ddeb58d", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:05:26+00:00", "staged": "00001__wfv__broken-x-sidecar-only.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-x-sidecar-only_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85d", "pass": 2, "name": "broken-x-sidecar-only", "sha256": "82ece1e6cdd01451a46db340f97bb588e3ff29acfb8d36fed1c20b438ddeb58d", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:05:47+00:00", "staged": "00001__wfv__broken-x-sidecar-only.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-x-sidecar-only_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85d", "pass": 1, "name": "s85d-control-minimal", "sha256": "5fcd2e7b39cc4da986cfc8adcf8d1262442275e3933948ac4dbc7c2ca475c879", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:05:26+00:00", "staged": "00005__wfv__s85d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s85d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85d", "pass": 2, "name": "s85d-control-minimal", "sha256": "5fcd2e7b39cc4da986cfc8adcf8d1262442275e3933948ac4dbc7c2ca475c879", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:05:47+00:00", "staged": "00005__wfv__s85d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s85d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85e", "pass": 1, "name": "colon-part-unrelated", "sha256": "50b91dc4c90153e7a1137d15ee72add756c550c8b6ba7096aee2d5f9c77b0b20", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:12:25+00:00", "staged": "00001__wfv__colon-part-unrelated.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:11:02.093 Microsoft Word, Word found unreadable content in 00001__wfv__colon-part-unrelated.docx. Do you want  … t? If you trust the source of this document, click Yes."], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__colon-part-unrelated.docx; refusing to guess"}
+{"run": "s85e", "pass": 2, "name": "colon-part-unrelated", "sha256": "50b91dc4c90153e7a1137d15ee72add756c550c8b6ba7096aee2d5f9c77b0b20", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:16:09+00:00", "staged": "00001__wfv__colon-part-unrelated.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:13:54.064 \"Word found unreadable content in 00001__wfv__colon-part-unrelated.docx. Do you want to recover the  … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__colon-part-unrelated.docx; refusing to guess"}
+{"run": "s85e", "pass": 1, "name": "colon-part-default-type", "sha256": "ba2ec5f0a4396f6f09d243e7b575de55829afec02e10ee7df4d3de9a0d4d0241", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:12:25+00:00", "staged": "00000__wfv__colon-part-default-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:10:04.496 'Word found unreadable content in 00000__wfv__colon-part-default-type.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.'", "2026-10-28 13:10:10.310 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__colon-part-default-type.docx)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__colon-part-default-type.docx; refusing to guess"}
+{"run": "s85e", "pass": 2, "name": "colon-part-default-type", "sha256": "ba2ec5f0a4396f6f09d243e7b575de55829afec02e10ee7df4d3de9a0d4d0241", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:16:09+00:00", "staged": "00000__wfv__colon-part-default-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:12:54.945 'Word found unreadable content in 00000__wfv__colon-part-default-type.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.'", "2026-10-28 13:13:00.976 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__colon-part-default-type.docx)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__colon-part-default-type.docx; refusing to guess"}
+{"run": "s85e", "pass": 1, "name": "ftp-target-plain-part", "sha256": "411a7868d38f110d0cee593194d4b65b96ca5a48b66816e9a775cd79c94551d4", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:12:25+00:00", "staged": "00002__wfv__ftp-target-plain-part.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:12:00.770 \"Word found unreadable content in 00002__wfv__ftp-target-plain-part.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s85e", "pass": 2, "name": "ftp-target-plain-part", "sha256": "411a7868d38f110d0cee593194d4b65b96ca5a48b66816e9a775cd79c94551d4", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:16:09+00:00", "staged": "00002__wfv__ftp-target-plain-part.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:14:43.179 'Word found unreadable content in 00002__wfv__ftp-target-plain-part.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.'", "2026-10-28 13:16:09.446 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00002__wfv__ftp-target-plain-part.docx)\""], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00002__wfv__ftp-target-plain-part.docx; refusing to guess"}
+{"run": "s85e", "pass": 1, "name": "httpfoo-target-plain-part", "sha256": "5c9885613d76b61fef0f42dafb5ab941f5439b1dbca8fb2907c0fd9ec91c9a07", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:12:25+00:00", "staged": "00004__wfv__httpfoo-target-plain-part.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:12:16.617 'Word found unreadable content in 00004__wfv__httpfoo-target-plain-part.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-28 13:12:23.815 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__httpfoo-target-plain-part...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s85e", "pass": 2, "name": "httpfoo-target-plain-part", "sha256": "5c9885613d76b61fef0f42dafb5ab941f5439b1dbca8fb2907c0fd9ec91c9a07", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:16:09+00:00", "staged": "00004__wfv__httpfoo-target-plain-part.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:16:01.390 Microsoft Word, Word found unreadable content in 00004__wfv__httpfoo-target-plain-part.docx. Do you  … t? If you trust the source of this document, click Yes."], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00004__wfv__httpfoo-target-plain-part.docx; refusing to guess"}
+{"run": "s85e", "pass": 1, "name": "header-dotslash-ftp-wellformed", "sha256": "f201015f873e39dbb6d94254d5d43335729f1ac1ca1298902cbd7946863386c7", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:12:25+00:00", "staged": "00003__wfv__header-dotslash-ftp-wellformed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:12:05.359 'Word found unreadable content in 00003__wfv__header-dotslash-ftp-wellformed.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-28 13:12:11.062 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__header-dotslash-ftp-wellf...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s85e", "pass": 2, "name": "header-dotslash-ftp-wellformed", "sha256": "f201015f873e39dbb6d94254d5d43335729f1ac1ca1298902cbd7946863386c7", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:16:09+00:00", "staged": "00003__wfv__header-dotslash-ftp-wellformed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-28 13:15:06.449 'Word found unreadable content in 00003__wfv__header-dotslash-ftp-wellformed.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-28 13:15:12.300 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__header-dotslash-ftp-wellf...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s85e", "pass": 1, "name": "s85e-control-minimal", "sha256": "db2bec53e98f425305a8f559cd573cc4bc1464b1e459bcc7c704d6736ebd87c1", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:12:25+00:00", "staged": "00005__wfv__s85e-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s85e-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s85e", "pass": 2, "name": "s85e-control-minimal", "sha256": "db2bec53e98f425305a8f559cd573cc4bc1464b1e459bcc7c704d6736ebd87c1", "validatorRevision": "57e150ae2ed41cec22d1b8b6b8888fff39e6ffbc", "observedAt": "2026-10-28T17:16:09+00:00", "staged": "00005__wfv__s85e-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s85e-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 85 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged. The builder ran in the committed worktree, `WT` naming it. s85c's first run outlasted the 10-minute foreground limit and finished in the background; its log and PDFs are complete.
+
+`s85builder.mts`:
+
+```ts
+// Session 85 (2026-10-28): three open Word questions, on the minimal package (`tests/support/minimal-docx.ts`).
+// s85a/s85b, #1145 and #1146: does Word read a footnotes, endnotes or comments part the main document relates when the
+//   part's only reference sits in a used header? Each part's root carries mc:MustUnderstand="foo" for an unknown urn:foo,
+//   which Word refused on the main document's root and in a used header (session 84, s84a). Per kind:
+//   - `-mu-header-reference`: the part related by the main document, its only reference in a read header (the probe);
+//   - `-mu-body-reference`: the same part referenced from the body, the read placement (expected refused);
+//   - `-header-reference-calibration`: the header-referenced part without MustUnderstand (session 62's clean shape);
+//   - `-mu-unreferenced`: the part related, referenced by nothing (#1125's warning; session 84 showed only a header).
+//   s85b adds the footer twin of s84a's unused and used header (`footer-mu-unused`, `footer-mu-used`).
+// s85c, #1127: does Word read a part an internal target names through a scheme-like spelling (`ftp:`, `httpfoo:`)?
+//   - `header-ftp-unclosed` / `header-httpfoo-unclosed`: a used header related by `Target="ftp:header1.xml"` /
+//     `"httpfoo:header1.xml"`, stored as `word/ftp:header1.xml` / `word/httpfoo:header1.xml` with an unclosed root;
+//   - `-wellformed` twins with the same header closed;
+//   - `styles-ftp-unclosed` / `styles-ftp-wellformed`: the styles relationship retargeted to `ftp:styles.xml`, the part
+//     stored as `word/ftp:styles.xml`;
+//   - `header-plain-unclosed` / `styles-plain-unclosed`: the unclosed parts through plain names (expected refused).
+// s85e, #1127 follow-up, added after s85c's first run refused every scheme-like row, well-formed too: is it the colon
+//   in the stored part name or the scheme in the target?
+//   - `colon-part-unrelated`: the minimal package plus a well-formed `word/ftp:header1.xml`, typed header by its
+//     Override, named by no relationship;
+//   - `colon-part-default-type`: the same part with no Override (the `xml` Default types it);
+//   - `ftp-target-plain-part` / `httpfoo-target-plain-part`: a used header related by `Target="ftp:header1.xml"` /
+//     `"httpfoo:header1.xml"`, stored as plain `word/header1.xml`;
+//   - `header-dotslash-ftp-wellformed`: the well-formed `word/ftp:header1.xml` used through `Target="./ftp:header1.xml"`,
+//     the spelling that names it without a scheme.
+// s85d, #1136: does an unclosed relationships part Word never reads matter? s84a's `mu-stray-foo` (Word opened it clean)
+//   plus an unclosed `word/_rels/stray.xml.rels` with no source part, or plus `word/x.xml` (a stray part no relationship
+//   names) with an unclosed `word/_rels/x.xml.rels`; each broken sidecar alone; `mu-stray-foo` repeated.
+// Every chunk ends with a minimal control. Every row records the validator revision it was judged at
+// (`validatorRevision`, `git -C <tree> rev-parse HEAD`).
+// Run from the worktree root, with the tree committed: CHUNK=s85a pnpm exec node --import tsx <abs path to this file>
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const WT = process.env.WT ?? process.cwd();
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const { MINIMAL_PARTS, buildDocx } = await import(path.join(WT, "tests/support/minimal-docx.ts"));
+const REVISION = execFileSync("git", ["-C", WT, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n`;
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
+const MU = ` xmlns:mc="${MC}" xmlns:foo="urn:foo" mc:MustUnderstand="foo"`;
+const TEXT_P = "<w:p><w:r><w:t>Text 85</w:t></w:r></w:p>";
+const P = MINIMAL_PARTS as Record<string, string>;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+/** `parts` with `r:` declared on the main document, `run` appended inside its only paragraph and `sect` first in its w:sectPr. */
+const mainWith = (parts: Record<string, string>, run: string, sect = ""): Record<string, string> => ({
+    ...parts,
+    [MAIN]: replaceOnce(
+        replaceOnce(replaceOnce(parts[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`), "<w:sectPr>", `<w:sectPr>${sect}`),
+        "</w:r></w:p>",
+        `</w:r>${run}</w:p>`,
+    ),
+});
+/** `parts` plus a part related by the main document as `segment`, typed `type`. */
+const withRelated = (
+    parts: Record<string, string>,
+    name: string,
+    xml: string,
+    id: string,
+    segment: string,
+    type: string,
+    target = name,
+) => ({
+    ...parts,
+    [`word/${name}`]: xml,
+    [SIDECAR]: appendRels(parts[SIDECAR]!, relationship(id, segment, target)),
+    [CT]: overrides(parts[CT]!, [`word/${name}`, type]),
+});
+
+// s85a/s85b
+type Story = "footnote" | "endnote" | "comment";
+const storyXml = (kind: Story, mu: boolean) =>
+    kind === "comment"
+        ? `${XML_DECL}<w:comments xmlns:w="${W}"${mu ? MU : ""}><w:comment w:id="0" w:author="a">${TEXT_P}</w:comment></w:comments>`
+        : `${XML_DECL}<w:${kind}s xmlns:w="${W}"${mu ? MU : ""}><w:${kind} w:id="1">${TEXT_P}</w:${kind}></w:${kind}s>`;
+const storyRef = (kind: Story) =>
+    kind === "comment" ? `<w:r><w:commentReference w:id="0"/></w:r>` : `<w:r><w:${kind}Reference w:id="1"/></w:r>`;
+/** The minimal parts with `word/<kind>s.xml` related by the main document, its root carrying MustUnderstand when `mu`. */
+const withStory = (kind: Story, mu: boolean) =>
+    withRelated(P, `${kind}s.xml`, storyXml(kind, mu), "rIdS", `${kind}s`, `${WML}.${kind}s+xml`);
+/** `parts` with a read header (`word/header1.xml`, referenced by the section) holding `run` in its paragraph. */
+const withReadHeader = (parts: Record<string, string>, run: string) =>
+    mainWith(
+        withRelated(
+            parts,
+            "header1.xml",
+            `${XML_DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header 85</w:t></w:r>${run}</w:p></w:hdr>`,
+            "rIdH",
+            "header",
+            `${WML}.header+xml`,
+        ),
+        "",
+        `<w:headerReference w:type="default" r:id="rIdH"/>`,
+    );
+const storyRows = (kind: Story): Row[] => [
+    [
+        `${kind}s-mu-header-reference`,
+        `#1145: word/${kind}s.xml related by the main document, root MustUnderstand urn:foo, its only reference in a read header`,
+        () => buildDocx(withReadHeader(withStory(kind, true), storyRef(kind))),
+    ],
+    [
+        `${kind}s-mu-body-reference`,
+        `#1145 calibration: the same part referenced from the body`,
+        () => buildDocx(mainWith(withStory(kind, true), storyRef(kind))),
+    ],
+    [
+        `${kind}s-header-reference-calibration`,
+        `calibration: the header-referenced part without MustUnderstand`,
+        () => buildDocx(withReadHeader(withStory(kind, false), storyRef(kind))),
+    ],
+    [
+        `${kind}s-mu-unreferenced`,
+        `#1146: the MustUnderstand part related by the main document, referenced by nothing`,
+        () => buildDocx(withStory(kind, true)),
+    ],
+];
+const footerXml = `${XML_DECL}<w:ftr xmlns:w="${W}"${MU}><w:p><w:r><w:t>Footer 85</w:t></w:r></w:p></w:ftr>`;
+const withFooter = (used: boolean) => {
+    const parts = withRelated(P, "footer1.xml", footerXml, "rIdF", "footer", `${WML}.footer+xml`);
+    return used ? mainWith(parts, "", `<w:footerReference w:type="default" r:id="rIdF"/>`) : parts;
+};
+
+// s85c
+const headerXml = (closed: boolean) =>
+    `${XML_DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header 85</w:t></w:r></w:p>${closed ? "</w:hdr>" : ""}`;
+/** A used header related by `Target="<target>"` and stored as `word/<target>`. */
+const usedHeaderAt = (target: string, closed: boolean) =>
+    mainWith(
+        withRelated(P, target, headerXml(closed), "rIdH", "header", `${WML}.header+xml`),
+        "",
+        `<w:headerReference w:type="default" r:id="rIdH"/>`,
+    );
+/** A used header related by `Target="<target>"`, stored as `word/<stored>`. */
+const usedHeaderStoredAs = (target: string, stored: string) => {
+    const parts = usedHeaderAt(stored, true);
+    return { ...parts, [SIDECAR]: replaceOnce(parts[SIDECAR]!, `Target="${stored}"`, `Target="${target}"`) };
+};
+/** The minimal package plus a well-formed `word/ftp:header1.xml` no relationship names, typed header unless `untyped`. */
+const colonPart = (untyped: boolean) => {
+    const parts: Record<string, string> = { ...P, "word/ftp:header1.xml": headerXml(true) };
+    if (!untyped) parts[CT] = overrides(P[CT]!, ["word/ftp:header1.xml", `${WML}.header+xml`]);
+    return parts;
+};
+/** The styles part stored as `word/<target>` and related by `Target="<target>"`, its root closed or not. */
+const stylesAt = (target: string, closed: boolean) => {
+    const styles = closed ? P["word/styles.xml"]! : replaceOnce(P["word/styles.xml"]!, "</w:styles>", "");
+    const parts: Record<string, string> = { ...P, [`word/${target}`]: styles };
+    if (target !== "styles.xml") {
+        delete parts["word/styles.xml"];
+        parts[SIDECAR] = replaceOnce(P[SIDECAR]!, 'Target="styles.xml"', `Target="${target}"`);
+        parts[CT] = replaceOnce(P[CT]!, 'PartName="/word/styles.xml"', `PartName="/word/${target}"`);
+    }
+    return parts;
+};
+
+// s85d
+const STRAY_FOO = (mu: boolean) => `${XML_DECL}<w:document xmlns:w="${W}"${mu ? MU : ""}><w:body/></w:document>`;
+const UNCLOSED_RELS = `${XML_DECL}<Relationships xmlns="${PR}">`;
+const strayParts = (fooMu: boolean | undefined, sidecar: "stray" | "x" | undefined) => {
+    const parts: Record<string, string> = { ...P };
+    if (fooMu !== undefined) parts["word/foo.xml"] = STRAY_FOO(fooMu);
+    if (sidecar === "stray") parts["word/_rels/stray.xml.rels"] = UNCLOSED_RELS;
+    if (sidecar === "x") {
+        parts["word/x.xml"] = STRAY_FOO(false);
+        parts["word/_rels/x.xml.rels"] = UNCLOSED_RELS;
+    }
+    return parts;
+};
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const withControl = (chunk: string, rows: Row[]): Row[] => [...rows, [`${chunk}-control-minimal`, "control", () => buildDocx({ ...P })]];
+const chunks: Record<string, Row[]> = {
+    s85a: withControl("s85a", [...storyRows("footnote"), ...storyRows("endnote")]),
+    s85b: withControl("s85b", [
+        ...storyRows("comment"),
+        [
+            "footer-mu-unused",
+            "#1146: word/footer1.xml related by the main document, referenced by nothing, root MustUnderstand urn:foo",
+            () => buildDocx(withFooter(false)),
+        ],
+        ["footer-mu-used", "calibration: the same footer referenced by the section", () => buildDocx(withFooter(true))],
+    ]),
+    s85c: withControl("s85c", [
+        [
+            "header-ftp-unclosed",
+            '#1127: a used header related by Target="ftp:header1.xml", stored as word/ftp:header1.xml with an unclosed root',
+            () => buildDocx(usedHeaderAt("ftp:header1.xml", false)),
+        ],
+        ["header-ftp-wellformed", "#1127 twin: the same header closed", () => buildDocx(usedHeaderAt("ftp:header1.xml", true))],
+        [
+            "header-httpfoo-unclosed",
+            '#1127: a used header related by Target="httpfoo:header1.xml", stored as word/httpfoo:header1.xml with an unclosed root',
+            () => buildDocx(usedHeaderAt("httpfoo:header1.xml", false)),
+        ],
+        ["header-httpfoo-wellformed", "#1127 twin: the same header closed", () => buildDocx(usedHeaderAt("httpfoo:header1.xml", true))],
+        [
+            "styles-ftp-unclosed",
+            '#1127: the styles relationship\'s Target "ftp:styles.xml", the part stored as word/ftp:styles.xml with an unclosed root',
+            () => buildDocx(stylesAt("ftp:styles.xml", false)),
+        ],
+        ["styles-ftp-wellformed", "#1127 twin: the same styles part closed", () => buildDocx(stylesAt("ftp:styles.xml", true))],
+        [
+            "header-plain-unclosed",
+            'calibration: the unclosed used header related by Target="header1.xml"',
+            () => buildDocx(usedHeaderAt("header1.xml", false)),
+        ],
+        [
+            "styles-plain-unclosed",
+            "calibration: the minimal word/styles.xml with an unclosed root",
+            () => buildDocx(stylesAt("styles.xml", false)),
+        ],
+    ]),
+    s85e: withControl("s85e", [
+        [
+            "colon-part-unrelated",
+            "#1127 follow-up: minimal plus a well-formed word/ftp:header1.xml, typed header, named by no relationship",
+            () => buildDocx(colonPart(false)),
+        ],
+        ["colon-part-default-type", "#1127 follow-up: the same part with no Override", () => buildDocx(colonPart(true))],
+        [
+            "ftp-target-plain-part",
+            '#1127 follow-up: a used header related by Target="ftp:header1.xml", stored as word/header1.xml',
+            () => buildDocx(usedHeaderStoredAs("ftp:header1.xml", "header1.xml")),
+        ],
+        [
+            "httpfoo-target-plain-part",
+            '#1127 follow-up: a used header related by Target="httpfoo:header1.xml", stored as word/header1.xml',
+            () => buildDocx(usedHeaderStoredAs("httpfoo:header1.xml", "header1.xml")),
+        ],
+        [
+            "header-dotslash-ftp-wellformed",
+            '#1127 follow-up: the well-formed word/ftp:header1.xml used through Target="./ftp:header1.xml"',
+            () => buildDocx(usedHeaderStoredAs("./ftp:header1.xml", "ftp:header1.xml")),
+        ],
+    ]),
+    s85d: withControl("s85d", [
+        [
+            "mu-stray-foo-broken-stray-sidecar",
+            "#1136: s84a's mu-stray-foo plus an unclosed word/_rels/stray.xml.rels with no word/stray.xml",
+            () => buildDocx(strayParts(true, "stray")),
+        ],
+        [
+            "mu-stray-foo-broken-x-sidecar",
+            "#1136: s84a's mu-stray-foo plus word/x.xml (no Override, no relationship) and an unclosed word/_rels/x.xml.rels",
+            () => buildDocx(strayParts(true, "x")),
+        ],
+        ["mu-stray-foo", "#1136 calibration: s84a's mu-stray-foo repeated", () => buildDocx(strayParts(true, undefined))],
+        [
+            "broken-stray-sidecar-only",
+            "#1136 calibration: the unclosed word/_rels/stray.xml.rels alone",
+            () => buildDocx(strayParts(undefined, "stray")),
+        ],
+        [
+            "broken-x-sidecar-only",
+            "#1136 calibration: word/x.xml with its unclosed sidecar alone",
+            () => buildDocx(strayParts(undefined, "x")),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+// A rerun starts from an empty src, so a removed or renamed row leaves no stale specimen (CodeRabbit on #985).
+rmSync(dir, { recursive: true, force: true });
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+    }
+};
+
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        control: issue === "control",
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-85 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s85a", "s85b", "s85c", "s85d", "s85e")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0], "unknown") if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
+                     # A match needs agreed readings: an unknown row matches nothing (CodeRabbit on #985).
+                     "validatorMatchesWord": agreed and ((all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True))})
+(ROOT / "s85/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-85 part of docs/plans/evidence/word-probes-2026-10-24.md into s85/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796). The text Word rendered is read from its own
+PDFs with pdftotext, so the narrative's "rendered" claims are checked here.
+"""
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s85a", "s85b", "s85c", "s85d", "s85e")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s85/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e}`" for e in v["errors"])
+
+
+def strict_cell(v):
+    # Strict also reports the specimens' unreferenced-part, paraId, content-type and XSD findings; the column names the
+    # markup-compatibility, XML-syntax and relationship findings, the ones this session probes, and every other code
+    # only by count.
+    if v["valid"] is None:
+        return cell(v)
+    if v["valid"]:
+        return "valid"
+    probed = [e for e in v["errors"] if e.startswith(("mce-", "xml-", "rels-"))]
+    rest = len(v["errors"]) - len(probed)
+    named = ", ".join(f"`{e}`" for e in probed)
+    if rest:
+        named = f"{named}{', ' if named else ''}{rest} other finding{'s' if rest > 1 else ''}"
+    return "invalid: " + named
+
+
+def manifest(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return row
+    raise KeyError(file)
+
+
+def run_at(run, file):
+    return datetime.fromisoformat(manifest(run, file)["run_at"]).astimezone(timezone.utc)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+def rendered(run, file):
+    pdf = run / "pdf" / (Path(file).stem + "_byword.pdf")
+    if not pdf.exists():
+        return None
+    return " ".join(subprocess.run(["pdftotext", str(pdf), "-"], check=True, capture_output=True, text=True).stdout.split())
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {strict_cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            record = {"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                      "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                      "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                      "pdf": row["pdf"], "evidence": row["evidence"]}
+            error = manifest(r, s["file"]).get("error")
+            if error:
+                record["error"] = error
+            raw.append(json.dumps(record, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+
+# Rows Word refused (every reading a rejection) and rows holding a markup-compatibility finding word-valid judges.
+REFUSED = {"footnotes-mu-body-reference.docx", "endnotes-mu-body-reference.docx", "comments-mu-body-reference.docx",
+           "footer-mu-used.docx", "header-ftp-unclosed.docx", "header-ftp-wellformed.docx", "header-httpfoo-unclosed.docx",
+           "header-httpfoo-wellformed.docx", "styles-ftp-unclosed.docx", "styles-ftp-wellformed.docx",
+           "header-plain-unclosed.docx", "styles-plain-unclosed.docx", "colon-part-unrelated.docx",
+           "colon-part-default-type.docx", "ftp-target-plain-part.docx", "httpfoo-target-plain-part.docx",
+           "header-dotslash-ftp-wellformed.docx"}
+OPEN_ERROR = {"header-plain-unclosed.docx"}
+# The narrative's claims, checked against results.json: every row's four readings agree; Word refused exactly REFUSED,
+# with an open error for the unclosed plain header and a recovery offer for the rest, and opened every other row clean;
+# word-valid at the probed revision is wrong on exactly the rows named below.
+WRONG = {"footnotes-mu-header-reference.docx", "endnotes-mu-header-reference.docx", "comments-mu-header-reference.docx",
+         "mu-stray-foo-broken-stray-sidecar.docx", "mu-stray-foo-broken-x-sidecar.docx", "header-ftp-unclosed.docx",
+         "header-ftp-wellformed.docx", "header-httpfoo-unclosed.docx", "header-httpfoo-wellformed.docx",
+         "styles-ftp-unclosed.docx", "styles-ftp-wellformed.docx", "colon-part-unrelated.docx", "colon-part-default-type.docx",
+         "ftp-target-plain-part.docx", "httpfoo-target-plain-part.docx", "header-dotslash-ftp-wellformed.docx"}
+for (label, file), r in results.items():
+    assert r["agreed"], (label, file, r)
+    if file in REFUSED:
+        expected = "open-error" if file in OPEN_ERROR else "unreadable-content-warning"
+        assert r["everyReadingRejects"] and r["outcome"] == expected, (label, file, r)
+    else:
+        assert set(r["readings"]) == {"clean-open"}, (label, file, r)
+    assert r["validatorMatchesWord"] is (file not in WRONG), (label, file, r)
+assert agreed == len(rows) == 37, (agreed, len(rows))
+# The driver opens files in name order (#671).
+for label in CHUNKS:
+    files = sorted(json.loads(l)["file"] for l in (ROOT / label / "specimens.jsonl").read_text().splitlines())
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        opened = [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()]
+        assert opened == files, (run, opened)
+# The text Word rendered, both runs: a row with a read header renders the header's "Header 85" and the main document's
+# "Hello", and never a note's or comment's "Text 85"; every other row Word opened renders "Hello"; a refused row left no
+# PDF.
+texts = {}
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+            file = json.loads(line)["original_filename"]
+            text = rendered(run, file)
+            texts.setdefault(file, set()).add(text)
+            if file in REFUSED:
+                assert text is None, (run, file, text)
+for file, seen in texts.items():
+    if file in REFUSED:
+        continue
+    assert seen == ({"Header 85 Hello"} if "header-reference" in file else {"Hello"}), (file, seen)
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}", (min(starts), max(ends))
+matches = sum(r["validatorMatchesWord"] for r in results.values())
+I = "https://github.com/jandira-tech/docx-validate/issues/"
+out = [
+    f"### Session 85: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {at}",
+    "",
+    "Three open questions, on the minimal package. Five chunks; s85e was added after s85c's first run.",
+    "",
+    f"- **s85a and s85b, [#1145]({I}1145).** Does Word read a footnotes, endnotes or comments part the main document "
+    "relates when the part's only reference sits in a used header? Each part's root carries `mc:MustUnderstand=\"foo\"` "
+    "for an unknown `urn:foo`, which Word refused on the main document's root and in a used header (session 84). Per "
+    "kind: `-mu-header-reference` has a read header (`word/header1.xml`, referenced by the section) hold the part's "
+    "only reference; `-mu-body-reference` references the same part from the body; `-header-reference-calibration` is "
+    "the header-referenced part without the attribute; `-mu-unreferenced` relates the part and references it nowhere. "
+    "s85b adds a footer holding the attribute, related and unused (`footer-mu-unused`) or referenced by the section "
+    "(`footer-mu-used`).",
+    f"- **s85c and s85e, [#1127]({I}1127).** Does Word read a part an internal target names through a scheme-like "
+    "spelling? s85c relates a used header through `Target=\"ftp:header1.xml\"` or `\"httpfoo:header1.xml\"`, stored as "
+    "`word/ftp:header1.xml` or `word/httpfoo:header1.xml`, and the styles part through `ftp:styles.xml`, each with an "
+    "unclosed root and `-wellformed`; the plain-name twins of the unclosed header and styles part are calibrations. "
+    "s85e separates the stored name from the target: `colon-part-unrelated` stores a well-formed "
+    "`word/ftp:header1.xml`, typed header and named by no relationship, and `colon-part-default-type` the same part "
+    "with no Override; `ftp-target-plain-part` and `httpfoo-target-plain-part` relate a used header through the "
+    "scheme-like target while the part is stored as plain `word/header1.xml`; `header-dotslash-ftp-wellformed` uses "
+    "the stored `word/ftp:header1.xml` through `Target=\"./ftp:header1.xml\"`, which names it without a scheme.",
+    f"- **s85d, [#1136]({I}1136).** Does an unclosed relationships part Word never reads matter? Session 84's "
+    "`mu-stray-foo` plus an unclosed `word/_rels/stray.xml.rels` with no source part, or plus a stray `word/x.xml` "
+    "with an unclosed `word/_rels/x.xml.rels`; each broken sidecar alone; and `mu-stray-foo` again.",
+    "",
+    "Each chunk ends with a minimal control. Each chunk ran twice, as two separate driver runs of byte-identical copies, "
+    "and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by "
+    "`wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` "
+    f"otherwise; {agreed} of {len(rows)} rows agree. The two times in Observed are the ends of the first and second runs. "
+    f"Shape is the builder's description of the specimen. The builder recorded the validator revision in every row "
+    f"(`{rev}`). The strict column names the markup-compatibility, XML-syntax and relationship findings, and counts the "
+    "others.",
+    "",
+    "Every calibration Word was meant to open, and every control, opened clean. Every row Word opened renders the main "
+    "document's `Hello` in both runs (`pdftotext`), after the header's `Header 85` where the section references a "
+    "header, and never a note's or comment's `Text 85`. No refused row left a PDF.",
+    "",
+    "- **Word does not read a notes or comments part whose only reference is in a header.** It opened clean all three "
+    "`-mu-header-reference` rows, and offered to recover unreadable content for the same parts referenced from the "
+    "body. It opened clean the related, unreferenced part of each kind and the unused footer, and refused the used "
+    "footer.",
+    "- **Word refuses a stored part name holding a colon, read or not.** It offered recovery for `word/ftp:header1.xml` "
+    "named by no relationship, with or without its Override, and for every scheme-like s85c row, well-formed or not. "
+    "The unclosed plain-name header drew an open error and the unclosed plain styles part a recovery offer.",
+    "- **It refuses a used header whose target spells a scheme, too.** With the part stored as plain "
+    "`word/header1.xml` and no colon in any stored name, `Target=\"ftp:header1.xml\"` and `\"httpfoo:header1.xml\"` "
+    "drew the recovery offer. These rows do not show whether Word reads the target as a missing part or refuses the "
+    "spelling.",
+    "- **A broken relationships part Word never reads does not matter.** It opened clean every s85d row, "
+    "`mu-stray-foo` beside either broken sidecar included.",
+    "",
+    f"Word-valid at {at} matches Word on {matches} of {len(rows)} rows. It rejects the three header-only rows Word opened "
+    f"clean ([#1145]({I}1145)'s conservative half, narrowed back by [#1155]({I}1155)) and the two `mu-stray-foo` rows "
+    f"beside a broken sidecar ([#1136]({I}1136)). It passes the eleven scheme-like and colon rows Word refused.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 85</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 85 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged. "
+    "The builder ran in the committed worktree, `WT` naming it. s85c's first run outlasted the 10-minute foreground "
+    "limit and finished in the background; its log and PDFs are complete.",
+    "",
+]
+for name, path, lang in (("s85builder.mts", ROOT / "s85builder.mts", "ts"), ("compare.py", ROOT / "s85/compare.py", "python"),
+                         ("section.py", ROOT / "s85/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s85/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed,", matches, "match")
+`````
+
+</details>

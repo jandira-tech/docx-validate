@@ -555,13 +555,14 @@ describe("markup compatibility in a word/ part Word does not read warns under wo
         },
     );
 
-    // #1145 (review 1138 F1, F8): the read model decides whether a root uses
-    // its comments or notes part from the root alone, so a part whose only
-    // reference sits in a used header was dropped and its finding warned.
-    // Whether Word reads it then is unprobed, so the part stays named. An
-    // unused header Word does not read (session 84 s84a) names nothing, and
-    // nor does a footnote: session 16 (s16a) opened clean a malformed
-    // endnotes part only a footnote referenced.
+    // #1145, #1155: the read model decides whether a root uses its comments
+    // or notes part from the root alone, so a part whose only reference sits
+    // in a used header is not read, and its finding warns. Word session 85
+    // (s85a, s85b) opened clean each kind holding an unknown MustUnderstand
+    // with its only reference in a read header, and refused the same part
+    // referenced from the body. An unused header names nothing either
+    // (session 84 s84a), and nor does a footnote: session 16 (s16a) opened
+    // clean a malformed endnotes part only a footnote referenced.
     const NOTE_KINDS = [
         ["footnotes", '<w:footnote w:id="1"><w:p/></w:footnote>', '<w:footnoteReference w:id="1"/>'],
         ["endnotes", '<w:endnote w:id="1"><w:p/></w:endnote>', '<w:endnoteReference w:id="1"/>'],
@@ -597,11 +598,22 @@ describe("markup compatibility in a word/ part Word does not read warns under wo
     it.each(
         RUNS.flatMap(([label, checks]) => NOTE_KINDS.map(([kind, body, reference]) => [kind, label, checks, body, reference] as const)),
     )(
-        "keeps mce-must-understand an error in a related %s part whose only reference is in a used header (%s run, #1145)",
+        "warns for mce-must-understand in a related %s part whose only reference is in a used header (%s run, session 85, #1155)",
         async (kind, _label, checks, body, reference) => {
             expect((await mceRun(notesWithHeaderReference(kind, body, reference, true), "word-valid", checks)).mce).toEqual([
-                `mce-must-understand:error@word/${kind}.xml`,
+                `mce-must-understand:warning@word/${kind}.xml`,
             ]);
+        },
+    );
+
+    it.each(
+        RUNS.flatMap(([label, checks]) => NOTE_KINDS.map(([kind, body, reference]) => [kind, label, checks, body, reference] as const)),
+    )(
+        "keeps mce-must-understand an error in a related %s part the body references (%s run, session 85)",
+        async (kind, _label, checks, body, reference) => {
+            const parts = notesWithHeaderReference(kind, body, "", false);
+            parts.set(MAIN, once(textOf(parts, MAIN), "<w:t>Hello</w:t></w:r>", `<w:t>Hello</w:t></w:r><w:r>${reference}</w:r>`));
+            expect((await mceRun(parts, "word-valid", checks)).mce).toEqual([`mce-must-understand:error@word/${kind}.xml`]);
         },
     );
 

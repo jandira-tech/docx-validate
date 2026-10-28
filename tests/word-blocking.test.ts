@@ -735,12 +735,14 @@ describe("unobservedReferenceAttributeValues (#647, #702)", () => {
 });
 
 // #1133: the migration guide stated the pre-#1116 policy outright.
+// #1155: session 85 showed Word a notes or comments part only a header
+// references; it opened clean, so such a part counts as unused.
 describe("the migration guide's markup-compatibility sentence (#1133)", () => {
     it("names the parts where word-valid warns instead of calling both codes blocking everywhere", async () => {
         const migration = (await readFile(new URL("../MIGRATION.md", import.meta.url), "utf-8")).replace(/\s+/g, " ");
         expect(migration).not.toContain("`mce-must-understand` remain Word-blocking.");
         expect(migration).toContain(
-            "`mce-malformed` and `mce-must-understand` remain Word-blocking in the `word/` parts Word may read. Full Word-valid warns in a part Word does not read: a `word/` part no relationship names (#1116), or a header, footer, comments or notes part a story root relates but does not use (#1125, #1145).",
+            "`mce-malformed` and `mce-must-understand` remain Word-blocking in the `word/` parts Word may read. Full Word-valid warns in a part Word does not read: a `word/` part no relationship names (#1116), or a header, footer, comments or notes part a story root relates but does not use, counting a comments or notes part only a header or footer references as unused (#1125, #1155).",
         );
     });
 });

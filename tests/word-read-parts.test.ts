@@ -2199,9 +2199,13 @@ describe("wordPossiblyReadParts (#1116, #1125)", () => {
         },
     );
 
-    // #1145: the read model decides a root's comments and notes use from the
-    // root alone, so a read header or footer holding a reference of that kind,
-    // or failing the byte-level XML checks, keeps the related part listed.
+    // #1155: the read model decides a root's comments and notes use from the
+    // root alone, and Word agrees: session 85 (s85a, s85b) opened clean a
+    // related comments, footnotes or endnotes part holding an unknown
+    // MustUnderstand whose only reference sat in a read header. So a read
+    // header or footer holding a reference of that kind, or failing the
+    // byte-level XML checks, lists nothing (#1145's conservative half undone).
+    // A footer holding the reference is unprobed.
     const NOTE_SEGMENTS = ["comments", "footnotes", "endnotes"] as const;
     const NOTE_REFERENCE: Readonly<Record<(typeof NOTE_SEGMENTS)[number], string>> = {
         comments: '<w:commentReference w:id="0"/>',
@@ -2236,21 +2240,21 @@ describe("wordPossiblyReadParts (#1116, #1125)", () => {
         `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:${HOLDER_ROOT[holder]} xmlns:w="${W}"><w:p><w:r>${inner}</w:r></w:p></w:${HOLDER_ROOT[holder]}>`;
 
     it.each(NOTE_SEGMENTS.flatMap((segment) => (["header", "footer"] as const).map((holder) => [segment, holder] as const)))(
-        "lists a related %s part the main document does not use when a used %s references it (#1145)",
+        "does not list a related %s part the main document does not use when a used %s references it (session 85, #1155)",
         async (segment, holder) => {
             const story = canonicalPartName(`word/${STORY_FILE[segment]}`);
-            expect(await named(withStoryHolding(segment, holder, holding(holder, NOTE_REFERENCE[segment]), true))).toContain(story);
+            expect(await named(withStoryHolding(segment, holder, holding(holder, NOTE_REFERENCE[segment]), true))).not.toContain(story);
             expect(await named(withStoryHolding(segment, holder, holding(holder, NOTE_REFERENCE[segment]), false))).not.toContain(story);
             expect(await named(withStoryHolding(segment, holder, holding(holder, "<w:t>No reference</w:t>"), true))).not.toContain(story);
         },
     );
 
     it.each(NOTE_SEGMENTS)(
-        "lists a related %s part the main document does not use when a used header fails the byte-level XML checks (#1145)",
+        "does not list a related %s part the main document does not use when a used header fails the byte-level XML checks (#1155)",
         async (segment) => {
             const story = canonicalPartName(`word/${STORY_FILE[segment]}`);
             const unclosed = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:hdr xmlns:w="${W}"><w:p>`;
-            expect(await named(withStoryHolding(segment, "header", unclosed, true))).toContain(story);
+            expect(await named(withStoryHolding(segment, "header", unclosed, true))).not.toContain(story);
         },
     );
 

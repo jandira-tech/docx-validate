@@ -731,16 +731,18 @@ export const wordReadTypedTargets = async (context: ValidationContext, profile?:
  * direct child of a story root's own relationships part, which names its part
  * only through the read model, so a story the root relates but does not use
  * stays out (session 84 s84a). The read model decides a root's comments and
- * notes use from the root alone, so a comments, footnotes or endnotes
- * relationship still names its part when a header or footer the model reads
- * holds a reference of that kind, or cannot be read: whether Word then reads
- * the part is unprobed (#1145). A reference inside a notes or comments part
- * names nothing, as session 16 (s16a) opened clean a malformed endnotes part
- * only a footnote referenced. Every other `Relationship` element of the
- * stored DOM counts, nested ones included, so a relationship inside a Choice
- * Word does not select still names its part: the scan errs wide, and only the
- * exception narrows the list, where the read model or a story it reads
- * decides that a part is unused. That holds in any namespace: the read model reads only the
+ * notes use from the root alone, and so does Word: session 85 (s85a, s85b)
+ * opened clean a related comments, footnotes or endnotes part holding an
+ * unknown `mc:MustUnderstand` whose only reference sat in a read header, and
+ * refused it referenced from the body, so such a part stays out too (#1155,
+ * undoing #1145's conservative half); a footer holding the reference is
+ * unprobed. A reference inside a notes or comments part names nothing either,
+ * as session 16 (s16a) opened clean a malformed endnotes part only a footnote
+ * referenced. Every other `Relationship` element of the stored DOM counts,
+ * nested ones included, so a relationship inside a Choice Word does not
+ * select still names its part: the scan errs wide, and only the exception
+ * narrows the list, where the read model decides that a part is unused. That
+ * holds in any namespace: the read model reads only the
  * package-relationships `Relationship` children of a `Relationships` root in
  * that namespace, so it decides nothing about one in no namespace, in
  * another, or under a root outside it, and that one names its part (#1135). A
@@ -763,20 +765,6 @@ export const wordPossiblyReadParts = async (context: ValidationContext, profile?
         read.filter((target) => target.segment === "relationships").map((target) => canonicalPartName(target.part)),
     );
     const named = new Set(read.map((target) => canonicalPartName(target.part)));
-    // The comments and notes segments a read header or footer references, or
-    // may: an unreadable one leaves its references undecided (#1145).
-    const storyReferenced = new Set<string>();
-    for (const target of read) {
-        if (target.segment !== "header" && target.segment !== "footer") {
-            continue;
-        }
-        const story = await readableStory(context, target.part);
-        for (const [segment, reference] of STORY_REFERENCES) {
-            if (story === undefined || hasReference(story, reference)) {
-                storyReferenced.add(segment);
-            }
-        }
-    }
     for (const name of names) {
         if (!isRelationshipsPartName(name)) {
             continue;
@@ -796,14 +784,7 @@ export const wordPossiblyReadParts = async (context: ValidationContext, profile?
             const reference = relationship.getAttribute("Target") ?? "";
             const target = resolveTarget(lookup, baseDir, reference);
             const segment = officeRelationshipTypeSegment(relationship.getAttribute("Type") ?? "");
-            if (
-                target !== undefined &&
-                rootSidecar &&
-                segment !== undefined &&
-                LAZY_TYPES.has(segment) &&
-                !storyReferenced.has(segment) &&
-                readable.has(relationship)
-            ) {
+            if (target !== undefined && rootSidecar && segment !== undefined && LAZY_TYPES.has(segment) && readable.has(relationship)) {
                 continue;
             }
             const part = target ?? schemeTargetPart(lookup, baseDir, reference);

@@ -31,13 +31,16 @@ describe("word error explanations", () => {
             );
         },
     );
-    // #1146: session 84 showed Word only the header; the other kinds follow
-    // the read model, and #1145 keeps a notes or comments part a read header
-    // or footer references blocking.
-    it.each(["mce-malformed", "mce-must-understand"])("explains %s's footer, comments and notes warning as unprobed (#1146)", (code) => {
-        expect(explainWordError(code)).toContain(
-            "It warns too in a footer, comments or notes part a story root relates but does not use, which Word was not shown (#1146); a comments or notes part counts as used when a header or footer Word reads references its kind (#1145).",
+    // #1155: session 85 showed Word the unused footer, comments and notes
+    // parts, and the comments and notes parts only a header references, all
+    // clean with a root MustUnderstand; #1145's exception is gone.
+    it.each(["mce-malformed", "mce-must-understand"])("explains %s's footer, comments and notes warning by session 85 (#1155)", (code) => {
+        const explanation = explainWordError(code);
+        expect(explanation).toContain(
+            "It warns too in a footer, comments or notes part a story root relates but does not use; a comments or notes part only a header or footer references counts as unused. Word opened a root MustUnderstand clean in each such part it was shown, the reference from a header included (session 85, #1155); a reference from a footer, and malformed compatibility in these parts, are unprobed.",
         );
+        expect(explanation).not.toContain("#1145");
+        expect(explanation).not.toContain("which Word was not shown");
     });
     it("explains a package root that unwraps to the Relationships element as accepted (#646)", () => {
         const explanation = explainWordError("mce-malformed");
