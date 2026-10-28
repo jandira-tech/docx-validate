@@ -1518,6 +1518,49 @@ describe("BaseSchemaValidator", () => {
             });
         });
 
+        // `word/_rels/.rels` sits in a `_rels` folder, so its source part's
+        // folder is `word/`; `word/notes.rels` sits in none, so its own folder,
+        // `word/`, is the source folder. The orphan walk behind
+        // rels-target-missing (resolveRelationshipTargetPath) resolved both
+        // against `word/`, this walk against the package root (review 281, #990).
+        it.each([
+            ["word/_rels/.rels", "styles.xml", [], []],
+            ["word/notes.rels", "styles.xml", [], []],
+            [
+                "word/_rels/.rels",
+                "styles.xml/.",
+                [["Broken reference to styles.xml/.: it names a folder, not a part", "word/styles.xml/"]],
+                ["word/styles.xml"],
+            ],
+            [
+                "word/notes.rels",
+                "styles.xml/.",
+                [["Broken reference to styles.xml/.: it names a folder, not a part", "word/styles.xml/"]],
+                ["word/styles.xml"],
+            ],
+            ["word/_rels/.rels", "word/styles.xml", [["Broken reference to word/styles.xml", "word/word/styles.xml"]], ["word/styles.xml"]],
+            ["_rels/.rels", "word/styles.xml", [], []],
+        ])(
+            "resolves %s's target %s against the source part's folder, as the orphan walk does (#990)",
+            async (relsPart, target, broken, unreferenced) => {
+                await withTempDir(async (dir) => {
+                    await writeFile(path.join(dir, "word", "styles.xml"), "<styles/>");
+                    await writeFile(
+                        path.join(dir, relsPart),
+                        `${RELS_HEADER}\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                            `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="${target}"/>` +
+                            `</Relationships>`,
+                    );
+                    const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                    const result = await v.validateFileReferences();
+                    expect(result.issues.filter((i) => i.code === "rels-broken").map((i) => [i.message, relsBrokenTarget(i)])).toEqual(
+                        broken,
+                    );
+                    expect(result.issues.filter((i) => i.code === "rels-unreferenced").map((i) => i.path)).toEqual(unreferenced);
+                });
+            },
+        );
+
         it("rejects targets routed through a symlink that escapes the unpacked directory", async () => {
             await withTempDir(async (dir) => {
                 // outside/secret.txt exists beyond the unpacked root; the

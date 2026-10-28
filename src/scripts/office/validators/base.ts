@@ -51,6 +51,7 @@ import {
     findContentTypesStream,
     findEquivalentPart,
     isContentTypesStreamName,
+    isRelationshipsFolderName,
     isRelationshipsPartName,
     parseContentTypes,
     partExtension,
@@ -1031,11 +1032,13 @@ export class BaseSchemaValidator {
             const root = dom.documentElement;
             if (!root) continue;
 
-            const relsPath = path.join(this.unpackedDir, relsPart);
-            const relsDir = path.dirname(relsPath);
             // The source part's folder, package-relative, as the targets
-            // below resolve against it.
-            const sourceFolder = path.basename(relsPath) === ".rels" ? "." : path.posix.dirname(path.posix.dirname(relsPart));
+            // below resolve against it: the folder above a `_rels` folder
+            // (the package root for `_rels/.rels`), or the relationships
+            // part's own folder outside one, as the orphan walk's
+            // resolveRelationshipTargetPath reads it (#990).
+            const relsFolder = path.posix.dirname(relsPart);
+            const sourceFolder = isRelationshipsFolderName(path.posix.basename(relsFolder)) ? path.posix.dirname(relsFolder) : relsFolder;
             const broken: Array<{ target: string; part: string; folder?: true }> = [];
 
             const rels = this.relationshipElements(dom, relsPart);
@@ -1075,11 +1078,7 @@ export class BaseSchemaValidator {
                 // stored part there is the one it names, and an absent one is
                 // broken under that name (sessions 54 and 74 to 76, #984).
                 // Only a symbolic link can leave the tree.
-                let targetPath = packageTargetPath(
-                    this.unpackedDir,
-                    path.basename(relsPath) === ".rels" ? this.unpackedDir : path.dirname(relsDir),
-                    target,
-                );
+                let targetPath = packageTargetPath(this.unpackedDir, path.join(this.unpackedDir, sourceFolder), target);
 
                 try {
                     const contained = containRelationshipTarget(this.unpackedDir, targetPath);
