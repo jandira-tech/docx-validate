@@ -49,6 +49,7 @@ import { schemaGlobals } from "../src/scripts/office/schema-globals";
 import { validate } from "../src/scripts/office/validate";
 import { BaseSchemaValidator, defaultSchemasDir } from "../src/scripts/office/validators/base";
 import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
+import { PPTXSchemaValidator } from "../src/scripts/office/validators/pptx";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildPptx, MINIMAL_PPTX_PARTS } from "./support/minimal-pptx";
 
@@ -834,6 +835,36 @@ describe("schema routing of the parts directly in ppt/ by their root (#887)", { 
             expect(lenient.issues.filter((issue) => issue.code === "xsd-error")).toEqual([]);
             expect(lenient.issues.filter((issue) => issue.code === "xsd-strict-skipped")).toHaveLength(1);
             expect(lenient.xsdWalk.parts).not.toContain("ppt/slide1.xml");
+        });
+    });
+
+    // A validator walked twice routes each part by the root it holds now:
+    // the root memo is cleared at the start of every walk, as the main
+    // document list is (#657), so a part rewritten between the walks is not
+    // routed by the root it held before (#902).
+    it("routes a part rewritten between two walks of one validator by its new root (#902)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PPTX_PARTS,
+                "ppt/extra.xml": `${HEAD}<p:unknown xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>`,
+            };
+            for (const [part, xml] of Object.entries(parts)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const validator = new PPTXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+            const first = await validator.validateAgainstXsd();
+            expect(first.issues.filter((issue) => issue.path === "ppt/extra.xml").map((issue) => issue.code)).toEqual(["xsd-no-schema"]);
+
+            await fs.writeFile(path.join(dir, "ppt/extra.xml"), withBogusDefect(MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!), "utf-8");
+            const second = await validator.validateAgainstXsd();
+            expect(second.valid).toBe(false);
+            expect(
+                second.issues.some(
+                    (issue) => issue.code === "xsd-error" && issue.path === "ppt/extra.xml" && issue.message.includes("bogusDefect"),
+                ),
+            ).toBe(true);
+            expect(validator.xsdWalk.parts).toContain("ppt/extra.xml");
         });
     });
 });
