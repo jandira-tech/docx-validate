@@ -203,4 +203,21 @@ describe("word-hyperlink-relationship judges the parts Word reads (#1106)", () =
         const found = await run(parts, "word-valid");
         expect(found.judged).toEqual(["error word/document.xml"]);
     });
+
+    // #1118 (review 1115 F1): the read model lists a part once per segment
+    // that reaches it; a header the body uses as its header and its footer is
+    // judged once.
+    it.each(["word-valid", "strict"] as const)(
+        "a part the body uses as header and footer is judged once under %s (#1118)",
+        async (profile) => {
+            const parts = header("hf1.xml", true, "HYPERLINK");
+            parts["word/document.xml"] = once(
+                parts["word/document.xml"]!,
+                '<w:headerReference w:type="default" r:id="rIdH"/>',
+                '<w:headerReference w:type="default" r:id="rIdH"/><w:footerReference w:type="default" r:id="rIdF"/>',
+            );
+            parts[SIDECAR] = addRelationship(parts[SIDECAR]!, relationship("rIdF", "footer", "hf1.xml"));
+            expect((await run(parts, profile)).judged).toEqual(["error word/hf1.xml"]);
+        },
+    );
 });

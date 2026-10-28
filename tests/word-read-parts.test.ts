@@ -2055,6 +2055,27 @@ describe("wordReadStoryParts (#1106, #1113)", () => {
         expect(await wordReadStoryParts(ValidationContext.fromEntries(withHeaders(used)))).toEqual(expected);
     });
 
+    // #1118 (review 1115 F1): the read model lists a part once per segment
+    // that reaches it, so a header the body uses as its header and its footer
+    // arrives twice; the helper lists it once.
+    it("lists a part the body uses as header and footer once (#1118)", async () => {
+        const parts = withHeaders(true);
+        parts["word/_rels/document.xml.rels"] = (parts["word/_rels/document.xml.rels"] as string).replace(
+            "</Relationships>",
+            `<Relationship Id="rIdF" Type="${R}/footer" Target="header1.xml"/></Relationships>`,
+        );
+        parts["word/document.xml"] = (parts["word/document.xml"] as string).replace(
+            'r:id="rIdH"/>',
+            `r:id="rIdH"/><w:footerReference xmlns:r="${R}" w:type="default" r:id="rIdF"/>`,
+        );
+        const ctx = ValidationContext.fromEntries(parts);
+        const segments = (await wordReadTypedTargets(ctx))
+            .filter((target) => target.part === "word/header1.xml")
+            .map((target) => target.segment);
+        expect(segments).toEqual(["header", "footer"]);
+        expect(await wordReadStoryParts(ctx)).toEqual(["word/document.xml", "word/header1.xml"]);
+    });
+
     it("lists the parts in the context's part-name order, as the by-name list does, not in read order", async () => {
         expect(await wordReadStoryParts(ValidationContext.fromEntries(renamed(withHeaders(true))))).toEqual([
             "word/header1.xml",

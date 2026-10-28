@@ -138,6 +138,7 @@ const run = async (parts: Parts, profile: "word-valid" | "strict", code: string)
         return {
             valid: result.valid,
             paths: [...new Set(result.issues.filter((issue) => issue.code === code).map((issue) => issue.path))],
+            found: result.issues.filter((issue) => issue.code === code).map((issue) => issue.path),
             errors: result.issues.filter((issue) => issue.severity === "error").map((issue) => `${issue.code}@${issue.path}`),
         };
     });
@@ -206,7 +207,7 @@ describe("the Word rules judge the story parts Word reads, session 83's rows (#1
     it.each(SESSION_83.map(([rule, , clean]) => [rule, clean] as const))(
         "the %s calibration renamed to word/main.xml passes word-valid, as Word opened it clean",
         async (rule, clean) => {
-            expect(await run(renameMain(await load(clean)), "word-valid", rule)).toEqual({ valid: true, paths: [], errors: [] });
+            expect(await run(renameMain(await load(clean)), "word-valid", rule)).toEqual({ valid: true, paths: [], found: [], errors: [] });
         },
     );
 });
@@ -296,4 +297,39 @@ describe("the rules no session probed in these placements follow the read model 
             expect((await run(headerHolding(shape), profile, rule)).paths).toEqual([]);
         },
     );
+});
+
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+/** The minimal package plus word/hf1.xml holding `shape`, which the body's w:sectPr uses as its header and its footer. */
+const headerAndFooterHolding = (shape: string): Parts => {
+    const parts = minimal();
+    parts.set(CT, once(textOf(parts, CT), "</Types>", `<Override PartName="/word/hf1.xml" ContentType="${WML}.header+xml"/></Types>`));
+    parts.set(
+        MAIN_RELS,
+        once(
+            textOf(parts, MAIN_RELS),
+            "</Relationships>",
+            `<Relationship Id="rIdH" Type="${R}/header" Target="hf1.xml"/><Relationship Id="rIdF" Type="${R}/footer" Target="hf1.xml"/></Relationships>`,
+        ),
+    );
+    parts.set(
+        MAIN,
+        once(
+            textOf(parts, MAIN),
+            "<w:sectPr>",
+            `<w:sectPr><w:headerReference xmlns:r="${R}" w:type="default" r:id="rIdH"/><w:footerReference xmlns:r="${R}" w:type="default" r:id="rIdF"/>`,
+        ),
+    );
+    parts.set("word/hf1.xml", `${DECL}<w:hdr ${NAMESPACES}>${shape}</w:hdr>`);
+    return parts;
+};
+
+// #1118 (review 1115 F1): the read model lists a part once per segment that
+// reaches it, so a part the body uses as its header and its footer arrives
+// twice; every rule walking wordReadStoryParts judges it once.
+describe("a part read through two story segments is judged once (#1118)", { timeout: 120_000 }, () => {
+    it.each(PROFILES)("word-sdt-id-empty reports one empty id once in a part used as header and footer under %s", async (profile) => {
+        const shape = `<w:sdt><w:sdtPr><w:id w:val=""/></w:sdtPr><w:sdtContent><w:p/></w:sdtContent></w:sdt><w:p/>`;
+        expect((await run(headerAndFooterHolding(shape), profile, "word-sdt-id-empty")).found).toEqual(["word/hf1.xml"]);
+    });
 });
