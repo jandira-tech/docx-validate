@@ -223,7 +223,7 @@ describe("isWordBlockingIssue", () => {
         const blocking = issue("word-part-content-type-unrecognized", {
             path: "word/styles.bin",
             message:
-                'word/styles.bin, named by the main document\'s styles relationship, is typed "application/octet-stream" by a Default; it expects "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml". Word 16.115 offers to recover the package (session 46).',
+                'word/styles.bin, named by the main document\'s styles relationship, is typed "application/octet-stream" by a Default; it expects "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml". Word 16.115 offers to recover the package (sessions 46 and 49).',
         });
         expect(isWordBlockingIssue(blocking, new Set(), new Set(), new Set(), observed)).toBe(true);
         // An OPC-equivalent spelling names the same part.
