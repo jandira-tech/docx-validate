@@ -31,6 +31,14 @@ describe("word error explanations", () => {
             );
         },
     );
+    // #1146: session 84 showed Word only the header; the other kinds follow
+    // the read model, and #1145 keeps a notes or comments part a read header
+    // or footer references blocking.
+    it.each(["mce-malformed", "mce-must-understand"])("explains %s's footer, comments and notes warning as unprobed (#1146)", (code) => {
+        expect(explainWordError(code)).toContain(
+            "It warns too in a footer, comments or notes part a story root relates but does not use, which Word was not shown (#1146); a comments or notes part counts as used when a header or footer Word reads references its kind (#1145).",
+        );
+    });
     it("explains a package root that unwraps to the Relationships element as accepted (#646)", () => {
         const explanation = explainWordError("mce-malformed");
         expect(explanation).not.toContain("still rejects");

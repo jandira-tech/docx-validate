@@ -182,9 +182,10 @@ describe("shading-color check", () => {
             expect((await findings(mainAt(main))).map((issue) => issue.path)).toEqual([main]);
         });
 
-        // Two stored entries with OPC-equivalent names are two parts with
-        // their own bytes, so each is walked: the walk keys on the stored
-        // name, not the canonical one.
+        // Two stored entries with OPC-equivalent names are two entries in
+        // the part list, each read by its own stored name, so each is walked:
+        // the walk keys on the stored name, not the canonical one. The pair
+        // is the duplicate `opc-equivalent-part-names` reports (#351).
         it("walks each stored part once, a second spelling of the main document's name included", async () => {
             const styles =
                 `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
