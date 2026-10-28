@@ -336,6 +336,166 @@ describe("PPTXSchemaValidator.validateNotesSlideReferences", () => {
     );
 });
 
+// #1013: OPC lets a presentation store its slides and masters under any part
+// name, so the slide and master checks judge every one the presentation
+// relates, beside the historical `ppt/slides/_rels` and `ppt/slideMasters`.
+describe("slides and masters the presentation relates outside the historical folders (#1013)", () => {
+    const relationship = (id: string, type: string, target: string) =>
+        `<Relationship Id="${id}" Type="${R_NS}/${type}" Target="${target}"/>`;
+
+    /** `_rels/.rels` naming `presentation` as the main part, whose sidecar relates each target by `type`. */
+    async function presentationRelating(
+        dir: string,
+        type: string,
+        targets: string[],
+        presentation = "ppt/presentation.xml",
+    ): Promise<void> {
+        await writeFile(path.join(dir, "_rels", ".rels"), relsXml(relationship("rId1", "officeDocument", presentation)));
+        await writeFile(path.join(dir, presentation), presentationXml(""));
+        await writeFile(
+            path.join(dir, path.dirname(presentation), "_rels", `${path.basename(presentation)}.rels`),
+            relsXml(targets.map((target, i) => relationship(`rId${i + 1}`, type, target)).join("")),
+        );
+    }
+
+    const notesShared = async (dir: string) =>
+        (await makeValidator(dir).validateNotesSlideReferences()).issues.map((issue) => [issue.code, issue.message]);
+
+    it("flags a notes slide two slides stored in ppt/myslides share", async () => {
+        await withTempDir(async (dir) => {
+            await presentationRelating(dir, "slide", ["myslides/slide1.xml", "myslides/slide2.xml"]);
+            for (const n of [1, 2]) {
+                await writeFile(path.join(dir, "ppt", "myslides", `slide${n}.xml`), presentationXml(""));
+                await writeFile(
+                    path.join(dir, "ppt", "myslides", "_rels", `slide${n}.xml.rels`),
+                    relsXml(relationship("rId1", "notesSlide", "../notesSlides/notesSlide1.xml")),
+                );
+            }
+            expect(await notesShared(dir)).toEqual([
+                ["notes-shared", "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: slide1, slide2"],
+                ["notes-shared-detail", "    - ppt/myslides/_rels/slide1.xml.rels"],
+                ["notes-shared-detail", "    - ppt/myslides/_rels/slide2.xml.rels"],
+            ]);
+        });
+    });
+
+    it("resolves each related slide's notes target against that slide's folder, beside a ppt/slides sidecar", async () => {
+        await withTempDir(async (dir) => {
+            await presentationRelating(dir, "slide", ["deck/a/slide2.xml"]);
+            await writeFile(path.join(dir, "ppt", "deck", "a", "slide2.xml"), presentationXml(""));
+            await writeFile(
+                path.join(dir, "ppt", "deck", "a", "_rels", "slide2.xml.rels"),
+                relsXml(relationship("rId1", "notesSlide", "../../notesSlides/notesSlide1.xml")),
+            );
+            await writeFile(
+                path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"),
+                relsXml(relationship("rId1", "notesSlide", "../notesSlides/notesSlide1.xml")),
+            );
+            expect(await notesShared(dir)).toEqual([
+                ["notes-shared", "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: slide2, slide1"],
+                ["notes-shared-detail", "    - ppt/deck/a/_rels/slide2.xml.rels"],
+                ["notes-shared-detail", "    - ppt/slides/_rels/slide1.xml.rels"],
+            ]);
+        });
+    });
+
+    it("follows a renamed presentation and an equivalent spelling of the slide's name", async () => {
+        await withTempDir(async (dir) => {
+            await presentationRelating(dir, "slide", ["../ppt/MySlides/Slide1.xml", "/ppt/myslides/slide2.xml"], "deck/main.xml");
+            for (const n of [1, 2]) {
+                await writeFile(path.join(dir, "ppt", "myslides", `slide${n}.xml`), presentationXml(""));
+                await writeFile(
+                    path.join(dir, "ppt", "myslides", "_rels", `slide${n}.xml.rels`),
+                    relsXml(relationship("rId1", "notesSlide", "../notesSlides/notesSlide1.xml")),
+                );
+            }
+            expect((await notesShared(dir))[0]).toEqual([
+                "notes-shared",
+                "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: slide1, slide2",
+            ]);
+        });
+    });
+
+    it("judges a slide both lists name once", async () => {
+        await withTempDir(async (dir) => {
+            await presentationRelating(dir, "slide", ["slides/slide1.xml"]);
+            await writeFile(path.join(dir, "ppt", "slides", "slide1.xml"), presentationXml(""));
+            await writeFile(
+                path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"),
+                relsXml(
+                    relationship("rId1", "notesSlide", "../notesSlides/notesSlide1.xml") +
+                        relationship("rId2", "slideLayout", "../slideLayouts/slideLayout1.xml") +
+                        relationship("rId3", "slideLayout", "../slideLayouts/slideLayout2.xml"),
+                ),
+            );
+            expect(await notesShared(dir)).toEqual([]);
+            expect((await makeValidator(dir).validateNoDuplicateSlideLayouts()).issues.map((issue) => issue.path)).toEqual([
+                "ppt/slides/_rels/slide1.xml.rels",
+            ]);
+        });
+    });
+
+    it("reads only slide relationships as slides", async () => {
+        await withTempDir(async (dir) => {
+            await presentationRelating(dir, "slideLayout", ["myslides/slide1.xml", "myslides/slide2.xml"]);
+            for (const n of [1, 2]) {
+                await writeFile(path.join(dir, "ppt", "myslides", `slide${n}.xml`), presentationXml(""));
+                await writeFile(
+                    path.join(dir, "ppt", "myslides", "_rels", `slide${n}.xml.rels`),
+                    relsXml(relationship("rId1", "notesSlide", "../notesSlides/notesSlide1.xml")),
+                );
+            }
+            expect(await notesShared(dir)).toEqual([]);
+        });
+    });
+
+    it("flags a related slide in ppt/myslides with two slideLayout references", async () => {
+        await withTempDir(async (dir) => {
+            await presentationRelating(dir, "slide", ["myslides/slide1.xml"]);
+            await writeFile(path.join(dir, "ppt", "myslides", "slide1.xml"), presentationXml(""));
+            await writeFile(
+                path.join(dir, "ppt", "myslides", "_rels", "slide1.xml.rels"),
+                relsXml(
+                    relationship("rId1", "slideLayout", "../slideLayouts/slideLayout1.xml") +
+                        relationship("rId2", "slideLayout", "../slideLayouts/slideLayout2.xml"),
+                ),
+            );
+            const result = await makeValidator(dir).validateNoDuplicateSlideLayouts();
+            expect(result.issues.map((issue) => [issue.code, issue.message, issue.path])).toEqual([
+                ["slide-layout-duplicate", "has 2 slideLayout references", "ppt/myslides/_rels/slide1.xml.rels"],
+            ]);
+            expect(result.valid).toBe(false);
+        });
+    });
+
+    it("flags a related master in ppt/masters whose sldLayoutId names no slideLayout relationship", async () => {
+        await withTempDir(async (dir) => {
+            await presentationRelating(dir, "slideMaster", ["masters/slideMaster1.xml"]);
+            await writeFile(
+                path.join(dir, "ppt", "masters", "slideMaster1.xml"),
+                presentationXml('<p:sldLayoutIdLst><p:sldLayoutId id="2147483649" r:id="rId9"/></p:sldLayoutIdLst>'),
+            );
+            await writeFile(path.join(dir, "ppt", "masters", "_rels", "slideMaster1.xml.rels"), relsXml(""));
+            const result = await makeValidator(dir).validateSlideLayoutIds();
+            expect(result.issues.map((issue) => [issue.code, issue.path])).toEqual([
+                ["sldlayout-missing-rid", "ppt/masters/slideMaster1.xml"],
+            ]);
+            expect(result.valid).toBe(false);
+        });
+    });
+
+    it("flags a related master in ppt/masters with no relationships part", async () => {
+        await withTempDir(async (dir) => {
+            await presentationRelating(dir, "slideMaster", ["masters/slideMaster1.xml"]);
+            await writeFile(path.join(dir, "ppt", "masters", "slideMaster1.xml"), presentationXml("<p:sldLayoutIdLst/>"));
+            const result = await makeValidator(dir).validateSlideLayoutIds();
+            expect(result.issues.map((issue) => [issue.code, issue.path])).toEqual([
+                ["sldlayout-missing-rels", "ppt/masters/slideMaster1.xml"],
+            ]);
+        });
+    });
+});
+
 describe("PPTXSchemaValidator.validate", () => {
     it("aggregates validate_xml failure and short-circuits the suite", async () => {
         await withTempDir(async (dir) => {

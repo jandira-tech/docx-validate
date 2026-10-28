@@ -28,12 +28,13 @@
 import { existsSync, promises as fs } from "node:fs";
 import path from "node:path";
 
-import { canonicalPartName, relationshipTargetFolder, relationshipTargetPartName } from "../../../lib/content-types";
+import { canonicalPartName, findEquivalentPart, relationshipTargetFolder, relationshipTargetPartName } from "../../../lib/content-types";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
+import { officeRelationshipTypeSegment } from "../../../lib/word-read-parts";
 import { getElementsByTagNameNSAll, parseXmlBytes } from "../../../lib/xml-helpers";
 import type { BaseSchemaValidatorOptions } from "./base";
-import { BaseSchemaValidator, OFFICE_RELATIONSHIPS_NAMESPACE, walkFiles, withoutRestatedIgnorablePrefixes } from "./base";
+import { BaseSchemaValidator, OFFICE_RELATIONSHIPS_NAMESPACE, packageEntries, withoutRestatedIgnorablePrefixes } from "./base";
 import { openDirectoryContext, packageExtractFailedIssue, storedNamesRun } from "../package-context";
 
 export const PRESENTATIONML_NAMESPACE = "http://schemas.openxmlformats.org/presentationml/2006/main";
@@ -177,17 +178,9 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
     async validateSlideLayoutIds(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
 
-        const slideMastersDir = path.join(this.unpackedDir, "ppt", "slideMasters");
-        if (!existsSync(slideMastersDir)) {
-            return { valid: true, issues: [] };
-        }
-
-        const slideMasters = walkFiles(slideMastersDir, [".xml"]).filter((f) => {
-            const rel = path.relative(this.unpackedDir, f);
-            const parts = rel.split(path.sep);
-            // glob "ppt/slideMasters/*.xml" — one level only, no _rels subdir.
-            return parts.length === 3 && parts[0] === "ppt" && parts[1] === "slideMasters" && parts[2].endsWith(".xml");
-        });
+        // glob "ppt/slideMasters/*.xml" — one level only, no _rels subdir —
+        // and every master the presentation relates, wherever stored (#1013).
+        const slideMasters = (await this.judgedParts(/^ppt\/slideMasters\/[^/]+\.xml$/, "slideMaster")).map((part) => part.file);
 
         if (slideMasters.length === 0) {
             return { valid: true, issues: [] };
@@ -275,20 +268,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
     async validateNoDuplicateSlideLayouts(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
 
-        const slideRelsDir = path.join(this.unpackedDir, "ppt", "slides", "_rels");
-        if (!existsSync(slideRelsDir)) {
-            return { valid: true, issues: [] };
-        }
-
-        const relsFiles = walkFiles(slideRelsDir, [".rels"]).filter((f) => {
-            const rel = path.relative(this.unpackedDir, f);
-            const parts = rel.split(path.sep);
-            return (
-                parts.length === 4 && parts[0] === "ppt" && parts[1] === "slides" && parts[2] === "_rels" && parts[3].endsWith(".xml.rels")
-            );
-        });
-
-        for (const relsFile of relsFiles) {
+        for (const { file: relsFile } of await this.slideRelationshipsParts()) {
             let dom: Document;
             try {
                 dom = parseXmlBytes(await fs.readFile(relsFile));
@@ -334,24 +314,13 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
         // reported under the first name a slide gave it (#1007).
         const notesReferences = new Map<string, { partName: string; references: Array<{ slideName: string; relsFile: string }> }>();
 
-        const slideRelsDir = path.join(this.unpackedDir, "ppt", "slides", "_rels");
-        if (!existsSync(slideRelsDir)) {
-            return { valid: true, issues: [] };
-        }
-
-        const relsFiles = walkFiles(slideRelsDir, [".rels"]).filter((f) => {
-            const rel = path.relative(this.unpackedDir, f);
-            const parts = rel.split(path.sep);
-            return (
-                parts.length === 4 && parts[0] === "ppt" && parts[1] === "slides" && parts[2] === "_rels" && parts[3].endsWith(".xml.rels")
-            );
-        });
+        const relsFiles = await this.slideRelationshipsParts();
 
         if (relsFiles.length === 0) {
             return { valid: true, issues: [] };
         }
 
-        for (const relsFile of relsFiles) {
+        for (const { file: relsFile, folder } of relsFiles) {
             let dom: Document;
             try {
                 dom = parseXmlBytes(await fs.readFile(relsFile));
@@ -380,11 +349,11 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
                 // however each spells it (#1007). A URI or an empty reference
                 // names no part, and a target naming a folder names none
                 // either (#962, #975), so it shares no notes slide with the
-                // part its path spells (#991). The walk lists only
-                // `ppt/slides/_rels/*.xml.rels`, so every target resolves
-                // against `ppt/slides`.
-                const resolved = relationshipTargetPartName("ppt/slides", target);
-                if (resolved === undefined || relationshipTargetFolder("ppt/slides", target) !== undefined) continue;
+                // part its path spells (#991). Each target resolves against
+                // its slide's folder, `ppt/slides` for the historical sidecars
+                // (#1013).
+                const resolved = relationshipTargetPartName(folder, target);
+                if (resolved === undefined || relationshipTargetFolder(folder, target) !== undefined) continue;
                 const partName = resolved.replace(/^\//, "");
                 const key = canonicalPartName(partName);
                 // Python: rels_file.stem (foo.xml.rels → foo.xml) then .replace(".xml", "") → foo
@@ -415,6 +384,88 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
         }
 
         return finalize(issues);
+    }
+
+    /**
+     * The relationships parts of the slides the slide checks judge, each
+     * once, in code-unit order of their names, with the folder of the slide
+     * whose targets they hold: `ppt/slides/_rels/*.xml.rels`, as the Python
+     * port listed them, and the sidecar of every slide the presentation
+     * relates, wherever stored (#1013).
+     */
+    private async slideRelationshipsParts(): Promise<Array<{ file: string; folder: string }>> {
+        const entries = packageEntries(this.unpackedDir);
+        const names = [...entries.keys()];
+        const judged = new Map<string, { name: string; folder: string }>();
+        for (const name of names) {
+            if (/^ppt\/slides\/_rels\/[^/]+\.xml\.rels$/.test(name)) judged.set(canonicalPartName(name), { name, folder: "ppt/slides" });
+        }
+        for (const slide of await this.presentationRelatedParts(names, "slide")) {
+            const folder = path.posix.dirname(slide);
+            const name = findEquivalentPart(names, path.posix.join(folder, "_rels", `${path.posix.basename(slide)}.rels`));
+            if (name !== undefined && !judged.has(canonicalPartName(name))) judged.set(canonicalPartName(name), { name, folder });
+        }
+        return [...judged.values()]
+            .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+            .map(({ name, folder }) => ({ file: entries.get(name)!, folder }));
+    }
+
+    /**
+     * The stored parts a check judges, each once, in code-unit order of their
+     * names: those whose names match `historical`, as the Python port listed
+     * them, and those the presentation relates by a `segment` relationship,
+     * wherever stored (#1013).
+     */
+    private async judgedParts(historical: RegExp, segment: string): Promise<Array<{ name: string; file: string }>> {
+        const entries = packageEntries(this.unpackedDir);
+        const names = [...entries.keys()];
+        const judged = new Map<string, string>();
+        for (const name of names) {
+            if (historical.test(name)) judged.set(canonicalPartName(name), name);
+        }
+        for (const part of await this.presentationRelatedParts(names, segment)) {
+            if (!judged.has(canonicalPartName(part))) judged.set(canonicalPartName(part), part);
+        }
+        return [...judged.values()].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)).map((name) => ({ name, file: entries.get(name)! }));
+    }
+
+    /**
+     * The stored parts the presentation relates by an internal relationship
+     * of the `segment` type, matched exactly (`officeRelationshipTypeSegment`,
+     * so `slideLayout` is not `slide`) (#1013). The presentation is the part
+     * the package's `officeDocument` relationship names, the one PowerPoint
+     * opens. Each target resolves against the folder of the part relating it,
+     * a climb stopping at the package root, and names a stored part by OPC
+     * part-name equivalence. Empty when the package names no stored
+     * presentation.
+     */
+    private async presentationRelatedParts(names: readonly string[], segment: string): Promise<string[]> {
+        const [presentation] = await this.relatedParts(names, "_rels/.rels", ".", "officeDocument");
+        if (presentation === undefined) return [];
+        const folder = path.posix.dirname(presentation);
+        return this.relatedParts(names, path.posix.join(folder, "_rels", `${path.posix.basename(presentation)}.rels`), folder, segment);
+    }
+
+    /** The stored parts the relationships part `relsPart`, whose targets resolve against `folder`, names by internal `segment` relationships. */
+    private async relatedParts(names: readonly string[], relsPart: string, folder: string, segment: string): Promise<string[]> {
+        const relsName = findEquivalentPart(names, relsPart);
+        if (relsName === undefined) return [];
+        let dom: Document;
+        try {
+            dom = parseXmlBytes(await fs.readFile(path.join(this.unpackedDir, relsName)));
+        } catch {
+            // The XML and relationships checks report a part that cannot be read.
+            return [];
+        }
+        const parts: string[] = [];
+        for (const rel of this.relationshipElements(dom, relsName)) {
+            if (officeRelationshipTypeSegment(rel.getAttribute("Type") ?? "") !== segment) continue;
+            if (rel.getAttribute("TargetMode") === "External") continue;
+            const resolved = relationshipTargetPartName(folder, rel.getAttribute("Target") ?? "");
+            const part = resolved === undefined ? undefined : findEquivalentPart(names, resolved.replace(/^\//, ""));
+            if (part !== undefined) parts.push(part);
+        }
+        return parts;
     }
 }
 
