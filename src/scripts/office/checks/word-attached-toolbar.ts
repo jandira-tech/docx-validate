@@ -20,24 +20,25 @@
  * naming no relationship. The UTF-8 byte scan follows only the exact
  * Type; the Type check is `word-attached-toolbar-relationship`.
  *
- * The walk judges the parts `xmlPartNames` accepts, not only literal
- * `.xml` spellings — a `word/customizations.XML` and its
- * `customizations.XML.rels` get the recovery offer — and reads each
- * part's sidecar by OPC part-name equivalence. The tool also resolves
- * escaped and backslash spellings; Word's sidecar observation covers
+ * The walk judges XML-named parts (`isXmlPartName`), excluding
+ * relationships parts and XML-typed non-XML names (#759). It also
+ * judges case variants: a `word/customizations.XML` and its
+ * `customizations.XML.rels` get the recovery offer (session 54, s54c;
+ * #743). The tool reads each sidecar by OPC part-name equivalence,
+ * resolving escaped and backslash spellings; Word's observation covers
  * only `customizations.xml.RELS`, which opened clean (session 54,
  * s54c; #398, #402, #743). Session 3 recorded Word refusing escaped
  * part names (#408, #436). An empty `r:id` is not judged (s54c).
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { equivalentPartLookup } from "../../../lib/content-types";
+import { equivalentPartLookup, isRelationshipsPartName } from "../../../lib/content-types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { ValidationIssue } from "../../../lib/types";
 import path from "node:path";
 import { registerStoryReferenceIdentity } from "../story-reference-identity";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
-import { xmlPartNames } from "./xml";
+import { isXmlPartName } from "./xml";
 
 const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
@@ -58,8 +59,8 @@ type ToolbarReference = {
 };
 
 /**
- * Each `wne:toolbarData r:id` in the package's XML parts — as
- * `xmlPartNames` names them, so a `.XML` spelling is judged (session
+ * Each `wne:toolbarData r:id` in the package's XML-named parts — excluding
+ * relationships parts, so a `.XML` spelling is judged (session
  * 54, s54c; #743) — with the relationship its part's own sidecar gives
  * it, the sidecar found through the shared OPC part-name index,
  * so the tool reads a `.RELS` spelling (s54c). A part with no sidecar
@@ -72,8 +73,8 @@ const toolbarReferences = function* (
 ): Generator<ToolbarReference> {
     const wordmlNs = "http://schemas.microsoft.com/office/word/2006/wordml";
     const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
-    const xmlParts = xmlPartNames(ctx.partNames, (part) => ctx.bytes(part));
-    // The shared index and this set keep a bounded number of passes over
+    const xmlParts = ctx.partNames.filter((part) => isXmlPartName(part) && !isRelationshipsPartName(part));
+    // The shared index and this list keep a bounded number of passes over
     // the part names, including when a sidecar is absent (#358, #758).
     for (const xmlFile of xmlParts) {
         const parsed = ctx.effectiveXml(xmlFile);

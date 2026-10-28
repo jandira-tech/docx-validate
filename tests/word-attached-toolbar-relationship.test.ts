@@ -166,6 +166,36 @@ describe("session 54 (s54c) spellings (#743)", { timeout: 60000 }, () => {
             }
         });
     });
+
+    it.each(["custom/toolbarconfig.bin", "custom/_rels/other.xml.rels"])("does not judge toolbarData in %s (#759)", async (part) => {
+        const zip = await JSZip.loadAsync(await fs.readFile(CLEAN));
+        const toolbar =
+            '<wne:toolbarData xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="nope"/>';
+        if (part.endsWith(".bin")) {
+            zip.file(part, `<wne:tcg xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">${toolbar}</wne:tcg>`);
+            const types = await zip.file("[Content_Types].xml")!.async("string");
+            zip.file(
+                "[Content_Types].xml",
+                types.replace("</Types>", `<Override PartName="/${part}" ContentType="application/xml"/></Types>`),
+            );
+        } else {
+            zip.file(
+                part,
+                `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${toolbar}</Relationships>`,
+            );
+        }
+        await withTempDir(async (dir) => {
+            const { full, selected } = await run(
+                dir,
+                "toolbar-unjudged-part",
+                await zip.generateAsync({ type: "uint8array", compression: "DEFLATE" }),
+            );
+            for (const result of [full, selected]) {
+                expect.soft(result.valid).toBe(true);
+                expect.soft(result.issues.some((issue) => TOOLBAR.includes(issue.code ?? ""))).toBe(false);
+            }
+        });
+    });
 });
 
 describe("word-attached-toolbar-relationship (#716; session 48)", { timeout: 60000 }, () => {
