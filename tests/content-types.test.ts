@@ -321,6 +321,21 @@ describe("relationshipTargetPartName (#947)", () => {
         expect(relationshipTargetPartName(baseDir, target)).toBe(root);
     });
 
+    // path.posix.join spells the root `./` for a climb that ends in `/`, and
+    // nothing at all for one that climbs past it; the root keeps its own
+    // spelling (review 281, #989).
+    it.each([
+        ["word", "../", "."],
+        ["word", "..//", "."],
+        ["word", "../../", "."],
+        [".", "./", "."],
+        [".", "../", "."],
+        [".", "/../", "/"],
+        ["word", "/./", "/"],
+    ])("spells the package root a climb ending in / reaches its own way: from %s, %s (#989)", (baseDir, target, root) => {
+        expect(relationshipTargetPartName(baseDir, target)).toBe(root);
+    });
+
     // Word read the part through each of these (session 70 s70a/s70b/s70c),
     // so an empty segment collapses, as path.posix.join collapses it and
     // RFC 3986 would not (#962).
@@ -422,6 +437,13 @@ describe("relationshipTargetFolder: the folder a target names (#975, sessions 70
         [".", ".", "/"],
         [".", "/", "/"],
         [".", "/.", "/"],
+        // A climb ending in `/` reaches the root as well, which path.posix.join
+        // spells `./` (review 281, #989).
+        ["word", "../", "/"],
+        ["word", "..//", "/"],
+        ["word", "../../", "/"],
+        [".", "./", "/"],
+        [".", "/../", "/"],
     ])("from %s, %s names the folder %s", (baseDir, target, folder) => {
         expect(relationshipTargetFolder(baseDir, target)).toBe(folder);
     });

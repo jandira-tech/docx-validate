@@ -302,8 +302,10 @@ export const relationshipTargetPartName = (baseDir: string, target: string): str
     // the root, then the `/` goes back on (#947).
     const absolute = reference.startsWith("/");
     const belowRoot = path.posix.join(absolute ? "." : baseDir, absolute ? reference.slice(1) : reference);
-    // A climb past the package root stops there (#830, #962, #986).
-    const stopped = stopClimbAtRoot(belowRoot);
+    // A climb past the package root stops there (#830, #962, #986). The root
+    // keeps its one spelling, `.`, where path.posix.join spells a climb
+    // ending in `/` as `./` and the stop leaves nothing of one past it (#989).
+    const stopped = stopClimbAtRoot(belowRoot).replace(/^(?:\.\/)?$/, ".");
     // A final `.` or `..` segment leaves a folder, which RFC 3986 spells with
     // the final `/` that path.posix.join drops; Word refuses such a target
     // (session 70, #962). The package root keeps its own spelling.
