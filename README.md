@@ -2194,7 +2194,11 @@ The durable-id repair gives each over-cap `w16cid:durableId` one new value and
 writes it into every `w16cex:durableId` that named the old one, so
 `commentsExtensible.xml` stays paired with `commentsIds.xml`. Before, each entry
 got its own random value and every extensible entry was left orphaned
-([#892](https://github.com/jandira-tech/docx-validate/issues/892)). The decimal
+([#892](https://github.com/jandira-tech/docx-validate/issues/892)). The two
+parts' spellings are matched as `xsd:hexBinary` values, whatever the case of
+their hex letters, so `ffffffff` in one part and `FFFFFFFF` in the other get the
+same new value
+([#904](https://github.com/jandira-tech/docx-validate/issues/904)). The decimal
 durableIds in `numbering.xml`, which no part references, keep their per-element
 renumbering, and it still runs when the hex rewrite is refused.
 
