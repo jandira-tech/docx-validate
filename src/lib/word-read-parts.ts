@@ -94,7 +94,13 @@
 
 import path from "node:path";
 
-import { canonicalPartName, equivalentPartLookup, findEquivalentPart, isRelationshipsPartName } from "./content-types";
+import {
+    canonicalPartName,
+    equivalentPartLookup,
+    findEquivalentPart,
+    isRelationshipsFolderName,
+    isRelationshipsPartName,
+} from "./content-types";
 import type { Profile } from "./types";
 import type { ValidationContext, XmlPart } from "./validation-context";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "./xml-helpers";
@@ -177,10 +183,15 @@ export const officeRelationshipTypeSegment = (type: string): string | undefined 
 /** An absolute URI names no package part, whatever its TargetMode says. */
 const hasUriScheme = (target: string): boolean => /^[a-z][a-z\d+.-]*:/i.test(target);
 
-/** The folder a relationships part's targets resolve against: its source part's folder. */
+/**
+ * The folder a relationships part's targets resolve against: its source
+ * part's folder, the `_rels` segment compared canonically — the same
+ * equivalence the sidecar lookup uses — so an escaped spelling resolves
+ * as `_rels` does (#772).
+ */
 const relationshipsBaseDir = (relsPart: string): string => {
     const dir = path.posix.dirname(relsPart);
-    return path.posix.basename(dir).toLowerCase() === "_rels" ? path.posix.dirname(dir) : dir;
+    return isRelationshipsFolderName(path.posix.basename(dir)) ? path.posix.dirname(dir) : dir;
 };
 
 /**

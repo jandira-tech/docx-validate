@@ -315,6 +315,16 @@ export const normalizePartName = (partName: string): string => asciiLowercase(de
 export const isRelationshipsPartName = (partName: string): boolean => canonicalPartName(partName).endsWith(".rels");
 
 /**
+ * Whether a folder segment is the relationships folder: its OPC-canonical
+ * name ({@link canonicalPartName}: ASCII case folded, escapes of unreserved
+ * characters decoded) is `_rels`, so `_RELS`, `_%72els`, `%5Frels` and
+ * `_r%65ls` name it too — the same equivalence the sidecar lookup
+ * ({@link equivalentPartLookup}) finds a stored spelling by, so the folder
+ * a sidecar's targets resolve against is picked by it as well (#758, #772).
+ */
+export const isRelationshipsFolderName = (segment: string): boolean => canonicalPartName(segment) === "_rels";
+
+/**
  * OPC extension of a part name: the substring after the last dot of the
  * final segment, ASCII-lowercased — `_rels/.rels` has extension "rels"
  * (unlike POSIX `path.extname`, which returns "" for dotfiles). Returns ""
