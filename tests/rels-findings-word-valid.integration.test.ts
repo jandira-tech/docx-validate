@@ -568,3 +568,38 @@ describe("a target in a relationships part Word does not read never blocks word-
         expect(valid).toBe(false);
     });
 });
+
+// #990: `validateFileReferences` resolved an off-convention relationships
+// part's targets against the package root, while the orphan walk resolved
+// them against the folder of the part the relationships part belongs to: the
+// folder above a `_rels` folder, or the part's own folder outside one. The
+// same Target then named two parts.
+describe("both file-reference walks read an off-convention relationships part from one folder (#990)", () => {
+    const withStylesRelationship = (relsPart: string, target: string) => ({
+        ...MINIMAL_PARTS,
+        [relsPart]:
+            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+            `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+            `<Relationship Id="rId1" Type="${RELATIONSHIPS}/styles" Target="${target}"/></Relationships>`,
+    });
+    const walkFindings = async (parts: Record<string, string>) =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            await fs.writeFile(file, await buildDocx(parts));
+            const result = await validate(file, { profile: "strict" });
+            return result.issues
+                .filter((issue) => issue.code === "rels-broken" || issue.code === "rels-target-missing")
+                .map((issue) => [issue.code, issue.path]);
+        });
+
+    it.each(["word/_rels/.rels", "word/notes.rels"])("finds %s's styles.xml in word/ in both walks", async (relsPart) => {
+        expect(await walkFindings(withStylesRelationship(relsPart, "styles.xml"))).toEqual([]);
+    });
+
+    it.each(["word/_rels/.rels", "word/notes.rels"])("reports %s's word/styles.xml as broken in both walks", async (relsPart) => {
+        expect(await walkFindings(withStylesRelationship(relsPart, "word/styles.xml"))).toEqual([
+            ["rels-broken", relsPart],
+            ["rels-target-missing", relsPart],
+        ]);
+    });
+});
