@@ -2013,6 +2013,11 @@ leaves a folder, as RFC 3986 does, so `word/main.xml/.` and
 part there, matching Word's recovery offer (session 70), and `addComment`
 refuses such a main-document target; before, they named `word/main.xml`
 ([#962](https://github.com/jandira-tech/docx-validate/issues/962)).
+`addComment` also refuses a main-document target naming the package root, such as
+`.` or `word/..`, which names no part even beside a part stored as `%2e`, as the
+read model reads it; before, it wired the comment through that `%2e` part while
+`validate` found no main document
+([#977](https://github.com/jandira-tech/docx-validate/issues/977)).
 The relationships parts are read and written in
 the package-relationships namespace, whatever prefix they bind it to: a prefixed
 `_rels/.rels` names its main document as an unprefixed one does, the new
