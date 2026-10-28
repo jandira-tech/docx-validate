@@ -12,6 +12,7 @@ import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
 import { wordSharedStoryPartCheck } from "../src/scripts/office/checks/word-shared-story-part";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { climbingSharedNotes } from "./support/climbing-target-specimens";
 
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
@@ -269,5 +270,37 @@ describe("full word-valid runs on the session 66 and 67 specimens", { timeout: 3
             expect(result.valid).toBe(false);
             expect(result.issues.map((issue) => issue.code)).not.toContain("word-shared-story-part");
         });
+    });
+});
+
+// #996, Word sessions 81 (s81a/s81b, two runs each, all readings agree): a
+// glossary reached by a climbing glossaryDocument target, or relating the
+// notes part by a climbing target, reads the notes part the main document
+// reads, as every read-model walk stops the climb at the root since #986.
+// Word offered recovery when both roots used the note, as session 67 did
+// in-package, and opened the climbing glossary that uses no note clean.
+describe("a notes part two roots use through climbing targets (#996, session 81)", { timeout: 30000 }, () => {
+    const judged = (parts: Record<string, string>) =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "climbing-shared-notes.docx");
+            await fs.writeFile(file, await buildDocx(parts));
+            return validate(file, { profile: "word-valid" });
+        });
+
+    it.each([
+        ["the glossary reached by ../../word/glossary/document.xml", "../../word/glossary/document.xml", "../footnotes.xml"],
+        ["the glossary's notes related by ../../../word/footnotes.xml", "glossary/document.xml", "../../../word/footnotes.xml"],
+    ])("blocks word/footnotes.xml both roots use, %s, as Word refused it", async (_row, glossaryTarget, notesTarget) => {
+        const result = await judged(climbingSharedNotes(glossaryTarget, notesTarget, true));
+        expect(result.valid).toBe(false);
+        expect(result.issues.filter((issue) => issue.severity === "error").map((issue) => [issue.code, issue.path])).toEqual([
+            ["word-shared-story-part", "word/footnotes.xml"],
+        ]);
+    });
+
+    it("accepts the climbing glossary that uses no note, which Word opened clean", async () => {
+        const result = await judged(climbingSharedNotes("../../word/glossary/document.xml", "../footnotes.xml", false));
+        expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+        expect(result.valid).toBe(true);
     });
 });
