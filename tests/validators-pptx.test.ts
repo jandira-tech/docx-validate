@@ -919,6 +919,40 @@ describe("the slide checks read relationships as the slide walk does outside len
         },
     );
 
+    // Type URIs and TargetMode compare case-sensitively, as base.ts reads
+    // TargetMode: `NOTESslide` is not the notesSlide type, and
+    // `TargetMode="EXTERNAL"` (schema-invalid) reads as internal (#1057).
+    it.each(["lenient", "word-valid", "strict"] as const)("notes-shared does not count a NOTESslide type under %s", async (profile) => {
+        await withTempDir(async (dir) => {
+            await writeFile(
+                path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"),
+                relsXml(rel("rId1", `${R_NS}/notesSlide`, "../notesSlides/notesSlide1.xml")),
+            );
+            await writeFile(
+                path.join(dir, "ppt", "slides", "_rels", "slide2.xml.rels"),
+                relsXml(rel("rId1", `${R_NS}/NOTESslide`, "../notesSlides/notesSlide1.xml")),
+            );
+            expect(codes(await validator(dir, profile).validateNotesSlideReferences())).toEqual([]);
+        });
+    });
+
+    it.each(["lenient", "word-valid", "strict"] as const)(
+        'notes-shared reads TargetMode="EXTERNAL" as internal under %s',
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"),
+                    relsXml(rel("rId1", `${R_NS}/notesSlide`, "../notesSlides/notesSlide1.xml")),
+                );
+                await writeFile(
+                    path.join(dir, "ppt", "slides", "_rels", "slide2.xml.rels"),
+                    relsXml(rel("rId1", `${R_NS}/notesSlide`, "../notesSlides/notesSlide1.xml", ' TargetMode="EXTERNAL"')),
+                );
+                expect(codes(await validator(dir, profile).validateNotesSlideReferences())).toContain("notes-shared");
+            });
+        },
+    );
+
     const layoutSecond = [
         ["an External slideLayout relationship", `${R_NS}/slideLayout`, EXTERNAL],
         ["a foreign type containing slideLayout", "http://example.com/relationships/slideLayout", ""],
