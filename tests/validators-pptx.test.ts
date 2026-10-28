@@ -802,7 +802,8 @@ describe("a notes-shared message names each relationships part once (#1045)", ()
         },
     );
 
-    it("names a sidecar relating the notes slide twice once beside another slide's", async () => {
+    // A part relating the notes slide more than once carries its count (#1050).
+    it("names a sidecar relating the notes slide twice once, with its count, beside another slide's", async () => {
         await withTempDir(async (dir) => {
             await writeFile(path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"), twiceSidecar("notesSlide1.xml"));
             await writeFile(path.join(dir, "ppt", "slides", "_rels", "slide2.xml.rels"), notesSidecar());
@@ -810,7 +811,7 @@ describe("a notes-shared message names each relationships part once (#1045)", ()
                 [
                     "error",
                     "notes-shared",
-                    "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: slide1, slide2",
+                    "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: slide1 (2 times), slide2",
                     undefined,
                 ],
                 ["error", "notes-shared-detail", "    - ppt/slides/_rels/slide1.xml.rels", "ppt/slides/_rels/slide1.xml.rels"],
@@ -819,7 +820,7 @@ describe("a notes-shared message names each relationships part once (#1045)", ()
         });
     });
 
-    it("names each of two equivalent spellings once when one relates the notes slide twice", async () => {
+    it("names each of two equivalent spellings once, with its count, when one relates the notes slide twice", async () => {
         await withTempDir(async (dir) => {
             await writeFile(path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"), twiceSidecar("notesSlide1.xml"));
             await writeFile(path.join(dir, "ppt", "slides", "%5Frels", "slide1.xml.rels"), notesSidecar());
@@ -827,7 +828,7 @@ describe("a notes-shared message names each relationships part once (#1045)", ()
                 [
                     "error",
                     "notes-shared",
-                    "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: ppt/slides/%5Frels/slide1.xml.rels, ppt/slides/_rels/slide1.xml.rels",
+                    "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: ppt/slides/%5Frels/slide1.xml.rels, ppt/slides/_rels/slide1.xml.rels (2 times)",
                     undefined,
                 ],
                 ["error", "notes-shared-detail", "    - ppt/slides/%5Frels/slide1.xml.rels", "ppt/slides/%5Frels/slide1.xml.rels"],
