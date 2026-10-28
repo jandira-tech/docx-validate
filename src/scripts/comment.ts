@@ -339,11 +339,12 @@ function effectiveRelationships(dom: Document): Element[] {
  * relationship of the comments type, Transitional or Strict, whose target
  * names `partName` under OPC part-name equivalence once resolved as the
  * read model resolves it: `\` read as `/`, the query and fragment dropped,
- * a URI scheme or an empty reference naming no part (#906, #928). A target
- * that climbs past the package root keeps its `../` and names no part, as
- * the read model leaves it unclamped; a package-absolute target's dot
- * segments resolve below its leading `/`, so `/word/../word/comments.xml`
- * names `word/comments.xml` (#947). The relationships are read on the
+ * a URI scheme or an empty reference naming no part (#906, #928). A target's
+ * dot segments resolve, a package-absolute target's below its leading `/`,
+ * so `/word/../word/comments.xml` names `word/comments.xml` (#947), and a
+ * climb past the package root stops there, so `word/`'s
+ * `../../word/comments.xml` names it too, as Word read a comments target's
+ * climb (session 77, #986). The relationships are read on the
  * effective view `effectiveRelationships` returns — the stored DOM after
  * markup compatibility selects a branch — so a relationship a selected
  * `mc:Fallback` or an understood `mc:Choice` holds counts, and one only an
@@ -374,15 +375,6 @@ function relatesCommentsPart(dom: Document, baseDir: string, partName: string): 
         }
     }
     return false;
-}
-
-/**
- * Whether a part reference climbs past the package root, from the root
- * (`/../x.xml`) or relative (`../x.xml`), once its dot segments resolve.
- */
-function climbsPastPackageRoot(reference: string): boolean {
-    const normalized = path.posix.normalize(reference.replace(/^\//, ""));
-    return normalized === ".." || normalized.startsWith("../");
 }
 
 /**
@@ -504,9 +496,10 @@ async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring>
     }
     // The reference is resolved as the read model resolves it (a URI scheme
     // or an empty target names no part, the query and fragment are dropped),
-    // and a reference that climbs past the package root names none either.
+    // a climb past the package root stopping there, as Word read
+    // `../word/document.xml` and `/../word/document.xml` (session 78, #986).
     const reference = relationshipTargetPartName(".", mainRel.getAttribute("Target") ?? "");
-    if (reference === undefined || climbsPastPackageRoot(reference)) {
+    if (reference === undefined) {
         return { kind: "refused", message: `Error: ${packageRelsPath} names a main document outside the package` };
     }
     // A reference ending in `/` names a folder, which Word refuses as the

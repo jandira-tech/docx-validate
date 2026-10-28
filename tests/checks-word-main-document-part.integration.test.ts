@@ -194,3 +194,42 @@ describe("an officeDocument target naming a folder (#962, Word session 70 s70a/s
         },
     );
 });
+
+describe("an officeDocument target climbing past the package root (#986, Word session 78 s78a)", () => {
+    /** The minimal parts with the main document named from the package relationships by `target`. */
+    const mainAt = (target: string): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "_rels/.rels": MINIMAL_PARTS["_rels/.rels"]!.replace('Target="word/document.xml"', `Target="${target}"`),
+    });
+    const judged = async (target: string, profile: "word-valid" | "strict" | "lenient") =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "climbing-main.docx");
+            await writeFile(file, await buildDocx(mainAt(target)));
+            return validate(file, { profile });
+        });
+
+    // Word opened each clean, in both runs, and rendered "Hello": the climb
+    // stops at the package root, so each names the stored word/document.xml.
+    it.each(["../word/document.xml", "../../word/document.xml", "/../word/document.xml", "word/document.xml"])(
+        "accepts the main document %s names under every profile",
+        async (target) => {
+            for (const profile of ["word-valid", "strict", "lenient"] as const) {
+                const result = await judged(target, profile);
+                expect(
+                    result.issues.filter((issue) => issue.severity === "error"),
+                    profile,
+                ).toEqual([]);
+                expect(result.valid, profile).toBe(true);
+            }
+        },
+    );
+
+    // Unprobed for officeDocument: the climb stops at the root and names the
+    // absent /document.xml, as session 75's styles climb named the absent
+    // /styles.xml.
+    it("rejects a climb whose stopped part is absent", async () => {
+        const result = await judged("../document.xml", "word-valid");
+        expect(result.valid).toBe(false);
+        expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([expect.objectContaining({ path: "_rels/.rels" })]);
+    });
+});

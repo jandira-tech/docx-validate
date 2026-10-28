@@ -2047,8 +2047,8 @@ describe("addComment", () => {
         });
     });
 
-    it.each(["http://example.com/comments.xml", "../../word/comments.xml"])(
-        "adds the four relationships beside a comments relationship whose target %s names no part (#928)",
+    it.each(["http://example.com/comments.xml", "../../comments.xml"])(
+        "adds the four relationships beside a comments relationship whose target %s names no word/comments.xml (#928, #986)",
         async (target) => {
             await withTempDir(async (dir) => {
                 await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
@@ -2070,10 +2070,11 @@ describe("addComment", () => {
                 expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
 
                 // A URI names no package part, whatever its TargetMode says,
-                // and a target that climbs past the package root keeps its
-                // `../`, as the read model leaves it unclamped: the stored
-                // relationship relates nothing, so the four relationships are
-                // added beside it.
+                // and a target climbing past the package root names the part
+                // its climb stops at, `/comments.xml` here, as Word read it
+                // (session 77): the stored relationship relates no
+                // word/comments.xml, so the four relationships are added
+                // beside it.
                 expect(
                     relationshipRows(parseXml(await fs.readFile(path.join(dir, "word", "_rels", "document.xml.rels"), "utf-8"))),
                 ).toEqual([["rId1", COMMENTS_RELATIONSHIP_TYPE, target, ""], ...firstCommentRelationships(2)]);
@@ -2107,53 +2108,71 @@ describe("addComment", () => {
         },
     );
 
-    it("still refuses a first comment when the package relationships name /../word/document.xml, changing nothing (#947)", async () => {
-        await withTempDir(async (dir) => {
-            await makePackageFixture(dir, officeDocumentRels("/../word/document.xml"), "word/main.xml");
+    // Word opened each clean and rendered the main document (session 78
+    // s78a): a climb past the package root stops at the root, as RFC 3986's
+    // remove_dot_segments stops it, so each names word/document.xml.
+    it.each(["../word/document.xml", "../../word/document.xml", "/../word/document.xml"])(
+        "adds a comment through word/_rels/document.xml.rels when the package relationships name %s (#986)",
+        { timeout: 30000 },
+        async (target) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels(target), "word/document.xml");
 
-            const before = await readTree(dir);
-            const result = await addComment({
-                unpackedDir: dir,
-                commentId: 0,
-                text: "x",
-                author: "TestAuthor",
-                initials: "TA",
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+                const relsPath = path.join(dir, "word", "_rels", "document.xml.rels");
+                expect(relationshipRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual(firstCommentRelationships(1));
+
+                // validate reads the same main document, so the comment's
+                // markers name a comment Word reads.
+                await fs.writeFile(path.join(dir, "word", "document.xml"), markedMainDocument(), "utf-8");
+                const file = path.join(dir, "climbing-main.docx");
+                await packTree(dir, file);
+                const validation = await validate(file, { profile: "word-valid" });
+                expect(validation.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+                expect(validation.valid).toBe(true);
             });
+        },
+    );
 
-            // The read model leaves an escaping target unclamped, so the
-            // climb past the package root is kept and the target still names
-            // no part, exactly as before #947.
-            expect(result.paraId).toBe("");
-            expect(result.message).toBe(`Error: ${path.join(dir, "_rels", ".rels")} names a main document outside the package`);
-            expect(await readTree(dir)).toEqual(before);
-        });
-    });
+    // The climbing rows stop at the package root, as Word read a comments
+    // target's climb (session 77 s77a, #986).
+    it.each(["/word/../word/comments.xml", "../../word/comments.xml", "/../word/comments.xml"])(
+        "adds no second set of relationships when the main document relates word/comments.xml as %s (#947, #986)",
+        async (target) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("word/main.xml"), "word/main.xml");
+                const relsPath = path.join(dir, "word", "_rels", "main.xml.rels");
+                await fs.mkdir(path.dirname(relsPath), { recursive: true });
+                await fs.writeFile(relsPath, packageRels(`Type="${COMMENTS_RELATIONSHIP_TYPE}" Target="${target}"`), "utf-8");
 
-    it("adds no second set of relationships when the main document relates word/comments.xml as /word/../word/comments.xml (#947)", async () => {
-        await withTempDir(async (dir) => {
-            await makePackageFixture(dir, officeDocumentRels("word/main.xml"), "word/main.xml");
-            const relsPath = path.join(dir, "word", "_rels", "main.xml.rels");
-            await fs.mkdir(path.dirname(relsPath), { recursive: true });
-            await fs.writeFile(relsPath, packageRels(`Type="${COMMENTS_RELATIONSHIP_TYPE}" Target="/word/../word/comments.xml"`), "utf-8");
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
 
-            const result = await addComment({
-                unpackedDir: dir,
-                commentId: 0,
-                text: "Hello world",
-                author: "Test",
-                initials: "C",
-                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                // The target's dot segments resolve, a climb past the package
+                // root stopping there, so the stored relationship already
+                // names word/comments.xml and the part keeps exactly that one
+                // comments relationship.
+                expect(relationshipRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual([
+                    ["rId1", COMMENTS_RELATIONSHIP_TYPE, target, ""],
+                ]);
             });
-            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
-
-            // The package-absolute target's dot segments resolve, so the
-            // stored relationship already names word/comments.xml and the
-            // part keeps exactly that one comments relationship.
-            expect(relationshipRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual([
-                ["rId1", COMMENTS_RELATIONSHIP_TYPE, "/word/../word/comments.xml", ""],
-            ]);
-        });
-    });
+        },
+    );
 
     it.each([
         [
@@ -2187,10 +2206,10 @@ describe("addComment", () => {
             undefined,
         ],
         [
-            "the officeDocument target escapes the package root",
+            "the officeDocument target climbs past the package root to an absent part",
             officeDocumentRels("../outside/main.xml"),
             undefined,
-            (dir: string) => `${path.join(dir, "_rels", ".rels")} names a main document outside the package`,
+            (dir: string) => `${path.join(dir, "outside", "main.xml")} not found`,
             undefined,
         ],
         [
@@ -2235,10 +2254,10 @@ describe("addComment", () => {
             (dir: string) => `${path.join(dir, "_rels", ".rels")} names a main document outside the package`,
         ],
         [
-            "/../word/document.xml, which climbs past the package root",
+            "/../word/document.xml, whose climb stops at the package root at word/document.xml",
             officeDocumentRels("/../word/document.xml"),
             "word/main.xml",
-            (dir: string) => `${path.join(dir, "_rels", ".rels")} names a main document outside the package`,
+            (dir: string) => `${path.join(dir, "word", "document.xml")} not found`,
         ],
         // Word refuses these targets (session 70, #962).
         [

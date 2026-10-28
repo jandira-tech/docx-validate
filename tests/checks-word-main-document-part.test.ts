@@ -122,7 +122,10 @@ describe(CODE, () => {
         ]);
     });
 
-    it.each(["word/missing.xml", "../word/document.xml", "", "word/document.xml/"])(
+    // A climb past the package root stops there (session 78, #986), so
+    // `../word/missing.xml` names the absent word/missing.xml, while
+    // `../word/document.xml` names the stored main document.
+    it.each(["word/missing.xml", "../word/missing.xml", "", "word/document.xml/"])(
         "rejects an officeDocument target that names no part: %j",
         async (target) => {
             expect(

@@ -1043,3 +1043,49 @@ describe("only a comments relationship makes a part define comments (#896, sessi
         expect(commentIssues((await judged(parts, "strict")).issues).map((issue) => issue.code)).toEqual(["comment-marker-missing"]);
     });
 });
+
+describe(
+    "a comments target climbing past the package root names the part its climb stops at (#986, session 77 s77a)",
+    { timeout: 120_000 },
+    () => {
+        /** The minimal parts with the body marking and referencing comment 0, whose comment sits at `stored`, typed comments and named by `target`. */
+        const commentsAt = (stored: string, target: string): Record<string, string> => ({
+            ...MINIMAL_PARTS,
+            "word/document.xml": markedDocument(),
+            [stored]: commentsPart("0", "0000AAAA"),
+            "word/_rels/document.xml.rels": relsPart(rel("rId1", "styles", "styles.xml"), rel("rIdC", "comments", target)),
+            "[Content_Types].xml": withOverrides(override(stored, COMMENTS_CT)),
+        });
+        const judged = async (parts: Record<string, string>, profile: (typeof PROFILES)[number]) =>
+            withTempDir(async (dir) => {
+                const file = path.join(dir, "comments.docx");
+                await writeFile(file, await buildDocx(parts));
+                return validate(file, { profile });
+            });
+
+        // Word opened each clean, in both runs, and rendered "Commented [1]: Note"
+        // beside "Hello": `word/`'s `../../comments.xml` and the package-absolute
+        // `/../comments.xml` stop at the root, at the stored `/comments.xml`.
+        it.each([
+            ["../../comments.xml", "comments.xml"],
+            ["/../comments.xml", "comments.xml"],
+            ["../comments.xml", "comments.xml"],
+            ["comments.xml", "word/comments.xml"],
+        ])("reads the comment %s names, stored at /%s, under every profile", async (target, stored) => {
+            for (const profile of PROFILES) {
+                expect(commentIssues((await judged(commentsAt(stored, target), profile)).issues), profile).toEqual([]);
+            }
+            expect((await judged(commentsAt(stored, target), "word-valid")).valid).toBe(true);
+        });
+
+        // Word offered recovery, in both runs: the climb names the absent
+        // `/comments.xml` and does not fall back to `word/comments.xml`.
+        it("keeps blocking the reference when the comment sits only in word/comments.xml", async () => {
+            const result = await judged(commentsAt("word/comments.xml", "../../comments.xml"), "word-valid");
+            expect(result.valid).toBe(false);
+            expect(commentIssues(result.issues)).toEqual([
+                expect.objectContaining({ code: "comment-marker-missing", path: "word/document.xml", severity: "error" }),
+            ]);
+        });
+    },
+);

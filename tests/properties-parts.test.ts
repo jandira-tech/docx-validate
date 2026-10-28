@@ -40,6 +40,10 @@ describe("propertiesParts", () => {
         ["docProps/../docProps/core.xml", "docprops/core.xml"],
         ["props/meta.xml", "props/meta.xml"],
         ["DOCPROPS/%63ORE.XML", "docprops/core.xml"],
+        // A climb past the package root stops there, as Word read a package
+        // relationship's climb (session 78, #986).
+        ["../docProps/core.xml", "docprops/core.xml"],
+        ["/../../docProps/core.xml", "docprops/core.xml"],
     ])("resolves root-relative Target %s", async (target, expected) => {
         expect(await propertiesParts(context(relationships(relationship(target))))).toEqual(new Set([expected]));
     });
@@ -60,7 +64,6 @@ describe("propertiesParts", () => {
                 relationship("other.xml", "urn:other") +
                 `<Relationship Id="no-type" Target="no-type.xml"/>` +
                 `<Relationship Id="no-target" Type="${TYPES[0]}"/>` +
-                relationship("../outside.xml") +
                 relationship("/"),
         );
         expect(await propertiesParts(context(xml))).toEqual(new Set(["docprops/core.xml", "docprops/app.xml", "docprops/custom.xml"]));

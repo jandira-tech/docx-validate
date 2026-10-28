@@ -27088,3 +27088,772 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
 `````
 
 </details>
+
+### Session 77: 23:45Z–23:46Z on 2026-10-27, validator columns at 5c1e28f1
+
+A comments part reached by an escaping target. Sessions 74 to 76 showed Word stopping an escaping climb at the package root for notes, styles, header and customXml targets, and #984 made the file-reference walks read it so. The read model still dropped an escaping target, so the comment checks read no comments part and word-valid blocked a body `w:commentReference` whose comment sits at `/comments.xml` (#896's rule: a comments part no relationship names defines nothing). One chunk: s77a stores comment 0, which the body marks and references, in `word/comments.xml` named by `comments.xml` and at `/comments.xml` named by the in-package `../comments.xml` (calibrations), at `/comments.xml` named by `../../comments.xml` and `/../comments.xml`, and only in `word/comments.xml` named by `../../comments.xml`. It ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 7 of 7 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`5c1e28f15ed3e0738334576523bc3724ecc78a8d`).
+
+The driver opens files in name order, so the minimal controls opened last. Every PDF Word printed holds `Hello`, and every comment row Word opened clean holds `Commented [1]: Note` too (`pdftotext`, both runs); the recovery row printed no PDF.
+
+- **Escaping comments targets reach the root.** `../../comments.xml` and `/../comments.xml` with the comment at `/comments.xml` open clean and render the comment, as the in-package `../comments.xml` calibration does: the climb stops at the root, where the part is stored.
+- **The climb does not fall back to the source folder.** `../../comments.xml` with the comment only in `word/comments.xml` gets the recovery offer: the climb names the absent `/comments.xml`, as the session 75 styles climb named the absent `/styles.xml`.
+
+Word-valid at 5c1e28f1 rejects the two escaping rows Word opened clean with `comment-marker-missing`, matching Word on 5 of 7 rows: false rejections, fixed by [#986](https://github.com/jandira-tech/docx-validate/issues/986). Its rejection of the recovery row matches Word.
+
+| Run    | Observed             | Specimen                                 | Shape                                                                                                             | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at 5c1e28f1            | strict at 5c1e28f1                                                                                                     |
+| ------ | -------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `s77a` | 23:45:42Z, 23:46:09Z | `s77a-control-minimal`                   | control                                                                                                           | `05d7374f73657813` | clean-open     | clean-open     | clean-open                 | valid                             | valid                                                                                                                  |
+| `s77a` | 23:45:42Z, 23:46:09Z | `comments-calibration`                   | calibration: comment 0 in word/comments.xml, named by comments.xml; the body references it                        | `b0c8f0a5b8ee76f7` | clean-open     | clean-open     | clean-open                 | valid                             | invalid: `paraid-missing-element`                                                                                      |
+| `s77a` | 23:45:42Z, 23:46:09Z | `comments-at-root-one-level-calibration` | calibration: comment 0 in /comments.xml, named by the in-package ../comments.xml                                  | `c15d9809223f7dc8` | clean-open     | clean-open     | clean-open                 | valid                             | invalid: `paraid-missing-element`                                                                                      |
+| `s77a` | 23:45:42Z, 23:46:09Z | `comments-at-root-escaping-two`          | comment 0 in /comments.xml, named by ../../comments.xml (stopped at the root: /comments.xml)                      | `ad51bc3431092129` | clean-open     | clean-open     | clean-open                 | invalid: `comment-marker-missing` | invalid: `comment-marker-missing`, `paraid-missing-element`                                                            |
+| `s77a` | 23:45:42Z, 23:46:09Z | `comments-at-root-absolute-climb`        | comment 0 in /comments.xml, named by /../comments.xml (stopped at the root: /comments.xml)                        | `d91a07414fec40c4` | clean-open     | clean-open     | clean-open                 | invalid: `comment-marker-missing` | invalid: `comment-marker-missing`, `paraid-missing-element`                                                            |
+| `s77a` | 23:45:42Z, 23:46:09Z | `comments-in-word-escaping-two`          | comment 0 only in word/comments.xml, named by ../../comments.xml (stopped at the root: /comments.xml, not stored) | `ca012678aee444b8` | repair-warning | repair-warning | unreadable-content-warning | invalid: `comment-marker-missing` | invalid: `rels-broken`, `rels-unreferenced`, `comment-marker-missing`, `paraid-missing-element`, `rels-target-missing` |
+| `s77a` | 23:45:42Z, 23:46:09Z | `s77a-control-minimal-end`               | control                                                                                                           | `85edb34e2b25a7f5` | clean-open     | clean-open     | clean-open                 | valid                             | valid                                                                                                                  |
+
+<details><summary>Raw records, session 77</summary>
+
+```jsonl
+{"run": "s77a", "pass": 1, "name": "s77a-control-minimal", "sha256": "05d7374f736578130839dfaaa195560f9b471ea8828e1cfb79b7c1308682c067", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:45:42+00:00", "staged": "00006__wfv__s77a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s77a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s77a", "pass": 2, "name": "s77a-control-minimal", "sha256": "05d7374f736578130839dfaaa195560f9b471ea8828e1cfb79b7c1308682c067", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:46:09+00:00", "staged": "00006__wfv__s77a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s77a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s77a", "pass": 1, "name": "comments-calibration", "sha256": "b0c8f0a5b8ee76f7f288679d7b4b8c46225f194d949c3c100eff0030144bdac4", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:45:42+00:00", "staged": "00003__wfv__comments-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-calibration_byword.pdf (34302 bytes), no dialog named the file"]}
+{"run": "s77a", "pass": 2, "name": "comments-calibration", "sha256": "b0c8f0a5b8ee76f7f288679d7b4b8c46225f194d949c3c100eff0030144bdac4", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:46:09+00:00", "staged": "00003__wfv__comments-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-calibration_byword.pdf (34302 bytes), no dialog named the file"]}
+{"run": "s77a", "pass": 1, "name": "comments-at-root-one-level-calibration", "sha256": "c15d9809223f7dc85bf4fae57689e9e93a744c53caeeccbd1ed353588f14b18b", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:45:42+00:00", "staged": "00002__wfv__comments-at-root-one-level-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-at-root-one-level-calibration_byword.pdf (34302 bytes), no dialog named the file"]}
+{"run": "s77a", "pass": 2, "name": "comments-at-root-one-level-calibration", "sha256": "c15d9809223f7dc85bf4fae57689e9e93a744c53caeeccbd1ed353588f14b18b", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:46:09+00:00", "staged": "00002__wfv__comments-at-root-one-level-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-at-root-one-level-calibration_byword.pdf (34302 bytes), no dialog named the file"]}
+{"run": "s77a", "pass": 1, "name": "comments-at-root-escaping-two", "sha256": "ad51bc3431092129d67abe512f0fe3a0e23f63dbf11434236477bcea9685f341", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:45:42+00:00", "staged": "00001__wfv__comments-at-root-escaping-two.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-at-root-escaping-two_byword.pdf (34302 bytes), no dialog named the file"]}
+{"run": "s77a", "pass": 2, "name": "comments-at-root-escaping-two", "sha256": "ad51bc3431092129d67abe512f0fe3a0e23f63dbf11434236477bcea9685f341", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:46:09+00:00", "staged": "00001__wfv__comments-at-root-escaping-two.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-at-root-escaping-two_byword.pdf (34302 bytes), no dialog named the file"]}
+{"run": "s77a", "pass": 1, "name": "comments-at-root-absolute-climb", "sha256": "d91a07414fec40c46f21948ddb29ff71ab5d5019dba35d5909ae4df97ac8f346", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:45:42+00:00", "staged": "00000__wfv__comments-at-root-absolute-climb.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-at-root-absolute-climb_byword.pdf (34302 bytes), no dialog named the file"]}
+{"run": "s77a", "pass": 2, "name": "comments-at-root-absolute-climb", "sha256": "d91a07414fec40c46f21948ddb29ff71ab5d5019dba35d5909ae4df97ac8f346", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:46:09+00:00", "staged": "00000__wfv__comments-at-root-absolute-climb.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-at-root-absolute-climb_byword.pdf (34302 bytes), no dialog named the file"]}
+{"run": "s77a", "pass": 1, "name": "comments-in-word-escaping-two", "sha256": "ca012678aee444b8b4924a4f244e51b90aaacd2c77d2bd68d7486cdd14bda539", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:45:42+00:00", "staged": "00004__wfv__comments-in-word-escaping-two.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 19:45:41.210 \"Word found unreadable content in 00004__wfv__comments-in-word-escaping-two.docx. Do you want to rec … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s77a", "pass": 2, "name": "comments-in-word-escaping-two", "sha256": "ca012678aee444b8b4924a4f244e51b90aaacd2c77d2bd68d7486cdd14bda539", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:46:09+00:00", "staged": "00004__wfv__comments-in-word-escaping-two.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 19:46:08.331 \"Word found unreadable content in 00004__wfv__comments-in-word-escaping-two.docx. Do you want to rec … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s77a", "pass": 1, "name": "s77a-control-minimal-end", "sha256": "85edb34e2b25a7f52d316bcc2c1c4bf5af6f992982d8ff27aa3353801965014f", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:45:42+00:00", "staged": "00005__wfv__s77a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s77a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s77a", "pass": 2, "name": "s77a-control-minimal-end", "sha256": "85edb34e2b25a7f52d316bcc2c1c4bf5af6f992982d8ff27aa3353801965014f", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:46:09+00:00", "staged": "00005__wfv__s77a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s77a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 77 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s77builder.mts`:
+
+```ts
+// Session 77 (2026-10-27): a comments part reached by an escaping target. Sessions 74 to 76 showed Word stopping an
+// escaping climb at the package root for notes, styles, header and customXml targets, and #984 made the file-reference
+// walks read it so. The read model (`wordReadTypedTargets`) still drops an escaping target, so the comment checks read
+// no comments part and word-valid blocks a body `w:commentReference` whose comment sits at `/comments.xml`, named by
+// `../../comments.xml` or `/../comments.xml` (#896's rule: a related comments part none is stored for defines nothing).
+// s77a: the comment in word/comments.xml named by comments.xml and at /comments.xml named by the in-package
+// ../comments.xml (calibrations), at /comments.xml named by ../../comments.xml and /../comments.xml, and only in
+// word/comments.xml named by ../../comments.xml (the climb names the absent /comments.xml).
+// Every row records the validator revision it was judged at (`validatorRevision`); the verdict helper is s67builder.mts's.
+// The builder empties the chunk's specimens.jsonl once before its row loop (promised on #825).
+// Run from a worktree root: CHUNK=s77a pnpm exec node --import tsx <this file>
+// (the imports are absolute, so the file needs no copy into the worktree; `git rev-parse` reads the cwd's worktree).
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const WT = process.cwd();
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const { MINIMAL_PARTS, buildDocx } = await import(path.join(WT, "tests/support/minimal-docx.ts"));
+const REVISION = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+
+/** The minimal parts with a body comment 0 (range and reference) whose comment sits at `stored`, named by `target`. */
+const commentsAt = (stored: string, target: string): Record<string, string> => ({
+    ...P,
+    [MAIN]: replaceOnce(
+        P[MAIN]!,
+        "<w:r><w:t>Hello</w:t></w:r>",
+        '<w:commentRangeStart w:id="0"/><w:r><w:t>Hello</w:t></w:r><w:commentRangeEnd w:id="0"/><w:r><w:commentReference w:id="0"/></w:r>',
+    ),
+    [stored]: `${XML_DECL}<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="a"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:comment></w:comments>`,
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdC", "comments", target)),
+    [CT]: overrides(P[CT]!, [stored, `${WML}.comments+xml`]),
+});
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const control = () => buildDocx({ ...P });
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+
+const chunks: Record<string, Row[]> = {
+    s77a: withControls("s77a", [
+        [
+            "comments-calibration",
+            "calibration: comment 0 in word/comments.xml, named by comments.xml; the body references it",
+            () => buildDocx(commentsAt("word/comments.xml", "comments.xml")),
+        ],
+        [
+            "comments-at-root-one-level-calibration",
+            "calibration: comment 0 in /comments.xml, named by the in-package ../comments.xml",
+            () => buildDocx(commentsAt("comments.xml", "../comments.xml")),
+        ],
+        [
+            "comments-at-root-escaping-two",
+            "comment 0 in /comments.xml, named by ../../comments.xml (stopped at the root: /comments.xml)",
+            () => buildDocx(commentsAt("comments.xml", "../../comments.xml")),
+        ],
+        [
+            "comments-at-root-absolute-climb",
+            "comment 0 in /comments.xml, named by /../comments.xml (stopped at the root: /comments.xml)",
+            () => buildDocx(commentsAt("comments.xml", "/../comments.xml")),
+        ],
+        [
+            "comments-in-word-escaping-two",
+            "comment 0 only in word/comments.xml, named by ../../comments.xml (stopped at the root: /comments.xml, not stored)",
+            () => buildDocx(commentsAt("word/comments.xml", "../../comments.xml")),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+    }
+};
+
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-77 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s77a",)
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0], "unknown") if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
+                     # A match needs agreed readings: an unknown row matches nothing (CodeRabbit on #985).
+                     "validatorMatchesWord": agreed and ((all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True))})
+(ROOT / "s77/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-77 parts of docs/plans/evidence/word-probes-2026-10-24.md into s77/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796). The text Word rendered is read from its own
+PDFs with pdftotext, so the narrative's "rendered" claims are checked here.
+"""
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s77a",)
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s77/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+def rendered(run, file):
+    pdf = run / "pdf" / (Path(file).stem + "_byword.pdf")
+    return " ".join(subprocess.run(["pdftotext", str(pdf), "-"], check=True, capture_output=True, text=True).stdout.split())
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                                   "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                                   "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+
+REFUSED = {"comments-in-word-escaping-two.docx"}
+ESCAPING = {"comments-at-root-escaping-two.docx", "comments-at-root-absolute-climb.docx"}
+# The narrative's claims about outcomes, checked against results.json: Word opened every row clean but the comment held
+# only in word/comments.xml behind ../../comments.xml, which got the recovery offer; word-valid, at the revision before
+# #986, rejected that row and the two escaping rows Word opened clean, and accepted the rest.
+for (label, file), r in results.items():
+    assert r["outcome"] == ("unreadable-content-warning" if file in REFUSED else "clean-open"), (file, r)
+    assert r["wordValid"] is (file not in ESCAPING | REFUSED), (file, r)
+assert agreed == len(rows) == 7, (agreed, len(rows))
+# Where each run opened each row, from the driver's manifests (in open order, #671). The driver opens in name order, so
+# the controls opened last.
+ORDER = {
+    "s77a": ["comments-at-root-absolute-climb.docx", "comments-at-root-escaping-two.docx", "comments-at-root-one-level-calibration.docx",
+             "comments-calibration.docx", "comments-in-word-escaping-two.docx", "s77a-control-minimal-end.docx",
+             "s77a-control-minimal.docx"],
+}
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        opened = [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()]
+        assert opened == ORDER[label], (run, opened)
+# The text Word rendered in each row, both runs: the main document's "Hello", with the comment's margin balloon in every
+# comment row Word opened clean; the recovery row printed no PDF.
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for file in ORDER[label]:
+            if file in REFUSED:
+                assert not (run / "pdf" / (Path(file).stem + "_byword.pdf")).exists(), (run, file)
+                continue
+            text = rendered(run, file)
+            assert text == ("Hello" if "control" in file else "Hello Commented [1]: Note"), (run, file, text)
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}", (min(starts), max(ends))
+matches = sum(r["validatorMatchesWord"] for r in results.values())
+out = [
+    f"### Session 77: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {at}",
+    "",
+    "A comments part reached by an escaping target. Sessions 74 to 76 showed Word stopping an escaping climb at the "
+    "package root for notes, styles, header and customXml targets, and #984 made the file-reference walks read it so. "
+    "The read model still dropped an escaping target, so the comment checks read no comments part and word-valid "
+    "blocked a body `w:commentReference` whose comment sits at `/comments.xml` (#896's rule: a comments part no "
+    "relationship names defines nothing). One chunk: s77a stores comment 0, which the body marks and references, in "
+    "`word/comments.xml` named by `comments.xml` and at `/comments.xml` named by the in-package `../comments.xml` "
+    "(calibrations), at `/comments.xml` named by `../../comments.xml` and `/../comments.xml`, and only in "
+    "`word/comments.xml` named by `../../comments.xml`. It ran twice, as two separate driver runs of byte-identical "
+    "copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by "
+    "`wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` "
+    f"otherwise; {agreed} of {len(rows)} rows agree. The two times in Observed are the ends of the first and second runs. "
+    "Shape is the builder's description of the specimen. The builder recorded the validator revision in every row "
+    f"(`{rev}`).",
+    "",
+    "The driver opens files in name order, so the minimal controls opened last. Every PDF Word printed holds `Hello`, and "
+    "every comment row Word opened clean holds `Commented [1]: Note` too (`pdftotext`, both runs); the recovery row "
+    "printed no PDF.",
+    "",
+    "- **Escaping comments targets reach the root.** `../../comments.xml` and `/../comments.xml` with the comment at "
+    "`/comments.xml` open clean and render the comment, as the in-package `../comments.xml` calibration does: the climb "
+    "stops at the root, where the part is stored.",
+    "- **The climb does not fall back to the source folder.** `../../comments.xml` with the comment only in "
+    "`word/comments.xml` gets the recovery offer: the climb names the absent `/comments.xml`, as the session 75 styles "
+    "climb named the absent `/styles.xml`.",
+    "",
+    f"Word-valid at {at} rejects the two escaping rows Word opened clean with `comment-marker-missing`, matching Word on "
+    f"{matches} of {len(rows)} rows: false rejections, fixed by "
+    "[#986](https://github.com/jandira-tech/docx-validate/issues/986). Its rejection of the recovery row matches Word.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 77</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 77 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s77builder.mts", ROOT / "s77builder.mts", "ts"), ("compare.py", ROOT / "s77/compare.py", "python"),
+                         ("section.py", ROOT / "s77/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s77/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>
+
+### Session 78: 23:47Z–23:47Z on 2026-10-27, validator columns at 5c1e28f1
+
+A main document named by an escaping `officeDocument` target. Sessions 74 to 77 showed Word stopping an escaping climb at the package root for notes, styles, header, customXml and comments targets; session 70 read package-absolute `officeDocument` targets, but none that climbs. The read model and the main-document checks dropped such a target, and `addComment` refused it as "outside the package". One chunk: s78a names `word/document.xml` from `_rels/.rels` by the plain `word/document.xml` (calibration, byte-identical to the controls), by `../word/document.xml`, `../../word/document.xml` and `/../word/document.xml`. It ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 6 of 6 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`5c1e28f15ed3e0738334576523bc3724ecc78a8d`).
+
+The driver opens files in name order, so the minimal controls opened last. Every row opened clean, and every PDF holds `Hello` (`pdftotext`, both runs).
+
+- **Escaping officeDocument targets name the main document.** `../word/document.xml`, `../../word/document.xml` and `/../word/document.xml` open as cleanly as the plain target and render the main document: from the package root, the climb stops at once, so each names `word/document.xml`.
+
+Word-valid at 5c1e28f1 rejects the three escaping rows with `word-main-document-part`, matching Word on only 3 of 6 rows: false rejections, fixed by [#986](https://github.com/jandira-tech/docx-validate/issues/986).
+
+| Run    | Observed             | Specimen                   | Shape                                                                                         | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome    | word-valid at 5c1e28f1             | strict at 5c1e28f1                 |
+| ------ | -------------------- | -------------------------- | --------------------------------------------------------------------------------------------- | ------------------ | ----------- | ----------- | ---------- | ---------------------------------- | ---------------------------------- |
+| `s78a` | 23:47:31Z, 23:47:46Z | `s78a-control-minimal`     | control                                                                                       | `610275769710e541` | clean-open  | clean-open  | clean-open | valid                              | valid                              |
+| `s78a` | 23:47:31Z, 23:47:46Z | `main-calibration`         | calibration: the officeDocument target is word/document.xml                                   | `610275769710e541` | clean-open  | clean-open  | clean-open | valid                              | valid                              |
+| `s78a` | 23:47:31Z, 23:47:46Z | `main-escaping-one`        | the officeDocument target is ../word/document.xml (stopped at the root: word/document.xml)    | `db5b14f40008ec9f` | clean-open  | clean-open  | clean-open | invalid: `word-main-document-part` | invalid: `word-main-document-part` |
+| `s78a` | 23:47:31Z, 23:47:46Z | `main-escaping-two`        | the officeDocument target is ../../word/document.xml (stopped at the root: word/document.xml) | `7a3a34fa1e29be98` | clean-open  | clean-open  | clean-open | invalid: `word-main-document-part` | invalid: `word-main-document-part` |
+| `s78a` | 23:47:31Z, 23:47:46Z | `main-absolute-climb`      | the officeDocument target is /../word/document.xml (stopped at the root: word/document.xml)   | `2f133f9291938ed3` | clean-open  | clean-open  | clean-open | invalid: `word-main-document-part` | invalid: `word-main-document-part` |
+| `s78a` | 23:47:31Z, 23:47:46Z | `s78a-control-minimal-end` | control                                                                                       | `610275769710e541` | clean-open  | clean-open  | clean-open | valid                              | valid                              |
+
+<details><summary>Raw records, session 78</summary>
+
+```jsonl
+{"run": "s78a", "pass": 1, "name": "s78a-control-minimal", "sha256": "610275769710e541d60ded5181b550c813005dbaa98801c5064c768021c4e000", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:47:31+00:00", "staged": "00005__wfv__s78a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s78a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s78a", "pass": 2, "name": "s78a-control-minimal", "sha256": "610275769710e541d60ded5181b550c813005dbaa98801c5064c768021c4e000", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:47:46+00:00", "staged": "00005__wfv__s78a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s78a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s78a", "pass": 1, "name": "main-calibration", "sha256": "610275769710e541d60ded5181b550c813005dbaa98801c5064c768021c4e000", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:47:31+00:00", "staged": "00001__wfv__main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s78a", "pass": 2, "name": "main-calibration", "sha256": "610275769710e541d60ded5181b550c813005dbaa98801c5064c768021c4e000", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:47:46+00:00", "staged": "00001__wfv__main-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s78a", "pass": 1, "name": "main-escaping-one", "sha256": "db5b14f40008ec9f278a0b1ced8f81802461f20c3c70be22933e804d9d7163bf", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:47:31+00:00", "staged": "00002__wfv__main-escaping-one.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-escaping-one_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s78a", "pass": 2, "name": "main-escaping-one", "sha256": "db5b14f40008ec9f278a0b1ced8f81802461f20c3c70be22933e804d9d7163bf", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:47:46+00:00", "staged": "00002__wfv__main-escaping-one.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-escaping-one_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s78a", "pass": 1, "name": "main-escaping-two", "sha256": "7a3a34fa1e29be981aa5607dc6c1f92f5b20f61878c42e2d4bf9ee541a63c9c5", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:47:31+00:00", "staged": "00003__wfv__main-escaping-two.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-escaping-two_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s78a", "pass": 2, "name": "main-escaping-two", "sha256": "7a3a34fa1e29be981aa5607dc6c1f92f5b20f61878c42e2d4bf9ee541a63c9c5", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:47:46+00:00", "staged": "00003__wfv__main-escaping-two.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-escaping-two_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s78a", "pass": 1, "name": "main-absolute-climb", "sha256": "2f133f9291938ed3e1e8ef12284691c6622004ab2fd04574d689bac104fe8f85", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:47:31+00:00", "staged": "00000__wfv__main-absolute-climb.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-absolute-climb_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s78a", "pass": 2, "name": "main-absolute-climb", "sha256": "2f133f9291938ed3e1e8ef12284691c6622004ab2fd04574d689bac104fe8f85", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:47:46+00:00", "staged": "00000__wfv__main-absolute-climb.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF main-absolute-climb_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s78a", "pass": 1, "name": "s78a-control-minimal-end", "sha256": "610275769710e541d60ded5181b550c813005dbaa98801c5064c768021c4e000", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:47:31+00:00", "staged": "00004__wfv__s78a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s78a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s78a", "pass": 2, "name": "s78a-control-minimal-end", "sha256": "610275769710e541d60ded5181b550c813005dbaa98801c5064c768021c4e000", "validatorRevision": "5c1e28f15ed3e0738334576523bc3724ecc78a8d", "observedAt": "2026-10-27T23:47:46+00:00", "staged": "00004__wfv__s78a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s78a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 78 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s78builder.mts`:
+
+```ts
+// Session 78 (2026-10-27): a main document named by an escaping officeDocument target. Sessions 74 to 77 showed Word
+// stopping an escaping climb at the package root for notes, styles, header, customXml and comments targets; session 70
+// read package-absolute officeDocument targets, but none that climbs. The read model drops an escaping target and
+// addComment refuses one as "outside the package". s78a names word/document.xml from _rels/.rels by the plain
+// `word/document.xml` (calibration), by `../word/document.xml`, `../../word/document.xml` and `/../word/document.xml`.
+// Every row records the validator revision it was judged at (`validatorRevision`); the verdict helper is s67builder.mts's.
+// The builder empties the chunk's specimens.jsonl once before its row loop (promised on #825).
+// Run from a worktree root: CHUNK=s78a pnpm exec node --import tsx <this file>
+// (the imports are absolute, so the file needs no copy into the worktree; `git rev-parse` reads the cwd's worktree).
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const WT = process.cwd();
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const { MINIMAL_PARTS, buildDocx } = await import(path.join(WT, "tests/support/minimal-docx.ts"));
+const REVISION = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+
+/** The minimal parts with the main document named from _rels/.rels by `target`. */
+const mainAt = (target: string): Record<string, string> => ({
+    ...P,
+    "_rels/.rels": replaceOnce(P["_rels/.rels"]!, 'Target="word/document.xml"', `Target="${target}"`),
+});
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const control = () => buildDocx({ ...P });
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+
+const chunks: Record<string, Row[]> = {
+    s78a: withControls("s78a", [
+        ["main-calibration", "calibration: the officeDocument target is word/document.xml", () => buildDocx(mainAt("word/document.xml"))],
+        [
+            "main-escaping-one",
+            "the officeDocument target is ../word/document.xml (stopped at the root: word/document.xml)",
+            () => buildDocx(mainAt("../word/document.xml")),
+        ],
+        [
+            "main-escaping-two",
+            "the officeDocument target is ../../word/document.xml (stopped at the root: word/document.xml)",
+            () => buildDocx(mainAt("../../word/document.xml")),
+        ],
+        [
+            "main-absolute-climb",
+            "the officeDocument target is /../word/document.xml (stopped at the root: word/document.xml)",
+            () => buildDocx(mainAt("/../word/document.xml")),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+    }
+};
+
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-78 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s78a",)
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0], "unknown") if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
+                     # A match needs agreed readings: an unknown row matches nothing (CodeRabbit on #985).
+                     "validatorMatchesWord": agreed and ((all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True))})
+(ROOT / "s78/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-78 parts of docs/plans/evidence/word-probes-2026-10-24.md into s78/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796). The text Word rendered is read from its own
+PDFs with pdftotext, so the narrative's "rendered" claims are checked here.
+"""
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s78a",)
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s78/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+def rendered(run, file):
+    pdf = run / "pdf" / (Path(file).stem + "_byword.pdf")
+    return " ".join(subprocess.run(["pdftotext", str(pdf), "-"], check=True, capture_output=True, text=True).stdout.split())
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                                   "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                                   "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+
+REFUSED: set[str] = set()
+ESCAPING = {"main-escaping-one.docx", "main-escaping-two.docx", "main-absolute-climb.docx"}
+# The narrative's claims about outcomes, checked against results.json: Word opened every row clean; word-valid, at the
+# revision before #986, rejected the three escaping rows and accepted the rest.
+for (label, file), r in results.items():
+    assert r["outcome"] == "clean-open", (file, r)
+    assert r["wordValid"] is (file not in ESCAPING), (file, r)
+assert agreed == len(rows) == 6, (agreed, len(rows))
+# The calibration names its main document as the minimal package does, so it is byte-identical to the controls.
+specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / "s78a/specimens.jsonl").read_text().splitlines()}
+assert specs["main-calibration.docx"]["sha256"] == specs["s78a-control-minimal.docx"]["sha256"]
+# Where each run opened each row, from the driver's manifests (in open order, #671). The driver opens in name order, so
+# the controls opened last.
+ORDER = {
+    "s78a": ["main-absolute-climb.docx", "main-calibration.docx", "main-escaping-one.docx", "main-escaping-two.docx",
+             "s78a-control-minimal-end.docx", "s78a-control-minimal.docx"],
+}
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        opened = [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()]
+        assert opened == ORDER[label], (run, opened)
+# The text Word rendered in each row, both runs: the main document's "Hello".
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for file in ORDER[label]:
+            text = rendered(run, file)
+            assert text == "Hello", (run, file, text)
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}", (min(starts), max(ends))
+matches = sum(r["validatorMatchesWord"] for r in results.values())
+out = [
+    f"### Session 78: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {at}",
+    "",
+    "A main document named by an escaping `officeDocument` target. Sessions 74 to 77 showed Word stopping an escaping "
+    "climb at the package root for notes, styles, header, customXml and comments targets; session 70 read "
+    "package-absolute `officeDocument` targets, but none that climbs. The read model and the main-document checks "
+    "dropped such a target, and `addComment` refused it as \"outside the package\". One chunk: s78a names "
+    "`word/document.xml` from `_rels/.rels` by the plain `word/document.xml` (calibration, byte-identical to the "
+    "controls), by `../word/document.xml`, `../../word/document.xml` and `/../word/document.xml`. It ran twice, as two "
+    "separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session "
+    "41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings "
+    f"agree, and `unknown` otherwise; {agreed} of {len(rows)} rows agree. The two times in Observed are the ends of the "
+    "first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator "
+    f"revision in every row (`{rev}`).",
+    "",
+    "The driver opens files in name order, so the minimal controls opened last. Every row opened clean, and every PDF "
+    "holds `Hello` (`pdftotext`, both runs).",
+    "",
+    "- **Escaping officeDocument targets name the main document.** `../word/document.xml`, `../../word/document.xml` and "
+    "`/../word/document.xml` open as cleanly as the plain target and render the main document: from the package root, "
+    "the climb stops at once, so each names `word/document.xml`.",
+    "",
+    f"Word-valid at {at} rejects the three escaping rows with `word-main-document-part`, matching Word on only {matches} "
+    f"of {len(rows)} rows: false rejections, fixed by [#986](https://github.com/jandira-tech/docx-validate/issues/986).",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 78</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 78 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s78builder.mts", ROOT / "s78builder.mts", "ts"), ("compare.py", ROOT / "s78/compare.py", "python"),
+                         ("section.py", ROOT / "s78/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s78/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>
