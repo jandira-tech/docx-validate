@@ -16,6 +16,7 @@ import { mathRunInsertionCheck } from "./math-run-insertion";
 import { zipBytesAfterEocdCheck, zipBytesBeforeArchiveCheck, zipEocdCommentOverrunCheck } from "./package";
 import { opcEquivalentPartNamesCheck } from "./opc-equivalent-part-names";
 import { opcRelationshipsStructureCheck } from "./opc-relationships-structure";
+import { opcRelationshipsTargetModeCheck } from "./opc-relationships-target-mode";
 import { opcPartNameWordRefusedCheck } from "./opc-part-name-word-refused";
 import { opcItemNameRefusedCheck } from "./opc-item-name-refused";
 import { ctOverridePartnameWordRefusedCheck } from "./ct-override-partname-word-refused";
@@ -101,6 +102,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordDocumentRootCheck,
     wordMainDocumentPartCheck,
     opcRelationshipsStructureCheck,
+    opcRelationshipsTargetModeCheck,
     wordRowWithoutCellCheck,
     wordMathParseCheck,
     wordMathSpreBodyCheck,
