@@ -17,7 +17,10 @@
  * non-lenient run keeps the Word rule's finding and drops the legacy
  * `rels-id-mismatch` copy (#616), or the `rels-id-missing` copy for an
  * `r:id` naming no Relationship (#619), through
- * `withoutRepeatedHeaderFooterFindings` (validators/docx.ts). An `r:id` is well-formed XML with any character in
+ * `withoutRepeatedHeaderFooterFindings` (validators/docx.ts). A full
+ * non-lenient PPTX run hands a slide master's `p:sldLayoutId` to
+ * `sldlayout-missing-rid` (validators/pptx.ts) the same way (#1093). Both
+ * filter through `withoutHandedOffCopies` below. An `r:id` is well-formed XML with any character in
  * it, so the hand-off must never parse the two findings' message prose:
  * quoted ids defeated the former regexes (a double report) and a crafted
  * `r:id` could imitate another element's message prefix (a silent loss).
@@ -29,19 +32,27 @@
  * no identity and is never dropped.
  */
 
-import type { ValidationIssue } from "../../lib/types";
+import type { ValidationIssue, ValidationResult } from "../../lib/types";
 
-/** The story reference and Word part reference local names the hand-off recognizes. */
-export type StoryReferenceLocalName = "headerReference" | "footerReference" | "chart" | "OLEObject" | "toolbarData" | "hyperlink";
+/** The story reference, Word part reference and slide layout id local names the hand-off recognizes. */
+export type StoryReferenceLocalName =
+    | "headerReference"
+    | "footerReference"
+    | "chart"
+    | "OLEObject"
+    | "toolbarData"
+    | "hyperlink"
+    | "sldLayoutId";
 
-/** `true` for the story reference and Word part reference local names the hand-off recognizes. */
+/** `true` for the story reference, Word part reference and slide layout id local names the hand-off recognizes. */
 export const isStoryReferenceLocalName = (name: string): name is StoryReferenceLocalName =>
     name === "headerReference" ||
     name === "footerReference" ||
     name === "chart" ||
     name === "OLEObject" ||
     name === "toolbarData" ||
-    name === "hyperlink";
+    name === "hyperlink" ||
+    name === "sldLayoutId";
 
 /**
  * The story reference element a finding names: the part path (backslashes
@@ -94,3 +105,36 @@ export const registerStoryReferenceIdentity = (issue: ValidationIssue, identity:
 
 /** The registered identity of `issue`, or `undefined` — an unregistered finding is never dropped. */
 export const storyReferenceIdentity = (issue: ValidationIssue): StoryReferenceIdentity | undefined => identities.get(issue);
+
+/**
+ * `relationshipIds` without each `rels-id-mismatch` or `rels-id-missing` copy
+ * of an element that a finding in `findings` whose code is in `producers`
+ * already reported. A copy is dropped when its registered identity has that
+ * finding's part, element namespace URI and local name, and either its `rid`
+ * or one of its `otherRids` (#616, #1074, #1079). The namespace the id was
+ * read in is not compared (#727). A copy with no registered identity is
+ * never dropped. `valid` is kept, as the producer's own error fails the run.
+ */
+export const withoutHandedOffCopies = (
+    relationshipIds: ValidationResult,
+    findings: ValidationResult,
+    producers: ReadonlySet<string>,
+): ValidationResult => {
+    const key = (identity: StoryReferenceIdentity): string =>
+        `${identity.part}\u0000${identity.namespaceURI}\u0000${identity.localName}\u0000${identity.rid}`;
+    const reported = new Set<string>();
+    for (const issue of findings.issues) {
+        if (issue.code === undefined || !producers.has(issue.code)) continue;
+        const identity = storyReferenceIdentity(issue);
+        if (!identity) continue;
+        reported.add(key(identity));
+        for (const rid of identity.otherRids ?? []) reported.add(key({ ...identity, rid }));
+    }
+    const issues = relationshipIds.issues.filter((issue) => {
+        if (issue.code !== "rels-id-mismatch" && issue.code !== "rels-id-missing") return true;
+        const identity = storyReferenceIdentity(issue);
+        if (!identity) return true;
+        return !reported.has(key(identity));
+    });
+    return { valid: relationshipIds.valid, issues };
+};

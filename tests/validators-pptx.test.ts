@@ -1353,3 +1353,74 @@ describe("AlternateContent character data in a slide cites no Word session (#101
         });
     });
 });
+
+// #1093: a slide master's p:sldLayoutId naming no slideLayout relationship is
+// one defect. Outside lenient the full run keeps sldlayout-missing-rid and
+// drops the relationship-id walk's copy of the same element and id, as DOCX
+// hands a story reference's copy to its Word rule (#616); lenient keeps both,
+// as the Python validator reported them.
+describe("a sldLayoutId naming no slideLayout relationship is one report outside lenient (#1093)", () => {
+    const REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const STRICT_REL = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+    const MASTER = "ppt/slideMasters/slideMaster1.xml";
+    const MASTER_RELS = "ppt/slideMasters/_rels/slideMaster1.xml.rels";
+    /** The minimal deck with the master's `sldLayoutId` attributes replaced by `attributes`, its sidecar adding `extra`. */
+    const deck = (attributes: string, extra = "") =>
+        buildPptx({
+            ...MINIMAL_PPTX_PARTS,
+            [MASTER]: MINIMAL_PPTX_PARTS[MASTER]!.replace("<p:sldMaster ", `<p:sldMaster xmlns:rs="${STRICT_REL}" `).replace(
+                'r:id="rId1"/></p:sldLayoutIdLst>',
+                `${attributes}/></p:sldLayoutIdLst>`,
+            ),
+            [MASTER_RELS]: MINIMAL_PPTX_PARTS[MASTER_RELS]!.replace("</Relationships>", `${extra}</Relationships>`),
+        });
+    const SLIDE = `<Relationship Id="rId2" Type="${REL}/slide" Target="../slides/slide1.xml"/>`;
+    /** The run's sldLayoutId findings as `code: message`, in report order. */
+    const layoutFindings = async (bytes: Buffer, profile: "lenient" | "word-valid" | "strict") =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "deck.pptx");
+            await fs.writeFile(file, bytes);
+            return (await validate(file, { profile })).issues
+                .filter((issue) => ["sldlayout-missing-rid", "rels-id-mismatch", "rels-id-missing"].includes(issue.code ?? ""))
+                .map((issue) => `${issue.code}: ${issue.message}`);
+        });
+    const MISSING = (rid: string) =>
+        `sldlayout-missing-rid: sldLayoutId with id='2147483649' references r:id='${rid}' which is not found in slide layout relationships`;
+
+    it.each(["word-valid", "strict"] as const)(
+        "a sldLayoutId naming a slide relationship draws only sldlayout-missing-rid under %s",
+        async (profile) => {
+            expect(await layoutFindings(await deck('r:id="rId2"', SLIDE), profile)).toEqual([MISSING("rId2")]);
+        },
+    );
+
+    it.each(["word-valid", "strict"] as const)(
+        "a sldLayoutId naming no relationship draws only sldlayout-missing-rid under %s",
+        async (profile) => {
+            expect(await layoutFindings(await deck('r:id="rId9"'), profile)).toEqual([MISSING("rId9")]);
+        },
+    );
+
+    it("lenient keeps both findings of each", async () => {
+        expect(await layoutFindings(await deck('r:id="rId2"', SLIDE), "lenient")).toEqual([
+            MISSING("rId2"),
+            "rels-id-mismatch: <sldLayoutId> references 'rId2' which points to 'slide' but should point to a 'slidelayout' relationship",
+        ]);
+        expect(await layoutFindings(await deck('r:id="rId9"'), "lenient")).toEqual([
+            MISSING("rId9"),
+            "rels-id-missing: <sldLayoutId> r:id references non-existent relationship 'rId9' (valid IDs: rId1)",
+        ]);
+    });
+
+    // sldlayout-missing-rid judges only the Transitional r:id, so a dangling
+    // Strict rs:id beside it is another defect and keeps its own report.
+    it.each(["word-valid", "strict"] as const)(
+        "keeps the rels-id-missing of a Strict rs:id the layout check does not judge under %s",
+        async (profile) => {
+            expect(await layoutFindings(await deck('r:id="rId9" rs:id="rId8"'), profile)).toEqual([
+                MISSING("rId9"),
+                "rels-id-missing: <sldLayoutId> rs:id references non-existent relationship 'rId8' (valid IDs: rId1)",
+            ]);
+        },
+    );
+});

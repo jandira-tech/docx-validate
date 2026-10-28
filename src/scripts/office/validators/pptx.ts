@@ -36,6 +36,7 @@ import { getElementsByTagNameNSAll, parseXmlBytes } from "../../../lib/xml-helpe
 import type { BaseSchemaValidatorOptions } from "./base";
 import { BaseSchemaValidator, OFFICE_RELATIONSHIPS_NAMESPACE, packageEntries, withoutRestatedIgnorablePrefixes } from "./base";
 import { openDirectoryContext, packageExtractFailedIssue, storedNamesRun } from "../package-context";
+import { registerStoryReferenceIdentity, withoutHandedOffCopies } from "../story-reference-identity";
 
 export const PRESENTATIONML_NAMESPACE = "http://schemas.openxmlformats.org/presentationml/2006/main";
 /** The ISO Strict PresentationML namespace, `PRESENTATIONML_NAMESPACE`'s Strict counterpart. */
@@ -63,6 +64,9 @@ const PPTX_RELATIONSHIP_SEGMENTS: Readonly<Record<string, string>> = {
     handoutmaster: "handoutMaster",
     slidelayout: "slideLayout",
 };
+
+/** The finding a slide master's `sldLayoutId` copy is handed off to outside lenient (#1093). */
+const SLIDE_LAYOUT_ID_PRODUCERS: ReadonlySet<string> = new Set(["sldlayout-missing-rid"]);
 
 const UUID_PATTERN = /^[{(]?[0-9A-Fa-f]{8}-?[0-9A-Fa-f]{4}-?[0-9A-Fa-f]{4}-?[0-9A-Fa-f]{4}-?[0-9A-Fa-f]{12}[})]?$/;
 
@@ -134,7 +138,15 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             await rule("PPTX validateNoBom", () => this.validateNoBom()),
             await rule("PPTX validateNoEmptyRelsParts", () => this.validateNoEmptyRelsParts()),
         ];
-        return withoutRestatedIgnorablePrefixes(mergeResults(...checks));
+        // #1093: outside lenient a slide master's sldLayoutId that
+        // sldlayout-missing-rid reported is one finding, that one, so the
+        // relationship-id walk's copy of the same element and id is dropped,
+        // as DOCX hands a story reference's copy to its Word rule (#616).
+        // Lenient keeps both, as the Python validator reported them.
+        const merged = mergeResults(...checks);
+        return withoutRestatedIgnorablePrefixes(
+            this.profile === "lenient" ? merged : withoutHandedOffCopies(merged, merged, SLIDE_LAYOUT_ID_PRODUCERS),
+        );
     }
 
     /**
@@ -262,14 +274,26 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
                 const rId = sli.getAttributeNS(OFFICE_RELATIONSHIPS_NAMESPACE, "id");
                 const layoutId = sli.getAttribute("id");
                 if (rId && !validLayoutRids.has(rId)) {
-                    issues.push({
+                    const issue: ValidationIssue = {
                         severity: "error",
                         message:
                             `sldLayoutId with id='${layoutId}' references r:id='${rId}' ` +
                             `which is not found in slide layout relationships`,
                         path: this.relPath(slideMaster),
                         code: "sldlayout-missing-rid",
+                    };
+                    // #1093: the full run pairs the relationship-id walk's
+                    // copy with this finding through the element identity,
+                    // never the prose. Only the Transitional r:id is judged
+                    // here, so a Strict rs:id beside it keeps its own copy.
+                    registerStoryReferenceIdentity(issue, {
+                        part: this.relPath(slideMaster),
+                        namespaceURI: sli.namespaceURI ?? "",
+                        localName: "sldLayoutId",
+                        rid: rId,
+                        ridNamespaceURI: OFFICE_RELATIONSHIPS_NAMESPACE,
                     });
+                    issues.push(issue);
                 }
             }
         }

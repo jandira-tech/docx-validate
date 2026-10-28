@@ -108,7 +108,7 @@ import { WORD_HEADER_FOOTER_RELATIONSHIP } from "../checks/word-header-footer";
 import { WORD_PART_REFERENCE_RELATIONSHIP } from "../checks/word-part-reference";
 import { WORD_ATTACHED_TOOLBAR_RELATIONSHIP } from "../checks/word-attached-toolbar";
 import { WORD_HYPERLINK_RELATIONSHIP } from "../checks/word-hyperlink";
-import { type StoryReferenceIdentity, storyReferenceIdentity } from "../story-reference-identity";
+import { withoutHandedOffCopies } from "../story-reference-identity";
 import { WORD_PART_CONTENT_TYPE_GENERIC, wordPartContentTypeGenericFindings } from "../checks/word-part-content-type-generic";
 import { contextFromDirectory, openDirectoryContext, packageExtractFailedIssue, storedNamesRun } from "../package-context";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
@@ -3543,30 +3543,16 @@ export function withoutRepeatedCompatibilityFindings(schema: ValidationResult, r
  * and `validateAllRelationshipIds` called on its own reports every one.
  */
 export function withoutRepeatedHeaderFooterFindings(relationshipIds: ValidationResult, rules: ValidationResult): ValidationResult {
-    const key = (identity: StoryReferenceIdentity): string =>
-        `${identity.part}\u0000${identity.namespaceURI}\u0000${identity.localName}\u0000${identity.rid}`;
-    const reported = new Set<string>();
-    for (const issue of rules.issues) {
-        if (
-            issue.code !== WORD_HEADER_FOOTER_RELATIONSHIP &&
-            issue.code !== WORD_PART_REFERENCE_RELATIONSHIP &&
-            issue.code !== WORD_ATTACHED_TOOLBAR_RELATIONSHIP &&
-            issue.code !== WORD_HYPERLINK_RELATIONSHIP
-        )
-            continue;
-        const identity = storyReferenceIdentity(issue);
-        if (!identity) continue;
-        reported.add(key(identity));
-        for (const rid of identity.otherRids ?? []) reported.add(key({ ...identity, rid }));
-    }
-    const issues = relationshipIds.issues.filter((issue) => {
-        if (issue.code !== "rels-id-mismatch" && issue.code !== "rels-id-missing") return true;
-        const identity = storyReferenceIdentity(issue);
-        if (!identity) return true;
-        return !reported.has(key(identity));
-    });
-    return { valid: relationshipIds.valid, issues };
+    return withoutHandedOffCopies(relationshipIds, rules, WORD_RULE_HAND_OFF_PRODUCERS);
 }
+
+/** The Word rules whose findings the legacy relationship-id copies are handed off to. */
+const WORD_RULE_HAND_OFF_PRODUCERS: ReadonlySet<string> = new Set([
+    WORD_HEADER_FOOTER_RELATIONSHIP,
+    WORD_PART_REFERENCE_RELATIONSHIP,
+    WORD_ATTACHED_TOOLBAR_RELATIONSHIP,
+    WORD_HYPERLINK_RELATIONSHIP,
+]);
 
 function directChild(parent: Element, namespaceURI: string, local: string): Element | null {
     for (let child = parent.firstChild; child; child = child.nextSibling) {
