@@ -990,6 +990,82 @@ describe("the slide checks read relationships as the slide walk does outside len
     });
 });
 
+// #1058: outside lenient a PPTX element's r:id names a relationship of its
+// expected type only when the type is exactly that Office segment, as the
+// slide checks read one (#1051); lenient keeps the substring of the last
+// segment, so `slideLayout` satisfied a `p:sldId` expecting `slide`.
+describe("rels-id-mismatch reads PPTX relationship types exactly outside lenient (#1058)", () => {
+    const rel = (id: string, type: string, target: string) => `<Relationship Id="${id}" Type="${type}" Target="${target}"/>`;
+    const findings = async (dir: string, profile: "lenient" | "word-valid" | "strict") =>
+        (await new PPTXSchemaValidator({ unpackedDir: dir, profile }).validateAllRelationshipIds()).issues
+            .filter((issue) => issue.code === "rels-id-mismatch")
+            .map((issue) => issue.message);
+
+    it.each([
+        ["a p:sldId", "slideLayout", "sldIdLst", "sldId", `${R_NS}/slideLayout`, "slides/slide1.xml"],
+        ["a p:sldId", "slideMaster", "sldIdLst", "sldId", `${R_NS}/slideMaster`, "slides/slide1.xml"],
+        [
+            "a p:sldMasterId",
+            "foreign xslideMaster",
+            "sldMasterIdLst",
+            "sldMasterId",
+            "http://example.com/relationships/xslideMaster",
+            "slideMasters/slideMaster1.xml",
+        ],
+    ])("reports %s naming a %s relationship only outside lenient", async (_label, _typeLabel, list, element, type, target) => {
+        await withTempDir(async (dir) => {
+            await writeFile(
+                path.join(dir, "ppt", "presentation.xml"),
+                presentationXml(`<p:${list}><p:${element} id="256" r:id="rId1"/></p:${list}>`),
+            );
+            await writeFile(path.join(dir, "ppt", "_rels", "presentation.xml.rels"), relsXml(rel("rId1", type, target)));
+            expect(await findings(dir, "lenient")).toEqual([]);
+            expect(await findings(dir, "word-valid")).toHaveLength(1);
+            expect(await findings(dir, "strict")).toHaveLength(1);
+        });
+    });
+
+    it("reports a sldLayoutId naming a foreign type, as sldlayout-missing-rid does, only outside lenient", async () => {
+        await withTempDir(async (dir) => {
+            await writeFile(
+                path.join(dir, "ppt", "slideMasters", "slideMaster1.xml"),
+                presentationXml('<p:sldLayoutIdLst><p:sldLayoutId id="2147483649" r:id="rId1"/></p:sldLayoutIdLst>'),
+            );
+            await writeFile(
+                path.join(dir, "ppt", "slideMasters", "_rels", "slideMaster1.xml.rels"),
+                relsXml(rel("rId1", "http://example.com/relationships/xslideLayout", "../slideLayouts/slideLayout1.xml")),
+            );
+            expect(await findings(dir, "lenient")).toEqual([]);
+            expect(await findings(dir, "word-valid")).toEqual([
+                "<sldLayoutId> references 'rId1' which points to 'xslideLayout' but should point to a 'slidelayout' relationship",
+            ]);
+        });
+    });
+
+    it.each(["lenient", "word-valid", "strict"] as const)("accepts the minimal deck's relationships under %s", async (profile) => {
+        await withTempDir(async (dir) => {
+            for (const [name, content] of Object.entries(MINIMAL_PPTX_PARTS)) {
+                await writeFile(path.join(dir, name), content);
+            }
+            expect(await findings(dir, profile)).toEqual([]);
+        });
+    });
+
+    it.each(["word-valid", "strict"] as const)("accepts Strict-namespace types under %s", async (profile) => {
+        await withTempDir(async (dir) => {
+            await writeFile(
+                path.join(dir, "ppt", "presentation.xml"),
+                presentationXml('<p:sldIdLst><p:sldId id="256" r:id="rId1"/></p:sldIdLst>'),
+            );
+            await writeFile(
+                path.join(dir, "ppt", "_rels", "presentation.xml.rels"),
+                relsXml(rel("rId1", "http://purl.oclc.org/ooxml/officeDocument/relationships/slide", "slides/slide1.xml")),
+            );
+            expect(await findings(dir, profile)).toEqual([]);
+        });
+    });
+});
+
 // #1018: a master's relationships part is found by OPC part-name
 // equivalence, as the slide checks find a slide's, so a sidecar stored under
 // an escaped spelling is read, not reported missing.

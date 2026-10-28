@@ -181,7 +181,13 @@ Strict, and internal. So an External relationship, or a foreign type that
 merely contains the name, neither shares a notes slide, nor adds a layout, nor
 satisfies a `sldLayoutId`. Lenient keeps the historical reading, as it keeps
 nested relationships
-([#1051](https://github.com/jandira-tech/docx-validate/issues/1051)).
+([#1051](https://github.com/jandira-tech/docx-validate/issues/1051)). The
+same exact reading decides `rels-id-mismatch` for a PresentationML element's
+`r:id` under word-valid and strict. Before, it passed when the lower-cased
+last segment of the type merely contained the expected name, so a `p:sldId`
+naming a `slideLayout` relationship passed as `slide`. Lenient and DOCX keep
+that reading
+([#1058](https://github.com/jandira-tech/docx-validate/issues/1058)).
 
 The `strict` profile runs the Word rules and applicable XSD schemas. Schema
 conformance is stricter than Word openability. A leading BOM is at most a warning

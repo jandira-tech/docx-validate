@@ -48,6 +48,21 @@ const PPTX_ELEMENT_RELATIONSHIP_TYPES: Record<string, string> = {
     tablestyleid: "tablestyles",
 };
 
+/**
+ * The real casing of each lower-case relationship-type name the element
+ * expectations yield, PresentationML's own types: `rels-id-mismatch` compares
+ * these exactly outside lenient, as the slide checks compare types (#1058).
+ */
+const PPTX_RELATIONSHIP_SEGMENTS: Readonly<Record<string, string>> = {
+    slide: "slide",
+    slidemaster: "slideMaster",
+    notesmaster: "notesMaster",
+    handoutmaster: "handoutMaster",
+    slidelayout: "slideLayout",
+    theme: "theme",
+    tablestyles: "tableStyles",
+};
+
 const UUID_PATTERN = /^[{(]?[0-9A-Fa-f]{8}-?[0-9A-Fa-f]{4}-?[0-9A-Fa-f]{4}-?[0-9A-Fa-f]{4}-?[0-9A-Fa-f]{12}[})]?$/;
 
 export class PPTXSchemaValidator extends BaseSchemaValidator {
@@ -470,6 +485,24 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
         if (presentation === undefined) return [];
         const folder = path.posix.dirname(presentation);
         return this.relatedParts(names, path.posix.join(folder, "_rels", `${path.posix.basename(presentation)}.rels`), folder, segment);
+    }
+
+    /**
+     * Outside lenient, a relationship satisfies an element's expected type
+     * only when its type is exactly one Office relationship-type segment,
+     * Transitional or Strict, equal to the expected one: in its real casing
+     * for PresentationML's own types, ASCII case-insensitively for a name only
+     * the expectation fallback derives, which has lost the casing (#1058).
+     * So a `p:sldId` naming a `slideLayout` relationship no longer passes as
+     * `slide`, and a `p:sldLayoutId` is judged as `sldlayout-missing-rid`
+     * judges it (#1051). Lenient keeps the historical substring reading.
+     */
+    protected override relationshipTypeSatisfies(type: string, expected: string): boolean {
+        if (this.profile === "lenient") return super.relationshipTypeSatisfies(type, expected);
+        const segment = officeRelationshipTypeSegment(type);
+        if (segment === undefined) return false;
+        const known = PPTX_RELATIONSHIP_SEGMENTS[expected];
+        return known === undefined ? segment.toLowerCase() === expected : segment === known;
     }
 
     /**

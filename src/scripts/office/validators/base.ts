@@ -476,6 +476,11 @@ export interface XsdValidationOutcome {
     infrastructure?: boolean;
 }
 
+/** The last path segment of a relationship type, the name a mismatch message shows. */
+function relationshipTypeName(type: string): string {
+    return type.includes("/") ? (type.split("/").pop() ?? type) : type;
+}
+
 export class BaseSchemaValidator {
     readonly unpackedDir: string;
     readonly originalFile: string | null;
@@ -1321,8 +1326,7 @@ export class BaseSchemaValidator {
                 const rid = rel.getAttribute("Id");
                 const relType = rel.getAttribute("Type") ?? "";
                 if (!rid) continue;
-                const typeName = relType.includes("/") ? (relType.split("/").pop() ?? relType) : relType;
-                ridToType.set(rid, typeName);
+                ridToType.set(rid, relType);
             }
 
             let xmlDom: Document;
@@ -1376,8 +1380,9 @@ export class BaseSchemaValidator {
                     } else if (attrName === "id" && Object.keys(this.elementRelationshipTypes).length > 0) {
                         const expectedType = this._getExpectedRelationshipType(elemName);
                         if (expectedType) {
-                            const actualType = ridToType.get(ridAttr) ?? "";
-                            if (!actualType.toLowerCase().includes(expectedType)) {
+                            const fullType = ridToType.get(ridAttr) ?? "";
+                            const actualType = relationshipTypeName(fullType);
+                            if (!this.relationshipTypeSatisfies(fullType, expectedType)) {
                                 const issue: ValidationIssue = {
                                     severity: "error",
                                     message:
@@ -1435,6 +1440,16 @@ export class BaseSchemaValidator {
         }
 
         return finalize(issues);
+    }
+
+    /**
+     * Whether a relationship of `type` satisfies an element expecting the
+     * lower-case type name `expected`: the type's last path segment,
+     * lower-cased, contains it — the historical reading of the Python
+     * validator. The PPTX validator reads exact types outside lenient (#1058).
+     */
+    protected relationshipTypeSatisfies(type: string, expected: string): boolean {
+        return relationshipTypeName(type).toLowerCase().includes(expected);
     }
 
     protected _getExpectedRelationshipType(elementName: string): string | null {
