@@ -132,6 +132,19 @@ describe("writeXmlPart", () => {
 
             expect((await fs.readFile(file)).toString("utf8")).toBe(original);
         }));
+
+    it("returns whether it wrote: false for a part it cannot decode, true for one it wrote (#880)", async () =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "document.xml");
+            const undecodable = '<?xml version="1.0" encoding="macintosh"?><a/>';
+            await fs.writeFile(file, undecodable, "utf8");
+            expect(await writeXmlPart(file, parseXml("<a/>"))).toBe(false);
+            expect((await fs.readFile(file)).toString("utf8")).toBe(undecodable);
+
+            await fs.writeFile(file, `${DECLARATION}${BODY}`, "utf8");
+            const part = await readXmlPart(file);
+            expect(await writeXmlPart(file, parseXml(part!.text), part!)).toBe(true);
+        }));
 });
 
 describe("writeXmlText", () => {

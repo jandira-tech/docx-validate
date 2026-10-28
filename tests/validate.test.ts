@@ -278,6 +278,52 @@ describe("validate", () => {
         });
     });
 
+    it("reports no repair for a part whose write-back writeXmlPart refuses (#880)", async () => {
+        await withTempDir(async (tmp) => {
+            const writeTree = async (root: string, documentXml: string): Promise<void> => {
+                for (const [name, content] of Object.entries({ ...MINIMAL_PARTS, "word/document.xml": documentXml })) {
+                    await fs.mkdir(path.dirname(path.join(root, name)), { recursive: true });
+                    await fs.writeFile(path.join(root, name), content, "utf8");
+                }
+            };
+            // The same leading-space <w:t>; only the declaration differs, so the
+            // macintosh tree is judged (ASCII content, UTF-8 fallback decode)
+            // while its write-back is refused.
+            const mainWith = (encoding: string): string =>
+                (MINIMAL_PARTS["word/document.xml"] as string)
+                    .replace('encoding="UTF-8"', `encoding="${encoding}"`)
+                    .replace("<w:t>Hello</w:t>", "<w:t> Hello</w:t>");
+            // Synthesise a tiny "original" so dispatch picks the docx path even
+            // though our targets are bare directories with no extension.
+            const originalDocx = path.join(tmp, "orig.docx");
+            await fs.writeFile(originalDocx, await buildDocx());
+
+            const undecodable = path.join(tmp, "undecodable");
+            await writeTree(undecodable, mainWith("macintosh"));
+            const before = await fs.readFile(path.join(undecodable, "word", "document.xml"));
+            const refused = await validate(undecodable, {
+                profile: "strict",
+                autoRepair: true,
+                original: originalDocx,
+                author: "Test Author",
+            });
+            expect(refused.repairs).toBe(0);
+            expect(await fs.readFile(path.join(undecodable, "word", "document.xml"))).toEqual(before);
+            expect(refused.issues.some((i) => i.code === "ws-missing-preserve")).toBe(true);
+
+            const decodable = path.join(tmp, "decodable");
+            await writeTree(decodable, mainWith("UTF-8"));
+            const written = await validate(decodable, {
+                profile: "strict",
+                autoRepair: true,
+                original: originalDocx,
+                author: "Test Author",
+            });
+            expect(written.repairs).toBe(1);
+            expect(await fs.readFile(path.join(decodable, "word", "document.xml"), "utf8")).toMatch(/xml:space="preserve"/);
+        });
+    });
+
     it("discloses that auto-repair on a packed file ran on a staged copy (#649)", async () => {
         await withTempDir(async (tmp) => {
             const file = path.join(tmp, "packed.docx");

@@ -1878,6 +1878,10 @@ order mark, as before. A part whose declaration
 names an encoding this package cannot decode (`windows-1252`, `macintosh`, …)
 is left byte-for-byte untouched, and `addComment` returns an error naming it
 instead of editing it, changing nothing in the tree.
+The auto-repair writers then neither count nor report a
+repair for such a part: `writeXmlPart` returns whether it wrote (#880), and a
+part's repairs reach the `repairs` count, and its verbose `Repaired:` lines,
+only after a write — a refused write never reached disk.
 
 ### Drive the CLIs programmatically
 

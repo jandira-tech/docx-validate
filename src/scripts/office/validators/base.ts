@@ -759,6 +759,11 @@ export class BaseSchemaValidator {
                 const content = decodeXmlBytes(await fs.readFile(xmlFile));
                 const dom = parseXml(content);
                 let modified = false;
+                // Counted and printed only after the write: a part whose
+                // encoding `writeXmlPart` refuses is left untouched, so its
+                // repairs never reached disk (#880).
+                let partRepairs = 0;
+                const repairedLines: string[] = [];
 
                 const all = getElementsByTagNameAll(dom);
                 for (let i = 0; i < all.length; i += 1) {
@@ -774,19 +779,22 @@ export class BaseSchemaValidator {
                     if (!startsWS && !endsWS) continue;
                     if (elem.getAttribute("xml:space") !== "preserve") {
                         elem.setAttribute("xml:space", "preserve");
-                        repairs += 1;
+                        partRepairs += 1;
                         modified = true;
                         if (this.verbose) {
                             const preview = text.length > 30 ? JSON.stringify(text.slice(0, 30)) + "..." : JSON.stringify(text);
-                            process.stdout.write(
+                            repairedLines.push(
                                 `  Repaired: ${path.basename(xmlFile)}: Added xml:space='preserve' to ${elem.tagName}: ${preview}\n`,
                             );
                         }
                     }
                 }
 
-                if (modified) {
-                    await writeXmlPart(xmlFile, dom);
+                if (modified && (await writeXmlPart(xmlFile, dom))) {
+                    repairs += partRepairs;
+                    for (const line of repairedLines) {
+                        process.stdout.write(line);
+                    }
                 }
             } catch {
                 // pass — mirrors Python's bare except

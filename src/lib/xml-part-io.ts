@@ -56,18 +56,21 @@ export const readXmlPart = async (file: string): Promise<DecodedXmlPart | undefi
  * The XML declaration names the encoding the bytes are written in, so a
  * UTF-16 part is written back as UTF-16, with its BOM if it had one, and a
  * UTF-8 part as UTF-8. A part whose encoding cannot be decoded is left
- * untouched — writing text decoded from it would corrupt the part.
+ * untouched — writing text decoded from it would corrupt the part — and
+ * `false` is returned, so a caller does not count or report a repair that
+ * never reached disk (#880). A written part returns `true`.
  *
  * `part` is the encoding the caller decoded the part in. A caller that holds
  * only a DOM may leave it out: the part's current bytes then decide the
  * encoding, so the part is still written back the way it is stored.
  */
-export const writeXmlPart = async (file: string, dom: Document, part?: XmlPartEncoding): Promise<void> => {
+export const writeXmlPart = async (file: string, dom: Document, part?: XmlPartEncoding): Promise<boolean> => {
     const encoding = part ?? decodeXmlPart(await fs.readFile(file));
     if (encoding === undefined) {
-        return;
+        return false;
     }
     await fs.writeFile(file, encodeXmlPart(serializeXml(dom, xmlDeclarationEncoding(encoding)), encoding));
+    return true;
 };
 
 /**
