@@ -3512,7 +3512,9 @@ export function withoutRepeatedCompatibilityFindings(schema: ValidationResult, r
  * `word-attached-toolbar-relationship` (#716, session 48). The pairing is the structured identity both producers registered on
  * the issue object when they created it (#616): part path (normalized on
  * registration, as `withoutRepeatedCompatibilityFindings` compares paths),
- * element namespace URI, local name and the raw `r:id` all match. The
+ * element namespace URI, local name and the raw `r:id` all match; a
+ * session 55 dual-namespace `c:chart` finding also lists its other id
+ * (`otherRids`), so the legacy copy of either id pairs (#1074). The
  * namespace URI the `r:id` was read in is deliberately not part of the
  * pairing (#727): the Word rule reads the markup-compatibility view and the
  * legacy walk the raw part, so an element with an `mc:Choice` and an
@@ -3545,6 +3547,7 @@ export function withoutRepeatedHeaderFooterFindings(relationshipIds: ValidationR
         const identity = storyReferenceIdentity(issue);
         if (!identity) continue;
         reported.add(key(identity));
+        for (const rid of identity.otherRids ?? []) reported.add(key({ ...identity, rid }));
     }
     const issues = relationshipIds.issues.filter((issue) => {
         if (issue.code !== "rels-id-mismatch" && issue.code !== "rels-id-missing") return true;

@@ -276,12 +276,18 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
                             path: xmlFile,
                             code: WORD_PART_REFERENCE_RELATIONSHIP,
                         };
+                        // #1074: the legacy walk's copy for either id pairs.
+                        const otherRids = [
+                            elem.getAttributeNS(OFFICE_RELATIONSHIPS_NAMESPACE, "id"),
+                            elem.getAttributeNS(OFFICE_RELATIONSHIPS_STRICT_NAMESPACE, "id"),
+                        ].filter((rid): rid is string => !!rid && rid !== id.rid);
                         registerStoryReferenceIdentity(issue, {
                             part: xmlFile,
                             namespaceURI: ns,
                             localName: "chart",
                             rid: id.rid,
                             ridNamespaceURI: id.namespaceURI,
+                            otherRids,
                         });
                         issues.push(issue);
                         continue;

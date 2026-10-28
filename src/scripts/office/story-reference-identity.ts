@@ -55,6 +55,14 @@ export interface StoryReferenceIdentity {
     readonly localName: StoryReferenceLocalName;
     readonly rid: string;
     readonly ridNamespaceURI: string;
+    /**
+     * The element's other non-empty id values, when one finding stands for
+     * ids in both relationships namespaces: session 55's dual-namespace
+     * `c:chart` (#756). Since #1065 the legacy walk makes a copy for each id
+     * outside lenient, and the hand-off drops the copy for any of them
+     * (#1074).
+     */
+    readonly otherRids?: readonly string[];
 }
 
 /** Identity by issue object, so a copied issue is an unregistered issue (#616). */

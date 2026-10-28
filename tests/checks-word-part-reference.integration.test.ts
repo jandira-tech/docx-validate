@@ -1048,6 +1048,29 @@ describe(`${CODE} (selectors and the rels-id-missing hand-off)`, { timeout: 240_
     });
 
     /**
+     * #1074: outside lenient the legacy walk reads the Strict `rs:id` too
+     * (#1065), so a session 55 dual-namespace chart whose ids differ yields
+     * a legacy copy for each id the rule's one finding must drop; an `rs:id`
+     * alone keeps #705's pairing.
+     */
+    it.each([
+        ["word-valid", 'r:id="rId9" rs:id="rId8"'],
+        ["strict", 'r:id="rId9" rs:id="rId8"'],
+        ["word-valid", 'r:id="rId7" rs:id="rId8"'],
+        ["strict", 'r:id="rId7" rs:id="rId8"'],
+        ["word-valid", 'rs:id="rId8"'],
+        ["strict", 'rs:id="rId8"'],
+    ] as const)("reports the chart once under %s for %s (#1074)", async (profile, ids) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "dual-namespace-chart.docx");
+            writeFileSync(file, await buildDocx(s55ChartIdsPackage(s55ChartDrawing(ids))));
+            const result = await validate(file, { profile });
+            expect(result.issues.filter((issue) => issue.code === CODE)).toHaveLength(1);
+            expect(result.issues.filter((issue) => issue.code === "rels-id-missing")).toEqual([]);
+        });
+    });
+
+    /**
      * #727: the element sits in both branches of one `mc:AlternateContent`
      * whose Choice Word does not select. The legacy walk reads the raw
      * part, so it sees two elements and makes two `rels-id-missing` copies;
