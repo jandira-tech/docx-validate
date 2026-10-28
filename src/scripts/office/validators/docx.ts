@@ -65,6 +65,7 @@ import {
     wordStoryRootParts,
     wordTypedRelationshipTargets,
     wordUnobservedRelationshipTargets,
+    glossaryTypedRelationshipTargets,
 } from "../../../lib/word-read-parts";
 import {
     hasWordRelationshipReference,
@@ -101,6 +102,16 @@ import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE }
 import { WORD_PART_CONTENT_TYPE_MISMATCH, wordPartContentTypeMismatchFindings } from "../checks/word-part-content-type-mismatch";
 import { WORD_PART_CONTENT_TYPE_INEXACT, wordPartContentTypeInexactFindings } from "../checks/word-part-content-type-inexact";
 import { RELATIONSHIPS_UNDERSTOOD_NAMESPACES, understoodNamespacesForPart } from "../../../lib/markup-compatibility";
+/**
+ * The relationship-type segments whose targets can hold the user-text
+ * parts `userTextXmlFiles` and `documentXmlFiles` walk (#698): a reached
+ * glossary's story parts, judged against the glossary's own styles part
+ * rather than the main document's. A nested `glossaryDocument` stays in
+ * the set: reached only through the outer glossary's relationships, its
+ * references are that root's, not the main document's.
+ */
+const STORY_TEXT_SEGMENTS: ReadonlySet<string> = new Set(["comments", "endnotes", "footnotes", "footer", "glossaryDocument", "header"]);
+
 import {
     WORD_PART_CONTENT_TYPE_UNRECOGNIZED,
     wordPartContentTypeUnrecognizedFindings,
@@ -1024,8 +1035,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * Every `w:val` on a style-reference element (`w:pStyle`, `w:rStyle`,
      * `w:tblStyle`, `w:numStyle`, `w:tblpPr/w:tblStyle`, `w:linkedStyle`)
      * in document/header/footer/footnote/comment XML must resolve to a
-     * `<w:style w:styleId="...">` defined in the styles part the main
-     * document relates (by name in its folder when none does, #688, #699). Word
+     * `<w:style w:styleId="...">` defined in the styles part the story's
+     * root relates — the main document's (by name in its folder when
+     * none does, #688, #699) or a reached glossary's own (#698). Word
      * silently substitutes the default style for missing references but
      * pops a "this document needs to be repaired" dialog when opening
      * unfamiliar dangling references.
@@ -1198,39 +1210,44 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
         const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
 
-        // Find styles.xml; if absent, every reference is dangling — but
-        // most documents lacking styles.xml are abnormal in other ways
-        // already detected. A related styles part that is not XML defines
-        // what this check cannot read, so nothing is judged (#693).
+        // If the main document relates no styles part, every main-story
+        // reference is dangling — but most documents lacking one are
+        // abnormal in other ways already detected. A related styles part
+        // that is not XML defines what this check cannot read, so the main
+        // story is not judged (#693). A reached glossary's story is judged
+        // against the glossary's own styles part, or not judged when it
+        // relates none (#698).
         const stylesPath = await this.mainStylesPath();
-        if (stylesPath === undefined) return finalize(issues);
-        const defined = new Set<string>();
-        if (stylesPath) {
-            try {
-                const dom = await this.readPartDom(stylesPath);
-                for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                    const list = getElementsByTagNameNSAll(dom, ns, "style");
-                    for (let i = 0; i < list.length; i += 1) {
-                        const elem = list[i];
-                        if (!elem) continue;
-                        const id = elem.getAttributeNS(ns, "styleId");
-                        if (id) defined.add(id);
-                    }
-                }
-            } catch {
-                // styles.xml malformed — covered by xml-syntax check.
-                return finalize(issues);
+        const glossaryStyles = await this.glossaryStoryStylesFiles();
+        const definedByStyles = new Map<string | null, ReadonlySet<string> | undefined>();
+        const definedFor = async (styles: string | null): Promise<ReadonlySet<string> | undefined> => {
+            if (!definedByStyles.has(styles)) {
+                definedByStyles.set(styles, await this.definedStyleIds(styles));
             }
-        }
+            return definedByStyles.get(styles);
+        };
 
-        // The message names the part it judged; `null` means no styles part
-        // was found, so every reference dangles against none (#695).
-        const stylesLabel = stylesPath === null ? "any styles part" : this.relPath(stylesPath);
         const refTags = ["pStyle", "rStyle", "tblStyle", "numStyle", "linkedStyle"] as const;
         // Track each (file, styleId) pair so we don't spam multiple
         // issues for the same dangling reference repeated 100 times.
         const reported = new Set<string>();
         for (const xmlFile of this.userTextXmlFiles()) {
+            let styles: string | null;
+            let stylesLabel: string;
+            if (glossaryStyles.has(xmlFile)) {
+                const glossaryPath = glossaryStyles.get(xmlFile);
+                if (glossaryPath === undefined) continue;
+                styles = glossaryPath;
+                stylesLabel = this.relPath(glossaryPath);
+            } else {
+                if (stylesPath === undefined) continue;
+                styles = stylesPath;
+                // `null` means no styles part was found, so every
+                // reference dangles against none (#695).
+                stylesLabel = stylesPath === null ? "any styles part" : this.relPath(stylesPath);
+            }
+            const defined = await definedFor(styles);
+            if (defined === undefined) continue;
             let dom: Document;
             try {
                 dom = await this.readPartDom(xmlFile);
@@ -1944,8 +1961,24 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      */
     async validateRedundantCellBorders(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const styleBordersById = await this.tableStyleBordersByStyleId();
+        // Each story's table styles come from the styles part its root
+        // relates (#698): a reached glossary's `document.xml` against the
+        // glossary's own — or not judged when it relates none — and every
+        // other `document.xml` against the main document's.
+        const stylesPath = await this.mainStylesPath();
+        const glossaryStyles = await this.glossaryStoryStylesFiles();
+        const bordersByStyles = new Map<string | null, Map<string, BorderSignature>>();
+        const bordersFor = async (styles: string | null): Promise<Map<string, BorderSignature>> => {
+            if (!bordersByStyles.has(styles)) {
+                bordersByStyles.set(styles, await this.tableStyleBordersByStyleId(styles));
+            }
+            return bordersByStyles.get(styles)!;
+        };
         for (const xmlFile of this.documentXmlFiles()) {
+            const inGlossary = glossaryStyles.has(xmlFile);
+            const styles = inGlossary ? glossaryStyles.get(xmlFile) : stylesPath;
+            if (inGlossary && styles === undefined) continue;
+            const styleBordersById = await bordersFor(styles ?? null);
             let dom: Document;
             try {
                 dom = await this.readPartDom(xmlFile);
@@ -2052,49 +2085,27 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validateRedundantRunProperties(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
 
-        // Find and parse the main document's styles part for docDefaults.
+        // Each story's docDefaults come from the styles part its root
+        // relates (#698): a reached glossary's runs against the glossary's
+        // own styles part — or not judged when it relates none — and every
+        // other part against the main document's.
         const stylesPath = await this.mainStylesPath();
-        if (!stylesPath) return { valid: true, issues: [] };
-
-        let stylesDom: Document;
-        try {
-            stylesDom = await this.readPartDom(stylesPath);
-        } catch {
-            return { valid: true, issues: [] };
-        }
-
-        // Extract default rFonts from docDefaults.
-        let defaultAscii = "";
-        let defaultHAnsi = "";
-        let defaultCs = "";
-        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            const ddList = getElementsByTagNameNSAll(stylesDom, ns, "docDefaults");
-            if (ddList.length === 0) continue;
-            const dd = ddList[0];
-            if (!dd) continue;
-            const rPrDefaultList = getElementsByTagNameNSAll(dd, ns, "rPrDefault");
-            if (rPrDefaultList.length === 0) continue;
-            const rPrDefault = rPrDefaultList[0];
-            if (!rPrDefault) continue;
-            const rPrList = getElementsByTagNameNSAll(rPrDefault, ns, "rPr");
-            if (rPrList.length === 0) continue;
-            const rPr = rPrList[0];
-            if (!rPr) continue;
-            const rFontsList = getElementsByTagNameNSAll(rPr, ns, "rFonts");
-            if (rFontsList.length === 0) continue;
-            const rFonts = rFontsList[0];
-            if (!rFonts) continue;
-            defaultAscii = rFonts.getAttributeNS(ns, "ascii") ?? "";
-            defaultHAnsi = rFonts.getAttributeNS(ns, "hAnsi") ?? "";
-            defaultCs = rFonts.getAttributeNS(ns, "cs") ?? "";
-            break;
-        }
-
-        if (!defaultAscii && !defaultHAnsi && !defaultCs) return { valid: true, issues: [] };
+        const glossaryStyles = await this.glossaryStoryStylesFiles();
+        const defaultsByStyles = new Map<string, { ascii: string; hAnsi: string; cs: string } | undefined>();
+        const defaultsFor = async (styles: string): Promise<{ ascii: string; hAnsi: string; cs: string } | undefined> => {
+            if (!defaultsByStyles.has(styles)) {
+                defaultsByStyles.set(styles, await this.docDefaultRunFonts(styles));
+            }
+            return defaultsByStyles.get(styles);
+        };
 
         // Check every user-text part; redundant run properties commonly show
         // up in headers and footers as well as the main document body.
         for (const xmlFile of this.userTextXmlFiles()) {
+            const styles = glossaryStyles.has(xmlFile) ? glossaryStyles.get(xmlFile) : stylesPath;
+            if (!styles) continue;
+            const defaults = await defaultsFor(styles);
+            if (defaults === undefined || (!defaults.ascii && !defaults.hAnsi && !defaults.cs)) continue;
             let dom: Document;
             try {
                 dom = await this.readPartDom(xmlFile);
@@ -2113,7 +2124,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     const ascii = rFonts.getAttributeNS(ns, "ascii") ?? "";
                     const hAnsi = rFonts.getAttributeNS(ns, "hAnsi") ?? "";
                     const cs = rFonts.getAttributeNS(ns, "cs") ?? "";
-                    if (ascii && ascii === defaultAscii && hAnsi === defaultHAnsi && cs === defaultCs) {
+                    if (ascii && ascii === defaults.ascii && hAnsi === defaults.hAnsi && cs === defaults.cs) {
                         issues.push({
                             severity: "info",
                             message:
@@ -2127,6 +2138,44 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         }
         return finalize(issues);
+    }
+
+    /**
+     * The document-default run fonts of a styles part —
+     * `<w:docDefaults>/<w:rPrDefault>/<w:rPr>/<w:rFonts>` — or `undefined`
+     * when the part cannot be parsed or declares none.
+     */
+    private async docDefaultRunFonts(stylesPath: string): Promise<{ ascii: string; hAnsi: string; cs: string } | undefined> {
+        let stylesDom: Document;
+        try {
+            stylesDom = await this.readPartDom(stylesPath);
+        } catch {
+            return undefined;
+        }
+        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+            const ddList = getElementsByTagNameNSAll(stylesDom, ns, "docDefaults");
+            if (ddList.length === 0) continue;
+            const dd = ddList[0];
+            if (!dd) continue;
+            const rPrDefaultList = getElementsByTagNameNSAll(dd, ns, "rPrDefault");
+            if (rPrDefaultList.length === 0) continue;
+            const rPrDefault = rPrDefaultList[0];
+            if (!rPrDefault) continue;
+            const rPrList = getElementsByTagNameNSAll(rPrDefault, ns, "rPr");
+            if (rPrList.length === 0) continue;
+            const rPr = rPrList[0];
+            if (!rPr) continue;
+            const rFontsList = getElementsByTagNameNSAll(rPr, ns, "rFonts");
+            if (rFontsList.length === 0) continue;
+            const rFonts = rFontsList[0];
+            if (!rFonts) continue;
+            return {
+                ascii: rFonts.getAttributeNS(ns, "ascii") ?? "",
+                hAnsi: rFonts.getAttributeNS(ns, "hAnsi") ?? "",
+                cs: rFonts.getAttributeNS(ns, "cs") ?? "",
+            };
+        }
+        return undefined;
     }
 
     // ----- repair -------------------------------------------------------------
@@ -2449,17 +2498,69 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     }
 
     /**
-     * Inject canonical definitions into the main document's styles part
-     * (by name in its folder when none is related, #699) for every
-     * well-known style ID referenced by document XML but not defined.
+     * Inject canonical definitions into each story root's styles part —
+     * the main document's (by name in its folder when none is related,
+     * #699), and a reached glossary's own for the references its
+     * story makes (#698) — for every well-known style ID referenced by
+     * document XML but not defined.
      * Only handles the small set of styles writers commonly leak —
      * unknown style IDs are NOT auto-defined (we don't know what they
      * mean). Pairs with `validateStyleReferences`.
      */
     async repairMissingStyleDefinitions(): Promise<number> {
         const stylesPath = await this.mainStylesPath();
-        if (!stylesPath) return 0;
+        const glossaryStyles = await this.glossaryStoryStylesFiles();
 
+        // Collect each story's referenced IDs against the styles part its
+        // root relates (#698): a reached glossary's references belong to
+        // the glossary's own styles part — or are unrepaired when it
+        // relates none — never the main document's. A part both roots
+        // reach stays with the main document.
+        const referencedByStyles = new Map<string, Set<string>>();
+        if (stylesPath) referencedByStyles.set(stylesPath, new Set());
+        const refTags = ["pStyle", "rStyle", "tblStyle", "numStyle", "linkedStyle"] as const;
+        for (const xmlFile of this.userTextXmlFiles()) {
+            const styles = glossaryStyles.has(xmlFile) ? glossaryStyles.get(xmlFile) : stylesPath;
+            if (!styles) continue;
+            try {
+                const dom = parseXmlBytes(await fs.readFile(xmlFile));
+                const referenced = referencedByStyles.get(styles) ?? new Set<string>();
+                for (const tag of refTags) {
+                    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                        const list = getElementsByTagNameNSAll(dom, ns, tag);
+                        for (let i = 0; i < list.length; i += 1) {
+                            const elem = list[i];
+                            if (!elem) continue;
+                            const val = elem.getAttributeNS(ns, "val");
+                            if (val) referenced.add(val);
+                        }
+                    }
+                }
+                referencedByStyles.set(styles, referenced);
+            } catch {
+                // pass
+            }
+        }
+
+        let repairs = 0;
+        for (const [styles, referenced] of referencedByStyles) {
+            // Two sources of "needs to be defined": styles referenced by
+            // the story's XML, and the four ECMA-376 implied-defaults the
+            // main document's styles part must always carry.
+            const needed = new Set<string>(referenced);
+            if (styles === stylesPath) {
+                for (const def of REQUIRED_DEFAULT_STYLES) needed.add(def.styleId);
+            }
+            repairs += await this.writeMissingStyleDefinitions(styles, needed);
+        }
+        return repairs;
+    }
+
+    /**
+     * Write the `WELL_KNOWN_STYLE_DEFINITIONS` fragment of every `needed`
+     * styleId `stylesPath` does not define into it; returns the count.
+     */
+    private async writeMissingStyleDefinitions(stylesPath: string, needed: ReadonlySet<string>): Promise<number> {
         let stylesDom: Document;
         try {
             stylesDom = parseXmlBytes(await fs.readFile(stylesPath));
@@ -2479,34 +2580,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 if (id) defined.add(id);
             }
         }
-
-        // Collect all referenced IDs across all user-text XML files.
-        const referenced = new Set<string>();
-        const refTags = ["pStyle", "rStyle", "tblStyle", "numStyle", "linkedStyle"] as const;
-        for (const xmlFile of this.userTextXmlFiles()) {
-            try {
-                const dom = parseXmlBytes(await fs.readFile(xmlFile));
-                for (const tag of refTags) {
-                    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                        const list = getElementsByTagNameNSAll(dom, ns, tag);
-                        for (let i = 0; i < list.length; i += 1) {
-                            const elem = list[i];
-                            if (!elem) continue;
-                            const val = elem.getAttributeNS(ns, "val");
-                            if (val) referenced.add(val);
-                        }
-                    }
-                }
-            } catch {
-                // pass
-            }
-        }
-
-        // Two sources of "needs to be defined": styles referenced by
-        // document XML, and the four ECMA-376 implied-defaults — Word
-        // looks these up implicitly so they must always be present.
-        const needed = new Set<string>(referenced);
-        for (const def of REQUIRED_DEFAULT_STYLES) needed.add(def.styleId);
 
         const missing = [...needed].filter((id) => !defined.has(id));
         if (missing.length === 0) return 0;
@@ -2958,9 +3031,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
     }
 
-    private async tableStyleBordersByStyleId(): Promise<Map<string, BorderSignature>> {
+    private async tableStyleBordersByStyleId(stylesPath: string | null): Promise<Map<string, BorderSignature>> {
         const out = new Map<string, BorderSignature>();
-        const stylesPath = await this.mainStylesPath();
         if (!stylesPath) return out;
 
         let dom: Document;
@@ -2984,6 +3056,90 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         }
         return out;
+    }
+
+    /**
+     * The user-text parts each reached glossary's story is judged against its
+     * own styles part for (#698): a reached glossary document — a
+     * `glossaryDocument` target of the main document's relationships — and
+     * every part only the glossary's own relationships reach
+     * (`glossaryTypedRelationshipTargets`, `via: "glossary"`), never a part the
+     * main document also reaches, which stays the main document's. Each maps to
+     * the styles part that root relates; `undefined` when the root relates none
+     * — or relates one that is not XML — so the part is not judged. An empty
+     * map — no reached glossary, or a package view that cannot be read — keeps
+     * the by-name behaviour: every part judged against the main styles part.
+     */
+    private async glossaryStoryStylesFiles(): Promise<Map<string, string | undefined>> {
+        const files = new Map<string, string | undefined>();
+        try {
+            const context = this.context();
+            const roots = await wordTypedRelationshipTargets(context, new Set(["glossaryDocument"]), this.profile);
+            if (roots.length === 0) return files;
+            const stylesByRoot = new Map<string, string>();
+            for (const target of await glossaryTypedRelationshipTargets(context, new Set(["styles"]), this.profile)) {
+                if (target.root !== undefined && !stylesByRoot.has(canonicalPartName(target.root))) {
+                    stylesByRoot.set(canonicalPartName(target.root), target.part);
+                }
+            }
+            // Canonical part name to its root's canonical name, and to the
+            // stored spelling `xmlFileOf` matches against.
+            const rootByPart = new Map<string, string>();
+            const storedByPart = new Map<string, string>();
+            for (const root of roots) {
+                rootByPart.set(canonicalPartName(root.part), canonicalPartName(root.part));
+                storedByPart.set(canonicalPartName(root.part), root.part);
+            }
+            const mainReached = new Set(
+                (await wordTypedRelationshipTargets(context, STORY_TEXT_SEGMENTS, this.profile)).map((target) =>
+                    canonicalPartName(target.part),
+                ),
+            );
+            for (const target of await glossaryTypedRelationshipTargets(context, STORY_TEXT_SEGMENTS, this.profile)) {
+                const part = canonicalPartName(target.part);
+                if (target.root === undefined || rootByPart.has(part) || mainReached.has(part)) continue;
+                rootByPart.set(part, canonicalPartName(target.root));
+                storedByPart.set(part, target.part);
+            }
+            for (const [part, root] of rootByPart) {
+                const file = this.xmlFileOf([storedByPart.get(part)!]);
+                if (file === undefined) continue;
+                const styles = stylesByRoot.get(root);
+                files.set(file, styles === undefined ? undefined : this.xmlFileOf([styles]));
+            }
+        } catch {
+            // An unreadable package view is reported by its own checks; every
+            // part keeps the by-name judgement against the main styles part.
+        }
+        return files;
+    }
+
+    /**
+     * The `w:styleId` values a styles part defines: the empty set when
+     * `stylesPath` is `null` — no styles part was found, so every reference
+     * dangles — and `undefined` when the part cannot be parsed, which the
+     * XML diagnostics already report.
+     */
+    private async definedStyleIds(stylesPath: string | null): Promise<ReadonlySet<string> | undefined> {
+        const defined = new Set<string>();
+        if (stylesPath === null) return defined;
+        let dom: Document;
+        try {
+            dom = await this.readPartDom(stylesPath);
+        } catch {
+            // A malformed styles part is covered by the xml-syntax check.
+            return undefined;
+        }
+        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+            const list = getElementsByTagNameNSAll(dom, ns, "style");
+            for (let i = 0; i < list.length; i += 1) {
+                const elem = list[i];
+                if (!elem) continue;
+                const id = elem.getAttributeNS(ns, "styleId");
+                if (id) defined.add(id);
+            }
+        }
+        return defined;
     }
 }
 
