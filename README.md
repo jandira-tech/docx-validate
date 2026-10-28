@@ -152,8 +152,12 @@ behavior below applies to DOCX/DOCM. Pass `{ profile: "lenient" }` (CLI:
 The PPTX slide and master checks judge every slide and slide master the
 presentation relates, wherever it is stored, beside `ppt/slides/` and
 `ppt/slideMasters/`. These are `notes-shared` (a notes slide two slides
-relate, or one slide relates twice,
-[#1045](https://github.com/jandira-tech/docx-validate/issues/1045)),
+relate, one slide relates twice
+([#1045](https://github.com/jandira-tech/docx-validate/issues/1045)), or the
+two stored spellings of one slide's relationships part each relate, as every
+stored spelling is judged
+([#1017](https://github.com/jandira-tech/docx-validate/issues/1017),
+[#1052](https://github.com/jandira-tech/docx-validate/issues/1052))),
 `slide-layout-duplicate` (a slide with more than one `slideLayout`
 relationship), `sldlayout-missing-rid` (a master's `sldLayoutId` naming no
 `slideLayout` relationship) and `sldlayout-missing-rels` (a master with no
