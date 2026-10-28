@@ -14966,6 +14966,642 @@ print(len(rows), "rows,", len(raw), "raw records")
 
 </details>
 
+### Session 53: 13:21Z–13:33Z on 2026-10-26, validator columns at 0b26c414
+
+The content-type shapes the review of layers 156–160 says those layers judge, or explain with a session, that no earlier session showed Word ([#739](https://github.com/jandira-tech/docx-validate/issues/739): a second relationship to an eagerly read part; [#740](https://github.com/jandira-tech/docx-validate/issues/740): the spellings and types the recovery sentence cites a session for). Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; all 64 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The part bodies are session 47's empty roots.
+
+- A footer relationship the body references (`w:footerReference`) whose target is the main document, the related numbering part or the styles part gets the recovery offer, typed with its own type (the calibrations) and typed with session 49's and 50's refused types alike. So does `word/styles.xml` when the main document's settings relationship also targets it, typed styles or typed settings. Word-valid accepts all eight: false negatives, and the review's shapes are refused whatever the Override says.
+- `word/settings.xml`, `word/fontTable.xml` and `word/numbering.xml`, related by the main document, get the recovery offer typed `APPLICATION/OCTET-STREAM`, `application/octet-stream; charset=utf-8`, `image/png` or `application/foo+xml` (session 50 showed `application/octet-stream` only). Word-valid rejects all twelve.
+- The main document gets the recovery offer typed with the theme, glossary, header, footer, footnotes, endnotes, comments, settings, fontTable or numbering content type (session 50 showed the styles type only); word-valid rejects all ten.
+- A related settings part typed with the main document, numbering, header, fontTable, theme or comments type, a related numbering part typed with the main document, styles, header, fontTable or comments type, and the styles part typed with the main document, numbering, header, fontTable, theme or comments type all get the recovery offer; word-valid rejects all sixteen.
+- A related numbering part whose Override has `ContentType=""` gets the recovery offer, as styles (session 49) and settings and fontTable (session 50) did. Word-valid accepts it: a false negative.
+
+| Run    | Observed             | Specimen                                 | Shape                                                                                                               | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at 0b26c414                         | strict at 0b26c414                             |
+| ------ | -------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ---------------------------------------------- | ---------------------------------------------- |
+| `s53a` | 13:21:40Z, 13:28:57Z | `s53a-control-minimal`                   | control                                                                                                             | `e188dbb6b25b9d81` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                          |
+| `s53a` | 13:21:40Z, 13:28:57Z | `coreach-footer-main-calibration`        | #739 calibration: a footer relationship the body references targets word/document.xml, typed main                   | `ca276870e63588a6` | repair-warning | repair-warning | unreadable-content-warning | valid                                          | invalid: `word-part-content-type-mismatch`     |
+| `s53a` | 13:21:40Z, 13:28:57Z | `coreach-footer-main-styles-type`        | #739: the same, the main document typed with the styles content type                                                | `74518ae2db909694` | repair-warning | repair-warning | unreadable-content-warning | valid                                          | invalid: `word-part-content-type-mismatch`     |
+| `s53a` | 13:21:40Z, 13:28:57Z | `coreach-footer-numbering-calibration`   | #739 calibration: a footer relationship the body references targets the related word/numbering.xml, typed numbering | `ade633ca0639dab9` | repair-warning | repair-warning | unreadable-content-warning | valid                                          | invalid: `word-part-content-type-mismatch`     |
+| `s53a` | 13:21:40Z, 13:28:57Z | `coreach-footer-numbering-settings-type` | #739: the same, numbering typed with the settings content type                                                      | `c560c8a0161ae53b` | repair-warning | repair-warning | unreadable-content-warning | valid                                          | invalid: `word-part-content-type-mismatch`     |
+| `s53a` | 13:21:40Z, 13:28:57Z | `coreach-footer-styles-calibration`      | #739 calibration: a footer relationship the body references targets word/styles.xml, typed styles                   | `b8a71216d9c7317c` | repair-warning | repair-warning | unreadable-content-warning | valid                                          | invalid: `word-part-content-type-mismatch`     |
+| `s53a` | 13:21:40Z, 13:28:57Z | `coreach-footer-styles-settings-type`    | #739: the same, styles typed with the settings content type                                                         | `1eaeb5e83687f43b` | repair-warning | repair-warning | unreadable-content-warning | valid                                          | invalid: `word-part-content-type-mismatch`     |
+| `s53a` | 13:21:40Z, 13:28:57Z | `s53a-control-minimal-end`               | control                                                                                                             | `e188dbb6b25b9d81` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                          |
+| `s53b` | 13:23:39Z, 13:29:41Z | `s53b-control-minimal`                   | control                                                                                                             | `c940ba0a774cf4d6` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                          |
+| `s53b` | 13:23:39Z, 13:29:41Z | `coreach-settings-styles-calibration`    | #739 calibration: word/styles.xml is also the target of the main document's settings relationship, typed styles     | `593e55d8b335ede0` | repair-warning | repair-warning | unreadable-content-warning | valid                                          | valid                                          |
+| `s53b` | 13:23:39Z, 13:29:41Z | `coreach-settings-styles-settings-type`  | #739 (review S5): the same, styles typed with the settings content type                                             | `36ad5effbec5074c` | repair-warning | repair-warning | unreadable-content-warning | valid                                          | valid                                          |
+| `s53b` | 13:23:39Z, 13:29:41Z | `settings-override-octet-upper`          | #740: a related word/settings.xml typed APPLICATION/OCTET-STREAM                                                    | `a8edd982bd14752a` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized` |
+| `s53b` | 13:23:39Z, 13:29:41Z | `settings-override-octet-charset`        | #740: a related word/settings.xml typed application/octet-stream; charset=utf-8                                     | `8ba5edba8249e1dc` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized` |
+| `s53b` | 13:23:39Z, 13:29:41Z | `settings-override-image-png`            | #740: a related word/settings.xml typed image/png                                                                   | `9eace5a5a1043a87` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized` |
+| `s53b` | 13:23:39Z, 13:29:41Z | `settings-override-foo-xml`              | #740: a related word/settings.xml typed application/foo+xml                                                         | `b1316d93ceaed750` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized` |
+| `s53b` | 13:23:39Z, 13:29:41Z | `s53b-control-minimal-end`               | control                                                                                                             | `c940ba0a774cf4d6` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                          |
+| `s53c` | 13:24:49Z, 13:30:41Z | `s53c-control-minimal`                   | control                                                                                                             | `c940ba0a774cf4d6` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                          |
+| `s53c` | 13:24:49Z, 13:30:41Z | `fonttable-override-octet-upper`         | #740: a related word/fontTable.xml typed APPLICATION/OCTET-STREAM                                                   | `6a5fe4cb9971efdf` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized` |
+| `s53c` | 13:24:49Z, 13:30:41Z | `fonttable-override-octet-charset`       | #740: a related word/fontTable.xml typed application/octet-stream; charset=utf-8                                    | `72aae2c806d3aa78` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized` |
+| `s53c` | 13:24:49Z, 13:30:41Z | `fonttable-override-image-png`           | #740: a related word/fontTable.xml typed image/png                                                                  | `2bca23dddba2ee04` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized` |
+| `s53c` | 13:24:49Z, 13:30:41Z | `fonttable-override-foo-xml`             | #740: a related word/fontTable.xml typed application/foo+xml                                                        | `0b3a6d1e58e37ca2` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized` |
+| `s53c` | 13:24:49Z, 13:30:41Z | `numbering-override-octet-upper`         | #740: a related word/numbering.xml typed APPLICATION/OCTET-STREAM                                                   | `31b408bd8cab0d9a` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized` |
+| `s53c` | 13:24:49Z, 13:30:41Z | `numbering-override-octet-charset`       | #740: a related word/numbering.xml typed application/octet-stream; charset=utf-8                                    | `e9a7a6ba6158d91f` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized` |
+| `s53c` | 13:24:49Z, 13:30:41Z | `s53c-control-minimal-end`               | control                                                                                                             | `78e76aaf80e6ac15` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                          |
+| `s53d` | 13:25:34Z, 13:31:13Z | `s53d-control-minimal`                   | control                                                                                                             | `78e76aaf80e6ac15` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                          |
+| `s53d` | 13:25:34Z, 13:31:13Z | `numbering-override-image-png`           | #740: a related word/numbering.xml typed image/png                                                                  | `12dc7dd7f7cedc9e` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized` |
+| `s53d` | 13:25:34Z, 13:31:13Z | `numbering-override-foo-xml`             | #740: a related word/numbering.xml typed application/foo+xml                                                        | `b752b67489a90049` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-unrecognized` | invalid: `word-part-content-type-unrecognized` |
+| `s53d` | 13:25:34Z, 13:31:13Z | `numbering-override-empty`               | #740: a related word/numbering.xml whose Override has ContentType=""                                                | `cc4ec9114d116472` | repair-warning | repair-warning | unreadable-content-warning | valid                                          | invalid: `xsd-summary`, `xsd-error`            |
+| `s53d` | 13:25:34Z, 13:31:13Z | `main-override-theme-type`               | #740: main document Override typed with the theme content type                                                      | `ebefeb7701b17ebb` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53d` | 13:25:34Z, 13:31:13Z | `main-override-glossary-type`            | #740: main document Override typed with the glossary content type                                                   | `e920b88eef248648` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53d` | 13:25:34Z, 13:31:13Z | `main-override-header-type`              | #740: main document Override typed with the header content type                                                     | `d324da4b33f07bb6` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53d` | 13:25:34Z, 13:31:13Z | `s53d-control-minimal-end`               | control                                                                                                             | `78e76aaf80e6ac15` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                          |
+| `s53e` | 13:26:19Z, 13:32:08Z | `s53e-control-minimal`                   | control                                                                                                             | `78e76aaf80e6ac15` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                          |
+| `s53e` | 13:26:19Z, 13:32:08Z | `main-override-footer-type`              | #740: main document Override typed with the footer content type                                                     | `4811c413899302e1` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53e` | 13:26:19Z, 13:32:08Z | `main-override-footnotes-type`           | #740: main document Override typed with the footnotes content type                                                  | `7499826e8dc67598` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53e` | 13:26:19Z, 13:32:08Z | `main-override-endnotes-type`            | #740: main document Override typed with the endnotes content type                                                   | `e0871228afc1668e` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53e` | 13:26:19Z, 13:32:08Z | `main-override-comments-type`            | #740: main document Override typed with the comments content type                                                   | `2fa2a70a1e893533` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53e` | 13:26:19Z, 13:32:08Z | `main-override-settings-type`            | #740: main document Override typed with the settings content type                                                   | `dcd93adbd0025cf6` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53e` | 13:26:19Z, 13:32:08Z | `main-override-fonttable-type`           | #740: main document Override typed with the fontTable content type                                                  | `541c386fdada46d5` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53e` | 13:26:19Z, 13:32:08Z | `s53e-control-minimal-end`               | control                                                                                                             | `23b03320df4545d9` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                          |
+| `s53f` | 13:26:51Z, 13:32:55Z | `s53f-control-minimal`                   | control                                                                                                             | `23b03320df4545d9` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                          |
+| `s53f` | 13:26:51Z, 13:32:55Z | `main-override-numbering-type`           | #740: main document Override typed with the numbering content type                                                  | `2dae93e99250fb43` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53f` | 13:26:51Z, 13:32:55Z | `settings-override-main-type`            | #740: a related word/settings.xml typed with the main content type                                                  | `df98b34b70226d9f` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53f` | 13:26:51Z, 13:32:55Z | `settings-override-numbering-type`       | #740: a related word/settings.xml typed with the numbering content type                                             | `d4036be15f4fc7c6` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53f` | 13:26:51Z, 13:32:55Z | `settings-override-header-type`          | #740: a related word/settings.xml typed with the header content type                                                | `79be997fffbbe994` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53f` | 13:26:51Z, 13:32:55Z | `settings-override-fonttable-type`       | #740: a related word/settings.xml typed with the fontTable content type                                             | `f5e9f34ea9425832` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53f` | 13:26:51Z, 13:32:55Z | `settings-override-theme-type`           | #740: a related word/settings.xml typed with the theme content type                                                 | `118618eee67d9e9b` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53f` | 13:26:51Z, 13:32:55Z | `s53f-control-minimal-end`               | control                                                                                                             | `23b03320df4545d9` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                          |
+| `s53g` | 13:27:22Z, 13:33:25Z | `s53g-control-minimal`                   | control                                                                                                             | `8ac6bfb91e63af67` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                          |
+| `s53g` | 13:27:22Z, 13:33:25Z | `numbering-override-main-type`           | #740: a related word/numbering.xml typed with the main content type                                                 | `7832b5bb17d01ed1` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53g` | 13:27:22Z, 13:33:25Z | `numbering-override-styles-type`         | #740: a related word/numbering.xml typed with the styles content type                                               | `ba3fd57cde8be733` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53g` | 13:27:22Z, 13:33:25Z | `numbering-override-header-type`         | #740: a related word/numbering.xml typed with the header content type                                               | `fb80d2781713f31f` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53g` | 13:27:22Z, 13:33:25Z | `numbering-override-fonttable-type`      | #740: a related word/numbering.xml typed with the fontTable content type                                            | `94cea678ac00ff52` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53g` | 13:27:22Z, 13:33:25Z | `styles-override-main-type`              | #740: word/styles.xml typed with the main content type                                                              | `bf1aa82ed7094c97` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53g` | 13:27:22Z, 13:33:25Z | `styles-override-numbering-type`         | #740: word/styles.xml typed with the numbering content type                                                         | `0ffdb42bd74bb2ba` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53g` | 13:27:22Z, 13:33:25Z | `s53g-control-minimal-end`               | control                                                                                                             | `8ac6bfb91e63af67` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                          |
+| `s53h` | 13:28:07Z, 13:33:54Z | `s53h-control-minimal`                   | control                                                                                                             | `8ac6bfb91e63af67` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                          |
+| `s53h` | 13:28:07Z, 13:33:54Z | `styles-override-header-type`            | #740: word/styles.xml typed with the header content type                                                            | `3e2a3416cd854035` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53h` | 13:28:07Z, 13:33:54Z | `styles-override-fonttable-type`         | #740: word/styles.xml typed with the fontTable content type                                                         | `a0659f53f2004119` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53h` | 13:28:07Z, 13:33:54Z | `styles-override-theme-type`             | #740: word/styles.xml typed with the theme content type                                                             | `b9780a86f257f176` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53h` | 13:28:07Z, 13:33:54Z | `styles-override-comments-type`          | #740: word/styles.xml typed with the comments content type                                                          | `0075019d042984a3` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53h` | 13:28:07Z, 13:33:54Z | `settings-override-comments-type`        | #740: a related word/settings.xml typed with the comments content type                                              | `a6b36c64a0c32435` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53h` | 13:28:07Z, 13:33:54Z | `numbering-override-comments-type`       | #740: a related word/numbering.xml typed with the comments content type                                             | `aff30486f65c81c6` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch`     | invalid: `word-part-content-type-mismatch`     |
+| `s53h` | 13:28:07Z, 13:33:54Z | `s53h-control-minimal-end`               | control                                                                                                             | `54ee4a813779f3b6` | clean-open     | clean-open     | clean-open                 | valid                                          | valid                                          |
+
+<details><summary>Raw records, session 53</summary>
+
+```jsonl
+{"run": "s53a", "pass": 1, "name": "s53a-control-minimal", "sha256": "e188dbb6b25b9d81e9381e9a276dad5b10a4e65883c181f6934c53f212d6f0c9", "observedAt": "2026-10-26T13:21:40+00:00", "staged": "00007__wfv__s53a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53a", "pass": 2, "name": "s53a-control-minimal", "sha256": "e188dbb6b25b9d81e9381e9a276dad5b10a4e65883c181f6934c53f212d6f0c9", "observedAt": "2026-10-26T13:28:57+00:00", "staged": "00007__wfv__s53a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53a", "pass": 1, "name": "coreach-footer-main-calibration", "sha256": "ca276870e63588a6d0a088d59381d5486bc59fb7911134d9ec0daaaf46148c07", "observedAt": "2026-10-26T13:21:40+00:00", "staged": "00000__wfv__coreach-footer-main-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:20:29.074 'Word found unreadable content in 00000__wfv__coreach-footer-main-calibration.docx. Do you want to r … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:20:29.818 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__coreach-footer-main-calib...)\""]}
+{"run": "s53a", "pass": 2, "name": "coreach-footer-main-calibration", "sha256": "ca276870e63588a6d0a088d59381d5486bc59fb7911134d9ec0daaaf46148c07", "observedAt": "2026-10-26T13:28:57+00:00", "staged": "00000__wfv__coreach-footer-main-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:28:25.919 'Word found unreadable content in 00000__wfv__coreach-footer-main-calibration.docx. Do you want to r … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:28:26.773 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__coreach-footer-main-calib...)\""]}
+{"run": "s53a", "pass": 1, "name": "coreach-footer-main-styles-type", "sha256": "74518ae2db909694f4d5d808bbf16d47d9e40c12b43402a31ef0a51ab02244c1", "observedAt": "2026-10-26T13:21:40+00:00", "staged": "00001__wfv__coreach-footer-main-styles-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:21:17.434 'Word found unreadable content in 00001__wfv__coreach-footer-main-styles-type.docx. Do you want to r … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:21:18.036 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__coreach-footer-main-style...)\""]}
+{"run": "s53a", "pass": 2, "name": "coreach-footer-main-styles-type", "sha256": "74518ae2db909694f4d5d808bbf16d47d9e40c12b43402a31ef0a51ab02244c1", "observedAt": "2026-10-26T13:28:57+00:00", "staged": "00001__wfv__coreach-footer-main-styles-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:28:33.765 'Word found unreadable content in 00001__wfv__coreach-footer-main-styles-type.docx. Do you want to r … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:28:34.655 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__coreach-footer-main-style...)\""]}
+{"run": "s53a", "pass": 1, "name": "coreach-footer-numbering-calibration", "sha256": "ade633ca0639dab9ef3dc1837df3501c80e606a083f653b92916470bf11da3d8", "observedAt": "2026-10-26T13:21:40+00:00", "staged": "00002__wfv__coreach-footer-numbering-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:21:22.784 'Word found unreadable content in 00002__wfv__coreach-footer-numbering-calibration.docx. Do you want … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:21:23.386 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__coreach-footer-numbering-...)\""]}
+{"run": "s53a", "pass": 2, "name": "coreach-footer-numbering-calibration", "sha256": "ade633ca0639dab9ef3dc1837df3501c80e606a083f653b92916470bf11da3d8", "observedAt": "2026-10-26T13:28:57+00:00", "staged": "00002__wfv__coreach-footer-numbering-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:28:42.780 'Word found unreadable content in 00002__wfv__coreach-footer-numbering-calibration.docx. Do you want … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:28:43.685 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__coreach-footer-numbering-...)\""]}
+{"run": "s53a", "pass": 1, "name": "coreach-footer-numbering-settings-type", "sha256": "c560c8a0161ae53bf888e8039a0bba021de179b11ec79f60f888aedfb4b6de99", "observedAt": "2026-10-26T13:21:40+00:00", "staged": "00003__wfv__coreach-footer-numbering-settings-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:21:27.516 'Word found unreadable content in 00003__wfv__coreach-footer-numbering-settings-type.docx. Do you wa … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:21:28.054 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__coreach-footer-numbering-...)\""]}
+{"run": "s53a", "pass": 2, "name": "coreach-footer-numbering-settings-type", "sha256": "c560c8a0161ae53bf888e8039a0bba021de179b11ec79f60f888aedfb4b6de99", "observedAt": "2026-10-26T13:28:57+00:00", "staged": "00003__wfv__coreach-footer-numbering-settings-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:28:47.083 'Word found unreadable content in 00003__wfv__coreach-footer-numbering-settings-type.docx. Do you wa … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:28:47.982 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__coreach-footer-numbering-...)\""]}
+{"run": "s53a", "pass": 1, "name": "coreach-footer-styles-calibration", "sha256": "b8a71216d9c7317c230d79658da3226301110a9ddb343c74fcc412179bb378d0", "observedAt": "2026-10-26T13:21:40+00:00", "staged": "00004__wfv__coreach-footer-styles-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:21:33.651 'Word found unreadable content in 00004__wfv__coreach-footer-styles-calibration.docx. Do you want to … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:21:34.303 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__coreach-footer-styles-cal...)\""]}
+{"run": "s53a", "pass": 2, "name": "coreach-footer-styles-calibration", "sha256": "b8a71216d9c7317c230d79658da3226301110a9ddb343c74fcc412179bb378d0", "observedAt": "2026-10-26T13:28:57+00:00", "staged": "00004__wfv__coreach-footer-styles-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:28:51.362 'Word found unreadable content in 00004__wfv__coreach-footer-styles-calibration.docx. Do you want to … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:28:52.269 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__coreach-footer-styles-cal...)\""]}
+{"run": "s53a", "pass": 1, "name": "coreach-footer-styles-settings-type", "sha256": "1eaeb5e83687f43b29cc5e7e78ad614a3a0977b86c5e99eeb0fcb1251b3c0599", "observedAt": "2026-10-26T13:21:40+00:00", "staged": "00005__wfv__coreach-footer-styles-settings-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:21:38.417 'Word found unreadable content in 00005__wfv__coreach-footer-styles-settings-type.docx. Do you want  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:21:38.987 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__coreach-footer-styles-set...)\""]}
+{"run": "s53a", "pass": 2, "name": "coreach-footer-styles-settings-type", "sha256": "1eaeb5e83687f43b29cc5e7e78ad614a3a0977b86c5e99eeb0fcb1251b3c0599", "observedAt": "2026-10-26T13:28:57+00:00", "staged": "00005__wfv__coreach-footer-styles-settings-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:28:55.583 'Word found unreadable content in 00005__wfv__coreach-footer-styles-settings-type.docx. Do you want  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:28:56.500 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__coreach-footer-styles-set...)\""]}
+{"run": "s53a", "pass": 1, "name": "s53a-control-minimal-end", "sha256": "e188dbb6b25b9d81e9381e9a276dad5b10a4e65883c181f6934c53f212d6f0c9", "observedAt": "2026-10-26T13:21:40+00:00", "staged": "00006__wfv__s53a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53a", "pass": 2, "name": "s53a-control-minimal-end", "sha256": "e188dbb6b25b9d81e9381e9a276dad5b10a4e65883c181f6934c53f212d6f0c9", "observedAt": "2026-10-26T13:28:57+00:00", "staged": "00006__wfv__s53a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53b", "pass": 1, "name": "s53b-control-minimal", "sha256": "c940ba0a774cf4d6d63b0c67260ab38054579c265ae8a8d005181cbffd79090f", "observedAt": "2026-10-26T13:23:39+00:00", "staged": "00003__wfv__s53b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53b", "pass": 2, "name": "s53b-control-minimal", "sha256": "c940ba0a774cf4d6d63b0c67260ab38054579c265ae8a8d005181cbffd79090f", "observedAt": "2026-10-26T13:29:41+00:00", "staged": "00003__wfv__s53b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53b", "pass": 1, "name": "coreach-settings-styles-calibration", "sha256": "593e55d8b335ede0eea1a150d55e170d67ba3419283aec6ca4a732e6f43906cf", "observedAt": "2026-10-26T13:23:39+00:00", "staged": "00000__wfv__coreach-settings-styles-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:22:03.216 'Word found unreadable content in 00000__wfv__coreach-settings-styles-calibration.docx. Do you want  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:22:04.063 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__coreach-settings-styles-c...)\""]}
+{"run": "s53b", "pass": 2, "name": "coreach-settings-styles-calibration", "sha256": "593e55d8b335ede0eea1a150d55e170d67ba3419283aec6ca4a732e6f43906cf", "observedAt": "2026-10-26T13:29:41+00:00", "staged": "00000__wfv__coreach-settings-styles-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:29:06.279 'Word found unreadable content in 00000__wfv__coreach-settings-styles-calibration.docx. Do you want  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:29:07.136 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__coreach-settings-styles-c...)\""]}
+{"run": "s53b", "pass": 1, "name": "coreach-settings-styles-settings-type", "sha256": "36ad5effbec5074c10e4928c5a09311ef38403b0d26ec5d47a0d7c84cca5b249", "observedAt": "2026-10-26T13:23:39+00:00", "staged": "00001__wfv__coreach-settings-styles-settings-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:23:05.773 Microsoft Word, Word found unreadable content in 00001__wfv__coreach-settings-styles-settings-type.d … t? If you trust the source of this document, click Yes."]}
+{"run": "s53b", "pass": 2, "name": "coreach-settings-styles-settings-type", "sha256": "36ad5effbec5074c10e4928c5a09311ef38403b0d26ec5d47a0d7c84cca5b249", "observedAt": "2026-10-26T13:29:41+00:00", "staged": "00001__wfv__coreach-settings-styles-settings-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:29:14.914 'Word found unreadable content in 00001__wfv__coreach-settings-styles-settings-type.docx. Do you wan … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:29:15.564 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__coreach-settings-styles-s...)\""]}
+{"run": "s53b", "pass": 1, "name": "settings-override-octet-upper", "sha256": "a8edd982bd14752a18005ac5ab31509599a326ed14ebaa4044921afa5864b662", "observedAt": "2026-10-26T13:23:39+00:00", "staged": "00007__wfv__settings-override-octet-upper.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:23:38.548 'Word found unreadable content in 00007__wfv__settings-override-octet-upper.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:23:39.444 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__settings-override-octet-u...)\""]}
+{"run": "s53b", "pass": 2, "name": "settings-override-octet-upper", "sha256": "a8edd982bd14752a18005ac5ab31509599a326ed14ebaa4044921afa5864b662", "observedAt": "2026-10-26T13:29:41+00:00", "staged": "00007__wfv__settings-override-octet-upper.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:29:40.650 'Word found unreadable content in 00007__wfv__settings-override-octet-upper.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:29:41.190 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__settings-override-octet-u...)\""]}
+{"run": "s53b", "pass": 1, "name": "settings-override-octet-charset", "sha256": "8ba5edba8249e1dce6333e377356554f9b33d75126ee34884439e75e851a89eb", "observedAt": "2026-10-26T13:23:39+00:00", "staged": "00006__wfv__settings-override-octet-charset.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:23:34.201 'Word found unreadable content in 00006__wfv__settings-override-octet-charset.docx. Do you want to r … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:23:34.879 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__settings-override-octet-c...)\""]}
+{"run": "s53b", "pass": 2, "name": "settings-override-octet-charset", "sha256": "8ba5edba8249e1dce6333e377356554f9b33d75126ee34884439e75e851a89eb", "observedAt": "2026-10-26T13:29:41+00:00", "staged": "00006__wfv__settings-override-octet-charset.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:29:32.580 'Word found unreadable content in 00006__wfv__settings-override-octet-charset.docx. Do you want to r … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:29:33.247 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__settings-override-octet-c...)\""]}
+{"run": "s53b", "pass": 1, "name": "settings-override-image-png", "sha256": "9eace5a5a1043a87aa9e1c8ccde071ea565690ef828136084af646583f5be2cc", "observedAt": "2026-10-26T13:23:39+00:00", "staged": "00005__wfv__settings-override-image-png.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:23:24.303 'Word found unreadable content in 00005__wfv__settings-override-image-png.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:23:29.753 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__settings-override-image-p...)\""]}
+{"run": "s53b", "pass": 2, "name": "settings-override-image-png", "sha256": "9eace5a5a1043a87aa9e1c8ccde071ea565690ef828136084af646583f5be2cc", "observedAt": "2026-10-26T13:29:41+00:00", "staged": "00005__wfv__settings-override-image-png.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:29:27.279 'Word found unreadable content in 00005__wfv__settings-override-image-png.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:29:28.198 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__settings-override-image-p...)\""]}
+{"run": "s53b", "pass": 1, "name": "settings-override-foo-xml", "sha256": "b1316d93ceaed7505e9538376e52b4ddd27f284bc332052b7fb154793dad6588", "observedAt": "2026-10-26T13:23:39+00:00", "staged": "00004__wfv__settings-override-foo-xml.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:23:15.541 \"Word found unreadable content in 00004__wfv__settings-override-foo-xml.docx. Do you want to recover … ? If you trust the source of this document, click Yes.\"", "2026-10-26 09:23:15.542 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__settings-override-foo-xml...)\""]}
+{"run": "s53b", "pass": 2, "name": "settings-override-foo-xml", "sha256": "b1316d93ceaed7505e9538376e52b4ddd27f284bc332052b7fb154793dad6588", "observedAt": "2026-10-26T13:29:41+00:00", "staged": "00004__wfv__settings-override-foo-xml.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:29:20.149 'Word found unreadable content in 00004__wfv__settings-override-foo-xml.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:29:21.031 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__settings-override-foo-xml...)\""]}
+{"run": "s53b", "pass": 1, "name": "s53b-control-minimal-end", "sha256": "c940ba0a774cf4d6d63b0c67260ab38054579c265ae8a8d005181cbffd79090f", "observedAt": "2026-10-26T13:23:39+00:00", "staged": "00002__wfv__s53b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53b", "pass": 2, "name": "s53b-control-minimal-end", "sha256": "c940ba0a774cf4d6d63b0c67260ab38054579c265ae8a8d005181cbffd79090f", "observedAt": "2026-10-26T13:29:41+00:00", "staged": "00002__wfv__s53b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53c", "pass": 1, "name": "s53c-control-minimal", "sha256": "c940ba0a774cf4d6d63b0c67260ab38054579c265ae8a8d005181cbffd79090f", "observedAt": "2026-10-26T13:24:49+00:00", "staged": "00007__wfv__s53c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53c", "pass": 2, "name": "s53c-control-minimal", "sha256": "c940ba0a774cf4d6d63b0c67260ab38054579c265ae8a8d005181cbffd79090f", "observedAt": "2026-10-26T13:30:41+00:00", "staged": "00007__wfv__s53c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53c", "pass": 1, "name": "fonttable-override-octet-upper", "sha256": "6a5fe4cb9971efdf2bd3fe193b1b4e155c275eedab2a407298ebd8971ce82eef", "observedAt": "2026-10-26T13:24:49+00:00", "staged": "00003__wfv__fonttable-override-octet-upper.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:24:23.385 'Word found unreadable content in 00003__wfv__fonttable-override-octet-upper.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:24:24.335 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__fonttable-override-octet-...)\""]}
+{"run": "s53c", "pass": 2, "name": "fonttable-override-octet-upper", "sha256": "6a5fe4cb9971efdf2bd3fe193b1b4e155c275eedab2a407298ebd8971ce82eef", "observedAt": "2026-10-26T13:30:41+00:00", "staged": "00003__wfv__fonttable-override-octet-upper.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:30:31.640 \"Word found unreadable content in 00003__wfv__fonttable-override-octet-upper.docx. Do you want to re … ? If you trust the source of this document, click Yes.\"", "2026-10-26 09:30:31.640 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__fonttable-override-octet-...)\""]}
+{"run": "s53c", "pass": 1, "name": "fonttable-override-octet-charset", "sha256": "72aae2c806d3aa78e7855d5cffd87181cbe35125bb035a1aa94e771a80e45ba6", "observedAt": "2026-10-26T13:24:49+00:00", "staged": "00002__wfv__fonttable-override-octet-charset.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:24:14.899 'Word found unreadable content in 00002__wfv__fonttable-override-octet-charset.docx. Do you want to  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:24:15.735 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__fonttable-override-octet-...)\""]}
+{"run": "s53c", "pass": 2, "name": "fonttable-override-octet-charset", "sha256": "72aae2c806d3aa78e7855d5cffd87181cbe35125bb035a1aa94e771a80e45ba6", "observedAt": "2026-10-26T13:30:41+00:00", "staged": "00002__wfv__fonttable-override-octet-charset.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:30:13.827 'Word found unreadable content in 00002__wfv__fonttable-override-octet-charset.docx. Do you want to  … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s53c", "pass": 1, "name": "fonttable-override-image-png", "sha256": "2bca23dddba2ee04a8d350d310eaffa1b120ce3e8a59cf2e05d1264b959a5c6d", "observedAt": "2026-10-26T13:24:49+00:00", "staged": "00001__wfv__fonttable-override-image-png.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:24:05.885 'Word found unreadable content in 00001__wfv__fonttable-override-image-png.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:24:06.718 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__fonttable-override-image-...)\""]}
+{"run": "s53c", "pass": 2, "name": "fonttable-override-image-png", "sha256": "2bca23dddba2ee04a8d350d310eaffa1b120ce3e8a59cf2e05d1264b959a5c6d", "observedAt": "2026-10-26T13:30:41+00:00", "staged": "00001__wfv__fonttable-override-image-png.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:29:59.816 'Word found unreadable content in 00001__wfv__fonttable-override-image-png.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:30:00.686 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__fonttable-override-image-...)\""]}
+{"run": "s53c", "pass": 1, "name": "fonttable-override-foo-xml", "sha256": "0b3a6d1e58e37ca2d93e6ee6fc43e0636b3b48e8bb2d5904e3348f8dd3603363", "observedAt": "2026-10-26T13:24:49+00:00", "staged": "00000__wfv__fonttable-override-foo-xml.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:23:56.868 'Word found unreadable content in 00000__wfv__fonttable-override-foo-xml.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:23:57.780 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__fonttable-override-foo-xm...)\""]}
+{"run": "s53c", "pass": 2, "name": "fonttable-override-foo-xml", "sha256": "0b3a6d1e58e37ca2d93e6ee6fc43e0636b3b48e8bb2d5904e3348f8dd3603363", "observedAt": "2026-10-26T13:30:41+00:00", "staged": "00000__wfv__fonttable-override-foo-xml.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:29:51.379 'Word found unreadable content in 00000__wfv__fonttable-override-foo-xml.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:29:52.165 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__fonttable-override-foo-xm...)\""]}
+{"run": "s53c", "pass": 1, "name": "numbering-override-octet-upper", "sha256": "31b408bd8cab0d9a75eb2149345df54a17fe83c9cbcb0ba3d1e2811e210024d3", "observedAt": "2026-10-26T13:24:49+00:00", "staged": "00005__wfv__numbering-override-octet-upper.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:24:47.299 'Word found unreadable content in 00005__wfv__numbering-override-octet-upper.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:24:48.120 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__numbering-override-octet-...)\""]}
+{"run": "s53c", "pass": 2, "name": "numbering-override-octet-upper", "sha256": "31b408bd8cab0d9a75eb2149345df54a17fe83c9cbcb0ba3d1e2811e210024d3", "observedAt": "2026-10-26T13:30:41+00:00", "staged": "00005__wfv__numbering-override-octet-upper.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:30:40.079 'Word found unreadable content in 00005__wfv__numbering-override-octet-upper.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:30:40.864 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__numbering-override-octet-...)\""]}
+{"run": "s53c", "pass": 1, "name": "numbering-override-octet-charset", "sha256": "e9a7a6ba6158d91fd20b8332f85ab7b5da2cfbe7d4d96ccba4ae12ff630de813", "observedAt": "2026-10-26T13:24:49+00:00", "staged": "00004__wfv__numbering-override-octet-charset.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:24:32.904 'Word found unreadable content in 00004__wfv__numbering-override-octet-charset.docx. Do you want to  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:24:41.413 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__numbering-override-octet-...)\""]}
+{"run": "s53c", "pass": 2, "name": "numbering-override-octet-charset", "sha256": "e9a7a6ba6158d91fd20b8332f85ab7b5da2cfbe7d4d96ccba4ae12ff630de813", "observedAt": "2026-10-26T13:30:41+00:00", "staged": "00004__wfv__numbering-override-octet-charset.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:30:35.879 'Word found unreadable content in 00004__wfv__numbering-override-octet-charset.docx. Do you want to  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:30:36.775 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__numbering-override-octet-...)\""]}
+{"run": "s53c", "pass": 1, "name": "s53c-control-minimal-end", "sha256": "78e76aaf80e6ac15e40cac9edf650f52649bd671c506e221dc1966777c6db020", "observedAt": "2026-10-26T13:24:49+00:00", "staged": "00006__wfv__s53c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53c", "pass": 2, "name": "s53c-control-minimal-end", "sha256": "78e76aaf80e6ac15e40cac9edf650f52649bd671c506e221dc1966777c6db020", "observedAt": "2026-10-26T13:30:41+00:00", "staged": "00006__wfv__s53c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53d", "pass": 1, "name": "s53d-control-minimal", "sha256": "78e76aaf80e6ac15e40cac9edf650f52649bd671c506e221dc1966777c6db020", "observedAt": "2026-10-26T13:25:34+00:00", "staged": "00007__wfv__s53d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53d", "pass": 2, "name": "s53d-control-minimal", "sha256": "78e76aaf80e6ac15e40cac9edf650f52649bd671c506e221dc1966777c6db020", "observedAt": "2026-10-26T13:31:13+00:00", "staged": "00007__wfv__s53d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53d", "pass": 1, "name": "numbering-override-image-png", "sha256": "12dc7dd7f7cedc9ed986569e54c3142eb6d1300f465a124e6f3010812551b6ad", "observedAt": "2026-10-26T13:25:34+00:00", "staged": "00005__wfv__numbering-override-image-png.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:25:32.863 'Word found unreadable content in 00005__wfv__numbering-override-image-png.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:25:33.706 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__numbering-override-image-...)\""]}
+{"run": "s53d", "pass": 2, "name": "numbering-override-image-png", "sha256": "12dc7dd7f7cedc9ed986569e54c3142eb6d1300f465a124e6f3010812551b6ad", "observedAt": "2026-10-26T13:31:13+00:00", "staged": "00005__wfv__numbering-override-image-png.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:31:11.780 'Word found unreadable content in 00005__wfv__numbering-override-image-png.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:31:12.613 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__numbering-override-image-...)\""]}
+{"run": "s53d", "pass": 1, "name": "numbering-override-foo-xml", "sha256": "b752b67489a900494e1940dc776b62d2db6493b7474574be71e8fe3981693bb1", "observedAt": "2026-10-26T13:25:34+00:00", "staged": "00004__wfv__numbering-override-foo-xml.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:25:28.294 'Word found unreadable content in 00004__wfv__numbering-override-foo-xml.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:25:29.172 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__numbering-override-foo-xm...)\""]}
+{"run": "s53d", "pass": 2, "name": "numbering-override-foo-xml", "sha256": "b752b67489a900494e1940dc776b62d2db6493b7474574be71e8fe3981693bb1", "observedAt": "2026-10-26T13:31:13+00:00", "staged": "00004__wfv__numbering-override-foo-xml.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:31:07.562 'Word found unreadable content in 00004__wfv__numbering-override-foo-xml.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:31:08.332 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__numbering-override-foo-xm...)\""]}
+{"run": "s53d", "pass": 1, "name": "numbering-override-empty", "sha256": "cc4ec9114d116472f792b5ec5190d9d85ebd0d89cf90465bf1336323d9f0d5f7", "observedAt": "2026-10-26T13:25:34+00:00", "staged": "00003__wfv__numbering-override-empty.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:25:23.806 'Word found unreadable content in 00003__wfv__numbering-override-empty.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:25:24.776 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__numbering-override-empty....)\""]}
+{"run": "s53d", "pass": 2, "name": "numbering-override-empty", "sha256": "cc4ec9114d116472f792b5ec5190d9d85ebd0d89cf90465bf1336323d9f0d5f7", "observedAt": "2026-10-26T13:31:13+00:00", "staged": "00003__wfv__numbering-override-empty.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:31:03.362 'Word found unreadable content in 00003__wfv__numbering-override-empty.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:31:04.147 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__numbering-override-empty....)\""]}
+{"run": "s53d", "pass": 1, "name": "main-override-theme-type", "sha256": "ebefeb7701b17ebb24a5c35431191269089488039029ed61df1628a7fe0a35f9", "observedAt": "2026-10-26T13:25:34+00:00", "staged": "00002__wfv__main-override-theme-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:25:18.884 'Word found unreadable content in 00002__wfv__main-override-theme-type.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:25:19.908 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__main-override-theme-type....)\""]}
+{"run": "s53d", "pass": 2, "name": "main-override-theme-type", "sha256": "ebefeb7701b17ebb24a5c35431191269089488039029ed61df1628a7fe0a35f9", "observedAt": "2026-10-26T13:31:13+00:00", "staged": "00002__wfv__main-override-theme-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:30:58.395 'Word found unreadable content in 00002__wfv__main-override-theme-type.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:30:59.198 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__main-override-theme-type....)\""]}
+{"run": "s53d", "pass": 1, "name": "main-override-glossary-type", "sha256": "e920b88eef2486480bd1c37b57612b4e19aece71ad4ffa871f81b104bfa36dea", "observedAt": "2026-10-26T13:25:34+00:00", "staged": "00000__wfv__main-override-glossary-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:25:06.524 'Word found unreadable content in 00000__wfv__main-override-glossary-type.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s53d", "pass": 2, "name": "main-override-glossary-type", "sha256": "e920b88eef2486480bd1c37b57612b4e19aece71ad4ffa871f81b104bfa36dea", "observedAt": "2026-10-26T13:31:13+00:00", "staged": "00000__wfv__main-override-glossary-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:30:49.862 'Word found unreadable content in 00000__wfv__main-override-glossary-type.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:30:50.432 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__main-override-glossary-ty...)\""]}
+{"run": "s53d", "pass": 1, "name": "main-override-header-type", "sha256": "d324da4b33f07bb6dd755dbfdace2386c31868f02de21e3567c1b306e8429333", "observedAt": "2026-10-26T13:25:34+00:00", "staged": "00001__wfv__main-override-header-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:25:12.488 \"Word found unreadable content in 00001__wfv__main-override-header-type.docx. Do you want to recover … ? If you trust the source of this document, click Yes.\"", "2026-10-26 09:25:12.488 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__main-override-header-type...)\""]}
+{"run": "s53d", "pass": 2, "name": "main-override-header-type", "sha256": "d324da4b33f07bb6dd755dbfdace2386c31868f02de21e3567c1b306e8429333", "observedAt": "2026-10-26T13:31:13+00:00", "staged": "00001__wfv__main-override-header-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:30:54.195 'Word found unreadable content in 00001__wfv__main-override-header-type.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:30:55.000 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__main-override-header-type...)\""]}
+{"run": "s53d", "pass": 1, "name": "s53d-control-minimal-end", "sha256": "78e76aaf80e6ac15e40cac9edf650f52649bd671c506e221dc1966777c6db020", "observedAt": "2026-10-26T13:25:34+00:00", "staged": "00006__wfv__s53d-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53d-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53d", "pass": 2, "name": "s53d-control-minimal-end", "sha256": "78e76aaf80e6ac15e40cac9edf650f52649bd671c506e221dc1966777c6db020", "observedAt": "2026-10-26T13:31:13+00:00", "staged": "00006__wfv__s53d-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53d-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53e", "pass": 1, "name": "s53e-control-minimal", "sha256": "78e76aaf80e6ac15e40cac9edf650f52649bd671c506e221dc1966777c6db020", "observedAt": "2026-10-26T13:26:19+00:00", "staged": "00007__wfv__s53e-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53e-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53e", "pass": 2, "name": "s53e-control-minimal", "sha256": "78e76aaf80e6ac15e40cac9edf650f52649bd671c506e221dc1966777c6db020", "observedAt": "2026-10-26T13:32:08+00:00", "staged": "00007__wfv__s53e-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53e-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53e", "pass": 1, "name": "main-override-footer-type", "sha256": "4811c413899302e14babc237dd7d46324564becd3659f3121ea8ba07a4b4feb7", "observedAt": "2026-10-26T13:26:19+00:00", "staged": "00003__wfv__main-override-footer-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:26:08.714 'Word found unreadable content in 00003__wfv__main-override-footer-type.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:26:09.591 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__main-override-footer-type...)\""]}
+{"run": "s53e", "pass": 2, "name": "main-override-footer-type", "sha256": "4811c413899302e14babc237dd7d46324564becd3659f3121ea8ba07a4b4feb7", "observedAt": "2026-10-26T13:32:08+00:00", "staged": "00003__wfv__main-override-footer-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:31:49.805 'Word found unreadable content in 00003__wfv__main-override-footer-type.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:31:50.735 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__main-override-footer-type...)\""]}
+{"run": "s53e", "pass": 1, "name": "main-override-footnotes-type", "sha256": "7499826e8dc67598d82f81413f1f247de8f0a175ab2a58628db15fa53ba4418b", "observedAt": "2026-10-26T13:26:19+00:00", "staged": "00004__wfv__main-override-footnotes-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:26:12.995 'Word found unreadable content in 00004__wfv__main-override-footnotes-type.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:26:13.798 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__main-override-footnotes-t...)\""]}
+{"run": "s53e", "pass": 2, "name": "main-override-footnotes-type", "sha256": "7499826e8dc67598d82f81413f1f247de8f0a175ab2a58628db15fa53ba4418b", "observedAt": "2026-10-26T13:32:08+00:00", "staged": "00004__wfv__main-override-footnotes-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:31:58.102 'Word found unreadable content in 00004__wfv__main-override-footnotes-type.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:31:59.040 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__main-override-footnotes-t...)\""]}
+{"run": "s53e", "pass": 1, "name": "main-override-endnotes-type", "sha256": "e0871228afc1668e081d001cd827d33c759025488a8782c0cee86be04c64b915", "observedAt": "2026-10-26T13:26:19+00:00", "staged": "00001__wfv__main-override-endnotes-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:25:59.032 'Word found unreadable content in 00001__wfv__main-override-endnotes-type.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:25:59.967 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__main-override-endnotes-ty...)\""]}
+{"run": "s53e", "pass": 2, "name": "main-override-endnotes-type", "sha256": "e0871228afc1668e081d001cd827d33c759025488a8782c0cee86be04c64b915", "observedAt": "2026-10-26T13:32:08+00:00", "staged": "00001__wfv__main-override-endnotes-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:31:36.719 'Word found unreadable content in 00001__wfv__main-override-endnotes-type.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:31:37.604 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__main-override-endnotes-ty...)\""]}
+{"run": "s53e", "pass": 1, "name": "main-override-comments-type", "sha256": "2fa2a70a1e893533c8a2c0bff602edd82fbe43d0d1d48d92e6fd906ee8e01bf1", "observedAt": "2026-10-26T13:26:19+00:00", "staged": "00000__wfv__main-override-comments-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:25:54.698 'Word found unreadable content in 00000__wfv__main-override-comments-type.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:25:55.294 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__main-override-comments-ty...)\""]}
+{"run": "s53e", "pass": 2, "name": "main-override-comments-type", "sha256": "2fa2a70a1e893533c8a2c0bff602edd82fbe43d0d1d48d92e6fd906ee8e01bf1", "observedAt": "2026-10-26T13:32:08+00:00", "staged": "00000__wfv__main-override-comments-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:31:32.318 'Word found unreadable content in 00000__wfv__main-override-comments-type.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:31:33.179 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__main-override-comments-ty...)\""]}
+{"run": "s53e", "pass": 1, "name": "main-override-settings-type", "sha256": "dcd93adbd0025cf6b26ce3df08e4df06e510e7afbf42712093259a544ac5222d", "observedAt": "2026-10-26T13:26:19+00:00", "staged": "00005__wfv__main-override-settings-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:26:17.367 'Word found unreadable content in 00005__wfv__main-override-settings-type.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:26:18.347 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__main-override-settings-ty...)\""]}
+{"run": "s53e", "pass": 2, "name": "main-override-settings-type", "sha256": "dcd93adbd0025cf6b26ce3df08e4df06e510e7afbf42712093259a544ac5222d", "observedAt": "2026-10-26T13:32:08+00:00", "staged": "00005__wfv__main-override-settings-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:32:07.115 'Word found unreadable content in 00005__wfv__main-override-settings-type.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:32:08.050 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__main-override-settings-ty...)\""]}
+{"run": "s53e", "pass": 1, "name": "main-override-fonttable-type", "sha256": "541c386fdada46d5627d57a31b01304421e876eb5b894d1254e9b3b41255d8e2", "observedAt": "2026-10-26T13:26:19+00:00", "staged": "00002__wfv__main-override-fonttable-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:26:04.395 'Word found unreadable content in 00002__wfv__main-override-fonttable-type.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:26:05.243 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__main-override-fonttable-t...)\""]}
+{"run": "s53e", "pass": 2, "name": "main-override-fonttable-type", "sha256": "541c386fdada46d5627d57a31b01304421e876eb5b894d1254e9b3b41255d8e2", "observedAt": "2026-10-26T13:32:08+00:00", "staged": "00002__wfv__main-override-fonttable-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:31:43.266 'Word found unreadable content in 00002__wfv__main-override-fonttable-type.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:31:44.166 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__main-override-fonttable-t...)\""]}
+{"run": "s53e", "pass": 1, "name": "s53e-control-minimal-end", "sha256": "23b03320df4545d916a2492fb266b1e1757ce0bc2bbc90edd3b9279f06cf458a", "observedAt": "2026-10-26T13:26:19+00:00", "staged": "00006__wfv__s53e-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53e-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53e", "pass": 2, "name": "s53e-control-minimal-end", "sha256": "23b03320df4545d916a2492fb266b1e1757ce0bc2bbc90edd3b9279f06cf458a", "observedAt": "2026-10-26T13:32:08+00:00", "staged": "00006__wfv__s53e-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53e-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53f", "pass": 1, "name": "s53f-control-minimal", "sha256": "23b03320df4545d916a2492fb266b1e1757ce0bc2bbc90edd3b9279f06cf458a", "observedAt": "2026-10-26T13:26:51+00:00", "staged": "00002__wfv__s53f-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53f-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53f", "pass": 2, "name": "s53f-control-minimal", "sha256": "23b03320df4545d916a2492fb266b1e1757ce0bc2bbc90edd3b9279f06cf458a", "observedAt": "2026-10-26T13:32:55+00:00", "staged": "00002__wfv__s53f-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53f-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53f", "pass": 1, "name": "main-override-numbering-type", "sha256": "2dae93e99250fb43353ccb57737849b7680ae03489ef050c7cda71dd5217cde2", "observedAt": "2026-10-26T13:26:51+00:00", "staged": "00000__wfv__main-override-numbering-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:26:28.629 'Word found unreadable content in 00000__wfv__main-override-numbering-type.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:26:29.466 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__main-override-numbering-t...)\""]}
+{"run": "s53f", "pass": 2, "name": "main-override-numbering-type", "sha256": "2dae93e99250fb43353ccb57737849b7680ae03489ef050c7cda71dd5217cde2", "observedAt": "2026-10-26T13:32:55+00:00", "staged": "00000__wfv__main-override-numbering-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:32:28.382 'Word found unreadable content in 00000__wfv__main-override-numbering-type.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s53f", "pass": 1, "name": "settings-override-main-type", "sha256": "df98b34b70226d9fd905f2a404249b3689c9b3ddcbd44e7fbcfb0bee9ed446dd", "observedAt": "2026-10-26T13:26:51+00:00", "staged": "00005__wfv__settings-override-main-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:26:41.703 'Word found unreadable content in 00005__wfv__settings-override-main-type.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:26:42.581 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__settings-override-main-ty...)\""]}
+{"run": "s53f", "pass": 2, "name": "settings-override-main-type", "sha256": "df98b34b70226d9fd905f2a404249b3689c9b3ddcbd44e7fbcfb0bee9ed446dd", "observedAt": "2026-10-26T13:32:55+00:00", "staged": "00005__wfv__settings-override-main-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:32:46.197 'Word found unreadable content in 00005__wfv__settings-override-main-type.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:32:46.741 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__settings-override-main-ty...)\""]}
+{"run": "s53f", "pass": 1, "name": "settings-override-numbering-type", "sha256": "d4036be15f4fc7c6cdfed53d082a51e3eafe9eb340250c4de3f419cb1ec8b819", "observedAt": "2026-10-26T13:26:51+00:00", "staged": "00006__wfv__settings-override-numbering-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:26:45.945 'Word found unreadable content in 00006__wfv__settings-override-numbering-type.docx. Do you want to  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:26:46.805 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__settings-override-numberi...)\""]}
+{"run": "s53f", "pass": 2, "name": "settings-override-numbering-type", "sha256": "d4036be15f4fc7c6cdfed53d082a51e3eafe9eb340250c4de3f419cb1ec8b819", "observedAt": "2026-10-26T13:32:55+00:00", "staged": "00006__wfv__settings-override-numbering-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:32:50.666 'Word found unreadable content in 00006__wfv__settings-override-numbering-type.docx. Do you want to  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:32:51.526 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__settings-override-numberi...)\""]}
+{"run": "s53f", "pass": 1, "name": "settings-override-header-type", "sha256": "79be997fffbbe9941142ea55895fc97af6a11785e14b4239292e3a12a3e026dd", "observedAt": "2026-10-26T13:26:51+00:00", "staged": "00004__wfv__settings-override-header-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:26:37.283 'Word found unreadable content in 00004__wfv__settings-override-header-type.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:26:38.313 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__settings-override-header-...)\""]}
+{"run": "s53f", "pass": 2, "name": "settings-override-header-type", "sha256": "79be997fffbbe9941142ea55895fc97af6a11785e14b4239292e3a12a3e026dd", "observedAt": "2026-10-26T13:32:55+00:00", "staged": "00004__wfv__settings-override-header-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:32:41.880 'Word found unreadable content in 00004__wfv__settings-override-header-type.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:32:42.728 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__settings-override-header-...)\""]}
+{"run": "s53f", "pass": 1, "name": "settings-override-fonttable-type", "sha256": "f5e9f34ea9425832dc9bb59dcf3902c7c7f00f7287912c69bf9993ccc8bc3480", "observedAt": "2026-10-26T13:26:51+00:00", "staged": "00003__wfv__settings-override-fonttable-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:26:33.013 'Word found unreadable content in 00003__wfv__settings-override-fonttable-type.docx. Do you want to  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:26:33.861 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__settings-override-fonttab...)\""]}
+{"run": "s53f", "pass": 2, "name": "settings-override-fonttable-type", "sha256": "f5e9f34ea9425832dc9bb59dcf3902c7c7f00f7287912c69bf9993ccc8bc3480", "observedAt": "2026-10-26T13:32:55+00:00", "staged": "00003__wfv__settings-override-fonttable-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:32:37.681 \"Word found unreadable content in 00003__wfv__settings-override-fonttable-type.docx. Do you want to  … ? If you trust the source of this document, click Yes.\"", "2026-10-26 09:32:37.682 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__settings-override-fonttab...)\""]}
+{"run": "s53f", "pass": 1, "name": "settings-override-theme-type", "sha256": "118618eee67d9e9b20cf71648680ebead95e2fd28a471b3792d574e19ea92abb", "observedAt": "2026-10-26T13:26:51+00:00", "staged": "00007__wfv__settings-override-theme-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:26:50.195 'Word found unreadable content in 00007__wfv__settings-override-theme-type.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:26:51.054 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__settings-override-theme-t...)\""]}
+{"run": "s53f", "pass": 2, "name": "settings-override-theme-type", "sha256": "118618eee67d9e9b20cf71648680ebead95e2fd28a471b3792d574e19ea92abb", "observedAt": "2026-10-26T13:32:55+00:00", "staged": "00007__wfv__settings-override-theme-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:32:54.930 'Word found unreadable content in 00007__wfv__settings-override-theme-type.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:32:55.717 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__settings-override-theme-t...)\""]}
+{"run": "s53f", "pass": 1, "name": "s53f-control-minimal-end", "sha256": "23b03320df4545d916a2492fb266b1e1757ce0bc2bbc90edd3b9279f06cf458a", "observedAt": "2026-10-26T13:26:51+00:00", "staged": "00001__wfv__s53f-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53f-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53f", "pass": 2, "name": "s53f-control-minimal-end", "sha256": "23b03320df4545d916a2492fb266b1e1757ce0bc2bbc90edd3b9279f06cf458a", "observedAt": "2026-10-26T13:32:55+00:00", "staged": "00001__wfv__s53f-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53f-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53g", "pass": 1, "name": "s53g-control-minimal", "sha256": "8ac6bfb91e63af67f2f12d6ddb9d224cd24b5b9ddf016fc3c32f298ad1bb1b05", "observedAt": "2026-10-26T13:27:22+00:00", "staged": "00005__wfv__s53g-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53g-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53g", "pass": 2, "name": "s53g-control-minimal", "sha256": "8ac6bfb91e63af67f2f12d6ddb9d224cd24b5b9ddf016fc3c32f298ad1bb1b05", "observedAt": "2026-10-26T13:33:25+00:00", "staged": "00005__wfv__s53g-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53g-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53g", "pass": 1, "name": "numbering-override-main-type", "sha256": "7832b5bb17d01ed1b19e4637f0bfbd9983dd8451603043c38f04fc89c64786f4", "observedAt": "2026-10-26T13:27:22+00:00", "staged": "00002__wfv__numbering-override-main-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:27:08.828 'Word found unreadable content in 00002__wfv__numbering-override-main-type.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:27:09.668 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__numbering-override-main-t...)\""]}
+{"run": "s53g", "pass": 2, "name": "numbering-override-main-type", "sha256": "7832b5bb17d01ed1b19e4637f0bfbd9983dd8451603043c38f04fc89c64786f4", "observedAt": "2026-10-26T13:33:25+00:00", "staged": "00002__wfv__numbering-override-main-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:33:12.514 'Word found unreadable content in 00002__wfv__numbering-override-main-type.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:33:13.332 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__numbering-override-main-t...)\""]}
+{"run": "s53g", "pass": 1, "name": "numbering-override-styles-type", "sha256": "ba3fd57cde8be7331e7a801f7ac30c104ce55c8753e21c27b6d55f7bdc8092e3", "observedAt": "2026-10-26T13:27:22+00:00", "staged": "00003__wfv__numbering-override-styles-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:27:13.045 'Word found unreadable content in 00003__wfv__numbering-override-styles-type.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:27:13.865 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__numbering-override-styles...)\""]}
+{"run": "s53g", "pass": 2, "name": "numbering-override-styles-type", "sha256": "ba3fd57cde8be7331e7a801f7ac30c104ce55c8753e21c27b6d55f7bdc8092e3", "observedAt": "2026-10-26T13:33:25+00:00", "staged": "00003__wfv__numbering-override-styles-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:33:16.697 'Word found unreadable content in 00003__wfv__numbering-override-styles-type.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:33:17.539 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__numbering-override-styles...)\""]}
+{"run": "s53g", "pass": 1, "name": "numbering-override-header-type", "sha256": "fb80d2781713f31f86e6bc8322854bf1e158ef9c11b362284d804d4bb9d4d018", "observedAt": "2026-10-26T13:27:22+00:00", "staged": "00001__wfv__numbering-override-header-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:27:04.563 'Word found unreadable content in 00001__wfv__numbering-override-header-type.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:27:05.435 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__numbering-override-header...)\""]}
+{"run": "s53g", "pass": 2, "name": "numbering-override-header-type", "sha256": "fb80d2781713f31f86e6bc8322854bf1e158ef9c11b362284d804d4bb9d4d018", "observedAt": "2026-10-26T13:33:25+00:00", "staged": "00001__wfv__numbering-override-header-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:33:08.329 'Word found unreadable content in 00001__wfv__numbering-override-header-type.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:33:09.115 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__numbering-override-header...)\""]}
+{"run": "s53g", "pass": 1, "name": "numbering-override-fonttable-type", "sha256": "94cea678ac00ff52f78425f74a40fa2badba53988e73d07f0f75e9736bca5f9c", "observedAt": "2026-10-26T13:27:22+00:00", "staged": "00000__wfv__numbering-override-fonttable-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:27:00.032 'Word found unreadable content in 00000__wfv__numbering-override-fonttable-type.docx. Do you want to … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:27:00.969 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__numbering-override-fontta...)\""]}
+{"run": "s53g", "pass": 2, "name": "numbering-override-fonttable-type", "sha256": "94cea678ac00ff52f78425f74a40fa2badba53988e73d07f0f75e9736bca5f9c", "observedAt": "2026-10-26T13:33:25+00:00", "staged": "00000__wfv__numbering-override-fonttable-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:33:04.130 'Word found unreadable content in 00000__wfv__numbering-override-fonttable-type.docx. Do you want to … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:33:04.915 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__numbering-override-fontta...)\""]}
+{"run": "s53g", "pass": 1, "name": "styles-override-main-type", "sha256": "bf1aa82ed7094c97c88f32b730c474a7089901291e79a78e32a6187b8d442082", "observedAt": "2026-10-26T13:27:22+00:00", "staged": "00006__wfv__styles-override-main-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:27:17.413 'Word found unreadable content in 00006__wfv__styles-override-main-type.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:27:18.249 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__styles-override-main-type...)\""]}
+{"run": "s53g", "pass": 2, "name": "styles-override-main-type", "sha256": "bf1aa82ed7094c97c88f32b730c474a7089901291e79a78e32a6187b8d442082", "observedAt": "2026-10-26T13:33:25+00:00", "staged": "00006__wfv__styles-override-main-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:33:21.045 'Word found unreadable content in 00006__wfv__styles-override-main-type.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:33:21.864 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__styles-override-main-type...)\""]}
+{"run": "s53g", "pass": 1, "name": "styles-override-numbering-type", "sha256": "0ffdb42bd74bb2bab3b57a6e42859bac9317ca3b673eab37e1500e9c977e6ccd", "observedAt": "2026-10-26T13:27:22+00:00", "staged": "00007__wfv__styles-override-numbering-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:27:21.662 'Word found unreadable content in 00007__wfv__styles-override-numbering-type.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:27:22.516 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__styles-override-numbering...)\""]}
+{"run": "s53g", "pass": 2, "name": "styles-override-numbering-type", "sha256": "0ffdb42bd74bb2bab3b57a6e42859bac9317ca3b673eab37e1500e9c977e6ccd", "observedAt": "2026-10-26T13:33:25+00:00", "staged": "00007__wfv__styles-override-numbering-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:33:25.262 'Word found unreadable content in 00007__wfv__styles-override-numbering-type.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:33:25.805 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__styles-override-numbering...)\""]}
+{"run": "s53g", "pass": 1, "name": "s53g-control-minimal-end", "sha256": "8ac6bfb91e63af67f2f12d6ddb9d224cd24b5b9ddf016fc3c32f298ad1bb1b05", "observedAt": "2026-10-26T13:27:22+00:00", "staged": "00004__wfv__s53g-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53g-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53g", "pass": 2, "name": "s53g-control-minimal-end", "sha256": "8ac6bfb91e63af67f2f12d6ddb9d224cd24b5b9ddf016fc3c32f298ad1bb1b05", "observedAt": "2026-10-26T13:33:25+00:00", "staged": "00004__wfv__s53g-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53g-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53h", "pass": 1, "name": "s53h-control-minimal", "sha256": "8ac6bfb91e63af67f2f12d6ddb9d224cd24b5b9ddf016fc3c32f298ad1bb1b05", "observedAt": "2026-10-26T13:28:07+00:00", "staged": "00002__wfv__s53h-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53h-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53h", "pass": 2, "name": "s53h-control-minimal", "sha256": "8ac6bfb91e63af67f2f12d6ddb9d224cd24b5b9ddf016fc3c32f298ad1bb1b05", "observedAt": "2026-10-26T13:33:54+00:00", "staged": "00002__wfv__s53h-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53h-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53h", "pass": 1, "name": "styles-override-header-type", "sha256": "3e2a3416cd854035bd73faed35965e01d8e4162dd66f9fd162e28b0c1a1a6c19", "observedAt": "2026-10-26T13:28:07+00:00", "staged": "00006__wfv__styles-override-header-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:28:00.713 'Word found unreadable content in 00006__wfv__styles-override-header-type.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:28:01.610 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__styles-override-header-ty...)\""]}
+{"run": "s53h", "pass": 2, "name": "styles-override-header-type", "sha256": "3e2a3416cd854035bd73faed35965e01d8e4162dd66f9fd162e28b0c1a1a6c19", "observedAt": "2026-10-26T13:33:54+00:00", "staged": "00006__wfv__styles-override-header-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:33:49.445 'Word found unreadable content in 00006__wfv__styles-override-header-type.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:33:50.259 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__styles-override-header-ty...)\""]}
+{"run": "s53h", "pass": 1, "name": "styles-override-fonttable-type", "sha256": "a0659f53f20041196cd46d0fb554792b73a57f312e61abc1b8a80bce52e5866a", "observedAt": "2026-10-26T13:28:07+00:00", "staged": "00005__wfv__styles-override-fonttable-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:27:48.066 'Word found unreadable content in 00005__wfv__styles-override-fonttable-type.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:27:53.597 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__styles-override-fonttable...)\""]}
+{"run": "s53h", "pass": 2, "name": "styles-override-fonttable-type", "sha256": "a0659f53f20041196cd46d0fb554792b73a57f312e61abc1b8a80bce52e5866a", "observedAt": "2026-10-26T13:33:54+00:00", "staged": "00005__wfv__styles-override-fonttable-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:33:45.279 'Word found unreadable content in 00005__wfv__styles-override-fonttable-type.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:33:46.065 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__styles-override-fonttable...)\""]}
+{"run": "s53h", "pass": 1, "name": "styles-override-theme-type", "sha256": "b9780a86f257f1763bf72d6b93e23e8a4b7f22900c4f85eb99ced88898241313", "observedAt": "2026-10-26T13:28:07+00:00", "staged": "00007__wfv__styles-override-theme-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:28:06.684 'Word found unreadable content in 00007__wfv__styles-override-theme-type.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:28:07.319 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__styles-override-theme-typ...)\""]}
+{"run": "s53h", "pass": 2, "name": "styles-override-theme-type", "sha256": "b9780a86f257f1763bf72d6b93e23e8a4b7f22900c4f85eb99ced88898241313", "observedAt": "2026-10-26T13:33:54+00:00", "staged": "00007__wfv__styles-override-theme-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:33:53.628 'Word found unreadable content in 00007__wfv__styles-override-theme-type.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:33:54.413 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__styles-override-theme-typ...)\""]}
+{"run": "s53h", "pass": 1, "name": "styles-override-comments-type", "sha256": "0075019d042984a3b3fe4a548448eeebf08ee106448a9e4489c7ec39c0743b98", "observedAt": "2026-10-26T13:28:07+00:00", "staged": "00004__wfv__styles-override-comments-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:27:43.318 'Word found unreadable content in 00004__wfv__styles-override-comments-type.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:27:44.008 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__styles-override-comments-...)\""]}
+{"run": "s53h", "pass": 2, "name": "styles-override-comments-type", "sha256": "0075019d042984a3b3fe4a548448eeebf08ee106448a9e4489c7ec39c0743b98", "observedAt": "2026-10-26T13:33:54+00:00", "staged": "00004__wfv__styles-override-comments-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:33:41.112 'Word found unreadable content in 00004__wfv__styles-override-comments-type.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:33:41.897 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__styles-override-comments-...)\""]}
+{"run": "s53h", "pass": 1, "name": "settings-override-comments-type", "sha256": "a6b36c64a0c32435e9b61de5209077f4bcb638723b9b51e9ef9635cf5db48673", "observedAt": "2026-10-26T13:28:07+00:00", "staged": "00003__wfv__settings-override-comments-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:27:38.529 'Word found unreadable content in 00003__wfv__settings-override-comments-type.docx. Do you want to r … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:27:39.386 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__settings-override-comment...)\""]}
+{"run": "s53h", "pass": 2, "name": "settings-override-comments-type", "sha256": "a6b36c64a0c32435e9b61de5209077f4bcb638723b9b51e9ef9635cf5db48673", "observedAt": "2026-10-26T13:33:54+00:00", "staged": "00003__wfv__settings-override-comments-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:33:36.880 'Word found unreadable content in 00003__wfv__settings-override-comments-type.docx. Do you want to r … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:33:37.463 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__settings-override-comment...)\""]}
+{"run": "s53h", "pass": 1, "name": "numbering-override-comments-type", "sha256": "aff30486f65c81c6895bd554ddd7f621aa0222413ff1c581c1cfec660cf0571f", "observedAt": "2026-10-26T13:28:07+00:00", "staged": "00000__wfv__numbering-override-comments-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:27:33.745 'Word found unreadable content in 00000__wfv__numbering-override-comments-type.docx. Do you want to  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:27:34.570 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__numbering-override-commen...)\""]}
+{"run": "s53h", "pass": 2, "name": "numbering-override-comments-type", "sha256": "aff30486f65c81c6895bd554ddd7f621aa0222413ff1c581c1cfec660cf0571f", "observedAt": "2026-10-26T13:33:54+00:00", "staged": "00000__wfv__numbering-override-comments-type.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:33:32.513 'Word found unreadable content in 00000__wfv__numbering-override-comments-type.docx. Do you want to  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:33:33.315 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__numbering-override-commen...)\""]}
+{"run": "s53h", "pass": 1, "name": "s53h-control-minimal-end", "sha256": "54ee4a813779f3b62e2f21b1f8acc4e8847cf27d76d8a27d102a4afa14e0d8c0", "observedAt": "2026-10-26T13:28:07+00:00", "staged": "00001__wfv__s53h-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53h-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s53h", "pass": 2, "name": "s53h-control-minimal-end", "sha256": "54ee4a813779f3b62e2f21b1f8acc4e8847cf27d76d8a27d102a4afa14e0d8c0", "observedAt": "2026-10-26T13:33:54+00:00", "staged": "00001__wfv__s53h-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s53h-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 53 builder, cross-check and section scripts</summary>
+
+Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s53builder.mts`:
+
+```ts
+// Session 53 (2026-10-26): the shapes the review of layers 156-160 says the content-type layers judge without evidence.
+// - s53a/s53b (#739): a second relationship to an eagerly read part. A footer relationship the body references, to the
+//   main document, the related numbering part or the styles part, each typed with another Word type (session 50's and
+//   49's refused shapes), with a calibration typed correctly; and the styles part also the target of the main
+//   document's settings relationship, typed with the settings type (and its calibration typed styles).
+// - s53b-s53h (#740): shapes the recovery sentence cites a session for but Word was never shown. Settings, fontTable and
+//   numbering typed with the four other s49a/s50c spellings (session 50 showed `application/octet-stream` only); the
+//   main document typed with each other mapped Word type (session 50 showed the styles type only); settings,
+//   numbering and styles typed with other mapped types (sessions 49/50 showed one pair each); an empty numbering
+//   ContentType (layer 157 covers styles, settings and fontTable only).
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s53a pnpm exec tsx s53builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const MAIN_TYPE = `${WML}.document.main+xml`;
+const STYLES_TYPE = `${WML}.styles+xml`;
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+
+type Kind = "numbering" | "settings" | "fontTable";
+/** The relationship segment, the part body and the content type of each kind (the bodies session 47 used). */
+const KINDS: Record<Kind, { root: string; ct: string }> = {
+    numbering: { root: `${XML_DECL}<w:numbering xmlns:w="${W}"/>`, ct: `${WML}.numbering+xml` },
+    settings: { root: `${XML_DECL}<w:settings xmlns:w="${W}"/>`, ct: `${WML}.settings+xml` },
+    fontTable: { root: `${XML_DECL}<w:fonts xmlns:w="${W}"/>`, ct: `${WML}.fontTable+xml` },
+};
+/** The other mapped Word content types the rows type a part with. */
+const TYPES = {
+    main: MAIN_TYPE,
+    styles: STYLES_TYPE,
+    theme: "application/vnd.openxmlformats-officedocument.theme+xml",
+    glossary: `${WML}.document.glossary+xml`,
+    header: `${WML}.header+xml`,
+    footer: `${WML}.footer+xml`,
+    footnotes: `${WML}.footnotes+xml`,
+    endnotes: `${WML}.endnotes+xml`,
+    comments: `${WML}.comments+xml`,
+    settings: KINDS.settings.ct,
+    fontTable: KINDS.fontTable.ct,
+    numbering: KINDS.numbering.ct,
+};
+const SPELLINGS: Array<[string, string]> = [
+    ["octet-upper", "APPLICATION/OCTET-STREAM"],
+    ["octet-charset", "application/octet-stream; charset=utf-8"],
+    ["image-png", "image/png"],
+    ["foo-xml", "application/foo+xml"],
+];
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${REL}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+const retype = (ct: string, part: string, own: string, type: string) =>
+    replaceOnce(ct, `<Override PartName="/${part}" ContentType="${own}"/>`, `<Override PartName="/${part}" ContentType="${type}"/>`);
+const control = () => buildDocx({ ...P });
+
+/** The minimal package plus `word/<kind>.xml` related from the main document's sidecar as rId2, typed `type`. */
+const withRelated = (kind: Kind, type = KINDS[kind].ct): Record<string, string> => ({
+    ...P,
+    [`word/${kind}.xml`]: KINDS[kind].root,
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rId2", kind, `${kind}.xml`)),
+    [CT]: overrides(P[CT]!, [`word/${kind}.xml`, type]),
+});
+const relatedTyped = (kind: Kind, type: string) => buildDocx(withRelated(kind, type));
+const mainTyped = (type: string) => buildDocx({ ...P, [CT]: retype(P[CT]!, "word/document.xml", MAIN_TYPE, type) });
+const stylesTyped = (type: string) => buildDocx({ ...P, [CT]: retype(P[CT]!, "word/styles.xml", STYLES_TYPE, type) });
+
+/** `parts` plus a footer relationship (rIdF) to `target` (relative to word/) that the body's section references. */
+const withReadFooter = (parts: Record<string, string>, target: string): Record<string, string> => ({
+    ...parts,
+    "word/document.xml": replaceOnce(
+        replaceOnce(parts["word/document.xml"]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${REL}"`),
+        "<w:sectPr>",
+        `<w:sectPr><w:footerReference w:type="default" r:id="rIdF"/>`,
+    ),
+    [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdF", "footer", target)),
+});
+const mainFooterCoReach = (type: string) =>
+    buildDocx(withReadFooter({ ...P, [CT]: retype(P[CT]!, "word/document.xml", MAIN_TYPE, type) }, "document.xml"));
+const numberingFooterCoReach = (type: string) => buildDocx(withReadFooter(withRelated("numbering", type), "numbering.xml"));
+const stylesFooterCoReach = (type: string) =>
+    buildDocx(withReadFooter({ ...P, [CT]: retype(P[CT]!, "word/styles.xml", STYLES_TYPE, type) }, "styles.xml"));
+/** The styles part also the target of the main document's settings relationship (review S5), typed `type`. */
+const stylesSettingsCoReach = (type: string) =>
+    buildDocx({
+        ...P,
+        [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rId2", "settings", "styles.xml")),
+        [CT]: retype(P[CT]!, "word/styles.xml", STYLES_TYPE, type),
+    });
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const spellingRows = (kind: Kind): Row[] =>
+    SPELLINGS.map(([slug, type]) => [
+        `${kind.toLowerCase()}-override-${slug}`,
+        `#740: a related word/${kind}.xml typed ${type}`,
+        () => relatedTyped(kind, type),
+    ]);
+const mainRow = (name: keyof typeof TYPES): Row => [
+    `main-override-${name.toLowerCase()}-type`,
+    `#740: main document Override typed with the ${name} content type`,
+    () => mainTyped(TYPES[name]),
+];
+const relatedRow = (kind: Kind, name: keyof typeof TYPES): Row => [
+    `${kind.toLowerCase()}-override-${name.toLowerCase()}-type`,
+    `#740: a related word/${kind}.xml typed with the ${name} content type`,
+    () => relatedTyped(kind, TYPES[name]),
+];
+const stylesRow = (name: keyof typeof TYPES): Row => [
+    `styles-override-${name.toLowerCase()}-type`,
+    `#740: word/styles.xml typed with the ${name} content type`,
+    () => stylesTyped(TYPES[name]),
+];
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+const [fontTableSpellings, numberingSpellings, settingsSpellings] = [
+    spellingRows("fontTable"),
+    spellingRows("numbering"),
+    spellingRows("settings"),
+];
+
+const chunks: Record<string, Row[]> = {
+    s53a: withControls("s53a", [
+        [
+            "coreach-footer-main-calibration",
+            "#739 calibration: a footer relationship the body references targets word/document.xml, typed main",
+            () => mainFooterCoReach(MAIN_TYPE),
+        ],
+        [
+            "coreach-footer-main-styles-type",
+            "#739: the same, the main document typed with the styles content type",
+            () => mainFooterCoReach(STYLES_TYPE),
+        ],
+        [
+            "coreach-footer-numbering-calibration",
+            "#739 calibration: a footer relationship the body references targets the related word/numbering.xml, typed numbering",
+            () => numberingFooterCoReach(KINDS.numbering.ct),
+        ],
+        [
+            "coreach-footer-numbering-settings-type",
+            "#739: the same, numbering typed with the settings content type",
+            () => numberingFooterCoReach(KINDS.settings.ct),
+        ],
+        [
+            "coreach-footer-styles-calibration",
+            "#739 calibration: a footer relationship the body references targets word/styles.xml, typed styles",
+            () => stylesFooterCoReach(STYLES_TYPE),
+        ],
+        [
+            "coreach-footer-styles-settings-type",
+            "#739: the same, styles typed with the settings content type",
+            () => stylesFooterCoReach(KINDS.settings.ct),
+        ],
+    ]),
+    s53b: withControls("s53b", [
+        [
+            "coreach-settings-styles-calibration",
+            "#739 calibration: word/styles.xml is also the target of the main document's settings relationship, typed styles",
+            () => stylesSettingsCoReach(STYLES_TYPE),
+        ],
+        [
+            "coreach-settings-styles-settings-type",
+            "#739 (review S5): the same, styles typed with the settings content type",
+            () => stylesSettingsCoReach(KINDS.settings.ct),
+        ],
+        ...settingsSpellings,
+    ]),
+    s53c: withControls("s53c", [...fontTableSpellings, ...numberingSpellings.slice(0, 2)]),
+    s53d: withControls("s53d", [
+        ...numberingSpellings.slice(2),
+        [
+            "numbering-override-empty",
+            '#740: a related word/numbering.xml whose Override has ContentType=""',
+            () => relatedTyped("numbering", ""),
+        ],
+        mainRow("theme"),
+        mainRow("glossary"),
+        mainRow("header"),
+    ]),
+    s53e: withControls("s53e", [
+        mainRow("footer"),
+        mainRow("footnotes"),
+        mainRow("endnotes"),
+        mainRow("comments"),
+        mainRow("settings"),
+        mainRow("fontTable"),
+    ]),
+    s53f: withControls("s53f", [
+        mainRow("numbering"),
+        relatedRow("settings", "main"),
+        relatedRow("settings", "numbering"),
+        relatedRow("settings", "header"),
+        relatedRow("settings", "fontTable"),
+        relatedRow("settings", "theme"),
+    ]),
+    s53g: withControls("s53g", [
+        relatedRow("numbering", "main"),
+        relatedRow("numbering", "styles"),
+        relatedRow("numbering", "header"),
+        relatedRow("numbering", "fontTable"),
+        stylesRow("main"),
+        stylesRow("numbering"),
+    ]),
+    s53h: withControls("s53h", [
+        stylesRow("header"),
+        stylesRow("fontTable"),
+        stylesRow("theme"),
+        stylesRow("comments"),
+        relatedRow("settings", "comments"),
+        relatedRow("numbering", "comments"),
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-53 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s53a", "s53b", "s53c", "s53d", "s53e", "s53f", "s53g", "s53h")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s53/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-53 parts of docs/plans/evidence/word-probes-2026-10-24.md into s53/section.md.
+
+Reads the chunk's specimens.jsonl (validator columns at 0b26c414, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s53/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s53a", "s53b", "s53c", "s53d", "s53e", "s53f", "s53g", "s53h")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s53/results.json").read_text())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends = [], [], [], []
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    f"### Session 53: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at 0b26c414",
+    "",
+    "The content-type shapes the review of layers 156–160 says those layers judge, or explain with a session, that no earlier session "
+    "showed Word ([#739](https://github.com/jandira-tech/docx-validate/issues/739): a second relationship to an eagerly read part; "
+    "[#740](https://github.com/jandira-tech/docx-validate/issues/740): the spellings and types the recovery sentence cites a session for). "
+    "Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word "
+    "log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings "
+    "agree, and `unknown` otherwise; all 64 rows agree. The two times in Observed are the ends of the first and second runs. Shape is "
+    "the builder's description of the specimen. The part bodies are session 47's empty roots.",
+    "",
+    "- A footer relationship the body references (`w:footerReference`) whose target is the main document, the related numbering part "
+    "or the styles part gets the recovery offer, typed with its own type (the calibrations) and typed with session 49's and 50's refused "
+    "types alike. So does `word/styles.xml` when the main document's settings relationship also targets it, typed styles or typed "
+    "settings. Word-valid accepts all eight: false negatives, and the review's shapes are refused whatever the Override says.",
+    "- `word/settings.xml`, `word/fontTable.xml` and `word/numbering.xml`, related by the main document, get the recovery offer typed "
+    "`APPLICATION/OCTET-STREAM`, `application/octet-stream; charset=utf-8`, `image/png` or `application/foo+xml` (session 50 showed "
+    "`application/octet-stream` only). Word-valid rejects all twelve.",
+    "- The main document gets the recovery offer typed with the theme, glossary, header, footer, footnotes, endnotes, comments, "
+    "settings, fontTable or numbering content type (session 50 showed the styles type only); word-valid rejects all ten.",
+    "- A related settings part typed with the main document, numbering, header, fontTable, theme or comments type, a related numbering "
+    "part typed with the main document, styles, header, fontTable or comments type, and the styles part typed with the main document, "
+    "numbering, header, fontTable, theme or comments type all get the recovery offer; word-valid rejects all sixteen.",
+    "- A related numbering part whose Override has `ContentType=\"\"` gets the recovery offer, as styles (session 49) and settings and "
+    "fontTable (session 50) did. Word-valid accepts it: a false negative.",
+    "",
+    "| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at 0b26c414 | strict at 0b26c414 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 53</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 53 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s53builder.mts", ROOT / "s53builder.mts", "ts"), ("compare.py", ROOT / "s53/compare.py", "python"),
+                         ("section.py", ROOT / "s53/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s53/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records")
+`````
+
+</details>
+
 ### Session 54: 13:38Z–13:40Z on 2026-10-26, validator columns at 0b26c414
 
 The shapes three follow-ups need before they land: the broken relationship targets whose `rels-broken` verdict [#734](https://github.com/jandira-tech/docx-validate/issues/734) moves from the Target's spelling to the part it resolves to; the attached-toolbar spellings and the empty id of [#743](https://github.com/jandira-tech/docx-validate/issues/743) (the review of layers 151–155, findings 2, 3 and S1); and the four duplicate cells session 50 did not show ([#744](https://github.com/jandira-tech/docx-validate/issues/744), finding 4). Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; all 27 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen.
@@ -16123,6 +16759,371 @@ for name, path, lang in (("s55builder.mts", ROOT / "s55builder.mts", "ts"), ("co
     out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
 out += ["</details>", ""]
 (ROOT / "s55/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records")
+`````
+
+</details>
+
+### Session 56: 15:38Z–15:41Z on 2026-10-26, validator columns at f033a3db
+
+The content-type shapes the #739 lane changed or left without a Word row ([#739](https://github.com/jandira-tech/docx-validate/issues/739), [#760](https://github.com/jandira-tech/docx-validate/issues/760)): `word/styles.xml` typed with the footer content type, alone and with a second footer relationship to it that no section references or that the body references; and the same part typed with an inexact spelling of the styles type, alone and with a read footer relationship to it. The chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; all 7 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen.
+
+- `word/styles.xml` typed `…footer+xml` gets the recovery offer reached by the main document's styles relationship alone (the session 49 class, the calibration), with a second footer relationship to it that no section references, and with that footer relationship referenced by the body. Word-valid at f033a3db rejects only the calibration: a matching footer reach exempted the styles reach's mismatch. Two false negatives, which #739's fix rejects.
+- `word/styles.xml` typed `…styles+xml; charset=utf-8` gets the recovery offer alone (the calibration) and with a read footer relationship to it. Word-valid at f033a3db rejects only the calibration: the co-reach hides the inexact spelling. A false negative (#760).
+
+| Run    | Observed             | Specimen                                | Shape                                                                                                          | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at f033a3db                     | strict at f033a3db                         |
+| ------ | -------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ------------------------------------------ | ------------------------------------------ |
+| `s56a` | 15:38:01Z, 15:41:09Z | `s56a-control-minimal`                  | control                                                                                                        | `d51807987b7778a8` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                      |
+| `s56a` | 15:38:01Z, 15:41:09Z | `styles-typed-footer-calibration`       | calibration: word/styles.xml typed with the footer content type (the main document's styles relationship only) | `cb5775c6a32dd1ea` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch` | invalid: `word-part-content-type-mismatch` |
+| `s56a` | 15:38:01Z, 15:41:09Z | `styles-typed-footer-unused-footer-rel` | #739: the same plus a footer relationship no section references, also targeting word/styles.xml                | `35e261f6ac6489f3` | repair-warning | repair-warning | unreadable-content-warning | valid                                      | valid                                      |
+| `s56a` | 15:38:01Z, 15:41:09Z | `styles-typed-footer-read-footer`       | #739: the same with the body referencing that footer relationship                                              | `3cfb4d16ea623570` | repair-warning | repair-warning | unreadable-content-warning | valid                                      | valid                                      |
+| `s56a` | 15:38:01Z, 15:41:09Z | `styles-charset-calibration`            | calibration: word/styles.xml typed styles+xml; charset=utf-8 (the main document's styles relationship only)    | `969ce9b2531d1ad7` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-inexact`  | invalid: `word-part-content-type-inexact`  |
+| `s56a` | 15:38:01Z, 15:41:09Z | `styles-charset-read-footer`            | #739 residue: the same plus a footer relationship the body references, targeting word/styles.xml               | `4d1a354f4d96f216` | repair-warning | repair-warning | unreadable-content-warning | valid                                      | invalid: `word-part-content-type-mismatch` |
+| `s56a` | 15:38:01Z, 15:41:09Z | `s56a-control-minimal-end`              | control                                                                                                        | `d51807987b7778a8` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                      |
+
+<details><summary>Raw records, session 56</summary>
+
+```jsonl
+{"run": "s56a", "pass": 1, "name": "s56a-control-minimal", "sha256": "d51807987b7778a80a156913945a1336c7621bda2e252511c2b39f21e32b2bd6", "observedAt": "2026-10-26T15:38:01+00:00", "staged": "00001__wfv__s56a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s56a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s56a", "pass": 2, "name": "s56a-control-minimal", "sha256": "d51807987b7778a80a156913945a1336c7621bda2e252511c2b39f21e32b2bd6", "observedAt": "2026-10-26T15:41:09+00:00", "staged": "00001__wfv__s56a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s56a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s56a", "pass": 1, "name": "styles-typed-footer-calibration", "sha256": "cb5775c6a32dd1ea4c8893d69adf2531c257e51bc811ddff3d828ba90de1c253", "observedAt": "2026-10-26T15:38:01+00:00", "staged": "00004__wfv__styles-typed-footer-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 11:37:52.380 'Word found unreadable content in 00004__wfv__styles-typed-footer-calibration.docx. Do you want to r … ? If you trust the source of this document, click Yes.'", "2026-10-26 11:37:53.159 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__styles-typed-footer-calib...)\""]}
+{"run": "s56a", "pass": 2, "name": "styles-typed-footer-calibration", "sha256": "cb5775c6a32dd1ea4c8893d69adf2531c257e51bc811ddff3d828ba90de1c253", "observedAt": "2026-10-26T15:41:09+00:00", "staged": "00004__wfv__styles-typed-footer-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 11:40:20.782 'Word found unreadable content in 00004__wfv__styles-typed-footer-calibration.docx. Do you want to r … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s56a", "pass": 1, "name": "styles-typed-footer-unused-footer-rel", "sha256": "35e261f6ac6489f3465bdae376bac2e8ff1074ed2d6b4f4ec4a9b370fdbf404e", "observedAt": "2026-10-26T15:38:01+00:00", "staged": "00006__wfv__styles-typed-footer-unused-footer-rel.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 11:38:00.760 'Word found unreadable content in 00006__wfv__styles-typed-footer-unused-footer-rel.docx. Do you wan … ? If you trust the source of this document, click Yes.'", "2026-10-26 11:38:01.576 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__styles-typed-footer-unuse...)\""]}
+{"run": "s56a", "pass": 2, "name": "styles-typed-footer-unused-footer-rel", "sha256": "35e261f6ac6489f3465bdae376bac2e8ff1074ed2d6b4f4ec4a9b370fdbf404e", "observedAt": "2026-10-26T15:41:09+00:00", "staged": "00006__wfv__styles-typed-footer-unused-footer-rel.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 11:41:08.849 Microsoft Word, Word found unreadable content in 00006__wfv__styles-typed-footer-unused-footer-rel.d … t? If you trust the source of this document, click Yes."]}
+{"run": "s56a", "pass": 1, "name": "styles-typed-footer-read-footer", "sha256": "3cfb4d16ea62357053a411b7160855d357e7a0af40a7e5379cbf95782dad2788", "observedAt": "2026-10-26T15:38:01+00:00", "staged": "00005__wfv__styles-typed-footer-read-footer.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 11:37:56.557 'Word found unreadable content in 00005__wfv__styles-typed-footer-read-footer.docx. Do you want to r … ? If you trust the source of this document, click Yes.'", "2026-10-26 11:37:57.376 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__styles-typed-footer-read-...)\""]}
+{"run": "s56a", "pass": 2, "name": "styles-typed-footer-read-footer", "sha256": "3cfb4d16ea62357053a411b7160855d357e7a0af40a7e5379cbf95782dad2788", "observedAt": "2026-10-26T15:41:09+00:00", "staged": "00005__wfv__styles-typed-footer-read-footer.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 11:40:25.327 \"Word found unreadable content in 00005__wfv__styles-typed-footer-read-footer.docx. Do you want to r … ? If you trust the source of this document, click Yes.\"", "2026-10-26 11:40:25.328 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__styles-typed-footer-read-...)\""]}
+{"run": "s56a", "pass": 1, "name": "styles-charset-calibration", "sha256": "969ce9b2531d1ad7150e3edf2e0e376a932b5d05003d1bd7f5b3c1dfa91007bb", "observedAt": "2026-10-26T15:38:01+00:00", "staged": "00002__wfv__styles-charset-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 11:36:35.189 'Word found unreadable content in 00002__wfv__styles-charset-calibration.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 11:36:40.955 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__styles-charset-calibratio...)\""]}
+{"run": "s56a", "pass": 2, "name": "styles-charset-calibration", "sha256": "969ce9b2531d1ad7150e3edf2e0e376a932b5d05003d1bd7f5b3c1dfa91007bb", "observedAt": "2026-10-26T15:41:09+00:00", "staged": "00002__wfv__styles-charset-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 11:38:18.895 'Word found unreadable content in 00002__wfv__styles-charset-calibration.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 11:38:19.783 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__styles-charset-calibratio...)\""]}
+{"run": "s56a", "pass": 1, "name": "styles-charset-read-footer", "sha256": "4d1a354f4d96f216d52d8f58ff87dba080ab86bb240624104d193878d8f4c02f", "observedAt": "2026-10-26T15:38:01+00:00", "staged": "00003__wfv__styles-charset-read-footer.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 11:37:35.520 Microsoft Word, Word found unreadable content in 00003__wfv__styles-charset-read-footer.docx. Do you … t? If you trust the source of this document, click Yes.", "2026-10-26 11:37:48.659 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__styles-charset-read-foote...)\""]}
+{"run": "s56a", "pass": 2, "name": "styles-charset-read-footer", "sha256": "4d1a354f4d96f216d52d8f58ff87dba080ab86bb240624104d193878d8f4c02f", "observedAt": "2026-10-26T15:41:09+00:00", "staged": "00003__wfv__styles-charset-read-footer.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 11:39:07.329 'Word found unreadable content in 00003__wfv__styles-charset-read-footer.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 11:39:07.892 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__styles-charset-read-foote...)\""]}
+{"run": "s56a", "pass": 1, "name": "s56a-control-minimal-end", "sha256": "d51807987b7778a80a156913945a1336c7621bda2e252511c2b39f21e32b2bd6", "observedAt": "2026-10-26T15:38:01+00:00", "staged": "00000__wfv__s56a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s56a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s56a", "pass": 2, "name": "s56a-control-minimal-end", "sha256": "d51807987b7778a80a156913945a1336c7621bda2e252511c2b39f21e32b2bd6", "observedAt": "2026-10-26T15:41:09+00:00", "staged": "00000__wfv__s56a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s56a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 56 builder, cross-check and section scripts</summary>
+
+Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s56builder.mts`:
+
+```ts
+// Session 56 (2026-10-26): the content-type shapes lane F (#739) changed or left without a Word row.
+// - s56a: word/styles.xml typed with the footer content type, alone (calibration), with a footer relationship the body
+//   never references (no w:footerReference) also targeting it, and with a footer relationship the body references.
+//   #739's fix stops a matching footer reach from exempting the styles reach's mismatch, so word-valid now rejects the
+//   unused-footer row; Word was never shown it. Then word/styles.xml typed with an inexact spelling of the styles type
+//   (`; charset=utf-8`) alone, and with a read footer relationship targeting it: lane F reports word-valid passes the
+//   co-reach row, which no session showed.
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s56a pnpm exec tsx s56builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const MAIN_TYPE = `${WML}.document.main+xml`;
+const STYLES_TYPE = `${WML}.styles+xml`;
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+
+type Kind = "numbering" | "settings" | "fontTable";
+/** The relationship segment, the part body and the content type of each kind (the bodies session 47 used). */
+const KINDS: Record<Kind, { root: string; ct: string }> = {
+    numbering: { root: `${XML_DECL}<w:numbering xmlns:w="${W}"/>`, ct: `${WML}.numbering+xml` },
+    settings: { root: `${XML_DECL}<w:settings xmlns:w="${W}"/>`, ct: `${WML}.settings+xml` },
+    fontTable: { root: `${XML_DECL}<w:fonts xmlns:w="${W}"/>`, ct: `${WML}.fontTable+xml` },
+};
+/** The other mapped Word content types the rows type a part with. */
+const TYPES = {
+    main: MAIN_TYPE,
+    styles: STYLES_TYPE,
+    theme: "application/vnd.openxmlformats-officedocument.theme+xml",
+    glossary: `${WML}.document.glossary+xml`,
+    header: `${WML}.header+xml`,
+    footer: `${WML}.footer+xml`,
+    footnotes: `${WML}.footnotes+xml`,
+    endnotes: `${WML}.endnotes+xml`,
+    comments: `${WML}.comments+xml`,
+    settings: KINDS.settings.ct,
+    fontTable: KINDS.fontTable.ct,
+    numbering: KINDS.numbering.ct,
+};
+const SPELLINGS: Array<[string, string]> = [
+    ["octet-upper", "APPLICATION/OCTET-STREAM"],
+    ["octet-charset", "application/octet-stream; charset=utf-8"],
+    ["image-png", "image/png"],
+    ["foo-xml", "application/foo+xml"],
+];
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${REL}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+const retype = (ct: string, part: string, own: string, type: string) =>
+    replaceOnce(ct, `<Override PartName="/${part}" ContentType="${own}"/>`, `<Override PartName="/${part}" ContentType="${type}"/>`);
+const control = () => buildDocx({ ...P });
+
+/** The minimal package plus `word/<kind>.xml` related from the main document's sidecar as rId2, typed `type`. */
+const withRelated = (kind: Kind, type = KINDS[kind].ct): Record<string, string> => ({
+    ...P,
+    [`word/${kind}.xml`]: KINDS[kind].root,
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rId2", kind, `${kind}.xml`)),
+    [CT]: overrides(P[CT]!, [`word/${kind}.xml`, type]),
+});
+const relatedTyped = (kind: Kind, type: string) => buildDocx(withRelated(kind, type));
+const mainTyped = (type: string) => buildDocx({ ...P, [CT]: retype(P[CT]!, "word/document.xml", MAIN_TYPE, type) });
+const stylesTyped = (type: string) => buildDocx({ ...P, [CT]: retype(P[CT]!, "word/styles.xml", STYLES_TYPE, type) });
+
+/** `parts` plus a footer relationship (rIdF) to `target` (relative to word/) that the body's section references. */
+const withReadFooter = (parts: Record<string, string>, target: string): Record<string, string> => ({
+    ...parts,
+    "word/document.xml": replaceOnce(
+        replaceOnce(parts["word/document.xml"]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${REL}"`),
+        "<w:sectPr>",
+        `<w:sectPr><w:footerReference w:type="default" r:id="rIdF"/>`,
+    ),
+    [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdF", "footer", target)),
+});
+const mainFooterCoReach = (type: string) =>
+    buildDocx(withReadFooter({ ...P, [CT]: retype(P[CT]!, "word/document.xml", MAIN_TYPE, type) }, "document.xml"));
+const numberingFooterCoReach = (type: string) => buildDocx(withReadFooter(withRelated("numbering", type), "numbering.xml"));
+const stylesFooterCoReach = (type: string) =>
+    buildDocx(withReadFooter({ ...P, [CT]: retype(P[CT]!, "word/styles.xml", STYLES_TYPE, type) }, "styles.xml"));
+/** `parts` plus a footer relationship (rIdF) to `target` (relative to word/) that no section references. */
+const withUnusedFooter = (parts: Record<string, string>, target: string): Record<string, string> => ({
+    ...parts,
+    [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdF", "footer", target)),
+});
+const stylesRetyped = (type: string): Record<string, string> => ({ ...P, [CT]: retype(P[CT]!, "word/styles.xml", STYLES_TYPE, type) });
+const STYLES_CHARSET = `${STYLES_TYPE}; charset=utf-8`;
+type Row = [string, string, () => Promise<Uint8Array>];
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+
+const chunks: Record<string, Row[]> = {
+    s56a: withControls("s56a", [
+        [
+            "styles-typed-footer-calibration",
+            "calibration: word/styles.xml typed with the footer content type (the main document's styles relationship only)",
+            () => buildDocx(stylesRetyped(TYPES.footer)),
+        ],
+        [
+            "styles-typed-footer-unused-footer-rel",
+            "#739: the same plus a footer relationship no section references, also targeting word/styles.xml",
+            () => buildDocx(withUnusedFooter(stylesRetyped(TYPES.footer), "styles.xml")),
+        ],
+        [
+            "styles-typed-footer-read-footer",
+            "#739: the same with the body referencing that footer relationship",
+            () => buildDocx(withReadFooter(stylesRetyped(TYPES.footer), "styles.xml")),
+        ],
+        [
+            "styles-charset-calibration",
+            "calibration: word/styles.xml typed styles+xml; charset=utf-8 (the main document's styles relationship only)",
+            () => buildDocx(stylesRetyped(STYLES_CHARSET)),
+        ],
+        [
+            "styles-charset-read-footer",
+            "#739 residue: the same plus a footer relationship the body references, targeting word/styles.xml",
+            () => buildDocx(withReadFooter(stylesRetyped(STYLES_CHARSET), "styles.xml")),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-56 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s56a",)
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s56/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-56 parts of docs/plans/evidence/word-probes-2026-10-24.md into s56/section.md.
+
+Reads the chunk's specimens.jsonl (validator columns at f033a3db, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s56/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s56a",)
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s56/results.json").read_text())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends = [], [], [], []
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    f"### Session 56: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at f033a3db",
+    "",
+    "The content-type shapes the #739 lane changed or left without a Word row "
+    "([#739](https://github.com/jandira-tech/docx-validate/issues/739), "
+    "[#760](https://github.com/jandira-tech/docx-validate/issues/760)): `word/styles.xml` typed with the footer content type, "
+    "alone and with a second footer relationship to it that no section references or that the body references; and the same part "
+    "typed with an inexact spelling of the styles type, alone and with a read footer relationship to it. The chunk ran twice, as two "
+    "separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's "
+    "`logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and "
+    "`unknown` otherwise; all 7 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the "
+    "builder's description of the specimen.",
+    "",
+    "- `word/styles.xml` typed `…footer+xml` gets the recovery offer reached by the main document's styles relationship alone (the "
+    "session 49 class, the calibration), with a second footer relationship to it that no section references, and with that footer "
+    "relationship referenced by the body. Word-valid at f033a3db rejects only the calibration: a matching footer reach exempted the "
+    "styles reach's mismatch. Two false negatives, which #739's fix rejects.",
+    "- `word/styles.xml` typed `…styles+xml; charset=utf-8` gets the recovery offer alone (the calibration) and with a read footer "
+    "relationship to it. Word-valid at f033a3db rejects only the calibration: the co-reach hides the inexact spelling. A false "
+    "negative (#760).",
+    "",
+    "| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at f033a3db | strict at f033a3db |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 56</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 56 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s56builder.mts", ROOT / "s56builder.mts", "ts"), ("compare.py", ROOT / "s56/compare.py", "python"),
+                         ("section.py", ROOT / "s56/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s56/section.md").write_text("\n".join(out))
 print(len(rows), "rows,", len(raw), "raw records")
 `````
 
