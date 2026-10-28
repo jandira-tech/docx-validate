@@ -1241,6 +1241,26 @@ describe("#619: a story reference whose r:id names no Relationship (Word 16.115 
             });
         },
     );
+
+    // #1086: only an r:id copy registers a hand-off identity, so an r:embed
+    // on the same reference, naming the same dangling id, keeps its own
+    // rels-id-missing beside the rule's finding.
+    it.each(["word-valid", "strict"] as const)(
+        "keeps an r:embed copy's rels-id-missing beside the rule's finding under %s (#1086)",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                const parts = danglingReferenceParts("headerReference");
+                parts["word/document.xml"] = parts["word/document.xml"]!.replace(' r:id="rId9"', ' r:id="rId9" r:embed="rId9"');
+                const file = path.join(dir, "embed-beside-dangling-reference.docx");
+                writeFileSync(file, await buildDocx(parts));
+                const result = await validate(file, { profile });
+                expect(result.issues.filter((issue) => issue.code === CODE)).toHaveLength(1);
+                expect(result.issues.filter((issue) => issue.code === "rels-id-missing").map((issue) => issue.message)).toEqual([
+                    "<headerReference> r:embed references non-existent relationship 'rId9' (valid IDs: rId1)",
+                ]);
+            });
+        },
+    );
 });
 
 /** Session 33 (#623): only the relationships-namespace id attribute changes. */
