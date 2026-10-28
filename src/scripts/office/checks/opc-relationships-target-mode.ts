@@ -5,9 +5,21 @@
 
 import type { CheckDefinition } from "../../../lib/check-registry";
 import { canonicalPartName } from "../../../lib/content-types";
-import type { ValidationIssue } from "../../../lib/types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
+import type { ValidationContext } from "../../../lib/validation-context";
 import { sidecarOf, wordReadTypedTargets } from "../../../lib/word-read-parts";
 import { getRelationshipChildren } from "../../../lib/xml-helpers";
+
+/** The relationships parts whose present TargetMode this check judges. */
+export const targetModeRelationshipParts = async (ctx: ValidationContext, profile?: Profile): Promise<ReadonlySet<string>> => {
+    const parts = new Set(ctx.partNames.filter((part) => canonicalPartName(part) === "_rels/.rels"));
+    for (const target of await wordReadTypedTargets(ctx, profile)) {
+        if (target.segment !== "officeDocument" || target.via !== undefined) continue;
+        const sidecar = sidecarOf(ctx.partNames, target.part);
+        if (sidecar !== undefined) parts.add(sidecar);
+    }
+    return parts;
+};
 
 /**
  * OPC's ST_TargetMode is exactly Internal | External. Word 16.115 offers
@@ -30,12 +42,7 @@ export const opcRelationshipsTargetModeCheck: CheckDefinition = {
     formats: ["docx"],
     requires: ["xml-syntax"],
     run: async (ctx, profile): Promise<ValidationIssue[]> => {
-        const parts = new Set(ctx.partNames.filter((part) => canonicalPartName(part) === "_rels/.rels"));
-        for (const target of await wordReadTypedTargets(ctx, profile)) {
-            if (target.segment !== "officeDocument" || target.via !== undefined) continue;
-            const sidecar = sidecarOf(ctx.partNames, target.part);
-            if (sidecar !== undefined) parts.add(sidecar);
-        }
+        const parts = await targetModeRelationshipParts(ctx, profile);
         const issues: ValidationIssue[] = [];
         for (const part of parts) {
             const parsed = ctx.effectiveXml(part);
