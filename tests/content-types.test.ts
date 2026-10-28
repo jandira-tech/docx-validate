@@ -29,6 +29,7 @@ import {
     partExtension,
     relationshipTargetPartName,
     resolveContentType,
+    resolveTarget,
 } from "../src/lib/content-types";
 import { parseXml } from "../src/lib/xml-helpers";
 import * as contentTypes from "../src/lib/content-types";
@@ -305,6 +306,25 @@ describe("relationshipTargetPartName (#947)", () => {
         ["word", "/word/main.xml/.", "/word/main.xml"],
     ])("collapses an empty segment and a final /. as path.posix.join does: from %s, %s (#962)", (baseDir, target, expected) => {
         expect(relationshipTargetPartName(baseDir, target)).toBe(expected);
+    });
+});
+
+describe("resolveTarget: the root and a climb past it name no part (#970)", () => {
+    const lookup = equivalentPartLookup(["word/document.xml", "%2e", "%2e%2e", "%2e%2e/footnotes.xml", "footnotes.xml"]);
+
+    it.each([
+        ["word", "../..", true],
+        ["word", "../../..", true],
+        [".", "/..", true],
+        ["word", "../..", false],
+        ["word", "../../footnotes.xml", false],
+        [".", "/../footnotes.xml", false],
+    ] as const)("from %s, %s (clamped: %s) finds no stored %%2e spelling", (baseDir, target, clamp) => {
+        expect(resolveTarget(lookup, baseDir, target, clamp)).toBeUndefined();
+    });
+
+    it("still finds the part a clamped climb stops at", () => {
+        expect(resolveTarget(lookup, "word", "../../footnotes.xml", true)).toBe("footnotes.xml");
     });
 });
 
