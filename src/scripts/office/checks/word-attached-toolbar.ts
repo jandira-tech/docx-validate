@@ -24,7 +24,15 @@
  * relationships parts and XML-typed non-XML names (#759). It also
  * judges case variants: a `word/customizations.XML` and its
  * `customizations.XML.rels` get the recovery offer (session 54, s54c;
- * #743). The tool reads each sidecar by OPC part-name equivalence,
+ * #743), and the part the main document's `keyMapCustomizations`
+ * relationship reaches, whatever its name or extension (#777; session
+ * 57, s57d): Word offered recovery for the refused toolbar fixture
+ * with `word/customizations.xml` renamed `word/customizations` (no
+ * extension) and `word/customizations.bin` — its Override keeping the
+ * keyMapCustomizations type — and opened the same renames of the
+ * repaired fixture clean, so the rename itself is not what Word
+ * refuses. A glossary's customizations relationship was not shown and
+ * is not followed. The tool reads each sidecar by OPC part-name equivalence,
  * resolving escaped and backslash spellings, and compares the sidecar's
  * own `_rels` folder segment by the same equivalence (#772); Word's
  * observation covers only `customizations.xml.RELS`, which opened clean
@@ -35,9 +43,10 @@
 import type { CheckDefinition } from "../../../lib/check-registry";
 import { equivalentPartLookup, isRelationshipsFolderName, isRelationshipsPartName } from "../../../lib/content-types";
 import type { ValidationContext } from "../../../lib/validation-context";
-import type { ValidationIssue } from "../../../lib/types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
 import path from "node:path";
 import { registerStoryReferenceIdentity } from "../story-reference-identity";
+import { wordExactTypeTargets } from "../../../lib/word-read-parts";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
 import { isXmlPartName } from "./xml";
 
@@ -45,6 +54,9 @@ const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/office
 
 /** The only relationship Type Word accepts for `wne:toolbarData r:id` (#716, session 48). */
 const ATTACHED_TOOLBARS_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2006/relationships/attachedToolbars";
+
+/** The relationship Type the main document reaches its customizations part through (#777, session 57). */
+const KEYMAP_CUSTOMIZATIONS_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2006/relationships/keyMapCustomizations";
 
 /** One `wne:toolbarData r:id`, resolved against its part's own sidecar. */
 type ToolbarReference = {
@@ -62,22 +74,34 @@ type ToolbarReference = {
 /**
  * Each `wne:toolbarData r:id` in the package's XML-named parts — excluding
  * relationships parts, so a `.XML` spelling is judged (session
- * 54, s54c; #743) — with the relationship its part's own sidecar gives
- * it, the sidecar found through the shared OPC part-name index,
+ * 54, s54c; #743) — and in the part the main document's
+ * `keyMapCustomizations` relationship reaches, whatever its name or
+ * extension (#777, session 57), a part both walks reach judged once —
+ * with the relationship its part's own sidecar gives it, the sidecar
+ * found through the shared OPC part-name index,
  * so the tool reads a `.RELS` spelling (s54c). A part with no sidecar
  * resolves every `r:id` to `undefined`; an unparseable sidecar yields
  * nothing, left for `xml-syntax` to report.
  */
-const toolbarReferences = function* (
+const toolbarReferences = async function* (
     ctx: ValidationContext,
     lookup: (partName: string) => string | undefined,
-): Generator<ToolbarReference> {
+    profile?: Profile,
+): AsyncGenerator<ToolbarReference> {
     const wordmlNs = "http://schemas.microsoft.com/office/word/2006/wordml";
     const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
     const xmlParts = ctx.partNames.filter((part) => isXmlPartName(part) && !isRelationshipsPartName(part));
+    // Word reaches the customizations part through the main document's
+    // keyMapCustomizations relationship, not by its name (#777, session
+    // 57), so that part is judged whatever its name or extension; a part
+    // both walks reach stays in the set once.
+    const judgedParts = new Set(xmlParts);
+    for (const reached of await wordExactTypeTargets(ctx, KEYMAP_CUSTOMIZATIONS_RELATIONSHIP_TYPE, profile)) {
+        judgedParts.add(reached);
+    }
     // The shared index and this list keep a bounded number of passes over
     // the part names, including when a sidecar is absent (#358, #758).
-    for (const xmlFile of xmlParts) {
+    for (const xmlFile of judgedParts) {
         const parsed = ctx.effectiveXml(xmlFile);
         if (!parsed?.ok) {
             continue;
@@ -144,10 +168,10 @@ export const wordAttachedToolbarRelationshipCheck: CheckDefinition = {
     groups: ["settings"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
         const lookup = equivalentPartLookup(ctx.partNames);
-        for (const { xmlFile, elem, rid, ridNamespaceURI, relationship } of toolbarReferences(ctx, lookup)) {
+        for await (const { xmlFile, elem, rid, ridNamespaceURI, relationship } of toolbarReferences(ctx, lookup, profile)) {
             if (relationship !== undefined && (relationship.getAttribute("Type") ?? "") === ATTACHED_TOOLBARS_RELATIONSHIP_TYPE) {
                 continue;
             }
@@ -186,7 +210,7 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
     groups: ["settings"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
         // One finding per referenced part, however many toolbarData elements
         // (in however many parts) name it (Jules on #323). A part is marked
@@ -196,7 +220,7 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
         const lookup = equivalentPartLookup(ctx.partNames);
 
         const needle = Buffer.from([0xef, 0xbf, 0xbd]);
-        for (const { relsFile, relationship } of toolbarReferences(ctx, lookup)) {
+        for await (const { relsFile, relationship } of toolbarReferences(ctx, lookup, profile)) {
             // The byte scan follows only the exact Microsoft
             // attachedToolbars Type (#716); every other Type — and an `r:id`
             // naming no relationship — is the relationship check's finding.
