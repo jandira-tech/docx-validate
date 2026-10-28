@@ -96,3 +96,17 @@ describe("validateAllRelationshipIds — hyperlink/header/footer rId type check"
         });
     });
 });
+
+// #1063: the expectation lookup reads only the table's own keys, so an element
+// whose lower-cased name is an `Object.prototype` key expects nothing.
+describe("validateAllRelationshipIds — an element named for an Object.prototype key (#1063)", () => {
+    it.each(["constructor", "__proto__"])("expects no relationship type of an x:%s", async (name) => {
+        await withTempDir(async (dir) => {
+            const v = await buildDocx(dir, `<w:p><x:${name} xmlns:x="urn:example:extension" r:id="rId7"/></w:p>`, [
+                { id: "rId7", type: `${RT}/header`, target: "header1.xml" },
+            ]);
+            const result = await v.validateAllRelationshipIds();
+            expect(result.issues.filter((i) => i.code === "rels-id-mismatch").map((i) => i.message)).toEqual([]);
+        });
+    });
+});

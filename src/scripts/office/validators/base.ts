@@ -1455,8 +1455,11 @@ export class BaseSchemaValidator {
 
     protected _getExpectedRelationshipType(elementName: string): string | null {
         const elemLower = elementName.toLowerCase();
-        if (this.elementRelationshipTypes[elemLower]) {
-            return this.elementRelationshipTypes[elemLower];
+        // Object.hasOwn: the table is a plain object, so `constructor` and
+        // `__proto__` would otherwise answer with Object.prototype's (#1063).
+        const listed = Object.hasOwn(this.elementRelationshipTypes, elemLower) ? this.elementRelationshipTypes[elemLower] : undefined;
+        if (listed) {
+            return listed;
         }
         if (elemLower.endsWith("id") && elemLower.length > 2) {
             const prefix = elemLower.slice(0, -2);

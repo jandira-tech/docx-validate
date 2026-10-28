@@ -501,7 +501,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
      * `PPTX_RELATIONSHIP_SEGMENTS` does not name (#1061).
      */
     protected override relationshipTypeSatisfies(type: string, expected: string, elementNamespace: string): boolean {
-        const known = PPTX_RELATIONSHIP_SEGMENTS[expected];
+        const known = Object.hasOwn(PPTX_RELATIONSHIP_SEGMENTS, expected) ? PPTX_RELATIONSHIP_SEGMENTS[expected] : undefined;
         if (
             this.profile === "lenient" ||
             known === undefined ||

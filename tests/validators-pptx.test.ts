@@ -1162,6 +1162,51 @@ describe("rels-id-mismatch reads only PresentationML elements exactly (#1061)", 
     });
 });
 
+// #1063: both expectation tables are read by own key, so a name that is an
+// `Object.prototype` key, the element's or the one its name derives, expects
+// what any name missing from the table expects.
+describe("rels-id-mismatch reads only the PPTX tables' own keys (#1063)", () => {
+    const findings = async (dir: string, profile: "lenient" | "word-valid" | "strict") =>
+        (await new PPTXSchemaValidator({ unpackedDir: dir, profile }).validateAllRelationshipIds()).issues
+            .filter((issue) => issue.code === "rels-id-mismatch")
+            .map((issue) => issue.message);
+    const writeDeck = async (dir: string, parts: string, type: string) => {
+        await writeFile(path.join(dir, "ppt", "presentation.xml"), presentationXml(parts));
+        await writeFile(
+            path.join(dir, "ppt", "_rels", "presentation.xml.rels"),
+            relsXml(`<Relationship Id="rId1" Type="${type}" Target="slides/slide1.xml"/>`),
+        );
+    };
+
+    it.each([
+        ["constructor", "lenient"],
+        ["constructor", "word-valid"],
+        ["constructor", "strict"],
+        ["__proto__", "lenient"],
+        ["__proto__", "word-valid"],
+        ["__proto__", "strict"],
+    ] as const)("expects no relationship type of an x:%s under %s", async (name, profile) => {
+        await withTempDir(async (dir) => {
+            await writeDeck(
+                dir,
+                `<p:extLst><p:ext uri="{EFAFB233-063F-42B5-8137-9DF3F51BA10A}"><x:${name} xmlns:x="urn:example:extension" r:id="rId1"/></p:ext></p:extLst>`,
+                `${R_NS}/slide`,
+            );
+            expect(await findings(dir, profile)).toEqual([]);
+        });
+    });
+
+    it.each(["lenient", "word-valid", "strict"] as const)(
+        "reads a p:constructorId's derived constructor expectation historically under %s",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                await writeDeck(dir, '<p:constructorId r:id="rId1"/>', `${R_NS}/constructor`);
+                expect(await findings(dir, profile)).toEqual([]);
+            });
+        },
+    );
+});
+
 // #1018: a master's relationships part is found by OPC part-name
 // equivalence, as the slide checks find a slide's, so a sidecar stored under
 // an escaped spelling is read, not reported missing.
