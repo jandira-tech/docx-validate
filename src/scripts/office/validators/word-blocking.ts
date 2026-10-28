@@ -340,7 +340,10 @@ export const isWordBlockingIssue = (
         // opens clean (#540, #550; sessions 16–17, 2026-10-24, the table
         // living with issue #550).
         case "word-part-content-type-inexact":
-        // Session 24: a read header/footer declared with the other story's type (#600).
+        // Session 24: a read header/footer declared with the other story's
+        // type (#600); sessions 49 and 50: the main document and a related
+        // styles, settings or numbering part typed with another mapped Word
+        // type (#722).
         case "word-part-content-type-mismatch":
             return true;
         case "word-part-content-type-unrecognized": {

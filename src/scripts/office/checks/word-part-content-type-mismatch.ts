@@ -7,8 +7,15 @@
  * A related part declared with a different mapped part's media type (#600).
  * Session 24 observed Word 16.115 recover main-document header/footer swaps
  * and a reached glossary footer swap, including a parameterized swap.
- * Session 26 observed the reached glossary header swap.
- * Only those swaps predict Word; strict judges every mapped relationship.
+ * Session 26 observed the reached glossary header swap. Sessions 49 and 50
+ * (2026-10-26) observed recovery for the main document typed with another
+ * mapped Word type and for a styles, settings or numbering part the main
+ * document relates typed with another mapped Word type. Word-valid reports
+ * those observed shapes — the swaps Word reads through the swapping
+ * relationship, and the eagerly parsed main document and styles, settings
+ * and numbering reaches, which need no usage lookup; fontTable, webSettings,
+ * theme, the stories and every glossary reach were not shown a mapped type
+ * and stay silent until probed. Strict judges every mapped relationship.
  * Clause 11.3 of ECMA-376 Part 1 (4th edition) assigns the WML types; theme
  * is DrawingML and its assignment is in clause 14.2.7 instead.
  */
@@ -34,12 +41,20 @@ import {
 } from "./word-part-content-type-inexact";
 
 export const WORD_PART_CONTENT_TYPE_MISMATCH = "word-part-content-type-mismatch";
-// Evidence: word-probes-2026-10-24.md, sessions 24 and 26.
-const OBSERVED_SWAP_SESSIONS: ReadonlyMap<string, number> = new Map([
+// Evidence: word-probes-2026-10-24.md, sessions 24, 26, 49 and 50. The
+// header/footer keys are the swaps Word was shown, judged read; sessions 49
+// and 50 add the eagerly parsed reaches — the main document and the main
+// document's own styles, settings and numbering relationships — typed with
+// another mapped Word type.
+const OBSERVED_SESSIONS: ReadonlyMap<string, number> = new Map([
     ["main\nfooter", 24],
     ["main\nheader", 24],
     ["glossary\nfooter", 24],
     ["glossary\nheader", 26],
+    ["main\nofficeDocument", 50],
+    ["main\nstyles", 49],
+    ["main\nsettings", 50],
+    ["main\nnumbering", 50],
 ]);
 export const MAPPED_MEDIA_TYPES: ReadonlySet<string> = new Set([...SPEC_SEGMENTS].flatMap(expectedContentTypesFor).map(asciiLowercase));
 
@@ -99,10 +114,19 @@ export const wordPartContentTypeMismatchFindings = async (
         // A matching used type exempts the part, including inexact spellings
         // owned by the inexact check. An unused match cannot hide a read swap.
         if (judged.some(({ segment }) => expectedContentTypesFor(segment).some((type) => asciiLowercase(type) === mediaType))) continue;
-        const observed = swaps.find(
-            ({ segment, via }) =>
-                readKeys?.has(`${via ?? "main"}\n${canonical}\n${segment}`) && OBSERVED_SWAP_SESSIONS.has(`${via ?? "main"}\n${segment}`),
-        );
+        // The observed set covers the read header/footer swaps and the
+        // eagerly parsed reaches sessions 49 and 50 probed — the main
+        // document and the main document's own styles, settings and numbering
+        // relationships, which need no usage lookup. Header and footer keep
+        // the swap shape `swaps` pins, read through the swapping segment.
+        const observed =
+            swaps.find(
+                ({ segment, via }) =>
+                    readKeys?.has(`${via ?? "main"}\n${canonical}\n${segment}`) && OBSERVED_SESSIONS.has(`${via ?? "main"}\n${segment}`),
+            ) ??
+            judged.find(
+                ({ segment, via }) => segment !== "header" && segment !== "footer" && OBSERVED_SESSIONS.has(`${via ?? "main"}\n${segment}`),
+            );
         const chosen = observed ?? (scope === "spec" ? judged[0] : undefined);
         if (chosen === undefined) continue;
         const { segment, via } = chosen;
@@ -119,7 +143,7 @@ export const wordPartContentTypeMismatchFindings = async (
             scope === "spec"
                 ? `, the content type ECMA-376 Part 1 (4th edition), clause ${clauseNumber} assigns the ${partTitle} part`
                 : "";
-        const session = observed === undefined ? undefined : OBSERVED_SWAP_SESSIONS.get(`${observed.via ?? "main"}\n${observed.segment}`);
+        const session = observed === undefined ? undefined : OBSERVED_SESSIONS.get(`${observed.via ?? "main"}\n${observed.segment}`);
         const recovery = session === undefined ? "" : ` Word 16.115 offers to recover the package (session ${session}).`;
         findings.push({
             segment,
