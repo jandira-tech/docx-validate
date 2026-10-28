@@ -272,15 +272,15 @@ const REFERENCE_OUTSIDE_ANY_ALTERNATE_CONTENT = DOCUMENT_ROOT_WITH_UNKNOWN_PREFI
     '</w:r><w:r><w:commentReference w:id="0"/></w:r></w:p>',
 );
 
-/** Comment 0 is defined only inside the comments part root's unselected Choice; the Fallback holds comment 5. */
+/** Session 62 (s62a): comment 0 is defined only inside an unselected Choice the comments part holds; the Fallback holds comment 5. */
 const DEFINITION_ONLY_AN_UNSELECTED_CHOICE_HOLDS =
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
-    `<mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" ` +
-    `xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
-    `<mc:Choice Requires="u" xmlns:u="urn:example:unknown">` +
+    `<w:comments xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ` +
+    `xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:u="urn:example:unknown">` +
+    `<mc:AlternateContent><mc:Choice Requires="u">` +
     `<w:comment w:id="0" w:author="A"><w:p><w:r><w:t>C0</w:t></w:r></w:p></w:comment></mc:Choice>` +
     `<mc:Fallback><w:comment w:id="5" w:author="A"><w:p><w:r><w:t>C5</w:t></w:r></w:p></w:comment></mc:Fallback>` +
-    `</mc:AlternateContent>`;
+    `</mc:AlternateContent></w:comments>`;
 
 /** The minimal package with `document` and `comments` in place, its comments part related and typed. */
 const alternateContentPackage = (document: string, comments: string): Record<string, string> => ({
@@ -331,6 +331,33 @@ describe("comment markers read the effective view (#799)", { timeout: 30000 }, (
             const selected = await validate(file, { profile: "word-valid", checks: ["comment-markers"] });
             expect(selected.valid).toBe(false);
             expect(markerMissingFindings(selected.issues)).toEqual(markerMissingFindings(result.issues));
+
+            // Session 62 (s62a) offered recovery for this shape. Strict reports the missing
+            // comment, both count mismatches and the missing paraId, and no xsd finding: the
+            // comments part keeps its own root.
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.valid).toBe(false);
+            expect(strict.issues.filter((issue) => issue.severity === "error")).toEqual([
+                expect.objectContaining({
+                    code: "comment-marker-missing",
+                    path: "word/document.xml",
+                    message: 'marker id="0" references non-existent comment',
+                }),
+                expect.objectContaining({
+                    code: "comment-thread-count-mismatch",
+                    path: "word/document.xml",
+                    message: "commentRangeStart count (0) does not match comment count in comments.xml (1)",
+                }),
+                expect.objectContaining({
+                    code: "comment-thread-count-mismatch",
+                    path: "word/document.xml",
+                    message: "commentRangeEnd count (0) does not match comment count in comments.xml (1)",
+                }),
+                expect.objectContaining({
+                    code: "paraid-missing-element",
+                    path: "word/comments.xml",
+                }),
+            ]);
         });
     });
 
