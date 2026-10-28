@@ -38,9 +38,10 @@ interface FakeSpec {
     /**
      * The crash-report lookup after the Word process vanishes (#305):
      * "report" — a new Word crash report exists; "none" (default) — none
-     * does (an external kill or quit); "hang" — the lookup never settles.
+     * does (an external kill or quit); a FakeClock — the lookup never
+     * settles while that clock runs past the budget (#1000).
      */
-    crashReport?: "report" | "none" | "hang";
+    crashReport?: "report" | "none" | FakeClock;
 }
 
 const openDoc = (documentName: string, dialogText = "", dialogButtons: string[] = []): WordSnapshot => ({
@@ -55,7 +56,7 @@ class FakeTransport implements WordTransport {
     private readonly spec: { platform: string; available: boolean; version: { version: string; build?: string } | undefined };
     private readonly snapshots: SnapshotScript[];
     private readonly before: WordSnapshot;
-    private readonly crashReport: "report" | "none" | "hang";
+    private readonly crashReport: "report" | "none" | FakeClock;
     private observeCount = 0;
     private opened = false;
 
@@ -106,8 +107,8 @@ class FakeTransport implements WordTransport {
 
     async crashReportedSince(sinceMs: number): Promise<boolean> {
         this.calls.push(`crashReportedSince:${sinceMs}`);
-        if (this.crashReport === "hang") {
-            return new Promise<boolean>(() => undefined);
+        if (this.crashReport instanceof FakeClock) {
+            return neverSettlingPast(this.crashReport);
         }
         return this.crashReport === "report";
     }
@@ -163,6 +164,17 @@ const observingAfterOpen = (transport: WordTransport): WordTransport => {
         },
         observe: (name) => (opened ? transport.observe(name) : Promise.resolve(PENDING)),
     };
+};
+
+/**
+ * A call that never settles while the fake clock runs past the budget. The
+ * advance runs in a microtask, after `callWithinDeadline` has armed its
+ * expiry timer, so the race expires at the same stage whatever the machine's
+ * load; a 20 ms wall-clock budget expired early under load (#1000).
+ */
+const neverSettlingPast = <T>(clock: FakeClock): Promise<T> => {
+    queueMicrotask(() => clock.advance(10_000));
+    return new Promise<T>(() => undefined);
 };
 
 /** Wall-clock-backed fake: `now` advances with real time, `timer` uses real setTimeout. */
@@ -550,11 +562,12 @@ describe("verifyInWord", () => {
     });
 
     it("resolves as timeout when launch never settles", async () => {
+        const clock = new FakeClock();
         const transport: WordTransport = {
             platform: () => "darwin",
             available: async () => true,
             version: async () => undefined,
-            open: () => new Promise<void>(() => undefined),
+            open: () => neverSettlingPast(clock),
             observe: async (name) => ({
                 processAlive: true,
                 documentNames: [name],
@@ -564,22 +577,23 @@ describe("verifyInWord", () => {
             close: async () => undefined,
             crashReportedSince: async () => false,
         };
-        const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 20, pollMs: 5 });
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 20, pollMs: 5 });
         expect(result.outcome).toBe("timeout");
         expect(result.details).toContain("launch did not settle");
     });
 
     it("resolves as timeout when an observation never settles", async () => {
+        const clock = new FakeClock();
         const transport: WordTransport = observingAfterOpen({
             platform: () => "darwin",
             available: async () => true,
             version: async () => undefined,
             open: async () => undefined,
-            observe: () => new Promise<WordSnapshot>(() => undefined),
+            observe: () => neverSettlingPast(clock),
             close: async () => undefined,
             crashReportedSince: async () => false,
         });
-        const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 20, pollMs: 5 });
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 20, pollMs: 5 });
         expect(result.outcome).toBe("timeout");
         expect(result.details).toContain("observation did not settle");
     });
@@ -604,6 +618,7 @@ describe("verifyInWord", () => {
     });
 
     it("abandons a cleanup close that outlives the budget and keeps the outcome", async () => {
+        const clock = new FakeClock();
         const transport: WordTransport = {
             platform: () => "darwin",
             available: async () => true,
@@ -615,10 +630,10 @@ describe("verifyInWord", () => {
                 dialogText: "",
                 dialogButtons: [],
             }),
-            close: () => new Promise<void>(() => undefined),
+            close: () => neverSettlingPast(clock),
             crashReportedSince: async () => false,
         };
-        const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 20, pollMs: 5, observationMs: 0 });
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 20, pollMs: 5, observationMs: 0 });
         expect(result.outcome).toBe("clean-open");
         expect(result.details).toContain("cleanup close exceeded the budget");
     });
@@ -627,9 +642,10 @@ describe("verifyInWord", () => {
     // the budget is kept for the cleanup close, so a launch or observation
     // that uses up its share still leaves the document closed.
     it.each([
-        ["launch never settles", { open: () => new Promise<void>(() => undefined) }],
-        ["an observation never settles", { observe: () => new Promise<WordSnapshot>(() => undefined) }],
+        ["launch never settles", (clock: FakeClock) => ({ open: () => neverSettlingPast<void>(clock) })],
+        ["an observation never settles", (clock: FakeClock) => ({ observe: () => neverSettlingPast<WordSnapshot>(clock) })],
     ] as const)("still attempts the cleanup close when %s", async (_case, hang) => {
+        const clock = new FakeClock();
         const closed: string[] = [];
         const transport: WordTransport = observingAfterOpen({
             platform: () => "darwin",
@@ -641,9 +657,9 @@ describe("verifyInWord", () => {
                 closed.push(name);
             },
             crashReportedSince: async () => false,
-            ...hang,
+            ...hang(clock),
         });
-        const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 40, pollMs: 5 });
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 40, pollMs: 5 });
         expect(result.outcome).toBe("timeout");
         expect(closed).toHaveLength(1);
         expect(closed[0]).toMatch(/^docx-verify-.*\.docx$/);
@@ -725,6 +741,7 @@ describe("verifyInWord: a dialog already showing before the open (#315)", () => 
     });
 
     it("ends as timeout, without opening or closing, when the observation before the open never settles", async () => {
+        const clock = new FakeClock();
         const calls: string[] = [];
         const transport: WordTransport = {
             platform: () => "darwin",
@@ -733,13 +750,13 @@ describe("verifyInWord: a dialog already showing before the open (#315)", () => 
             open: async () => {
                 calls.push("open");
             },
-            observe: () => new Promise<WordSnapshot>(() => undefined),
+            observe: () => neverSettlingPast(clock),
             close: async () => {
                 calls.push("close");
             },
             crashReportedSince: async () => false,
         };
-        const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 20, pollMs: 5 });
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 20, pollMs: 5 });
         expect(result.outcome).toBe("timeout");
         expect(result.details).toContain("before the open");
         expect(calls).toEqual([]);
@@ -794,8 +811,9 @@ describe("verifyInWord: a vanished Word process needs crash evidence (#305)", ()
     });
 
     it("ends as timeout when the crash-report lookup does not settle within the budget", async () => {
-        const transport = new FakeTransport({ crashReport: "hang", snapshots: VANISHED });
-        const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 40, pollMs: 5 });
+        const clock = new FakeClock();
+        const transport = new FakeTransport({ crashReport: clock, snapshots: VANISHED });
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 40, pollMs: 5 });
         expect(result.outcome).toBe("timeout");
         expect(result.details).toContain("the crash-report lookup did not settle");
     });
@@ -980,16 +998,17 @@ describe("verifyInWord: a late-settling open is closed after it settles (#328)",
     });
 
     it("still closes, and says so, when the late open has not settled by the deadline", async () => {
+        const clock = new FakeClock();
         const transport: WordTransport = {
             platform: () => "darwin",
             version: async () => undefined,
             available: async () => true,
-            open: () => new Promise<void>(() => undefined),
+            open: () => neverSettlingPast(clock),
             observe: async () => PENDING,
             close: async () => undefined,
             crashReportedSince: async () => false,
         };
-        const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 40, pollMs: 5 });
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 40, pollMs: 5 });
         expect(result.outcome).toBe("timeout");
         expect(result.details).toContain("the late open had not settled when the cleanup close ran");
     });
