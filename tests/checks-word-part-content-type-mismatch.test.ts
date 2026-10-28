@@ -747,8 +747,9 @@ describe("a story part whose stored root is an AlternateContent (#818, session 6
     );
 
     // The effective view also unwraps an ignorable wrapper that processes
-    // its content, and a selected Fallback, so the effective root alone does
-    // not show session 63's stored shape (#831, #837).
+    // its content, a selected Fallback, and a Choice with no Fallback or
+    // beside a second Choice, so the effective root alone does not show
+    // session 63's stored shape (#831, #837, #843).
     it.each([
         ["an ignorable wrapper", ignorableWrapper(STORIES.comments.root("0"))],
         ["an AlternateContent whose Choice holds an ignorable wrapper", alternateContent(ignorableWrapper(STORIES.comments.root("0")))],
@@ -756,6 +757,19 @@ describe("a story part whose stored root is an AlternateContent (#818, session 6
             "an AlternateContent whose unselected Choice is empty and whose Fallback holds the root",
             `<mc:AlternateContent xmlns:mc="${MC}" xmlns:w="${W}" xmlns:u="urn:example:unknown">` +
                 `<mc:Choice Requires="u"/><mc:Fallback>${STORIES.comments.root("0")}</mc:Fallback>` +
+                `</mc:AlternateContent>`,
+        ],
+        [
+            "an AlternateContent whose Choice holds the root and which has no Fallback",
+            `<mc:AlternateContent xmlns:mc="${MC}" xmlns:w="${W}" xmlns:w14="${W14}">` +
+                `<mc:Choice Requires="w14">${STORIES.comments.root("0")}</mc:Choice>` +
+                `</mc:AlternateContent>`,
+        ],
+        [
+            "an AlternateContent whose two Choices each hold the root",
+            `<mc:AlternateContent xmlns:mc="${MC}" xmlns:w="${W}" xmlns:w14="${W14}">` +
+                `<mc:Choice Requires="w14">${STORIES.comments.root("0")}</mc:Choice>` +
+                `<mc:Choice Requires="w14">${STORIES.comments.root("0")}</mc:Choice><mc:Fallback/>` +
                 `</mc:AlternateContent>`,
         ],
     ])(
