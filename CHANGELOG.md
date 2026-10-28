@@ -6,6 +6,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- Correct `MIGRATION.md`'s markup-compatibility sentence ([#1133](https://github.com/jandira-tech/docx-validate/issues/1133)). Docs only. It said `mce-malformed` and `mce-must-understand` remain Word-blocking, which has been false under word-valid since #1116. It now says both block in the `word/` parts Word may read and warn in a part Word does not read: a `word/` part no relationship names (#1116), or an unused related story part (#1125, #1145). A row in `tests/word-blocking.test.ts` pins the sentence (review 1126, F2).
 - Correct three sentences review 1138 found in #1122's and #1125's docs ([#1146](https://github.com/jandira-tech/docx-validate/issues/1146)). Docs only.
     - The #1122 bullet and `shadingParts`' doc comment called two stored entries whose names OPC equates "two parts". They are two entries in the part list, each read by its own stored name, and `opc-equivalent-part-names` reports the pair as the duplicate OPC forbids (#351).
     - The README's `mce-malformed` and `mce-must-understand` rows, and their `explainWordError` texts, presented the unused-part warning as observed for all five kinds. Session 84 (s84a) showed Word only the unused header. The footer, comments and notes kinds follow the read model and are now marked unprobed.

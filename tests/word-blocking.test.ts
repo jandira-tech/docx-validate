@@ -3,6 +3,8 @@
  * Licensed under the Apache License, Version 2.0.
  */
 
+import { readFile } from "node:fs/promises";
+
 import { describe, expect, it } from "vitest";
 
 import { canonicalPartName } from "../src/lib/content-types";
@@ -729,5 +731,16 @@ describe("unobservedReferenceAttributeValues (#647, #702)", () => {
                 `<c:chart r:id="rId5"/><w:p o:relid="rId6"/></w:body></w:document>`,
         );
         expect([...unobservedReferenceAttributeValues(document)].sort()).toEqual(["rId2", "rId4", "rId5", "rId6"]);
+    });
+});
+
+// #1133: the migration guide stated the pre-#1116 policy outright.
+describe("the migration guide's markup-compatibility sentence (#1133)", () => {
+    it("names the parts where word-valid warns instead of calling both codes blocking everywhere", async () => {
+        const migration = (await readFile(new URL("../MIGRATION.md", import.meta.url), "utf-8")).replace(/\s+/g, " ");
+        expect(migration).not.toContain("`mce-must-understand` remain Word-blocking.");
+        expect(migration).toContain(
+            "`mce-malformed` and `mce-must-understand` remain Word-blocking in the `word/` parts Word may read. Full Word-valid warns in a part Word does not read: a `word/` part no relationship names (#1116), or a header, footer, comments or notes part a story root relates but does not use (#1125, #1145).",
+        );
     });
 });

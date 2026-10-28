@@ -96,10 +96,13 @@ Compatibility processing selects branches on a clone and preserves lax extension
 payloads. Word rules judge the Word view rather than discarded branches. New
 `mce-unbound-prefix` and `mce-invalid-token` findings are warnings in full
 Word-valid and errors in lenient/strict schema processing. `mce-malformed` and
-`mce-must-understand` remain Word-blocking. Loss of a required main root in the
+`mce-must-understand` remain Word-blocking in the `word/` parts Word may read.
+Full Word-valid warns in a part Word does not read: a `word/` part no
+relationship names (#1116), or a header, footer, comments or notes part a story
+root relates but does not use (#1125, #1145). Loss of a required main root in the
 schema view is `mce-main-root-ignored` (error), while an ignored non-main root
 remains `mce-root-ignored` (info). See README for the complete current compatibility
-code table and named Word-rule catalogue.
+code table, including both codes' rows, and named Word-rule catalogue.
 
 Full `.xlsx` validation now returns `unsupported-file-type` without library stderr
 output; the CLI renders it. Unrecognized file suffixes still fail dispatch.
