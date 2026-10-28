@@ -28,7 +28,7 @@
 import { existsSync, promises as fs } from "node:fs";
 import path from "node:path";
 
-import { relationshipTargetFolder } from "../../../lib/content-types";
+import { canonicalPartName, relationshipTargetFolder, relationshipTargetPartName } from "../../../lib/content-types";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
 import { getElementsByTagNameNSAll, parseXmlBytes } from "../../../lib/xml-helpers";
@@ -330,7 +330,9 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
      */
     async validateNotesSlideReferences(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const notesReferences = new Map<string, Array<{ slideName: string; relsFile: string }>>();
+        // Keyed by the canonical name of the part the targets name, and
+        // reported under the first name a slide gave it (#1007).
+        const notesReferences = new Map<string, { partName: string; references: Array<{ slideName: string; relsFile: string }> }>();
 
         const slideRelsDir = path.join(this.unpackedDir, "ppt", "slides", "_rels");
         if (!existsSync(slideRelsDir)) {
@@ -371,30 +373,35 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
                 if (!relType.includes("notesSlide")) continue;
                 const target = rel.getAttribute("Target");
                 if (!target) continue;
-                // A target naming a folder names no part (#962, #975), so it
-                // shares no notes slide with the part its path spells (#991).
-                // The walk lists only `ppt/slides/_rels/*.xml.rels`, so every
-                // target resolves against `ppt/slides`.
-                if (relationshipTargetFolder("ppt/slides", target) !== undefined) continue;
-                const normalizedTarget = target
-                    .split("/")
-                    .filter((p) => p !== ".." && p !== ".")
-                    .join("/");
+                // The target names the part the read model reads: a climb
+                // stops at the package root, a query or fragment is dropped,
+                // `\` reads as `/`, and equivalent spellings of one part share
+                // a key, so two slides sharing one notes slide are found
+                // however each spells it (#1007). A URI or an empty reference
+                // names no part, and a target naming a folder names none
+                // either (#962, #975), so it shares no notes slide with the
+                // part its path spells (#991). The walk lists only
+                // `ppt/slides/_rels/*.xml.rels`, so every target resolves
+                // against `ppt/slides`.
+                const resolved = relationshipTargetPartName("ppt/slides", target);
+                if (resolved === undefined || relationshipTargetFolder("ppt/slides", target) !== undefined) continue;
+                const partName = resolved.replace(/^\//, "");
+                const key = canonicalPartName(partName);
                 // Python: rels_file.stem (foo.xml.rels → foo.xml) then .replace(".xml", "") → foo
                 const baseStem = path.basename(relsFile, ".rels"); // "foo.xml"
                 const slideName = baseStem.replace(/\.xml$/i, "");
-                const bucket = notesReferences.get(normalizedTarget) ?? [];
-                bucket.push({ slideName, relsFile });
-                notesReferences.set(normalizedTarget, bucket);
+                const entry = notesReferences.get(key) ?? { partName, references: [] };
+                entry.references.push({ slideName, relsFile });
+                notesReferences.set(key, entry);
             }
         }
 
-        for (const [target, references] of notesReferences.entries()) {
+        for (const { partName, references } of notesReferences.values()) {
             if (references.length <= 1) continue;
             const slideNames = references.map((r) => r.slideName).join(", ");
             issues.push({
                 severity: "error",
-                message: `Notes slide '${target}' is referenced by multiple slides: ${slideNames}`,
+                message: `Notes slide '${partName}' is referenced by multiple slides: ${slideNames}`,
                 code: "notes-shared",
             });
             for (const ref of references) {
