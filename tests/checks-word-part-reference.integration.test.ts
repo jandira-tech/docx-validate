@@ -801,6 +801,20 @@ describe(`${CODE} (session 52 specimens, Word 16.115)`, { timeout: 240_000 }, ()
         });
     });
 
+    it("says what session 52 observed for an empty r:dm, not one dialog (#752)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "relids-empty-id.docx");
+            writeFileSync(file, await REFUSED_728["relids-empty-id"]!());
+            const result = await validate(file, { profile: "word-valid" });
+            const found = result.issues.filter((issue) => issue.code === CODE);
+            expect(found[0]?.message).toContain("(the id is empty)");
+            // s52b's `relids-empty-id` was an open error; only s52d's
+            // strict01 mutation drew the recovery offer.
+            expect(found[0]?.message).toContain("an open error");
+            expect(found[0]?.message).not.toContain("Microsoft Word offers to recover the file");
+        });
+    });
+
     describe.each(Object.entries(CLEAN_728))("clean guard %s", (name, make) => {
         it("word-valid draws no such finding", async () => {
             await withTempDir(async (dir) => {

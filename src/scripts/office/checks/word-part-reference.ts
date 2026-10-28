@@ -340,7 +340,13 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
                         severity: "error",
                         message:
                             `<dgm:relIds> r:dm="${id.rid}" does not reference an internal diagramData relationship (${why}). ` +
-                            "Microsoft Word offers to recover the file. " +
+                            // Session 52: an open error for the empty r:dm
+                            // on the minimal shape (s52b), the recovery
+                            // offer for it on the strict01 SmartArt (s52d);
+                            // the refused non-empty rows all drew the offer.
+                            (id.rid === ""
+                                ? "Microsoft Word reported an open error on one specimen and offered to recover another. "
+                                : "Microsoft Word offers to recover the file. ") +
                             `Use a Relationship of Type ${ACCEPTED_DIAGRAM_DATA_RELATIONSHIP_TYPES[0]} ` +
                             `(or the ISO Strict ${ACCEPTED_DIAGRAM_DATA_RELATIONSHIP_TYPES[1]}) internal to the package, or point the r:dm at one.`,
                         path: xmlFile,

@@ -114,7 +114,7 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
     "rels-broken":
         "A relationship targets a part that does not exist in the package. Add the missing target part or remove the dangling relationship. (Note: Word tolerates a missing media/ image — it shows a placeholder — but not a missing customXml or required structural part.)",
     "rels-empty-element":
-        "A <Relationship> entry is missing a required attribute (Id, Type, or Target), so the package is malformed. Supply the missing attribute.",
+        "A <Relationship> entry is missing a required attribute (Id, Type, or Target), or a complete one carries body content — this code reports both malformed shapes. The missing-attribute shape is the one Word refuses — annotations_import.docx reports unreadable content; supply the missing attribute. The body-content shape opens clean in Word (EmptyRelationshipElement.docx), so word-valid only warns on it; make the element self-closing.",
     "xml-syntax": "An XML part is not well-formed, so Word reports unreadable content. Fix the XML syntax error in the named part.",
     "xsd-error":
         "An element or attribute is not allowed in this context per the schema, and Word rejects it (not all schema violations block Word — this one does). Correct the offending element/attribute shown in the message.",

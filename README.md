@@ -1257,9 +1257,11 @@ error, and Word-blocking, under word-valid and strict; lenient runs no Word
 rule. In a full word-valid or strict run, a dangling Transitional `r:id` on a
 `c:chart` or an `o:OLEObject` is reported once, through this rule: every
 legacy `rels-id-missing` copy of the same Id on the same element in the same
-part is handed off — including the two copies an element with an
-`mc:Choice` and an `mc:Fallback` twin yields, which the raw-part walk sees
-twice and this rule once (#727) — as the header/footer rule's is
+part is handed off — including the unselected twin's copy of the two an
+element with an `mc:Choice` and an `mc:Fallback` twin yields, which the
+raw-part walk sees twice and this rule once (#727; the key is the same
+element name, namespace and local name, with the same Id in the same
+part, not the element instance) — as the header/footer rule's is
 (#612, #619); lenient keeps the legacy findings alone.
 
 Under word-valid for DOCX/DOCM, `rels-missing-sidecar` blocks only when the
@@ -1367,12 +1369,14 @@ missing `r:id`. The finding is an error under
 strict and Word-blocking under word-valid for DOCX/DOCM; lenient runs no Word
 rule. In a full word-valid or strict run neither `rels-id-mismatch` nor
 `rels-id-missing` repeats an element this check reported — the run drops
-every copy of the same Id on the same element in the same part for a
-non-empty id, including the two copies an element with an `mc:Choice` and an
-`mc:Fallback` twin yields (#727), pairing the findings by the element
-identity both checks register on the issue (part path, namespace URI, local
-name and raw `r:id`; the namespace the `r:id` was read in does not
-distinguish an element from its compatibility twin), never by message text — while `validateAllRelationshipIds()` called on its own
+every copy of the same Id on the same element name (namespace URI and
+local name, not the element instance) in the same part for a non-empty id,
+including the unselected twin's copy of the two copies an element with an
+`mc:Choice` and an `mc:Fallback` twin yields (#727), pairing the findings
+by the element identity both checks register on the
+issue (part path, namespace URI, local name and raw `r:id`; the namespace
+the `r:id` was read in does not distinguish an element name's other
+spelling), never by message text — while `validateAllRelationshipIds()` called on its own
 still reports every `rels-id-mismatch` and `rels-id-missing` (#612, #616,
 #619). Empty/missing-id findings register no such identity, because the
 legacy walk reads only truthy ids and reports neither shape.
