@@ -919,7 +919,10 @@ session 59 the remaining three pairs: the styles reach typed endnotes and
 the numbering reach typed footnotes or endnotes (s59a)
 ([#789](https://github.com/jandira-tech/docx-validate/issues/789)) — all
 48 eager pairs are observed, and every recovery sentence names the session
-that showed its pair; the
+that showed its pair. Sessions 24, 26, 49, 50, 53, 56, 57 and 59 stored
+Transitional packages, so in a package with an ISO Strict part the swaps and
+eager pairs keep their error without the recovery sentence
+([#1016](https://github.com/jandira-tech/docx-validate/issues/1016)); the
 footer co-reach pairs cite sessions 53 and 57, the header co-reach session
 57 (#739, #778), and the comments, endnotes and footnotes pairs typed
 styles session 58 for a directly stored Transitional root, or session 62
@@ -1060,7 +1063,10 @@ STREAM`, `application/octet-stream; charset=utf-8`, `image/png` or
 [#740](https://github.com/jandira-tech/docx-validate/issues/740)). That
 observed reach — the main document and the parts its own relationships part
 relates by `styles`, `settings`, `fontTable` and `numbering` — carries the
-Word recovery sentence and blocks under word-valid; every other segment the
+Word recovery sentence and blocks under word-valid, the sentence dropped in a
+package with an ISO Strict part, as sessions 46 (s46e), 49, 50 and 53 stored
+Transitional packages
+([#1016](https://github.com/jandira-tech/docx-validate/issues/1016)); every other segment the
 check's spec-set walk reaches — a related webSettings or theme part, a
 header, footer, footnotes, endnotes, comments or glossaryDocument part, and
 the parts a reached glossary's own relationships relate, its styles

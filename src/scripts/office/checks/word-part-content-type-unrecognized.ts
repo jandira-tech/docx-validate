@@ -62,6 +62,7 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
+import { citesWordSession } from "../../../lib/conformance-class";
 import {
     canonicalPartName,
     contentTypeMediaType,
@@ -75,6 +76,7 @@ import { wordTypedRelationshipTargets, type WordTypedTarget } from "../../../lib
 import { GENERIC_CONTENT_TYPES, REPORTING_SEGMENT_ORDER } from "./word-part-content-type-generic";
 import { expectedContentTypesFor, wordContentTypeTargets, type WordPartContentTypeFinding } from "./word-part-content-type-inexact";
 import { MAPPED_MEDIA_TYPES } from "./word-part-content-type-mismatch";
+import { xmlPartNames } from "./xml";
 
 export const WORD_PART_CONTENT_TYPE_UNRECOGNIZED = "word-part-content-type-unrecognized";
 
@@ -203,8 +205,16 @@ export const wordPartContentTypeUnrecognizedFindings = async (
         // `isObserved` guarantees the segment is one of RECOVERY_SESSIONS's
         // keys — the observed set is derived from them (#741) — so the
         // citation is defined.
+        // Those sessions stored Transitional packages: a package with a
+        // Strict part keeps the finding without them (#1016).
         const recovery =
-            observed === undefined ? "" : ` Word 16.115 offers to recover the package (${RECOVERY_SESSIONS.get(observed.segment)!}).`;
+            observed === undefined ||
+            !citesWordSession(
+                ctx,
+                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name)),
+            )
+                ? ""
+                : ` Word 16.115 offers to recover the package (${RECOVERY_SESSIONS.get(observed.segment)!}).`;
         findings.push({
             segment,
             segments: [...new Set(entries.map((entry) => entry.segment))],

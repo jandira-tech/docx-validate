@@ -30,6 +30,15 @@ const ID = "word-part-content-type-mismatch";
 const diagnose = async (parts: Record<string, string>) =>
     (await createDefaultCheckRegistry().get(ID)?.run(ValidationContext.fromEntries(parts))) ?? [];
 
+// #1016: sessions 24, 26, 49, 50, 53, 56, 57 and 59 stored Transitional
+// packages, so in a uniformly Strict package, and in a Transitional one with
+// a Strict docProps/app.xml, the swap and eager-pair findings stay without
+// the recovery sentence that cites them.
+const strictVariants = (parts: Record<string, string>): Record<string, string>[] => [
+    uniformlyStrict(parts),
+    { ...parts, "docProps/app.xml": '<Properties xmlns="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"/>' },
+];
+
 describe("story content type mismatch (#600, session 24)", () => {
     it("registers a DOCX content-types check behind xml-syntax", () => {
         expect(createDefaultCheckRegistry().get(ID)).toMatchObject({
@@ -55,6 +64,24 @@ describe("story content type mismatch (#600, session 24)", () => {
         expect(isWordBlockingIssue(found[0]!)).toBe(true);
         expect(await diagnose(storyContentTypeParts(segment, storyContentType(segment), via))).toEqual([]);
     });
+
+    it.each(MISMATCH_STORY_CASES)(
+        "keeps $via $segment declared $declared without its session in a package with a Strict part (#1016)",
+        async ({ segment, via, declared }) => {
+            for (const parts of strictVariants(storyContentTypeParts(segment, declared, via))) {
+                const found = await diagnose(parts);
+                expect(found).toHaveLength(1);
+                expect(found[0]).toMatchObject({
+                    code: ID,
+                    severity: "error",
+                    path: `word/${via === "glossary" ? "glossary/" : ""}${segment}9.xml`,
+                });
+                expect(found[0]?.message).toContain(`the ${via === "glossary" ? "glossary" : "main document"}'s ${segment} relationship`);
+                expect(found[0]?.message).not.toContain("Word 16.115");
+                expect(isWordBlockingIssue(found[0]!)).toBe(true);
+            }
+        },
+    );
 
     it.each(["header", "footer"] as const)("ignores unread %s swaps", async (segment) => {
         expect(await diagnose(storyContentTypeParts(segment, undefined, "main", false))).toEqual([]);
@@ -1078,6 +1105,17 @@ describe("observed eager mismatches (#722, sessions 49 and 50)", () => {
         expect(await diagnose({ ...MINIMAL_PARTS })).toEqual([]);
     });
 
+    it.each(CASES)("keeps $label without its session in a package with a Strict part (#1016)", async ({ parts, path, by }) => {
+        for (const variant of strictVariants(parts)) {
+            const found = await diagnose(variant);
+            expect(found).toHaveLength(1);
+            expect(found[0]).toMatchObject({ code: ID, severity: "error", path });
+            expect(found[0]?.message).toContain(by);
+            expect(found[0]?.message).not.toContain("Word 16.115");
+            expect(isWordBlockingIssue(found[0]!)).toBe(true);
+        }
+    });
+
     it("invalidates the full word-valid run and keeps its control valid", async () => {
         await withTempDir(async (dir) => {
             for (const { label, parts } of CASES) {
@@ -1495,6 +1533,17 @@ describe("per-pair recovery citations (#779)", () => {
         expect(found[0]?.message).toContain(by);
         expect(found[0]?.message).toContain(`Word 16.115 offers to recover the package (${session}).`);
         expect(isWordBlockingIssue(found[0]!)).toBe(true);
+    });
+
+    it.each(CASES)("keeps $label without its session in a package with a Strict part (#1016)", async ({ parts, path, by }) => {
+        for (const variant of strictVariants(parts)) {
+            const found = await diagnose(variant);
+            expect(found).toHaveLength(1);
+            expect(found[0]).toMatchObject({ code: ID, severity: "error", path });
+            expect(found[0]?.message).toContain(by);
+            expect(found[0]?.message).not.toContain("Word 16.115");
+            expect(isWordBlockingIssue(found[0]!)).toBe(true);
+        }
     });
 
     it("invalidates the full word-valid run on the session 57 pairs with exactly one error", async () => {

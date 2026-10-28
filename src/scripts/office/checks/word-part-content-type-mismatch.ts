@@ -52,6 +52,7 @@
  * is DrawingML and its assignment is in clause 14.2.7 instead.
  */
 import type { CheckDefinition } from "../../../lib/check-registry";
+import { citesWordSession } from "../../../lib/conformance-class";
 import {
     asciiLowercase,
     canonicalPartName,
@@ -65,6 +66,7 @@ import type { ValidationContext, XmlPart } from "../../../lib/validation-context
 import { type WordTypedTarget, wordReadTypedTargets } from "../../../lib/word-read-parts";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 import { REPORTING_SEGMENT_ORDER } from "./word-part-content-type-generic";
+import { xmlPartNames } from "./xml";
 import {
     expectedContentTypesFor,
     LAZY_OBSERVED_SEGMENTS,
@@ -425,14 +427,23 @@ export const wordPartContentTypeMismatchFindings = async (
             scope === "spec"
                 ? `, the content type ECMA-376 Part 1 (4th edition), clause ${clauseNumber} assigns the ${partTitle} part`
                 : "";
+        // The swap and eager-pair sessions stored Transitional packages: a
+        // package with a Strict part keeps the finding without them (#1016).
+        const cited = (key: string): string | undefined =>
+            citesWordSession(
+                ctx,
+                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name)),
+            )
+                ? OBSERVED_SESSIONS.get(key)
+                : undefined;
         const session =
             observed === undefined
                 ? undefined
                 : isReadStoryCoreach(observed)
                   ? storyCoreachSession(observed)
                   : swaps.includes(observed)
-                    ? OBSERVED_SESSIONS.get(`${observed.via ?? "main"}\n${observed.segment}`)
-                    : OBSERVED_SESSIONS.get(`${observed.via ?? "main"}\n${observed.segment}\n${segmentForMediaType(mediaType)}`);
+                    ? cited(`${observed.via ?? "main"}\n${observed.segment}`)
+                    : cited(`${observed.via ?? "main"}\n${observed.segment}\n${segmentForMediaType(mediaType)}`);
         const recovery = session === undefined ? "" : ` Word 16.115 offers to recover the package (${session}).`;
         findings.push({
             segment,

@@ -320,7 +320,7 @@ describe("unrecognized observed reach (#721, sessions 46, 49 and 50)", () => {
         };
     };
 
-    it.each([
+    const OBSERVED_ROWS = [
         [
             "main document Override typed application/octet-stream (s49b)",
             mainTyped(OCTET_STREAM),
@@ -395,7 +395,9 @@ describe("unrecognized observed reach (#721, sessions 46, 49 and 50)", () => {
             "word/numbering.xml",
             "sessions 50 and 53",
         ],
-    ] as const)(
+    ] as const;
+
+    it.each(OBSERVED_ROWS)(
         "rejects %s under word-valid",
         async (_label, parts, part, citation) => {
             await withTempDir(async (dir) => {
@@ -410,6 +412,34 @@ describe("unrecognized observed reach (#721, sessions 46, 49 and 50)", () => {
             });
         },
         60_000,
+    );
+
+    // #1016: sessions 46 (s46e), 49, 50 and 53 stored Transitional packages,
+    // so in a uniformly Strict package, and in a Transitional one with a
+    // Strict docProps/app.xml, the finding blocks without the recovery
+    // sentence that cites them.
+    const STRICT_W = "http://purl.oclc.org/ooxml/wordprocessingml/main";
+    const STRICT_R = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+    const strictVariants = (parts: Record<string, string | Uint8Array>): Record<string, string | Uint8Array>[] => [
+        Object.fromEntries(
+            Object.entries(parts).map(([name, value]) => [
+                name,
+                typeof value === "string" && name !== CT ? value.replaceAll(W, STRICT_W).replaceAll(R, STRICT_R) : value,
+            ]),
+        ),
+        { ...parts, "docProps/app.xml": '<Properties xmlns="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"/>' },
+    ];
+    it.each(OBSERVED_ROWS)(
+        "keeps %s blocking without its sessions in a package with a Strict part (#1016)",
+        async (_label, parts, part) => {
+            for (const variant of strictVariants(parts)) {
+                const found = await diagnose(variant);
+                expect(found).toHaveLength(1);
+                expect(found[0]).toMatchObject({ severity: "error", path: part });
+                expect(found[0]?.message).not.toContain("Word 16.115");
+                expect(isWordBlockingIssue(found[0]!, new Set(), new Set(), new Set(), await observedParts(variant))).toBe(true);
+            }
+        },
     );
 
     it("keeps a named run as blocking as the full run on the settings row (#381)", async () => {
