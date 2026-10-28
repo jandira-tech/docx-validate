@@ -152,3 +152,27 @@ describe("validateAllRelationshipIds — a Strict package's r:id (#1065)", () =>
         });
     });
 });
+
+// #1072: only r:id is type-checked; r:embed and r:link feed rels-id-missing
+// alone, so an r:link (outside lenient also a Strict rs:link) naming a header
+// relationship draws no rels-id-mismatch.
+describe("validateAllRelationshipIds — r:link is never type-checked (#1072)", () => {
+    const STRICT_R = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+    it.each([
+        ["r:link", "lenient"],
+        ["r:link", "word-valid"],
+        ["r:link", "strict"],
+        ["rs:link", "word-valid"],
+        ["rs:link", "strict"],
+    ] as const)("a w:hyperlink %s naming a header relationship draws no rels-id-mismatch under %s", async (attribute, profile) => {
+        await withTempDir(async (dir) => {
+            await buildDocx(
+                dir,
+                `<w:p><w:hyperlink xmlns:rs="${STRICT_R}" ${attribute}="rId7"><w:r><w:t>link</w:t></w:r></w:hyperlink></w:p>`,
+                [{ id: "rId7", type: `${RT}/header`, target: "header1.xml" }],
+            );
+            const result = await new DOCXSchemaValidator({ unpackedDir: dir, profile }).validateAllRelationshipIds();
+            expect(result.issues.filter((i) => i.code === "rels-id-mismatch" || i.code === "rels-id-missing")).toEqual([]);
+        });
+    });
+});
