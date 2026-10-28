@@ -49,18 +49,19 @@ export const ctDuplicateDeclarationCheck: CheckDefinition = {
  * Word 16.115.26100424 offers recovery for an empty ContentType on the
  * Override of the main document (session 22 in
  * docs/plans/evidence/word-probes-2026-10-24.md, #581) and of the styles,
- * settings and fontTable parts the main document's own relationships part
- * relates (#720; styles session 49, settings and fontTable session 50,
- * 2026-10-26). Other parts — a reached glossary's included —, Defaults,
- * missing attributes and whitespace-only values are unobserved and stay
- * out. Resolve the effective stream through the shared table, like the
- * generic and inexact checks; the main document and its own relationships
- * name the judged parts.
+ * settings, fontTable and numbering parts the main document's own
+ * relationships part relates (#720, #740; styles session 49, settings and
+ * fontTable session 50, numbering session 53 s53d, 2026-10-26). Other parts
+ * — a reached glossary's included —, Defaults, missing attributes and
+ * whitespace-only values are unobserved and stay out. Resolve the effective
+ * stream through the shared table, like the generic and inexact checks; the
+ * main document and its own relationships name the judged parts.
  */
 const EMPTY_OVERRIDE_SESSIONS: ReadonlyMap<string, number> = new Map([
     ["styles", 49],
     ["settings", 50],
     ["fontTable", 50],
+    ["numbering", 53],
 ]);
 const emptyContentTypeFindings = async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
     const stream = findContentTypesStream(ctx.partNames);

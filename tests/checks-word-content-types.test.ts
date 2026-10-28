@@ -3,7 +3,11 @@
  * Licensed under the Apache License, Version 2.0.
  */
 
+import { writeFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { withTempDir } from "../src/lib/run-cli";
+import { validate } from "../src/scripts/office/validate";
 import { ValidationContext } from "../src/lib/validation-context";
 import { document, CT, MC, R, RS } from "./support/word-rule-test-xml";
 import { wordContentTypeInvalidCheck } from "../src/scripts/office/checks/word-content-types";
@@ -205,8 +209,9 @@ describe("empty main-document Override (#581)", () => {
 
 // Sessions 49 and 50 (2026-10-26): Word 16.115 offered recovery for an empty
 // ContentType on the Override of the styles part the main document relates
-// (s49b) and of a related settings or fontTable part (s50c).
-describe("empty related Override (#720, sessions 49 and 50)", () => {
+// (s49b) and of a related settings or fontTable part (s50c); session 53
+// (s53d) added the related numbering part.
+describe("empty related Override (#720, sessions 49, 50 and 53)", () => {
     const stylesType = "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml";
     const stylesEmptyParts = (): Record<string, string> => ({
         ...MINIMAL_PARTS,
@@ -235,6 +240,13 @@ describe("empty related Override (#720, sessions 49 and 50)", () => {
             segment: "fontTable",
             session: 50,
         },
+        {
+            label: "a related numbering part",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[2], ""),
+            part: "word/numbering.xml",
+            segment: "numbering",
+            session: 53,
+        },
     ])("reports $label exactly once with its session", async ({ parts, part, segment, session }) => {
         expect(await wordContentTypeInvalidCheck.run(ValidationContext.fromEntries(parts))).toEqual([
             {
@@ -246,6 +258,21 @@ describe("empty related Override (#720, sessions 49 and 50)", () => {
         ]);
         expect(await wordContentTypeInvalidCheck.run(ValidationContext.fromEntries({ ...MINIMAL_PARTS }))).toEqual([]);
     });
+
+    it("invalidates the full word-valid run and a named run on the numbering row (#740)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "numbering-empty.docx");
+            writeFileSync(file, await buildDocx(relatedContentTypeParts(RELATED_PART_SPECIMENS[2], "")));
+            const result = await validate(file);
+            expect(result.valid).toBe(false);
+            expect(result.issues.filter((issue) => issue.code === "word-content-type-invalid" && issue.severity === "error")).toHaveLength(
+                1,
+            );
+            const partial = await validate(file, { checks: ["word-content-type-invalid"] });
+            expect(partial.valid).toBe(false);
+            expect(partial.issues.filter((issue) => issue.code === "word-content-type-invalid")).toHaveLength(1);
+        });
+    }, 60_000);
 
     it("keeps the main document's empty Override and the unshown parts as today", async () => {
         const mainType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
@@ -259,15 +286,12 @@ describe("empty related Override (#720, sessions 49 and 50)", () => {
             },
         ]);
         // A reached glossary's styles part is not the main document's own
-        // relationship, and a related numbering part was not shown to Word.
+        // relationship, and a related webSettings part was not shown to Word.
         const glossary = glossaryStylesParts(true);
         glossary["[Content_Types].xml"] = glossary["[Content_Types].xml"]!.replace(
             `<Override PartName="/word/glossary/styles.xml" ContentType="${stylesType}"/>`,
             '<Override PartName="/word/glossary/styles.xml" ContentType=""/>',
         );
         expect(await wordContentTypeInvalidCheck.run(ValidationContext.fromEntries(glossary))).toEqual([]);
-        expect(
-            await wordContentTypeInvalidCheck.run(ValidationContext.fromEntries(relatedContentTypeParts(RELATED_PART_SPECIMENS[2], ""))),
-        ).toEqual([]);
     });
 });
