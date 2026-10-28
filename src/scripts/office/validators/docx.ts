@@ -94,6 +94,7 @@ import {
     collectDeclaredPrefixes,
     containRelationshipTarget,
     packageEntries,
+    packageTargetPath,
     withoutRestatedIgnorablePrefixes,
     XML_NAMESPACE,
 } from "./base";
@@ -3589,19 +3590,15 @@ function resolveRelationshipTargetPath(unpackedDir: string, relsFile: string, ta
     const targetWithoutFragment = target.split("#", 1)[0];
     if (!targetWithoutFragment) return null;
 
-    let resolved: string;
-    if (targetWithoutFragment.startsWith("/")) {
-        resolved = path.resolve(unpackedDir, targetWithoutFragment.replace(/^\/+/, ""));
-    } else {
-        const relsDir = path.dirname(relsFile);
-        // `_RELS` is the `_rels` folder: part names compare case-insensitively
-        // (#346), canonically in fact, so an escaped spelling of the folder
-        // resolves its targets against the source part's folder too (#781).
-        const baseDir = isRelationshipsFolderName(path.basename(relsDir)) ? path.dirname(relsDir) : relsDir;
-        resolved = path.resolve(baseDir, targetWithoutFragment);
-    }
-
-    return containRelationshipTarget(unpackedDir, resolved);
+    const relsDir = path.dirname(relsFile);
+    // `_RELS` is the `_rels` folder: part names compare case-insensitively
+    // (#346), canonically in fact, so an escaped spelling of the folder
+    // resolves its targets against the source part's folder too (#781).
+    const baseDir = isRelationshipsFolderName(path.basename(relsDir)) ? path.dirname(relsDir) : relsDir;
+    // A climb above the package root stops at the root, as RFC 3986 and Word
+    // read it (#984), before any file-system join (CodeRabbit on #985); only
+    // a symbolic link can leave the tree.
+    return containRelationshipTarget(unpackedDir, packageTargetPath(unpackedDir, baseDir, targetWithoutFragment));
 }
 
 function borderSignature(borders: Element | null, namespaceURI: string): BorderSignature | null {

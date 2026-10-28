@@ -3604,9 +3604,43 @@ describe("DOCXSchemaValidator", () => {
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateOrphanedRelationships();
                 expect(result.valid).toBe(false);
+                // The climb stops at the package root, as RFC 3986 and Word
+                // read it (#984), where nothing is stored.
                 expect(
-                    result.issues.some((i) => i.code === "rels-target-missing" && i.message.includes("escapes the unpacked directory")),
+                    result.issues.some(
+                        (i) => i.code === "rels-target-missing" && i.message.includes("resolves to 'etc/passwd' which does not exist"),
+                    ),
                 ).toBe(true);
+            });
+        });
+
+        it("stops a climb at the package root before any file-system join, whatever the unpacked directory is called (CodeRabbit on #985)", async () => {
+            const REL_NS = `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"`;
+            const DRAWING_NS = `xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"`;
+            await withTempDir(async (dir) => {
+                // From word/, `../../pkg/word/media/image1.png` climbs to the
+                // root and names `pkg/word/media/image1.png`, as RFC 3986
+                // resolves it; a file-system join first comes back into the
+                // unpacked directory through its own name and finds the
+                // stored word/media/image1.png instead.
+                const unpacked = path.join(dir, "pkg");
+                await fs.mkdir(path.join(unpacked, "word", "_rels"), { recursive: true });
+                await fs.mkdir(path.join(unpacked, "word", "media"), { recursive: true });
+                await fs.writeFile(path.join(unpacked, "word", "media", "image1.png"), "png", "utf-8");
+                await writeFile(
+                    path.join(unpacked, "word", "document.xml"),
+                    `<?xml version="1.0"?><w:document ${W_NS}><w:body><w:p><w:r><w:drawing><a:blip r:embed="rId1" ${REL_NS} ${DRAWING_NS}/></w:drawing></w:r></w:p></w:body></w:document>`,
+                );
+                await writeFile(
+                    path.join(unpacked, "word", "_rels", "document.xml.rels"),
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../../pkg/word/media/image1.png"/></Relationships>`,
+                );
+
+                const v = new DOCXSchemaValidator({ unpackedDir: unpacked });
+                const result = await v.validateOrphanedRelationships();
+                expect(result.issues.filter((i) => i.code === "rels-target-missing").map((i) => i.message)).toEqual([
+                    "Relationship target '../../pkg/word/media/image1.png' resolves to 'pkg/word/media/image1.png' which does not exist",
+                ]);
             });
         });
 
@@ -3647,8 +3681,17 @@ describe("DOCXSchemaValidator", () => {
                 const result = await v.validate();
                 expect(result.issues.some((i) => i.code === "rels-broken" && i.message.includes("../../../secret.txt"))).toBe(true);
                 expect(result.issues.some((i) => i.code === "rels-broken" && i.message.includes("/../../../secret2.txt"))).toBe(true);
+                // Both climbs stop at the package root (#984), where nothing
+                // is stored.
                 expect(
-                    result.issues.some((i) => i.code === "rels-target-missing" && i.message.includes("escapes the unpacked directory")),
+                    result.issues.some(
+                        (i) => i.code === "rels-target-missing" && i.message.includes("resolves to 'secret.txt' which does not exist"),
+                    ),
+                ).toBe(true);
+                expect(
+                    result.issues.some(
+                        (i) => i.code === "rels-target-missing" && i.message.includes("resolves to 'secret2.txt' which does not exist"),
+                    ),
                 ).toBe(true);
             });
         });

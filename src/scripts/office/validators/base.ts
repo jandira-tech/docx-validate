@@ -416,6 +416,33 @@ export function containRelationshipTarget(unpackedDir: string, resolvedPath: str
     return target;
 }
 
+/**
+ * The path, inside `unpackedDir`, of the part a relationship target names:
+ * the target's dot segments resolve against `baseDir`, the source part's
+ * folder inside `unpackedDir` (unused for a package-absolute target, which
+ * resolves from the root), as part-name segments, a climb above the package
+ * root stopping at the root, as RFC 3986's dot-segment removal stops it and
+ * Word reads it: a stored root customXml item, styles part, header and notes
+ * part, each named by `../../<name>` or `/../<name>` (sessions 54 and 74 to
+ * 76, #984). The segments resolve before any file-system join, so a climb
+ * cannot come back into the tree through the unpacked directory's own name
+ * (CodeRabbit on #985). The path is lexical: {@link containRelationshipTarget}
+ * still decides whether a symbolic link takes it outside the tree.
+ */
+export function packageTargetPath(unpackedDir: string, baseDir: string, target: string): string {
+    const root = path.resolve(unpackedDir);
+    const absolute = target.startsWith("/");
+    const folder = absolute
+        ? []
+        : path
+              .relative(root, path.resolve(baseDir))
+              .split(path.sep)
+              .filter((segment) => segment !== "");
+    const segments = path.posix.normalize([...folder, absolute ? target.replace(/^\/+/, "") : target].join("/")).split("/");
+    const climb = segments.findIndex((segment) => segment !== "..");
+    return path.join(root, ...(climb === -1 ? [] : segments.slice(climb)));
+}
+
 interface IdHit {
     file: string;
     tag: string;
@@ -1036,25 +1063,24 @@ export class BaseSchemaValidator {
                     continue;
                 }
 
-                let targetPath: string;
-                if (target.startsWith("/")) {
-                    targetPath = path.join(this.unpackedDir, target.replace(/^\/+/, ""));
-                } else if (path.basename(relsPath) === ".rels") {
-                    targetPath = path.join(this.unpackedDir, target);
-                } else {
-                    targetPath = path.join(path.dirname(relsDir), target);
-                }
+                // RFC 3986 dot-segment removal keeps a `..` above the
+                // package root at the root, where Word reads the target: a
+                // stored part there is the one it names, and an absent one is
+                // broken under that name (sessions 54 and 74 to 76, #984).
+                // Only a symbolic link can leave the tree.
+                let targetPath = packageTargetPath(
+                    this.unpackedDir,
+                    path.basename(relsPath) === ".rels" ? this.unpackedDir : path.dirname(relsDir),
+                    target,
+                );
 
                 try {
-                    targetPath = path.resolve(targetPath);
-                    if (containRelationshipTarget(this.unpackedDir, targetPath) === null) {
-                        // RFC 3986 dot-segment removal keeps a `..` above the
-                        // package root at the root: Word read
-                        // `../../customXml/item1.xml` from the main document's
-                        // sidecar as `customXml/item1.xml` (session 54).
-                        broken.push({ target, part: this.entryName(targetPath).replace(/^(?:\.\.\/)+/, "") });
+                    const contained = containRelationshipTarget(this.unpackedDir, targetPath);
+                    if (contained === null) {
+                        broken.push({ target, part: this.entryName(targetPath) });
                         continue;
                     }
+                    targetPath = contained;
                     // Resolve against stored part names, as the main-part lookup
                     // does. Filesystem existence and target spelling cannot decide
                     // OPC equivalence (ASCII case and unreserved escapes, #393).

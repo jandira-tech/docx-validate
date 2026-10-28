@@ -26257,3 +26257,834 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
 `````
 
 </details>
+
+### Session 75: 23:17Z–23:17Z on 2026-10-27, validator columns at a7249d62
+
+Does Word stop an escaping target's climb at the package root for parts other than notes? Sessions 63, 64 and 74 showed it for footnotes and endnotes targets, which the note checks read since #830 and #947, while the file-reference walks still called such a target broken and the part it reaches unreferenced. One chunk: s75a stores session 71's caps styles part and its used header at the package root and names them by `../../<name>`, `/../<name>` and the in-package `../<name>`, beside each one's plain calibration and an escaping styles target whose part sits only in `word/`. It ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 10 of 10 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`a7249d62a2f8a99508e26a8f717b982b476f8b78`).
+
+The driver opens files in name order, so the minimal controls opened 4th and 5th, between the header rows and the styles rows. Every row opened clean, and its PDF shows what Word read (`pdftotext`, both runs):
+
+- **Styles.** `HELLO` for the caps styles part at `/styles.xml` named by `../../styles.xml` and by `/../styles.xml`, as for the in-package `../styles.xml` and the plain calibration: Word applied the part the climb stops at.
+- **Header.** `Head Hello` for the used header at `/header1.xml` named by `../../header1.xml`, as for its calibrations.
+- **No fallback.** `Hello` for the caps styles part only in `word/styles.xml` named by `../../styles.xml`: the climb names the absent `/styles.xml`, and Word applied none of the source folder's part.
+
+Word-valid at a7249d62 accepts every row, matching Word on 10 of 10, but strict reports `rels-broken`, `rels-unreferenced` and `rels-target-missing` for each escaping row, calling a part Word read broken and unreferenced ([#984](https://github.com/jandira-tech/docx-validate/issues/984)).
+
+| Run    | Observed             | Specimen                                    | Shape                                                                                                                  | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome    | word-valid at a7249d62 | strict at a7249d62                                                                           |
+| ------ | -------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------ | ----------- | ----------- | ---------- | ---------------------- | -------------------------------------------------------------------------------------------- |
+| `s75a` | 23:17:24Z, 23:17:35Z | `s75a-control-minimal`                      | control                                                                                                                | `ed0dc6b5b96ced7a` | clean-open  | clean-open  | clean-open | valid                  | valid                                                                                        |
+| `s75a` | 23:17:24Z, 23:17:35Z | `styles-caps-calibration`                   | calibration: the caps styles part at word/styles.xml, named by styles.xml (Word applied it if the PDF reads HELLO)     | `383224d18ec2de6f` | clean-open  | clean-open  | clean-open | valid                  | valid                                                                                        |
+| `s75a` | 23:17:24Z, 23:17:35Z | `styles-caps-at-root-one-level-calibration` | calibration: the caps styles part at /styles.xml, named by the in-package ../styles.xml                                | `81161b26965c6593` | clean-open  | clean-open  | clean-open | valid                  | valid                                                                                        |
+| `s75a` | 23:17:24Z, 23:17:35Z | `styles-caps-at-root-escaping-two`          | the caps styles part at /styles.xml, named by ../../styles.xml (stopped at the root: /styles.xml)                      | `f1d9b812102abc82` | clean-open  | clean-open  | clean-open | valid                  | invalid: `rels-broken`, `rels-unreferenced`, `rels-target-missing`                           |
+| `s75a` | 23:17:24Z, 23:17:35Z | `styles-caps-at-root-absolute-climb`        | the caps styles part at /styles.xml, named by /../styles.xml (stopped at the root: /styles.xml)                        | `08aec8d8ffac1886` | clean-open  | clean-open  | clean-open | valid                  | invalid: `rels-broken`, `rels-unreferenced`, `rels-target-missing`                           |
+| `s75a` | 23:17:24Z, 23:17:35Z | `styles-caps-in-word-escaping-two`          | the caps styles part only at word/styles.xml, named by ../../styles.xml (stopped at the root: /styles.xml, not stored) | `238f50b373b12fa7` | clean-open  | clean-open  | clean-open | valid                  | invalid: `rels-broken`, `rels-unreferenced`, `rels-target-missing`                           |
+| `s75a` | 23:17:24Z, 23:17:35Z | `header-calibration`                        | calibration: a used default header at word/header1.xml holding Head, named by header1.xml                              | `dd9219cb75fce501` | clean-open  | clean-open  | clean-open | valid                  | invalid: `paraid-missing-element`                                                            |
+| `s75a` | 23:17:24Z, 23:17:35Z | `header-at-root-one-level-calibration`      | calibration: the used header at /header1.xml, named by the in-package ../header1.xml                                   | `94274161726be268` | clean-open  | clean-open  | clean-open | valid                  | invalid: `paraid-missing-element`                                                            |
+| `s75a` | 23:17:24Z, 23:17:35Z | `header-at-root-escaping-two`               | the used header at /header1.xml, named by ../../header1.xml (stopped at the root: /header1.xml)                        | `e2c77b892c1a32cd` | clean-open  | clean-open  | clean-open | valid                  | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing` |
+| `s75a` | 23:17:24Z, 23:17:35Z | `s75a-control-minimal-end`                  | control                                                                                                                | `ed0dc6b5b96ced7a` | clean-open  | clean-open  | clean-open | valid                  | valid                                                                                        |
+
+<details><summary>Raw records, session 75</summary>
+
+```jsonl
+{"run": "s75a", "pass": 1, "name": "s75a-control-minimal", "sha256": "ed0dc6b5b96ced7ac3627d2ecc5e0acfe3cec09bf1964541f698d331f9c8f8d6", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:24+00:00", "staged": "00004__wfv__s75a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s75a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 2, "name": "s75a-control-minimal", "sha256": "ed0dc6b5b96ced7ac3627d2ecc5e0acfe3cec09bf1964541f698d331f9c8f8d6", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:35+00:00", "staged": "00004__wfv__s75a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s75a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 1, "name": "styles-caps-calibration", "sha256": "383224d18ec2de6f176104cdb3227254acd0a877ca271cc6be48c43dbae2f2b2", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:24+00:00", "staged": "00008__wfv__styles-caps-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-caps-calibration_byword.pdf (12657 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 2, "name": "styles-caps-calibration", "sha256": "383224d18ec2de6f176104cdb3227254acd0a877ca271cc6be48c43dbae2f2b2", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:35+00:00", "staged": "00008__wfv__styles-caps-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-caps-calibration_byword.pdf (12657 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 1, "name": "styles-caps-at-root-one-level-calibration", "sha256": "81161b26965c6593af6430fd89b9ec26c194ae3106f3f585170623d3ace40598", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:24+00:00", "staged": "00007__wfv__styles-caps-at-root-one-level-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-caps-at-root-one-level-calibration_byword.pdf (12657 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 2, "name": "styles-caps-at-root-one-level-calibration", "sha256": "81161b26965c6593af6430fd89b9ec26c194ae3106f3f585170623d3ace40598", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:35+00:00", "staged": "00007__wfv__styles-caps-at-root-one-level-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-caps-at-root-one-level-calibration_byword.pdf (12657 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 1, "name": "styles-caps-at-root-escaping-two", "sha256": "f1d9b812102abc82184d107b519b23e9a953da6cd0e9dec87fbb6b23310299b2", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:24+00:00", "staged": "00006__wfv__styles-caps-at-root-escaping-two.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-caps-at-root-escaping-two_byword.pdf (12657 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 2, "name": "styles-caps-at-root-escaping-two", "sha256": "f1d9b812102abc82184d107b519b23e9a953da6cd0e9dec87fbb6b23310299b2", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:35+00:00", "staged": "00006__wfv__styles-caps-at-root-escaping-two.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-caps-at-root-escaping-two_byword.pdf (12657 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 1, "name": "styles-caps-at-root-absolute-climb", "sha256": "08aec8d8ffac1886a2139108e3fa165ffa424a9d9f87b39d16934680fb5277d6", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:24+00:00", "staged": "00005__wfv__styles-caps-at-root-absolute-climb.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-caps-at-root-absolute-climb_byword.pdf (12657 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 2, "name": "styles-caps-at-root-absolute-climb", "sha256": "08aec8d8ffac1886a2139108e3fa165ffa424a9d9f87b39d16934680fb5277d6", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:35+00:00", "staged": "00005__wfv__styles-caps-at-root-absolute-climb.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-caps-at-root-absolute-climb_byword.pdf (12657 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 1, "name": "styles-caps-in-word-escaping-two", "sha256": "238f50b373b12fa732ba7949bf96d81f6feacf79c8e8e905aee4154f0df8f16d", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:24+00:00", "staged": "00009__wfv__styles-caps-in-word-escaping-two.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-caps-in-word-escaping-two_byword.pdf (8282 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 2, "name": "styles-caps-in-word-escaping-two", "sha256": "238f50b373b12fa732ba7949bf96d81f6feacf79c8e8e905aee4154f0df8f16d", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:35+00:00", "staged": "00009__wfv__styles-caps-in-word-escaping-two.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-caps-in-word-escaping-two_byword.pdf (8282 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 1, "name": "header-calibration", "sha256": "dd9219cb75fce501fd0cfb79d15c3bc27a8fe4879def2b0ff76f7f8f86874744", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:24+00:00", "staged": "00002__wfv__header-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-calibration_byword.pdf (14865 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 2, "name": "header-calibration", "sha256": "dd9219cb75fce501fd0cfb79d15c3bc27a8fe4879def2b0ff76f7f8f86874744", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:35+00:00", "staged": "00002__wfv__header-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-calibration_byword.pdf (14865 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 1, "name": "header-at-root-one-level-calibration", "sha256": "94274161726be268a808a8dc30c400b04aa5d21d167a80ae9ccf893eaa7ee24e", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:24+00:00", "staged": "00001__wfv__header-at-root-one-level-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-at-root-one-level-calibration_byword.pdf (14865 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 2, "name": "header-at-root-one-level-calibration", "sha256": "94274161726be268a808a8dc30c400b04aa5d21d167a80ae9ccf893eaa7ee24e", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:35+00:00", "staged": "00001__wfv__header-at-root-one-level-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-at-root-one-level-calibration_byword.pdf (14865 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 1, "name": "header-at-root-escaping-two", "sha256": "e2c77b892c1a32cd1eab555dea601ef0a5b27182ddc08788b66b1111b7f023f9", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:24+00:00", "staged": "00000__wfv__header-at-root-escaping-two.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-at-root-escaping-two_byword.pdf (14865 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 2, "name": "header-at-root-escaping-two", "sha256": "e2c77b892c1a32cd1eab555dea601ef0a5b27182ddc08788b66b1111b7f023f9", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:35+00:00", "staged": "00000__wfv__header-at-root-escaping-two.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-at-root-escaping-two_byword.pdf (14865 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 1, "name": "s75a-control-minimal-end", "sha256": "ed0dc6b5b96ced7ac3627d2ecc5e0acfe3cec09bf1964541f698d331f9c8f8d6", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:24+00:00", "staged": "00003__wfv__s75a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s75a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s75a", "pass": 2, "name": "s75a-control-minimal-end", "sha256": "ed0dc6b5b96ced7ac3627d2ecc5e0acfe3cec09bf1964541f698d331f9c8f8d6", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:17:35+00:00", "staged": "00003__wfv__s75a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s75a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 75 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s75builder.mts`:
+
+```ts
+// Session 75 (2026-10-27): does Word stop an escaping target's climb at the package root for parts other than notes?
+// Sessions 63, 64 and 74 showed it for footnotes and endnotes targets (`../../footnotes.xml`, `/../footnotes.xml`),
+// which the note checks read since #830 and #947. The file-reference walks (rels-broken, rels-target-missing,
+// rels-unreferenced) still resolve a file-system path and drop an escaping target, so strict calls such a target broken
+// and the part it reaches unreferenced, beside a note check that reads that part. s75a stores session 71's caps styles
+// part and its used header at the package root and names them by `../../<name>`, `/../<name>` and the in-package
+// `../<name>`, beside each one's plain calibration and an escaping styles target whose part sits only in word/.
+// Every row records the validator revision it was judged at (`validatorRevision`); the verdict helper is s67builder.mts's,
+// the styles and header helpers s73builder.mts's, generalised to a stored location.
+// The builder empties the chunk's specimens.jsonl once before its row loop (promised on #825).
+// Run from a worktree root: CHUNK=s75a pnpm exec node --import tsx <this file>
+// (the imports are absolute, so the file needs no copy into the worktree; `git rev-parse` reads the cwd's worktree).
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const WT = process.cwd();
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const { MINIMAL_PARTS, buildDocx } = await import(path.join(WT, "tests/support/minimal-docx.ts"));
+const REVISION = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+
+const STYLES = `${WML}.styles+xml`;
+const HEADER = `${WML}.header+xml`;
+const CAPS_STYLES = replaceOnce(
+    P["word/styles.xml"]!,
+    "<w:rPrDefault><w:rPr/></w:rPrDefault>",
+    "<w:rPrDefault><w:rPr><w:caps/></w:rPr></w:rPrDefault>",
+);
+/** The minimal parts with the caps styles part stored at `stored` (its Override moved there) and named by `target`. */
+const capsStylesStoredAt = (stored: string, target: string): Record<string, string> => {
+    const parts: Record<string, string> = { ...P, [SIDECAR]: replaceOnce(P[SIDECAR]!, 'Target="styles.xml"', `Target="${target}"`) };
+    delete parts["word/styles.xml"];
+    parts[stored] = CAPS_STYLES;
+    parts[CT] = replaceOnce(
+        P[CT]!,
+        `<Override PartName="/word/styles.xml" ContentType="${STYLES}"/>`,
+        `<Override PartName="/${stored}" ContentType="${STYLES}"/>`,
+    );
+    return parts;
+};
+/** The minimal parts with a default header holding "Head" stored at `stored`, referenced from the section and named by `target`. */
+const headerStoredAt = (stored: string, target: string): Record<string, string> => ({
+    ...P,
+    [MAIN]: replaceOnce(
+        replaceOnce(P[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`),
+        "<w:sectPr>",
+        '<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>',
+    ),
+    [stored]: `${XML_DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Head</w:t></w:r></w:p></w:hdr>`,
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", target)),
+    [CT]: overrides(P[CT]!, [stored, HEADER]),
+});
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const control = () => buildDocx({ ...P });
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+
+const chunks: Record<string, Row[]> = {
+    s75a: withControls("s75a", [
+        [
+            "styles-caps-calibration",
+            "calibration: the caps styles part at word/styles.xml, named by styles.xml (Word applied it if the PDF reads HELLO)",
+            () => buildDocx(capsStylesStoredAt("word/styles.xml", "styles.xml")),
+        ],
+        [
+            "styles-caps-at-root-one-level-calibration",
+            "calibration: the caps styles part at /styles.xml, named by the in-package ../styles.xml",
+            () => buildDocx(capsStylesStoredAt("styles.xml", "../styles.xml")),
+        ],
+        [
+            "styles-caps-at-root-escaping-two",
+            "the caps styles part at /styles.xml, named by ../../styles.xml (stopped at the root: /styles.xml)",
+            () => buildDocx(capsStylesStoredAt("styles.xml", "../../styles.xml")),
+        ],
+        [
+            "styles-caps-at-root-absolute-climb",
+            "the caps styles part at /styles.xml, named by /../styles.xml (stopped at the root: /styles.xml)",
+            () => buildDocx(capsStylesStoredAt("styles.xml", "/../styles.xml")),
+        ],
+        [
+            "styles-caps-in-word-escaping-two",
+            "the caps styles part only at word/styles.xml, named by ../../styles.xml (stopped at the root: /styles.xml, not stored)",
+            () => buildDocx(capsStylesStoredAt("word/styles.xml", "../../styles.xml")),
+        ],
+        [
+            "header-calibration",
+            "calibration: a used default header at word/header1.xml holding Head, named by header1.xml",
+            () => buildDocx(headerStoredAt("word/header1.xml", "header1.xml")),
+        ],
+        [
+            "header-at-root-one-level-calibration",
+            "calibration: the used header at /header1.xml, named by the in-package ../header1.xml",
+            () => buildDocx(headerStoredAt("header1.xml", "../header1.xml")),
+        ],
+        [
+            "header-at-root-escaping-two",
+            "the used header at /header1.xml, named by ../../header1.xml (stopped at the root: /header1.xml)",
+            () => buildDocx(headerStoredAt("header1.xml", "../../header1.xml")),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+    }
+};
+
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-75 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s75a",)
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0], "unknown") if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
+                     # A match needs agreed readings: an unknown row matches nothing (CodeRabbit on #985).
+                     "validatorMatchesWord": agreed and ((all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True))})
+(ROOT / "s75/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-75 parts of docs/plans/evidence/word-probes-2026-10-24.md into s75/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796). The text Word rendered is read from its own
+PDFs with pdftotext, so the narrative's "rendered" claims are checked here.
+"""
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s75a",)
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s75/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+def rendered(run, file):
+    pdf = run / "pdf" / (Path(file).stem + "_byword.pdf")
+    return " ".join(subprocess.run(["pdftotext", str(pdf), "-"], check=True, capture_output=True, text=True).stdout.split())
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                                   "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                                   "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+
+REFUSED: set[str] = set()
+# The narrative's claims about outcomes, checked against results.json: Word opened every row clean and word-valid, at
+# the revision before #984, accepted each one.
+for (label, file), r in results.items():
+    assert r["outcome"] == "clean-open" and r["validatorMatchesWord"], (file, r)
+assert agreed == len(rows) == 10, (agreed, len(rows))
+# Where each run opened each row, from the driver's manifests (in open order, #671). The driver opens in name order, so
+# the controls opened 4th and 5th, between the header rows and the styles rows.
+ORDER = {
+    "s75a": ["header-at-root-escaping-two.docx", "header-at-root-one-level-calibration.docx", "header-calibration.docx",
+             "s75a-control-minimal-end.docx", "s75a-control-minimal.docx", "styles-caps-at-root-absolute-climb.docx",
+             "styles-caps-at-root-escaping-two.docx", "styles-caps-at-root-one-level-calibration.docx",
+             "styles-caps-calibration.docx", "styles-caps-in-word-escaping-two.docx"],
+}
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        opened = [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()]
+        assert opened == ORDER[label], (run, opened)
+# The text Word rendered in each row, both runs: `HELLO` when Word applied the caps styles part the target names,
+# `Head Hello` when it rendered the header, and `Hello` for the controls and for the climb whose stopped part is absent.
+EXPECTED = {
+    "header-at-root-escaping-two.docx": "Head Hello", "header-at-root-one-level-calibration.docx": "Head Hello",
+    "header-calibration.docx": "Head Hello", "styles-caps-at-root-absolute-climb.docx": "HELLO",
+    "styles-caps-at-root-escaping-two.docx": "HELLO", "styles-caps-at-root-one-level-calibration.docx": "HELLO",
+    "styles-caps-calibration.docx": "HELLO", "styles-caps-in-word-escaping-two.docx": "Hello",
+}
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for file in ORDER[label]:
+            text = rendered(run, file)
+            assert text == EXPECTED.get(file, "Hello"), (run, file, text)
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}", (min(starts), max(ends))
+matches = sum(r["validatorMatchesWord"] for r in results.values())
+out = [
+    f"### Session 75: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {at}",
+    "",
+    "Does Word stop an escaping target's climb at the package root for parts other than notes? Sessions 63, 64 and 74 "
+    "showed it for footnotes and endnotes targets, which the note checks read since #830 and #947, while the "
+    "file-reference walks still called such a target broken and the part it reaches unreferenced. One chunk: s75a "
+    "stores session 71's caps styles part and its used header at the package root and names them by `../../<name>`, "
+    "`/../<name>` and the in-package `../<name>`, beside each one's plain calibration and an escaping styles target "
+    "whose part sits only in `word/`. It ran twice, as two separate driver runs of byte-identical copies, and each run's "
+    "rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is "
+    f"the manifest spelling when both runs and both readings agree, and `unknown` otherwise; {agreed} of {len(rows)} rows "
+    "agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of "
+    f"the specimen. The builder recorded the validator revision in every row (`{rev}`).",
+    "",
+    "The driver opens files in name order, so the minimal controls opened 4th and 5th, between the header rows and the "
+    "styles rows. Every row opened clean, and its PDF shows what Word read (`pdftotext`, both runs):",
+    "",
+    "- **Styles.** `HELLO` for the caps styles part at `/styles.xml` named by `../../styles.xml` and by "
+    "`/../styles.xml`, as for the in-package `../styles.xml` and the plain calibration: Word applied the part the climb "
+    "stops at.",
+    "- **Header.** `Head Hello` for the used header at `/header1.xml` named by `../../header1.xml`, as for its "
+    "calibrations.",
+    "- **No fallback.** `Hello` for the caps styles part only in `word/styles.xml` named by `../../styles.xml`: the "
+    "climb names the absent `/styles.xml`, and Word applied none of the source folder's part.",
+    "",
+    f"Word-valid at {at} accepts every row, matching Word on {matches} of {len(rows)}, but strict reports `rels-broken`, "
+    "`rels-unreferenced` and `rels-target-missing` for each escaping row, calling a part Word read broken and "
+    "unreferenced ([#984](https://github.com/jandira-tech/docx-validate/issues/984)).",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 75</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 75 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s75builder.mts", ROOT / "s75builder.mts", "ts"), ("compare.py", ROOT / "s75/compare.py", "python"),
+                         ("section.py", ROOT / "s75/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s75/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>
+
+### Session 76: 23:19Z–23:19Z on 2026-10-27, validator columns at a7249d62
+
+An existing package-root customXml part named by an escaping target. Session 54 refused an absent root `customXml/item1.xml` spelled `../../customXml/item1.xml`, and a broken customXml reference outside `word/` blocks word-valid (#734). `validateFileReferences` pushed every escaping target as broken, registered with the part the climb reaches, so word-valid also rejected a stored one. One chunk: s76a names a stored root customXml item, with its itemProps, from the main document's sidecar by the in-package `../customXml/item1.xml` and `/customXml/item1.xml` (calibrations) and by the escaping `../../customXml/item1.xml`, `../../../customXml/item1.xml` and `/../customXml/item1.xml`. It ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 7 of 7 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`a7249d62a2f8a99508e26a8f717b982b476f8b78`).
+
+The driver opens files in name order, so the minimal controls opened last. Every row opened clean, and every PDF holds `Hello` (`pdftotext`, both runs).
+
+- **Escaping customXml targets open clean.** `../../customXml/item1.xml`, `../../../customXml/item1.xml` and `/../customXml/item1.xml` with the item stored at the root open as cleanly as the in-package calibrations: the climb stops at the root, where the part is stored.
+
+Word-valid at a7249d62 rejects the three escaping rows with `rels-broken`, matching Word on only 4 of 7 rows: false rejections, fixed by [#984](https://github.com/jandira-tech/docx-validate/issues/984).
+
+| Run    | Observed             | Specimen                          | Shape                                                                                      | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome    | word-valid at a7249d62 | strict at a7249d62                                                 |
+| ------ | -------------------- | --------------------------------- | ------------------------------------------------------------------------------------------ | ------------------ | ----------- | ----------- | ---------- | ---------------------- | ------------------------------------------------------------------ |
+| `s76a` | 23:19:01Z, 23:19:12Z | `s76a-control-minimal`            | control                                                                                    | `eae12c7f631112a0` | clean-open  | clean-open  | clean-open | valid                  | valid                                                              |
+| `s76a` | 23:19:01Z, 23:19:12Z | `customxml-one-level-calibration` | calibration: a stored root customXml/item1.xml named from word/ by ../customXml/item1.xml  | `9e27dae80ff68712` | clean-open  | clean-open  | clean-open | valid                  | valid                                                              |
+| `s76a` | 23:19:01Z, 23:19:12Z | `customxml-absolute-calibration`  | calibration: the same, named by the package-absolute /customXml/item1.xml                  | `c795f83d1f15304b` | clean-open  | clean-open  | clean-open | valid                  | valid                                                              |
+| `s76a` | 23:19:01Z, 23:19:12Z | `customxml-escaping-two`          | the same, named by ../../customXml/item1.xml (stopped at the root: customXml/item1.xml)    | `a2e59effb699b2c2` | clean-open  | clean-open  | clean-open | invalid: `rels-broken` | invalid: `rels-broken`, `rels-unreferenced`, `rels-target-missing` |
+| `s76a` | 23:19:01Z, 23:19:12Z | `customxml-escaping-three`        | the same, named by ../../../customXml/item1.xml (stopped at the root: customXml/item1.xml) | `5c97492727b67606` | clean-open  | clean-open  | clean-open | invalid: `rels-broken` | invalid: `rels-broken`, `rels-unreferenced`, `rels-target-missing` |
+| `s76a` | 23:19:01Z, 23:19:12Z | `customxml-absolute-climb`        | the same, named by /../customXml/item1.xml (stopped at the root: customXml/item1.xml)      | `a96a44ff64cd2e40` | clean-open  | clean-open  | clean-open | invalid: `rels-broken` | invalid: `rels-broken`, `rels-unreferenced`, `rels-target-missing` |
+| `s76a` | 23:19:01Z, 23:19:12Z | `s76a-control-minimal-end`        | control                                                                                    | `752d2bf1aa4cc858` | clean-open  | clean-open  | clean-open | valid                  | valid                                                              |
+
+<details><summary>Raw records, session 76</summary>
+
+```jsonl
+{"run": "s76a", "pass": 1, "name": "s76a-control-minimal", "sha256": "eae12c7f631112a0a5be4b54e3be15e548e07f83e165092097c6fa6e75f41e20", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:19:01+00:00", "staged": "00006__wfv__s76a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s76a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s76a", "pass": 2, "name": "s76a-control-minimal", "sha256": "eae12c7f631112a0a5be4b54e3be15e548e07f83e165092097c6fa6e75f41e20", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:19:12+00:00", "staged": "00006__wfv__s76a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s76a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s76a", "pass": 1, "name": "customxml-one-level-calibration", "sha256": "9e27dae80ff68712b9a3f0fd83915773332709a0f4e83914b068e2c3b9e72ec6", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:19:01+00:00", "staged": "00004__wfv__customxml-one-level-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customxml-one-level-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s76a", "pass": 2, "name": "customxml-one-level-calibration", "sha256": "9e27dae80ff68712b9a3f0fd83915773332709a0f4e83914b068e2c3b9e72ec6", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:19:12+00:00", "staged": "00004__wfv__customxml-one-level-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customxml-one-level-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s76a", "pass": 1, "name": "customxml-absolute-calibration", "sha256": "c795f83d1f15304b6716cad5b4d584e18b0ed3aeca640b76248f3087acd4bb0b", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:19:01+00:00", "staged": "00000__wfv__customxml-absolute-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customxml-absolute-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s76a", "pass": 2, "name": "customxml-absolute-calibration", "sha256": "c795f83d1f15304b6716cad5b4d584e18b0ed3aeca640b76248f3087acd4bb0b", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:19:12+00:00", "staged": "00000__wfv__customxml-absolute-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customxml-absolute-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s76a", "pass": 1, "name": "customxml-escaping-two", "sha256": "a2e59effb699b2c26a50da61ebed19f0c68ec1e0c45eaab5ca58e02fcb3f3a33", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:19:01+00:00", "staged": "00003__wfv__customxml-escaping-two.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customxml-escaping-two_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s76a", "pass": 2, "name": "customxml-escaping-two", "sha256": "a2e59effb699b2c26a50da61ebed19f0c68ec1e0c45eaab5ca58e02fcb3f3a33", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:19:12+00:00", "staged": "00003__wfv__customxml-escaping-two.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customxml-escaping-two_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s76a", "pass": 1, "name": "customxml-escaping-three", "sha256": "5c97492727b6760620bccf573bd91e43217fa399736f4c97c728869fa5a979ea", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:19:01+00:00", "staged": "00002__wfv__customxml-escaping-three.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customxml-escaping-three_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s76a", "pass": 2, "name": "customxml-escaping-three", "sha256": "5c97492727b6760620bccf573bd91e43217fa399736f4c97c728869fa5a979ea", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:19:12+00:00", "staged": "00002__wfv__customxml-escaping-three.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customxml-escaping-three_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s76a", "pass": 1, "name": "customxml-absolute-climb", "sha256": "a96a44ff64cd2e400ab2da4620c68f979ceb5df46cc2aa7895c0dd3cf0fb1352", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:19:01+00:00", "staged": "00001__wfv__customxml-absolute-climb.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customxml-absolute-climb_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s76a", "pass": 2, "name": "customxml-absolute-climb", "sha256": "a96a44ff64cd2e400ab2da4620c68f979ceb5df46cc2aa7895c0dd3cf0fb1352", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:19:12+00:00", "staged": "00001__wfv__customxml-absolute-climb.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customxml-absolute-climb_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s76a", "pass": 1, "name": "s76a-control-minimal-end", "sha256": "752d2bf1aa4cc8586c8ecc914155e50aad4bcf76b81686cba1b559bf74e37b1f", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:19:01+00:00", "staged": "00005__wfv__s76a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s76a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s76a", "pass": 2, "name": "s76a-control-minimal-end", "sha256": "752d2bf1aa4cc8586c8ecc914155e50aad4bcf76b81686cba1b559bf74e37b1f", "validatorRevision": "a7249d62a2f8a99508e26a8f717b982b476f8b78", "observedAt": "2026-10-27T23:19:12+00:00", "staged": "00005__wfv__s76a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s76a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 76 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s76builder.mts`:
+
+```ts
+// Session 76 (2026-10-27): an existing package-root customXml part named by an escaping target. Session 54 refused an
+// absent root `customXml/item1.xml` spelled `../../customXml/item1.xml`, and sessions 63, 64, 74 and 75 showed Word
+// stopping an escaping climb at the root for notes, styles and header targets. validateFileReferences pushes every
+// escaping target as broken, registered with the part the climb reaches, so word-valid blocks an existing root
+// customXml part named by `../../customXml/item1.xml` or `/../customXml/item1.xml` (a broken customXml reference outside
+// word/ blocks, #734). s76a names a stored root customXml item (with its itemProps) from the main document's sidecar by
+// the in-package `../customXml/item1.xml` and `/customXml/item1.xml` (calibrations) and the escaping
+// `../../customXml/item1.xml`, `../../../customXml/item1.xml` and `/../customXml/item1.xml`.
+// Every row records the validator revision it was judged at (`validatorRevision`); the verdict helper is s67builder.mts's.
+// The builder empties the chunk's specimens.jsonl once before its row loop (promised on #825).
+// Run from a worktree root: CHUNK=s76a pnpm exec node --import tsx <this file>
+// (the imports are absolute, so the file needs no copy into the worktree; `git rev-parse` reads the cwd's worktree).
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const WT = process.cwd();
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const { MINIMAL_PARTS, buildDocx } = await import(path.join(WT, "tests/support/minimal-docx.ts"));
+const REVISION = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+
+const ITEM = `${XML_DECL}<root xmlns="urn:example:data"><v>1</v></root>`;
+const ITEM_PROPS = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<ds:datastoreItem ds:itemID="{11111111-2222-3333-4444-555555555555}" xmlns:ds="http://schemas.openxmlformats.org/officeDocument/2006/customXml"><ds:schemaRefs/></ds:datastoreItem>`;
+/** The minimal parts with a stored customXml/item1.xml and its itemProps, named from the main document's sidecar by `target`. */
+const customXmlAt = (target: string): Record<string, string> => ({
+    ...P,
+    "customXml/item1.xml": ITEM,
+    "customXml/itemProps1.xml": ITEM_PROPS,
+    "customXml/_rels/item1.xml.rels": `${XML_DECL}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${relationship("rId1", "customXmlProps", "itemProps1.xml")}</Relationships>`,
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdX", "customXml", target)),
+    [CT]: overrides(P[CT]!, ["customXml/itemProps1.xml", "application/vnd.openxmlformats-officedocument.customXmlProperties+xml"]),
+});
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const control = () => buildDocx({ ...P });
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+
+const chunks: Record<string, Row[]> = {
+    s76a: withControls("s76a", [
+        [
+            "customxml-one-level-calibration",
+            "calibration: a stored root customXml/item1.xml named from word/ by ../customXml/item1.xml",
+            () => buildDocx(customXmlAt("../customXml/item1.xml")),
+        ],
+        [
+            "customxml-absolute-calibration",
+            "calibration: the same, named by the package-absolute /customXml/item1.xml",
+            () => buildDocx(customXmlAt("/customXml/item1.xml")),
+        ],
+        [
+            "customxml-escaping-two",
+            "the same, named by ../../customXml/item1.xml (stopped at the root: customXml/item1.xml)",
+            () => buildDocx(customXmlAt("../../customXml/item1.xml")),
+        ],
+        [
+            "customxml-escaping-three",
+            "the same, named by ../../../customXml/item1.xml (stopped at the root: customXml/item1.xml)",
+            () => buildDocx(customXmlAt("../../../customXml/item1.xml")),
+        ],
+        [
+            "customxml-absolute-climb",
+            "the same, named by /../customXml/item1.xml (stopped at the root: customXml/item1.xml)",
+            () => buildDocx(customXmlAt("/../customXml/item1.xml")),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+    }
+};
+
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-76 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s76a",)
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0], "unknown") if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
+                     # A match needs agreed readings: an unknown row matches nothing (CodeRabbit on #985).
+                     "validatorMatchesWord": agreed and ((all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True))})
+(ROOT / "s76/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-76 parts of docs/plans/evidence/word-probes-2026-10-24.md into s76/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796). The text Word rendered is read from its own
+PDFs with pdftotext, so the narrative's "rendered" claims are checked here.
+"""
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s76a",)
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s76/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+def rendered(run, file):
+    pdf = run / "pdf" / (Path(file).stem + "_byword.pdf")
+    return " ".join(subprocess.run(["pdftotext", str(pdf), "-"], check=True, capture_output=True, text=True).stdout.split())
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                                   "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                                   "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+
+REFUSED: set[str] = set()
+ESCAPING = {"customxml-escaping-two.docx", "customxml-escaping-three.docx", "customxml-absolute-climb.docx"}
+# The narrative's claims about outcomes, checked against results.json: Word opened every row clean; word-valid, at the
+# revision before #984, rejected the three escaping rows and accepted the rest.
+for (label, file), r in results.items():
+    assert r["outcome"] == "clean-open", (file, r)
+    assert r["wordValid"] is (file not in ESCAPING), (file, r)
+assert agreed == len(rows) == 7, (agreed, len(rows))
+# Where each run opened each row, from the driver's manifests (in open order, #671). The driver opens in name order, so
+# the controls opened last.
+ORDER = {
+    "s76a": ["customxml-absolute-calibration.docx", "customxml-absolute-climb.docx", "customxml-escaping-three.docx",
+             "customxml-escaping-two.docx", "customxml-one-level-calibration.docx", "s76a-control-minimal-end.docx",
+             "s76a-control-minimal.docx"],
+}
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        opened = [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()]
+        assert opened == ORDER[label], (run, opened)
+# The text Word rendered in each row, both runs: the main document's "Hello" (a customXml item renders nothing).
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for file in ORDER[label]:
+            text = rendered(run, file)
+            assert text == "Hello", (run, file, text)
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}", (min(starts), max(ends))
+matches = sum(r["validatorMatchesWord"] for r in results.values())
+out = [
+    f"### Session 76: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {at}",
+    "",
+    "An existing package-root customXml part named by an escaping target. Session 54 refused an absent root "
+    "`customXml/item1.xml` spelled `../../customXml/item1.xml`, and a broken customXml reference outside `word/` blocks "
+    "word-valid (#734). `validateFileReferences` pushed every escaping target as broken, registered with the part the "
+    "climb reaches, so word-valid also rejected a stored one. One chunk: s76a names a stored root customXml item, with "
+    "its itemProps, from the main document's sidecar by the in-package `../customXml/item1.xml` and "
+    "`/customXml/item1.xml` (calibrations) and by the escaping `../../customXml/item1.xml`, "
+    "`../../../customXml/item1.xml` and `/../customXml/item1.xml`. It ran twice, as two separate driver runs of "
+    "byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and "
+    "by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` "
+    f"otherwise; {agreed} of {len(rows)} rows agree. The two times in Observed are the ends of the first and second runs. "
+    "Shape is the builder's description of the specimen. The builder recorded the validator revision in every row "
+    f"(`{rev}`).",
+    "",
+    "The driver opens files in name order, so the minimal controls opened last. Every row opened clean, and every PDF "
+    "holds `Hello` (`pdftotext`, both runs).",
+    "",
+    "- **Escaping customXml targets open clean.** `../../customXml/item1.xml`, `../../../customXml/item1.xml` and "
+    "`/../customXml/item1.xml` with the item stored at the root open as cleanly as the in-package calibrations: the "
+    "climb stops at the root, where the part is stored.",
+    "",
+    f"Word-valid at {at} rejects the three escaping rows with `rels-broken`, matching Word on only {matches} of "
+    f"{len(rows)} rows: false rejections, fixed by [#984](https://github.com/jandira-tech/docx-validate/issues/984).",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 76</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 76 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s76builder.mts", ROOT / "s76builder.mts", "ts"), ("compare.py", ROOT / "s76/compare.py", "python"),
+                         ("section.py", ROOT / "s76/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s76/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>

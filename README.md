@@ -299,6 +299,23 @@ the package root), and opened clean an absent image spelled `media/_rels/x.png`,
 `notes.rels` or `word/../customXml/x.png` and a reached glossary's absent
 `../customXml/item1.xml` (Word probes session 54, `s54a`/`s54b`;
 [#734](https://github.com/jandira-tech/docx-validate/issues/734)).
+A target whose `..` segments climb above the package root names the part where
+the climb stops, as RFC 3986's dot-segment removal resolves it, under every
+profile: both file-reference walks used to call it broken even when that part
+is stored, so word-valid rejected a stored root `customXml/item1.xml` named by
+`../../customXml/item1.xml`, `../../../customXml/item1.xml` or
+`/../customXml/item1.xml`, and every profile reported the part as unreferenced.
+Word 16.115 opened each of those clean (Word probes session 76), applied a root
+styles part named by `../../styles.xml` or `/../styles.xml` and rendered a root
+header named by `../../header1.xml` (session 75), and read a root notes part
+named by `/../footnotes.xml` (session 74). A climb whose stopped part is absent
+stays broken under that part's name, so session 54's absent root customXml row
+still blocks, and `rels-target-missing` reads `resolves to '<part>' which does
+not exist`; Word opened such a styles target clean but applied none of
+`word/styles.xml`, so the climb does not fall back to the source folder
+(session 75). Only a symbolic link can still leave the unpacked tree, and stays
+`escapes the unpacked directory`
+([#984](https://github.com/jandira-tech/docx-validate/issues/984)).
 An internal target naming a folder is broken under every profile, and blocks
 Word-valid whatever the relationship type: a final `.` or `..` segment or a
 trailing `/` leaves a folder, as RFC 3986 resolves it (`styles.xml/.`,
@@ -1191,9 +1208,11 @@ session 74 opened clean, with the note rendered, `/../footnotes.xml` and
 `/../word/footnotes.xml` with it in `word/footnotes.xml` and the endnotes twin
 `/../endnotes.xml`, and offered recovery for `/../footnotes.xml` with the note
 only in `word/footnotes.xml`
-([#982](https://github.com/jandira-tech/docx-validate/issues/982)). Other rules'
-relationship resolution keeps dropping an escaping target; those readings are
-unprobed.
+([#982](https://github.com/jandira-tech/docx-validate/issues/982)). The
+file-reference walks stop such a climb at the root too since
+[#984](https://github.com/jandira-tech/docx-validate/issues/984). The read
+model's other relationship walks keep dropping an escaping target, though Word
+session 75 read an escaping styles and header target from the root.
 
 `word-shared-story-part` rejects a comments, footnotes or endnotes part that
 the read model lists for both a main-document entry and a glossary entry
