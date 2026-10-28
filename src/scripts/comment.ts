@@ -422,10 +422,11 @@ function packageViewPartNames(unpackedDir: string): string[] {
  * unselected branch holds does not (#932); a part whose root binds the
  * package-relationships namespace to a prefix is read too, and an element
  * in another namespace is not read as a relationship (#918).
- * What cannot be resolved — a URI scheme, an empty reference, a target that
- * climbs past the package root, or a named part that is not stored, the
- * conventional `word/document.xml` included — is refused, naming `_rels/.rels`
- * or the missing part, before any write (#919).
+ * A target climbing past the package root names the part its climb stops
+ * at, as `validate` reads it (#986). What cannot be resolved — a URI scheme,
+ * an empty reference, or a named part that is not stored, the conventional
+ * `word/document.xml` included — is refused, naming `_rels/.rels` or the
+ * missing part, before any write (#919).
  * The stored parts are the names `packageViewPartNames` reads, so a main
  * document stored as a symbolic link, or under one, that resolves inside the
  * unpacked tree is found under the link's own name, and one that resolves
@@ -711,10 +712,10 @@ export interface AddCommentResult {
  * cannot be decoded or parsed, an `_rels/.rels` naming no non-External
  * `officeDocument` relationship, or an `officeDocument` target that, resolved
  * as the read model resolves it (`\` as `/`, the query and fragment dropped,
- * the stored part matched under OPC part-name equivalence), is a URI, escapes
- * the package root or names no stored part — the conventional
- * `word/document.xml` included (#906, #919)), returns `paraId = ""` and a
- * message starting with `Error:`.
+ * a climb past the package root stopped at the root (#986), the stored part
+ * matched under OPC part-name equivalence), is a URI or names no stored part —
+ * the conventional `word/document.xml` included (#906, #919)), returns
+ * `paraId = ""` and a message starting with `Error:`.
  */
 export async function addComment(opts: AddCommentOptions): Promise<AddCommentResult> {
     const { unpackedDir, commentId, text, parent, author, initials, date } = opts;
