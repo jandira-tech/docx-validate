@@ -334,6 +334,14 @@ such a target beside that stored part for every relationship type it was shown,
 unused `header`, an unused `image` and the core properties, and opened each plain
 target clean (Word probes sessions 70 to 73;
 [#975](https://github.com/jandira-tech/docx-validate/issues/975)).
+These blocking targets, the folder, relationships-part and `customXml` shapes,
+block only in a relationships part Word reads to reach the stories:
+`_rels/.rels` and the own relationships part of a main document or a reached
+glossary. Word opened clean a folder target and an absent escaping `customXml`
+target in the relationships part of an unreferenced part (Word probes session
+79), of a used header whose text it rendered, of an unused header and of the
+styles part (session 80), so there the finding is a word-valid warning
+([#987](https://github.com/jandira-tech/docx-validate/issues/987)).
 
 The processed view is DOCX/DOCM-only: every observation behind it is Word
 opening `.docx` files, and PowerPoint was never shown markup compatibility in a

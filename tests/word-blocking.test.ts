@@ -475,9 +475,39 @@ describe("isWordBlockingIssue", () => {
         ["docProps/core.xml/", true],
         ["/", true],
     ])("judges rels-broken resolving to %j as blocking: %s", (part, blocking) => {
-        const found = issue("rels-broken", { message: `Broken reference to ${part}` });
+        const found = issue("rels-broken", { path: "word/_rels/document.xml.rels", message: `Broken reference to ${part}` });
         registerRelsBrokenTarget(found, part);
-        expect(isWordBlockingIssue(found)).toBe(blocking);
+        expect(isWordBlockingIssue(found, new Set(), new Set(), new Set(["word/document.xml"]))).toBe(blocking);
+    });
+
+    it.each([
+        // The relationships parts Word reads to reach the stories: the
+        // package's own and each story root's sidecar, compared as OPC
+        // compares part names.
+        ["_rels/.rels", true],
+        ["_RELS/.rels", true],
+        ["word/_rels/document.xml.rels", true],
+        ["WORD/_rels/document.xml.rels", true],
+        ["word/glossary/_rels/document.xml.rels", true],
+        // Word opened a folder target clean in the sidecar of an unreferenced
+        // part (session 79), a used and an unused header and the styles part
+        // (session 80), and in no relationships part at all.
+        ["word/_rels/stray.xml.rels", false],
+        ["word/_rels/header1.xml.rels", false],
+        ["word/_rels/styles.xml.rels", false],
+        ["word/notes.rels", false],
+        [undefined, false],
+    ])("blocks a folder target reported in %j only where Word reads it: %s (#987)", (relsPart, blocking) => {
+        const found = issue("rels-broken", { path: relsPart, message: "Broken reference to media/image1.png/." });
+        registerRelsBrokenTarget(found, "word/media/image1.png/");
+        const storyRoots = new Set(["word/document.xml", "word/glossary/document.xml"]);
+        expect(isWordBlockingIssue(found, new Set(), storyRoots, storyRoots)).toBe(blocking);
+    });
+
+    it("keeps a story root's sidecar finding a warning when the read model lists no story root (#987)", () => {
+        const found = issue("rels-broken", { path: "word/_rels/document.xml.rels", message: "Broken reference to media/image1.png/." });
+        registerRelsBrokenTarget(found, "word/media/image1.png/");
+        expect(isWordBlockingIssue(found)).toBe(false);
     });
 
     it("leaves an unregistered rels-broken a warning, whatever its message (#734)", () => {

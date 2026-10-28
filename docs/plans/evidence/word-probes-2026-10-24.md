@@ -28294,3 +28294,445 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
 `````
 
 </details>
+
+### Session 80: 00:30Z–00:30Z on 2026-10-28, validator columns at 2686b567
+
+The scope of [#987](https://github.com/jandira-tech/docx-validate/issues/987). Session 79 opened clean a folder target and an absent escaping `customXml` target in the sidecar of a part nothing references, while the same folder target in the main document's sidecar got the recovery offer. Of the relationships parts, the read model lists only each story root's own sidecar, beside `_rels/.rels`; whether Word checks the targets in the sidecar of a part it does load was unprobed. One chunk: s80a stores the unused `word/media/image1.png` and a header `word/header1.xml` holding `Head`, related from the main document's sidecar and referenced by the section (used), whose sidecar `word/_rels/header1.xml.rels` relates the image by `media/image1.png` (calibration) and by `media/image1.png/.`, an absent `media/missing.png` (calibration) and an absent `../customXml/item1.xml`; the same header related but not referenced (unused) with `media/image1.png/.` in its sidecar; and the styles part's sidecar `word/_rels/styles.xml.rels` relating the image by `media/image1.png` (calibration) and by `media/image1.png/.`. It ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 9 of 9 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`2686b56714cb94a8c796fd0d033474e0f661a381`).
+
+The driver opens files in name order, so the minimal controls opened 6th and 7th, between the header rows and the styles rows. Every row opened clean. Every used-header row's PDF holds `Head Hello`, so Word loaded the header, and every other row's holds `Hello` (`pdftotext`, both runs).
+
+- **The sidecar of a part Word loads.** In the used header's sidecar, `media/image1.png/.` and the absent `../customXml/item1.xml` open as cleanly as the calibrations, and the header renders: Word loaded the header but did not check its relationships' targets. So do `media/image1.png/.` in the unused header's sidecar and in the styles part's.
+
+With sessions 70 to 73 and 79, Word refused these targets only in `_rels/.rels` and in the main document's own relationships part. Word-valid at 2686b567 rejects the four rows with `rels-broken`, four false rejections, and matches Word on 5 of 9 rows; [#987](https://github.com/jandira-tech/docx-validate/issues/987) gates the block to the relationships parts the read model lists.
+
+| Run    | Observed             | Specimen                                | Shape                                                                                                                  | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome    | word-valid at 2686b567 | strict at 2686b567                                                                           |
+| ------ | -------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------ | ----------- | ----------- | ---------- | ---------------------- | -------------------------------------------------------------------------------------------- |
+| `s80a` | 00:30:27Z, 00:30:38Z | `s80a-control-minimal`                  | control                                                                                                                | `03ca5c8ed7b05c19` | clean-open  | clean-open  | clean-open | valid                  | valid                                                                                        |
+| `s80a` | 00:30:27Z, 00:30:38Z | `header-used-image-calibration`         | calibration: a used word/header1.xml whose sidecar relates the stored unused word/media/image1.png by media/image1.png | `4a16d5e1c3cfd768` | clean-open  | clean-open  | clean-open | valid                  | invalid: `paraid-missing-element`                                                            |
+| `s80a` | 00:30:27Z, 00:30:38Z | `header-used-image-final-dot`           | #987: the used header's sidecar relates it by media/image1.png/. (a folder: word/media/image1.png/)                    | `5e099b8ba446feaf` | clean-open  | clean-open  | clean-open | invalid: `rels-broken` | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing` |
+| `s80a` | 00:30:27Z, 00:30:38Z | `header-used-image-missing-calibration` | calibration: the used header's sidecar relates an absent media/missing.png                                             | `5cb59929f75cb1ae` | clean-open  | clean-open  | clean-open | valid                  | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing` |
+| `s80a` | 00:30:27Z, 00:30:38Z | `header-used-customxml-escaping-absent` | #987: the used header's sidecar relates an absent ../customXml/item1.xml (#734's blocking shape, session 54)           | `b379ddde74a38969` | clean-open  | clean-open  | clean-open | invalid: `rels-broken` | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing` |
+| `s80a` | 00:30:27Z, 00:30:38Z | `header-unused-image-final-dot`         | #987: the same header related but not referenced (unused); its sidecar relates the image by media/image1.png/.         | `9bb4950aa425bd42` | clean-open  | clean-open  | clean-open | invalid: `rels-broken` | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing` |
+| `s80a` | 00:30:27Z, 00:30:38Z | `styles-image-calibration`              | calibration: the styles part's sidecar relates the stored unused word/media/image1.png by media/image1.png             | `a65f682e28a47196` | clean-open  | clean-open  | clean-open | valid                  | valid                                                                                        |
+| `s80a` | 00:30:27Z, 00:30:38Z | `styles-image-final-dot`                | #987: the styles part's sidecar relates it by media/image1.png/. (a folder: word/media/image1.png/)                    | `5c3a4d3865ac989b` | clean-open  | clean-open  | clean-open | invalid: `rels-broken` | invalid: `rels-broken`, `rels-unreferenced`, `rels-target-missing`                           |
+| `s80a` | 00:30:27Z, 00:30:38Z | `s80a-control-minimal-end`              | control                                                                                                                | `03ca5c8ed7b05c19` | clean-open  | clean-open  | clean-open | valid                  | valid                                                                                        |
+
+<details><summary>Raw records, session 80</summary>
+
+```jsonl
+{"run": "s80a", "pass": 1, "name": "s80a-control-minimal", "sha256": "03ca5c8ed7b05c1932d5aa5a37dcdc71e5f9f7e410f4961bd8439b9e1647b194", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:27+00:00", "staged": "00006__wfv__s80a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s80a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 2, "name": "s80a-control-minimal", "sha256": "03ca5c8ed7b05c1932d5aa5a37dcdc71e5f9f7e410f4961bd8439b9e1647b194", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:38+00:00", "staged": "00006__wfv__s80a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s80a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 1, "name": "header-used-image-calibration", "sha256": "4a16d5e1c3cfd7684af80cd452cf510f0f444d1f29cd7c3e7f092465d62c13b6", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:27+00:00", "staged": "00002__wfv__header-used-image-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-used-image-calibration_byword.pdf (14865 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 2, "name": "header-used-image-calibration", "sha256": "4a16d5e1c3cfd7684af80cd452cf510f0f444d1f29cd7c3e7f092465d62c13b6", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:38+00:00", "staged": "00002__wfv__header-used-image-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-used-image-calibration_byword.pdf (14865 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 1, "name": "header-used-image-final-dot", "sha256": "5e099b8ba446feafebf65b35efd0319943534234227422ddcfc3ea27ead375c9", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:27+00:00", "staged": "00003__wfv__header-used-image-final-dot.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-used-image-final-dot_byword.pdf (14865 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 2, "name": "header-used-image-final-dot", "sha256": "5e099b8ba446feafebf65b35efd0319943534234227422ddcfc3ea27ead375c9", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:38+00:00", "staged": "00003__wfv__header-used-image-final-dot.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-used-image-final-dot_byword.pdf (14865 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 1, "name": "header-used-image-missing-calibration", "sha256": "5cb59929f75cb1aee966770538f1e5b6ca217bb527166f9da1e74e64660c9834", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:27+00:00", "staged": "00004__wfv__header-used-image-missing-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-used-image-missing-calibration_byword.pdf (14865 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 2, "name": "header-used-image-missing-calibration", "sha256": "5cb59929f75cb1aee966770538f1e5b6ca217bb527166f9da1e74e64660c9834", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:38+00:00", "staged": "00004__wfv__header-used-image-missing-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-used-image-missing-calibration_byword.pdf (14865 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 1, "name": "header-used-customxml-escaping-absent", "sha256": "b379ddde74a38969233494eaeccf389109e6a4c09d32bbb08735b7bb2dd4daaf", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:27+00:00", "staged": "00001__wfv__header-used-customxml-escaping-absent.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-used-customxml-escaping-absent_byword.pdf (14865 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 2, "name": "header-used-customxml-escaping-absent", "sha256": "b379ddde74a38969233494eaeccf389109e6a4c09d32bbb08735b7bb2dd4daaf", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:38+00:00", "staged": "00001__wfv__header-used-customxml-escaping-absent.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-used-customxml-escaping-absent_byword.pdf (14865 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 1, "name": "header-unused-image-final-dot", "sha256": "9bb4950aa425bd428a1328028e7df2b1a4ae013a6fc6d1cba54bd73725a29c5d", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:27+00:00", "staged": "00000__wfv__header-unused-image-final-dot.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-unused-image-final-dot_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 2, "name": "header-unused-image-final-dot", "sha256": "9bb4950aa425bd428a1328028e7df2b1a4ae013a6fc6d1cba54bd73725a29c5d", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:38+00:00", "staged": "00000__wfv__header-unused-image-final-dot.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-unused-image-final-dot_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 1, "name": "styles-image-calibration", "sha256": "a65f682e28a47196fffb5bfcc5040805c78d2ba1d75e7a693f6f9d9a47657581", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:27+00:00", "staged": "00007__wfv__styles-image-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-image-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 2, "name": "styles-image-calibration", "sha256": "a65f682e28a47196fffb5bfcc5040805c78d2ba1d75e7a693f6f9d9a47657581", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:38+00:00", "staged": "00007__wfv__styles-image-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-image-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 1, "name": "styles-image-final-dot", "sha256": "5c3a4d3865ac989ba85e50659b464dd5256a15000c0617c96c7b915f0feb0b0a", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:27+00:00", "staged": "00008__wfv__styles-image-final-dot.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-image-final-dot_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 2, "name": "styles-image-final-dot", "sha256": "5c3a4d3865ac989ba85e50659b464dd5256a15000c0617c96c7b915f0feb0b0a", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:38+00:00", "staged": "00008__wfv__styles-image-final-dot.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-image-final-dot_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 1, "name": "s80a-control-minimal-end", "sha256": "03ca5c8ed7b05c1932d5aa5a37dcdc71e5f9f7e410f4961bd8439b9e1647b194", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:27+00:00", "staged": "00005__wfv__s80a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s80a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s80a", "pass": 2, "name": "s80a-control-minimal-end", "sha256": "03ca5c8ed7b05c1932d5aa5a37dcdc71e5f9f7e410f4961bd8439b9e1647b194", "validatorRevision": "2686b56714cb94a8c796fd0d033474e0f661a381", "observedAt": "2026-10-28T00:30:38+00:00", "staged": "00005__wfv__s80a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s80a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 80 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s80builder.mts`:
+
+```ts
+// Session 80 (2026-10-28): which relationships parts besides `_rels/.rels` and a story root's own sidecar does Word read
+// when it checks their targets (#987)? Session 79 opened clean a folder target and an absent escaping customXml target
+// in the sidecar of a part nothing references, while the same folder target in the main document's sidecar got the
+// recovery offer (as in session 72). The read model lists only the story roots' sidecars; a used header's sidecar, an
+// unused header's and the styles part's are unprobed for these targets.
+// s80a: a header word/header1.xml holding Head, referenced by the section (used), whose sidecar
+// word/_rels/header1.xml.rels relates the stored unused word/media/image1.png by media/image1.png (calibration) and
+// media/image1.png/., an absent media/missing.png (calibration) and an absent ../customXml/item1.xml; the same header
+// related but not referenced (unused) with media/image1.png/. in its sidecar; and the styles part's sidecar
+// word/_rels/styles.xml.rels relating the image by media/image1.png (calibration) and media/image1.png/.
+// Every row records the validator revision it was judged at (`validatorRevision`); the verdict helper is s67builder.mts's,
+// the image helper s72builder.mts's.
+// The builder empties the chunk's specimens.jsonl once before its row loop (promised on #825), and its src (#985).
+// Run from a worktree root: CHUNK=s80a pnpm exec node --import tsx <this file>
+// (the imports are absolute, so the file needs no copy into the worktree; `git rev-parse` reads the cwd's worktree).
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const WT = process.cwd();
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const { MINIMAL_PARTS, buildDocx } = await import(path.join(WT, "tests/support/minimal-docx.ts"));
+const REVISION = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
+const CT = "[Content_Types].xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const withPng = (ct: string) => replaceOnce(ct, "</Types>", '<Default Extension="png" ContentType="image/png"/></Types>');
+
+const PNG = Uint8Array.from(
+    Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64"),
+);
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const HEADER = "word/header1.xml";
+const HEADER_SIDECAR = "word/_rels/header1.xml.rels";
+const STYLES_SIDECAR = "word/_rels/styles.xml.rels";
+const withHeaderOverride = (ct: string) =>
+    replaceOnce(ct, "</Types>", `<Override PartName="/${HEADER}" ContentType="${WML}.header+xml"/></Types>`);
+const sidecarHolding = (rel: string) => `${XML_DECL}<Relationships xmlns="${PR}">${rel}</Relationships>`;
+/** The main document with its section referencing the header relationship rIdH. */
+const MAIN_USING_HEADER = replaceOnce(
+    replaceOnce(P["word/document.xml"]!, `<w:document xmlns:w="${W}"`, `<w:document xmlns:w="${W}" xmlns:r="${R}"`),
+    "<w:sectPr>",
+    '<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>',
+);
+/**
+ * The minimal parts with word/media/image1.png stored and word/header1.xml holding "Head", related from the main
+ * document's sidecar as rIdH and referenced by the section when `used`, whose own sidecar holds `rel`.
+ */
+const headerSidecar = (rel: string, used: boolean): Record<string, string | Uint8Array> => ({
+    ...P,
+    "word/document.xml": used ? MAIN_USING_HEADER : P["word/document.xml"]!,
+    "word/media/image1.png": PNG,
+    [HEADER]: `${XML_DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Head</w:t></w:r></w:p></w:hdr>`,
+    [HEADER_SIDECAR]: sidecarHolding(rel),
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
+    [CT]: withHeaderOverride(withPng(P[CT]!)),
+});
+/** The minimal parts with word/media/image1.png stored, and the styles part's sidecar holding `rel`. */
+const stylesSidecar = (rel: string): Record<string, string | Uint8Array> => ({
+    ...P,
+    "word/media/image1.png": PNG,
+    [STYLES_SIDECAR]: sidecarHolding(rel),
+    [CT]: withPng(P[CT]!),
+});
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const control = () => buildDocx({ ...P });
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+
+const chunks: Record<string, Row[]> = {
+    s80a: withControls("s80a", [
+        [
+            "header-used-image-calibration",
+            "calibration: a used word/header1.xml whose sidecar relates the stored unused word/media/image1.png by media/image1.png",
+            () => buildDocx(headerSidecar(relationship("rId1", "image", "media/image1.png"), true)),
+        ],
+        [
+            "header-used-image-final-dot",
+            "#987: the used header's sidecar relates it by media/image1.png/. (a folder: word/media/image1.png/)",
+            () => buildDocx(headerSidecar(relationship("rId1", "image", "media/image1.png/."), true)),
+        ],
+        [
+            "header-used-image-missing-calibration",
+            "calibration: the used header's sidecar relates an absent media/missing.png",
+            () => buildDocx(headerSidecar(relationship("rId1", "image", "media/missing.png"), true)),
+        ],
+        [
+            "header-used-customxml-escaping-absent",
+            "#987: the used header's sidecar relates an absent ../customXml/item1.xml (#734's blocking shape, session 54)",
+            () => buildDocx(headerSidecar(relationship("rId1", "customXml", "../customXml/item1.xml"), true)),
+        ],
+        [
+            "header-unused-image-final-dot",
+            "#987: the same header related but not referenced (unused); its sidecar relates the image by media/image1.png/.",
+            () => buildDocx(headerSidecar(relationship("rId1", "image", "media/image1.png/."), false)),
+        ],
+        [
+            "styles-image-calibration",
+            "calibration: the styles part's sidecar relates the stored unused word/media/image1.png by media/image1.png",
+            () => buildDocx(stylesSidecar(relationship("rId1", "image", "media/image1.png"))),
+        ],
+        [
+            "styles-image-final-dot",
+            "#987: the styles part's sidecar relates it by media/image1.png/. (a folder: word/media/image1.png/)",
+            () => buildDocx(stylesSidecar(relationship("rId1", "image", "media/image1.png/."))),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+// A rerun starts from an empty src, so a removed or renamed row leaves no stale specimen for the staging and log-check
+// scripts to pick up (CodeRabbit on #985).
+rmSync(dir, { recursive: true, force: true });
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+    }
+};
+
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-80 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s80a",)
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0], "unknown") if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
+                     # A match needs agreed readings: an unknown row matches nothing (CodeRabbit on #985).
+                     "validatorMatchesWord": agreed and ((all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True))})
+(ROOT / "s80/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-80 parts of docs/plans/evidence/word-probes-2026-10-24.md into s80/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796). The text Word rendered is read from its own
+PDFs with pdftotext, so the narrative's "rendered" claims are checked here.
+"""
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s80a",)
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s80/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+def rendered(run, file):
+    pdf = run / "pdf" / (Path(file).stem + "_byword.pdf")
+    return " ".join(subprocess.run(["pdftotext", str(pdf), "-"], check=True, capture_output=True, text=True).stdout.split())
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                                   "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                                   "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+
+FOLDERS = {"header-used-image-final-dot.docx", "header-used-customxml-escaping-absent.docx",
+           "header-unused-image-final-dot.docx", "styles-image-final-dot.docx"}
+USED_HEADER = {"header-used-image-calibration.docx", "header-used-image-final-dot.docx",
+               "header-used-image-missing-calibration.docx", "header-used-customxml-escaping-absent.docx"}
+# The narrative's claims about outcomes, checked against results.json: Word opened every row clean. Word-valid, at the
+# revision before #987, rejected the four rows whose sidecar holds a folder or an absent escaping customXml target.
+for (label, file), r in results.items():
+    assert r["outcome"] == "clean-open", (file, r)
+    assert r["wordValid"] is (file not in FOLDERS), (file, r)
+    assert r["validatorMatchesWord"] is (file not in FOLDERS), (file, r)
+assert agreed == len(rows) == 9, (agreed, len(rows))
+# Where each run opened each row, from the driver's manifests (in open order, #671). The driver opens in name order, so
+# the minimal controls opened 6th and 7th, between the header rows and the styles rows.
+ORDER = {
+    "s80a": ["header-unused-image-final-dot.docx", "header-used-customxml-escaping-absent.docx",
+             "header-used-image-calibration.docx", "header-used-image-final-dot.docx",
+             "header-used-image-missing-calibration.docx", "s80a-control-minimal-end.docx", "s80a-control-minimal.docx",
+             "styles-image-calibration.docx", "styles-image-final-dot.docx"],
+}
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        opened = [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()]
+        assert opened == ORDER[label], (run, opened)
+# The text Word rendered in each row, both runs: the used header's "Head" above the main document's "Hello", and
+# "Hello" alone where no section references the header. The unused image renders nothing.
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for file in ORDER[label]:
+            text = rendered(run, file)
+            assert text == ("Head Hello" if file in USED_HEADER else "Hello"), (run, file, text)
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}", (min(starts), max(ends))
+matches = sum(r["validatorMatchesWord"] for r in results.values())
+out = [
+    f"### Session 80: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {at}",
+    "",
+    "The scope of [#987](https://github.com/jandira-tech/docx-validate/issues/987). Session 79 opened clean a folder "
+    "target and an absent escaping `customXml` target in the sidecar of a part nothing references, while the same folder "
+    "target in the main document's sidecar got the recovery offer. Of the relationships parts, the read model lists only "
+    "each story root's own sidecar, beside `_rels/.rels`; whether Word checks the targets in the sidecar of a part it "
+    "does load was unprobed. One chunk: s80a stores the unused `word/media/image1.png` and a header `word/header1.xml` "
+    "holding `Head`, related from the main document's sidecar and referenced by the section (used), whose sidecar "
+    "`word/_rels/header1.xml.rels` relates the image by `media/image1.png` (calibration) and by `media/image1.png/.`, an "
+    "absent `media/missing.png` (calibration) and an absent `../customXml/item1.xml`; the same header related but not "
+    "referenced (unused) with `media/image1.png/.` in its sidecar; and the styles part's sidecar "
+    "`word/_rels/styles.xml.rels` relating the image by `media/image1.png` (calibration) and by `media/image1.png/.`. It "
+    "ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own "
+    "Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs "
+    f"and both readings agree, and `unknown` otherwise; {agreed} of {len(rows)} rows agree. The two times in Observed are "
+    "the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the "
+    f"validator revision in every row (`{rev}`).",
+    "",
+    "The driver opens files in name order, so the minimal controls opened 6th and 7th, between the header rows and the "
+    "styles rows. Every row opened clean. Every used-header row's PDF holds `Head Hello`, so Word loaded the header, and "
+    "every other row's holds `Hello` (`pdftotext`, both runs).",
+    "",
+    "- **The sidecar of a part Word loads.** In the used header's sidecar, `media/image1.png/.` and the absent "
+    "`../customXml/item1.xml` open as cleanly as the calibrations, and the header renders: Word loaded the header but did "
+    "not check its relationships' targets. So do `media/image1.png/.` in the unused header's sidecar and in the styles "
+    "part's.",
+    "",
+    "With sessions 70 to 73 and 79, Word refused these targets only in `_rels/.rels` and in the main document's own "
+    "relationships part. "
+    f"Word-valid at {at} rejects the four rows with `rels-broken`, four false rejections, and matches Word on {matches} of "
+    f"{len(rows)} rows; [#987](https://github.com/jandira-tech/docx-validate/issues/987) gates the block to the "
+    "relationships parts the read model lists.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 80</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 80 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s80builder.mts", ROOT / "s80builder.mts", "ts"), ("compare.py", ROOT / "s80/compare.py", "python"),
+                         ("section.py", ROOT / "s80/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s80/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>
