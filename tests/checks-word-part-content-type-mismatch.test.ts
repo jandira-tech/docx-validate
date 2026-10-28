@@ -34,10 +34,27 @@ const diagnose = async (parts: Record<string, string>) =>
 // packages, so in a uniformly Strict package, and in a Transitional one with
 // a Strict docProps/app.xml, the swap and eager-pair findings stay without
 // the recovery sentence that cites them.
-const strictVariants = (parts: Record<string, string>): Record<string, string>[] => [
-    uniformlyStrict(parts),
-    { ...parts, "docProps/app.xml": '<Properties xmlns="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"/>' },
-];
+const withStrictApp = (parts: Record<string, string>): Record<string, string> => ({
+    ...parts,
+    "docProps/app.xml": '<Properties xmlns="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"/>',
+});
+const strictVariants = (parts: Record<string, string>): Record<string, string>[] => [uniformlyStrict(parts), withStrictApp(parts)];
+/** `parts` with only `word/styles.xml` in the Strict WordprocessingML namespace. */
+const withStrictStyles = (parts: Record<string, string>): Record<string, string> => ({
+    ...parts,
+    "word/styles.xml": parts["word/styles.xml"]!.replaceAll(
+        "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+        "http://purl.oclc.org/ooxml/wordprocessingml/main",
+    ),
+});
+/** The co-reach finding of `parts`, kept with its verdict but without a citation (#1016). */
+const expectUncited = async (parts: Record<string, string>, path: string): Promise<void> => {
+    const found = await diagnose(parts);
+    expect(found).toHaveLength(1);
+    expect(found[0]).toMatchObject({ code: ID, severity: "error", path });
+    expect(found[0]?.message).not.toContain("Word 16.115");
+    expect(isWordBlockingIssue(found[0]!)).toBe(true);
+};
 
 describe("story content type mismatch (#600, session 24)", () => {
     it("registers a DOCX content-types check behind xml-syntax", () => {
@@ -566,6 +583,18 @@ describe("parameterized styles spelling on the session 58 pairs (#802, session 6
         60_000,
     );
 
+    // #1016: sessions 58 and 62 stored Transitional packages, so a Strict
+    // part beside the story drops the citation.
+    it.each(["comments", "endnotes", "footnotes"] as const)(
+        "keeps a used %s part typed styles, exactly or with a charset, without its session beside a Strict part (#1016)",
+        async (story) => {
+            for (const type of [storyContentType("styles"), STYLES_CHARSET]) {
+                await expectUncited(withStrictApp(storyParts(story, type)), `word/${story}.xml`);
+                await expectUncited(withStrictStyles(storyParts(story, type)), `word/${story}.xml`);
+            }
+        },
+    );
+
     it.each(["comments", "endnotes", "footnotes"] as const)(
         "still cites session 58 for a used %s part typed with the exact styles spelling",
         async (story) => {
@@ -777,6 +806,26 @@ describe("a story part whose stored root is an AlternateContent (#818, session 6
             60_000,
         );
     });
+    // #1016: sessions 63 and 65 stored Transitional parts outside the
+    // comments part; s65c and s65d stored a Strict comments root, in the
+    // Choice or directly, which is the shape itself.
+    it.each([["the s63b root", alternateContent(STORIES.comments.root("0"))] as const, ...SESSION_65_ROOTS])(
+        "keeps %s typed styles without its session beside a Strict part (#1016)",
+        async (_shape, stored) => {
+            const parts = usedStoryParts("comments", storyContentType("styles"), stored);
+            await expectUncited(withStrictApp(parts), "word/comments.xml");
+            await expectUncited(withStrictStyles(parts), "word/comments.xml");
+        },
+    );
+    it.each(SESSION_65_ROOTS.filter(([shape]) => shape.startsWith("a Strict root")))(
+        "keeps session 65 for %s, the Strict part its own shape names (#1016)",
+        async (_shape, stored) => {
+            const found = await diagnose(usedStoryParts("comments", storyContentType("styles"), stored));
+            expect(found).toHaveLength(1);
+            expect(found[0]?.message).toContain("Word 16.115 offers to recover the package (session 65).");
+        },
+    );
+
     it.each(SESSION_65_ROOTS)(
         "keeps the comments-typed calibration for %s without a mismatch",
         async (_shape, stored) => {
@@ -1255,6 +1304,11 @@ describe("observed co-reach (#739, session 53)", () => {
         expect(isWordBlockingIssue(found[0]!)).toBe(true);
     });
 
+    // #1016: session 53 stored Transitional packages.
+    it.each(CASES)("keeps $label without its session beside a Strict docProps/app.xml (#1016)", async ({ parts, path }) => {
+        await expectUncited(withStrictApp(parts), path);
+    });
+
     // Session 56 (s56a): a footer-typed styles part that a second footer
     // relationship also targets gets the recovery offer whether no section
     // references that relationship or the body does; the matching footer
@@ -1623,6 +1677,20 @@ describe("read header/footer co-reach (#778, session 57)", () => {
             by: "the main document's header relationship",
         },
     ] as const;
+
+    // #1016: sessions 53 and 57 stored Transitional packages.
+    it.each([
+        ...FALSE_NEGATIVES,
+        {
+            label: "footer1-referenced-typed-styles (s57c)",
+            parts: storyContentTypeParts("footer", storyContentType("styles")),
+            path: "word/footer9.xml",
+        },
+        { label: "glossary-styles-main-footer-coreach (s57d)", parts: glossaryStylesWithReadFooter(), path: "word/glossary/styles.xml" },
+    ])("keeps $label without its session beside a Strict part (#1016)", async ({ parts, path }) => {
+        await expectUncited(withStrictApp(parts), path);
+        if (!path.endsWith("styles.xml")) await expectUncited(withStrictStyles(parts), path);
+    });
 
     it.each(FALSE_NEGATIVES)(
         "rejects $label under word-valid citing session 57",

@@ -381,10 +381,25 @@ export const wordPartContentTypeMismatchFindings = async (
             };
         };
         // A package whose main document is not Transitional keeps the
-        // co-reach and its verdict, but no session showed it (#861).
+        // co-reach and its verdict, but no session showed it (#861), and so
+        // does one with a Strict part outside the shape (#1016). Sessions 53
+        // and 57 stored only Transitional parts. Sessions 58, 62, 63 and 65
+        // stored the story part in the shape, and s65c and s65d stored its
+        // root Strict, so the story part's own class is the shape's.
         const readStoryCoreach = (entry: (typeof entries)[number]): { session?: string } | undefined => {
             const coreach = storyCoreach(entry);
-            return coreach?.session !== undefined && !transitionalMain() ? {} : coreach;
+            if (coreach?.session === undefined) {
+                return coreach;
+            }
+            const shapeParts = entry.segment === "header" || entry.segment === "footer" ? [] : [part];
+            return transitionalMain() &&
+                citesWordSession(
+                    ctx,
+                    xmlPartNames(ctx.partNames, (name) => ctx.bytes(name)),
+                    shapeParts,
+                )
+                ? coreach
+                : {};
         };
         const storyCoreachSession = (entry: (typeof entries)[number]): string | undefined => readStoryCoreach(entry)?.session;
         const isReadStoryCoreach = (entry: (typeof entries)[number]): boolean => readStoryCoreach(entry) !== undefined;
