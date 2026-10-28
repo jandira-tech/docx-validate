@@ -731,16 +731,22 @@ const HDPHOTO_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2007/rela
  *    recovery offer (sessions 36, 37 and 39);
  *  - `"unobserved-reference"`: a `diagramData`, `oleObject` or `hdphoto`
  *    reach nothing references opened clean, under `word/` and outside it
- *    (session 44 s44b/s44c); a referenced one was never shown to Word;
- *  - `"image"`: an `image` reach opened clean unreferenced and when a
- *    picture's `a:blip r:embed` names it (session 44 s44a/s44b); any other
- *    reference to an image relationship (`c:chart r:id`, `dgm:relIds`,
- *    `o:OLEObject r:id`, …) was never shown to Word (#701);
+ *    (session 44 s44b/s44c), and so did a picture's `a:blip r:embed` naming
+ *    one (session 45 s45b/s45d, #702 S1); every other reference shape was
+ *    never shown to Word;
+ *  - `"never"`: an `image` reach opened clean unreferenced and when a
+ *    picture's `a:blip r:embed` names it (session 44 s44a/s44b), a VML
+ *    picture's `v:imagedata r:id` and a linked picture's `a:blip r:link`
+ *    (session 46 s46d) — Word reads the bytes as an image and never loads
+ *    the target's relationships; the shapes Word refuses (`c:chart r:id`,
+ *    `dgm:relIds`, `o:OLEObject r:id` naming the relationship) are refused
+ *    for the reference's Type, whatever the target (#705, sessions 45 and
+ *    46), so #701's extension came out again (#706);
  *  - `undefined`: every other type keeps the reach-based rule.
  * The Office types are read by segment, Transitional or ISO Strict, as #645
  * read the chart type.
  */
-const referenceLoad = (type: string): "chart" | "unobserved-reference" | "image" | undefined => {
+const referenceLoad = (type: string): "chart" | "unobserved-reference" | "never" | undefined => {
     if (type === HDPHOTO_RELATIONSHIP_TYPE) {
         return "unobserved-reference";
     }
@@ -751,7 +757,7 @@ const referenceLoad = (type: string): "chart" | "unobserved-reference" | "image"
         case "oleObject":
             return "unobserved-reference";
         case "image":
-            return "image";
+            return "never";
         default:
             return undefined;
     }
@@ -765,17 +771,17 @@ const referenceLoad = (type: string): "chart" | "unobserved-reference" | "image"
  * counts as a reference to the Id:
  *  - `"declared"` (`chart`): #645's reference attributes
  *    (`wordRelationshipReferenceIds`);
- *  - `"any"` (`diagramData`, `oleObject`, `hdphoto`): any attribute naming
- *    the Id, because their reference shapes (`dgm:relIds r:dm`, …) are not
- *    all `id`/`embed`/`link` and Word was never shown a referenced one, so it
- *    keeps blocking (#647);
- *  - `"non-picture"` (`image`): any attribute but a picture's
- *    `a:blip r:embed`, the one reference Word was shown clean (#701).
+ *  - `"non-picture"` (`diagramData`, `oleObject`, `hdphoto`): any attribute
+ *    naming the Id but a picture's `a:blip r:embed`, the one reference Word
+ *    was shown clean (#702 S1, session 45); their other reference shapes
+ *    (`dgm:relIds r:dm`, …) are unobserved, so they keep blocking (#647).
+ * An `image` relationship is never returned: Word never loads the part
+ * through it, however its Id is named (#706, sessions 44 and 46).
  */
 export type ReferenceLoadedSource = {
     readonly source: string | undefined;
     readonly id: string;
-    readonly reference: "declared" | "any" | "non-picture";
+    readonly reference: "declared" | "non-picture";
 };
 
 /**
@@ -791,8 +797,8 @@ export type ReferenceLoadedSource = {
  * the reference in the processed view. Session 44 opened clean every
  * unreferenced image reach and every one a picture's `a:blip r:embed` names,
  * and every unreferenced `diagramData`, `oleObject` and `hdphoto` reach
- * ({@link referenceLoad}); an image relationship is returned with the
- * picture reference left out (#701). The caller drops
+ * ({@link referenceLoad}); an image relationship is never returned, so a
+ * part only images reach yields no sources (#706). The caller drops
  * the finding to a warning when no Word-read part's effective XML names one
  * of the returned Ids, and keeps it when `undefined` leaves the part on the
  * pre-#645 verdict.
@@ -839,12 +845,15 @@ export const wordReferenceLoadedSources = async (
                 return undefined;
             }
             reached = true;
+            if (load === "never") {
+                continue;
+            }
             const key = `${source ?? ""}\n${relationship.getAttribute("Id") ?? ""}\n${load}`;
             if (seen.has(key)) {
                 continue;
             }
             seen.add(key);
-            const reference = load === "chart" ? "declared" : load === "image" ? "non-picture" : "any";
+            const reference = load === "chart" ? "declared" : "non-picture";
             sources.push({ source, id: relationship.getAttribute("Id") ?? "", reference });
         }
     }

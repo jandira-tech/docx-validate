@@ -1719,17 +1719,16 @@ describe("wordReferenceLoadedSources (#645, #647)", () => {
     // Session 44 (s44a–s44c, #647): an image relationship never loads its
     // target's relationships, so it is reached but never a source; an
     // unreferenced diagramData, oleObject or hdphoto reach opened clean, and
-    // their unobserved referenced shapes are matched on any attribute.
-    it("names an image relationship whose picture reference does not count, Transitional or Strict (#701)", async () => {
+    // their referenced shapes are matched on any attribute but a picture's
+    // a:blip r:embed, which session 45 opened clean (#702 S1).
+    it("never names an image relationship, Transitional or Strict (#706)", async () => {
         for (const type of [`${R}/image`, "http://purl.oclc.org/ooxml/officeDocument/relationships/image"]) {
             const parts = withDocRel({ ...MINIMAL_PARTS, "charts/chart1.xml": BARE_CHART_XML }, "rId8", type, "../charts/chart1.xml");
-            expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toEqual([
-                { source: "word/document.xml", id: "rId8", reference: "non-picture" },
-            ]);
+            expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toEqual([]);
         }
     });
 
-    it("keeps the image relationship beside a chart one, each with its own reference rule", async () => {
+    it("drops an image relationship beside a chart one, so the chart rule alone answers", async () => {
         const parts = withDocRel(
             withDocRel({ ...MINIMAL_PARTS, "charts/chart1.xml": BARE_CHART_XML }, "rId9", `${R}/chart`, "../charts/chart1.xml"),
             "rId8",
@@ -1738,16 +1737,15 @@ describe("wordReferenceLoadedSources (#645, #647)", () => {
         );
         expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toEqual([
             { source: "word/document.xml", id: "rId9", reference: "declared" },
-            { source: "word/document.xml", id: "rId8", reference: "non-picture" },
         ]);
     });
 
     it.each([`${R}/diagramData`, `${R}/oleObject`, "http://schemas.microsoft.com/office/2007/relationships/hdphoto"])(
-        "matches any attribute for a %s reach",
+        "matches any attribute but a picture's a:blip r:embed for a %s reach",
         async (type) => {
             const parts = withDocRel({ ...MINIMAL_PARTS, "word/charts/chart1.xml": BARE_CHART_XML }, "rId8", type, "charts/chart1.xml");
             expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "word/charts/chart1.xml")).toEqual([
-                { source: "word/document.xml", id: "rId8", reference: "any" },
+                { source: "word/document.xml", id: "rId8", reference: "non-picture" },
             ]);
         },
     );

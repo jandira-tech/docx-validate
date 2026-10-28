@@ -11,8 +11,7 @@ import { parseXml } from "../src/lib/xml-helpers";
 import {
     hasWordRelationshipReference,
     isWordBlockingIssue,
-    nonPictureRelationshipAttributeValues,
-    relationshipAttributeValues,
+    unobservedReferenceAttributeValues,
 } from "../src/scripts/office/validators/word-blocking";
 
 const issue = (code: string, rest: Partial<ValidationIssue> = {}): ValidationIssue => ({ severity: "error", code, message: "", ...rest });
@@ -549,10 +548,12 @@ describe("hasWordRelationshipReference", () => {
     });
 });
 
-describe("relationshipAttributeValues (#647)", () => {
-    // The superset the unobserved referenced shapes are matched on: every
-    // attribute in either relationships namespace, and VML's o:relid, on any
-    // element; nothing else, and no empty value.
+describe("unobservedReferenceAttributeValues (#647, #702)", () => {
+    // The matcher for the reference-loaded types whose referenced shapes
+    // Word was never shown but a picture's a:blip r:embed, which session 45
+    // opened clean (#702 S1): every attribute in either relationships
+    // namespace, and VML's o:relid, on any element but that one; nothing
+    // else, and no empty value.
     it("collects every relationships-namespace attribute and o:relid, and nothing else", () => {
         const document = parseXml(
             `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ` +
@@ -561,13 +562,9 @@ describe("relationshipAttributeValues (#647)", () => {
                 `xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram">` +
                 `<w:body><dgm:relIds r:dm="rId1" r:lo="rId2" r:qs="" rs:cs="rId3"/><w:p o:relid="rId4" o:spid="rId5" w:rsidR="rId6" id="rId7"/></w:body></w:document>`,
         );
-        expect([...relationshipAttributeValues(document)].sort()).toEqual(["rId1", "rId2", "rId3", "rId4"]);
+        expect([...unobservedReferenceAttributeValues(document)].sort()).toEqual(["rId1", "rId2", "rId3", "rId4"]);
     });
-});
 
-describe("nonPictureRelationshipAttributeValues (#701)", () => {
-    // An image relationship's Id counts as referenced unless only a picture's
-    // a:blip r:embed names it, the shape session 44 opened clean.
     it("leaves out a:blip r:embed, Transitional and ISO Strict, and keeps every other reference", () => {
         const document = parseXml(
             `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ` +
@@ -578,7 +575,6 @@ describe("nonPictureRelationshipAttributeValues (#701)", () => {
                 `<w:body><a:blip r:embed="rId1" r:link="rId2"/><as:blip rs:embed="rId3"/><x:blip r:embed="rId4"/>` +
                 `<c:chart r:id="rId5"/><w:p o:relid="rId6"/></w:body></w:document>`,
         );
-        expect([...nonPictureRelationshipAttributeValues(document)].sort()).toEqual(["rId2", "rId4", "rId5", "rId6"]);
-        expect([...relationshipAttributeValues(document)].sort()).toEqual(["rId1", "rId2", "rId3", "rId4", "rId5", "rId6"]);
+        expect([...unobservedReferenceAttributeValues(document)].sort()).toEqual(["rId2", "rId4", "rId5", "rId6"]);
     });
 });
