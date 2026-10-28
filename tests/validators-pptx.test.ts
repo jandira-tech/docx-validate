@@ -1424,3 +1424,50 @@ describe("a sldLayoutId naming no slideLayout relationship is one report outside
         },
     );
 });
+
+// #1100: the #1093 hand-off covers every master validateSlideLayoutIds
+// judges, including one the presentation relates from outside
+// ppt/slideMasters/ (#1013).
+describe("a related master outside ppt/slideMasters/ hands its sldLayoutId copy off too (#1100)", () => {
+    const MASTER = "ppt/masters/slideMaster1.xml";
+    /** The minimal deck with its master moved to `ppt/masters/` and its `sldLayoutId` naming `rid`. */
+    const movedMasterDeck = (rid: string) => {
+        const parts: Record<string, string> = {};
+        for (const [name, xml] of Object.entries(MINIMAL_PPTX_PARTS)) {
+            const moved = name.replace("ppt/slideMasters/", "ppt/masters/");
+            parts[moved] = xml
+                .replace("/ppt/slideMasters/slideMaster1.xml", `/${MASTER}`)
+                .replace('Target="slideMasters/slideMaster1.xml"', 'Target="masters/slideMaster1.xml"')
+                .replace('Target="../slideMasters/slideMaster1.xml"', 'Target="../masters/slideMaster1.xml"');
+        }
+        parts[MASTER] = parts[MASTER]!.replace('r:id="rId1"/></p:sldLayoutIdLst>', `r:id="${rid}"/></p:sldLayoutIdLst>`);
+        return buildPptx(parts);
+    };
+    /** The run's sldLayoutId findings as `code path`, in report order. */
+    const layoutFindings = async (bytes: Buffer, profile: "lenient" | "word-valid" | "strict") =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "deck.pptx");
+            await fs.writeFile(file, bytes);
+            return (await validate(file, { profile })).issues
+                .filter((issue) => ["sldlayout-missing-rid", "rels-id-mismatch", "rels-id-missing"].includes(issue.code ?? ""))
+                .map((issue) => `${issue.code} ${issue.path}`);
+        });
+
+    it.each(["lenient", "word-valid", "strict"] as const)("the moved master naming its layout draws neither under %s", async (profile) => {
+        expect(await layoutFindings(await movedMasterDeck("rId1"), profile)).toEqual([]);
+    });
+
+    it.each(["word-valid", "strict"] as const)(
+        "a moved master's sldLayoutId naming nothing draws only sldlayout-missing-rid under %s",
+        async (profile) => {
+            expect(await layoutFindings(await movedMasterDeck("rId9"), profile)).toEqual([`sldlayout-missing-rid ${MASTER}`]);
+        },
+    );
+
+    it("lenient keeps both findings", async () => {
+        expect(await layoutFindings(await movedMasterDeck("rId9"), "lenient")).toEqual([
+            `sldlayout-missing-rid ${MASTER}`,
+            `rels-id-missing ${MASTER}`,
+        ]);
+    });
+});
