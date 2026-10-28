@@ -236,4 +236,60 @@ describe("unpack", () => {
             }
         });
     });
+
+    /** A minimal package plus one entry stored under `name`, written by a raw archiver. */
+    const withEntry = async (target: string, name: string): Promise<void> => {
+        const entries = Object.entries(MINIMAL_PARTS).map(([part, content]) => ({ name: part, content }));
+        await fs.writeFile(target, buildRawZip([...entries, { name, content: "x" }]));
+    };
+
+    it("leaves no output directory behind when it created one and the extraction is refused (#675)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "slip.docx");
+            await withEntry(inputFile, "../evil.txt");
+            const out = path.join(dir, "new", "out");
+
+            const result = await unpack(inputFile, out);
+            expect(result).toEqual({ ok: false, message: "Error unpacking: Refusing to extract entry outside output dir: ../evil.txt" });
+            await expect(fs.access(path.join(dir, "new"))).rejects.toThrow();
+            await expect(fs.access(path.join(dir, "evil.txt"))).rejects.toThrow();
+        });
+    });
+
+    it("keeps an existing output directory and its files when the extraction is refused (#675)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "slip.docx");
+            await withEntry(inputFile, "word/../../evil.txt");
+            const out = path.join(dir, "out");
+            await fs.mkdir(out);
+            await fs.writeFile(path.join(out, "notes.txt"), "mine");
+
+            expect((await unpack(inputFile, out)).ok).toBe(false);
+            expect(await fs.readdir(out)).toEqual(["notes.txt"]);
+        });
+    });
+
+    it("prints a refused name's control characters as escapes (#675)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "slip.docx");
+            await withEntry(inputFile, "../\u001b]0;owned\u0007\r\nevil.txt");
+
+            const result = await unpack(inputFile, path.join(dir, "out"));
+            expect(result.ok).toBe(false);
+            expect(result.message).toBe(
+                "Error unpacking: Refusing to extract entry outside output dir: ../\\u{1b}]0;owned\\u{7}\\u{d}\\u{a}evil.txt",
+            );
+        });
+    });
+
+    it("leaves no output directory behind for a file that is not a ZIP archive (#675)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "fake.docx");
+            await fs.writeFile(inputFile, "not a zip");
+            const out = path.join(dir, "out");
+
+            expect((await unpack(inputFile, out)).ok).toBe(false);
+            await expect(fs.access(out)).rejects.toThrow();
+        });
+    });
 });

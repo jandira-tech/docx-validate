@@ -7,7 +7,14 @@ import path from "node:path";
 
 import { MINIMAL_PARTS } from "./minimal-docx";
 
-/** Renamed main parts outside the ct-undeclared-part pass (#535, AR F1). */
+/**
+ * Renamed main parts with a generic XML type (#535, AR F1), and the error
+ * strict rejects each with. The base content-types pass skips `docProps/`,
+ * so strict keeps the generic finding there; it reaches `word/document.bin`
+ * by its XML content type (#620) and rejects its `document` root as
+ * `ct-undeclared-part`, as it does the same main stored as `word/document.xml`,
+ * dropping the generic finding it replaces.
+ */
 export const GENERIC_RENAMED_MAIN_PARTS = ["word/document.bin", "docProps/document.xml"].flatMap((part) =>
     ["application/xml", "text/xml"].map((contentType) => {
         const parts = { ...MINIMAL_PARTS };
@@ -24,7 +31,8 @@ export const GENERIC_RENAMED_MAIN_PARTS = ["word/document.bin", "docProps/docume
         )
             .replace('ContentType="application/xml"', `ContentType="${contentType}"`)
             .replace("</Types>", `<Default Extension="bin" ContentType="${contentType}"/></Types>`);
-        return { part, contentType, parts };
+        const strictCode = part.startsWith("docProps/") ? "word-part-content-type-generic" : "ct-undeclared-part";
+        return { part, contentType, parts, strictCode };
     }),
 );
 

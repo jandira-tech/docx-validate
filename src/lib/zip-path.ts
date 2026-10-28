@@ -22,6 +22,15 @@ import type JSZip from "jszip";
 import { assertPlaceableEntries, indexByPartName, normalizePartName } from "./validation-context";
 
 /**
+ * `text` with every control character (C0, DEL, C1) and bidirectional
+ * formatting character written as a `\u{…}` escape. An entry name comes from
+ * the archive, and messages embed it, so a crafted name must not reach the
+ * terminal that prints them as anything but text (#675).
+ */
+export const escapeControlCharacters = (text: string): string =>
+    text.replace(/[\p{Cc}\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/gu, (char) => `\\u{${char.codePointAt(0)!.toString(16)}}`);
+
+/**
  * Resolve a zip entry against `outputDir` and refuse path-traversal names
  * (Zip Slip). Uses `path.relative` rather than `startsWith` so a sibling
  * directory that shares a prefix (`/tmp/dest` vs `/tmp/dest-evil`) cannot
@@ -38,24 +47,94 @@ export const resolveSafeZipEntry = (outputDir: string, entryName: string): strin
         return resolved;
     }
     if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
-        throw new Error(`Refusing to extract entry outside output dir: ${entryName}`);
+        throw new Error(`Refusing to extract entry outside output dir: ${escapeControlCharacters(entryName)}`);
     }
     return resolved;
 };
 
-export const extractZipEntries = async (zip: JSZip, outputDir: string): Promise<void> => {
-    const entries: { name: string; file: JSZip.JSZipObject }[] = [];
-    zip.forEach((relativePath, file) => {
-        entries.push({ name: relativePath, file });
-    });
-    for (const { name, file } of entries) {
-        const resolved = resolveSafeZipEntry(outputDir, name);
-        if (file.dir) {
-            await fs.mkdir(resolved, { recursive: true });
-            continue;
+/**
+ * Refuse a destination whose path below `root` runs through, or ends at, a
+ * symbolic link already on disk: the write would follow it out of `root`
+ * (#675). `root` itself may be a link; the caller chose it.
+ */
+const assertNoLinkBelow = async (root: string, destination: string, entryName: string): Promise<void> => {
+    let current = root;
+    for (const segment of path.relative(root, destination).split(path.sep)) {
+        current = path.join(current, segment);
+        let stat;
+        try {
+            stat = await fs.lstat(current);
+        } catch (err) {
+            // Nothing on disk from here down, or a file where a folder is
+            // needed, which the write itself then refuses.
+            if ((err as NodeJS.ErrnoException).code === "ENOENT" || (err as NodeJS.ErrnoException).code === "ENOTDIR") {
+                return;
+            }
+            throw err;
         }
-        await fs.mkdir(path.dirname(resolved), { recursive: true });
-        await fs.writeFile(resolved, await file.async("nodebuffer"));
+        if (stat.isSymbolicLink()) {
+            throw new Error(
+                `Refusing to extract ${escapeControlCharacters(entryName)}: ${escapeControlCharacters(path.relative(root, current).split(path.sep).join("/"))} is a symbolic link`,
+            );
+        }
+    }
+};
+
+/**
+ * Extract every entry of `zip` under its own name into `outputDir`, a
+ * directory the caller chose (`unpack`) or a fresh temporary one.
+ *
+ * Every entry is checked before the first write, so a refused entry leaves
+ * no output: a name that leaves the directory, including a stored name JSZip
+ * resolves inside it (`../evil.txt` loads as `evil.txt`, keeping the stored
+ * name in `unsafeOriginalName`; #676), and a destination under a symbolic
+ * link already in the directory. Extraction creates no links, so checking
+ * up front covers every write. When a write or an entry's read fails part
+ * way, the files and folders this extraction created are removed; a file it
+ * overwrote keeps the new bytes.
+ */
+export const extractZipEntries = async (zip: JSZip, outputDir: string): Promise<void> => {
+    const root = path.resolve(outputDir);
+    const entries: { name: string; resolved: string; file: JSZip.JSZipObject }[] = [];
+    zip.forEach((relativePath, file) => {
+        const stored = (file as JSZip.JSZipObject & { unsafeOriginalName?: string }).unsafeOriginalName;
+        if (stored !== undefined) {
+            resolveSafeZipEntry(root, stored);
+        }
+        entries.push({ name: relativePath, resolved: resolveSafeZipEntry(root, relativePath), file });
+    });
+    for (const { name, resolved } of entries) {
+        await assertNoLinkBelow(root, resolved, name);
+    }
+    const created: string[] = [];
+    try {
+        for (const { resolved, file } of entries) {
+            const folder = await fs.mkdir(file.dir ? resolved : path.dirname(resolved), { recursive: true });
+            if (folder !== undefined) {
+                created.push(folder);
+            }
+            if (file.dir) {
+                continue;
+            }
+            const content = await file.async("nodebuffer");
+            try {
+                await fs.writeFile(resolved, content, { flag: "wx" });
+                created.push(resolved);
+            } catch (err) {
+                // Only EEXIST means the file was there before this write.
+                if ((err as NodeJS.ErrnoException).code !== "EEXIST") {
+                    created.push(resolved);
+                    throw err;
+                }
+                await fs.writeFile(resolved, content);
+            }
+        }
+    } catch (err) {
+        // Everything below a folder mkdir created is this extraction's own.
+        for (const entry of created.reverse()) {
+            await fs.rm(entry, { recursive: true, force: true }).catch(() => undefined);
+        }
+        throw err;
     }
 };
 

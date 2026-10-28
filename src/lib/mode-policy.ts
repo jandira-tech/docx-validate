@@ -59,11 +59,13 @@ export type ModeRequest = {
     quick?: boolean;
     /** `--checks`: run these ids or group names, plus their prerequisites. */
     checks?: readonly string[];
+    /** `--auto-repair`: repair before validating. Only a full run repairs. */
+    autoRepair?: boolean;
 };
 
 /**
  * Two selectors that contradict each other (`--quick` with `--checks`,
- * `--strict` with partial selection, …). A configuration error: the caller
+ * `--strict` or `--auto-repair` with partial selection, …). A configuration error: the caller
  * asked for something that has no meaning, so nothing is validated.
  */
 export class ModeConflictError extends Error {
@@ -141,7 +143,9 @@ export const profileWalksSchemas = (format: PackageFormat, profile: Profile): bo
 /**
  * Reject a request whose selectors contradict each other. Strict is the
  * complete mode, so it cannot be paired with partial check selection, and it
- * cannot be paired with a profile that would silently win over it.
+ * cannot be paired with a profile that would silently win over it. A partial
+ * run never repairs, so it cannot be asked to: the request is refused rather
+ * than answered with `repairs: 0` and no word that nothing was tried (#652).
  *
  * @throws {ModeConflictError}
  */
@@ -162,6 +166,9 @@ export const assertModeCoherent = (request: ModeRequest): void => {
         throw new ModeConflictError(
             "Cannot combine profile 'strict' with --quick or --checks: strict validation cannot be limited to part of the check set.",
         );
+    }
+    if (request.autoRepair === true && partial) {
+        throw new ModeConflictError("Cannot combine --auto-repair with --quick or --checks: only a full run repairs.");
     }
 };
 

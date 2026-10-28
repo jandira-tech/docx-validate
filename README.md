@@ -179,7 +179,13 @@ schemas under `word-valid`, so `schemaCompleted` is always `false`. Full `lenien
 can stop a lenient run before XSD. The XML part list uses OPC-equivalent
 extensions: ASCII case is ignored and unreserved escapes are decoded, so `.XML`,
 `.RELS` and `.%72els` parts are seen by the passes that iterate that list and by
-the XSD walk. DOCX relationships validation passes use the same OPC-equivalent
+the XSD walk. It also holds every other part `[Content_Types].xml` declares
+with an XML type (`application/xml`, `text/xml`, or an `application/…+xml`
+type), whatever its name: Word reads a part by its relationship and content
+type, so a main document stored as `word/document.bin` under the main
+document's Override is checked as `word/document.xml` would be, and Word 16.115
+refuses it truncated (#620, session 32). Image types such as `image/svg+xml`
+are not XML parts here. DOCX relationships validation passes use the same OPC-equivalent
 `.rels` predicate. Relationship-id and hyperlink checks also resolve sidecars
 by OPC part-name equivalence in packed and directory inputs, including full,
 named and quick runs: a `.RELS` sidecar resolves like `.rels`, matching Word
@@ -191,6 +197,13 @@ Named selections diagnose the escaped name when they include that check.
 Empty-part auto-repair retains its exact lowercase `.rels` scope. The trace describes the schema walk, not a Microsoft Word invocation. Under `strict`, ISO Strict OOXML parts use the bundled
 `schemas/iso-strict/` schemas. Lenient skips those parts with the info-level
 `xsd-strict-skipped`; Word-valid emits no XSD skip issue because it runs no XSD.
+The walk sends a part to the schema its identity maps to. The glossary
+document's parts (`word/glossary/*.xml`) use `wml.xsd`, and the DrawingML
+diagram parts (`diagrams/dataN.xml`, `layoutN.xml`, `quickStyleN.xml`,
+`colorsN.xml` under `word/`, `ppt/` or `xl/`) use `dml-diagram.xsd` (#628). A
+part with no mapped schema, such as `customXml/item1.xml` or a diagram's
+`drawingN.xml` cache, is not sent: `xsdWalk.parts` lists exactly the parts
+that were.
 
 Full DOCX/DOCM validation reports duplicate relationship `Id` values as
 `rels-id-duplicate`, judging the relationships part of every owner part in
@@ -227,6 +240,19 @@ or `rels-unreferenced` findings ([#635](https://github.com/jandira-tech/docx-val
 [Word probe evidence](docs/plans/evidence/word-probes-2026-10-24.md)). Strict still
 reports stored relationships markup compatibility and schema defects. Lenient
 keeps its raw traversal and existing findings.
+
+Under Word-valid and strict, the file-reference walk behind `rels-broken` and
+`rels-unreferenced` also skips `TargetMode="External"` relationships: an External
+target names a resource outside the package, never a part (ECMA-376 Part 2 §9.3),
+so a `file:///…`, UNC or `ftp://` target — such as the `attachedTemplate`
+relationship Word writes to a local template — is no longer resolved as a package
+path and reported as a broken reference. Word 16.115 opened External hyperlinks
+to `file:///missing.rels`, `file:///C:/docs/_rels/missing.xml` and
+`../customXml/missing.xml` clean, as direct children and inside a selected `w14`
+Choice, and one a `w:hyperlink` names; these are the targets Word-valid's
+`rels-broken` still blocked, so they no longer block (Word probes session 40,
+`s40a`/`s40b`). Lenient keeps its historical scan, which skips only `http…` and
+`mailto:` targets ([#665](https://github.com/jandira-tech/docx-validate/issues/665)).
 
 The processed view is DOCX/DOCM-only: every observation behind it is Word
 opening `.docx` files, and PowerPoint was never shown markup compatibility in a
@@ -266,8 +292,10 @@ formats other than their default `.docx` (for example, `.pptx` or `.docm`).
   reading a file or starting XML/XSD engines. `--help` also needs no engine startup.
 - `--strict` / `{ strict: true }` is shorthand for `profile: "strict"`. Strict
   rejects partial selection; `--quick` and `--checks` are mutually exclusive.
-  `--strict` also rejects an explicit profile other than `strict`. API conflicts
-  throw `ModeConflictError`; CLI configuration errors exit 1.
+  `--strict` also rejects an explicit profile other than `strict`. A partial run
+  never repairs, so `--auto-repair` / `autoRepair: true` with `--quick` or
+  `--checks` is refused rather than ignored (#652). API conflicts throw
+  `ModeConflictError`; CLI configuration errors exit 1.
 - Partial runs perform no XSD validation and report `omittedChecks`. A successful
   partial run prints “Selected checks passed”, followed by counts, never “All
   validations PASSED!”, even when it omitted no registered check (a PPTX or XLSX
@@ -1315,6 +1343,16 @@ await unpack("./contract.docx", "./unpacked");
 await pack("./unpacked", "./contract.modified.docx");
 ```
 
+`unpack` checks every entry before it writes one (#675). It refuses, writing
+nothing, an entry whose stored name leaves the output directory, even one JSZip
+would load inside it (`../evil.txt` loads as `evil.txt`; #676), and an entry
+whose destination runs through a symbolic link already in the output directory.
+The output directory itself may be a link. When a read or write fails part way,
+`unpack` removes the files and folders it created, including the output
+directory when it created it; a file it overwrote keeps the new bytes. Messages
+print control and bidirectional formatting characters in entry names as `\u{…}`
+escapes.
+
 ### Drive the CLIs programmatically
 
 If you want the CLI behaviour (commander parsing, exit codes, the same status
@@ -1554,6 +1592,17 @@ guidance its survivors carry — or "No manual repair guidance is available."
 otherwise. Counts describe group outcomes, including indirect
 repairs; they do not identify individual occurrences or promise future repairs.
 New post-repair groups remain ordinary validation findings. No repairs are added.
+
+The paragraph-id repair stamps `w14:paraId`/`w14:textId` on the paragraphs and
+table rows that lack them. On each part it stamps, it also declares `w14` on the
+part root and lists it in the root's `mc:Ignorable`, as Word writes it — reusing
+the prefix the root binds to the markup-compatibility namespace, else declaring
+`mc` — so the repaired part gains no `mce-extension-not-ignorable` finding. A
+root that binds `w14` or `mc` to another namespace is left as it was. Word 16.115
+opened the repaired output clean for a root with neither declaration, one listing
+`w15` and one using a `compat` prefix, as it opened the earlier output with
+`xmlns:w14` on each stamped element (Word probes session 40, `s40a`;
+[#653](https://github.com/jandira-tech/docx-validate/issues/653)).
 
 ## Development
 

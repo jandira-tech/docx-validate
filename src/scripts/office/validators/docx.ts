@@ -53,7 +53,7 @@ import { opcNameIssueSeverity } from "../../../lib/mode-policy";
 import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { PackageFormat, ValidationIssue, ValidationResult } from "../../../lib/types";
 import { withoutConsequentialParseFailures } from "../../../lib/parse-failures";
-import { mergeResults } from "../../../lib/types";
+import { mergeResults, NS } from "../../../lib/types";
 import { promoteFullCheckIssue } from "../../../lib/mode-policy";
 import { propertiesParts } from "../../../lib/properties-parts";
 import {
@@ -146,6 +146,7 @@ const RUN_INNER_CONTENT_LOCALS: ReadonlySet<string> = new Set([
     "contentPart",
 ]);
 const W14_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordml";
+const XMLNS_NAMESPACE = "http://www.w3.org/2000/xmlns/";
 const W15_NAMESPACE = "http://schemas.microsoft.com/office/word/2012/wordml";
 const W16CEX_NAMESPACE = "http://schemas.microsoft.com/office/word/2018/wordml/cex";
 const W16CID_NAMESPACE = "http://schemas.microsoft.com/office/word/2016/wordml/cid";
@@ -2504,6 +2505,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     }
                 }
                 if (modified) {
+                    // The stamps are w14 attributes: declare w14 on the root and
+                    // list it in mc:Ignorable, as Word writes it, so the repair
+                    // leaves no non-ignorable extension behind (#653).
+                    if (dom.documentElement) declareIgnorableW14(dom.documentElement);
                     await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
                 }
             } catch {
@@ -2955,6 +2960,35 @@ function directChildren(parent: Element, namespaceURI: string, local: string): E
         }
     }
     return out;
+}
+
+/**
+ * Declare `w14` on a part root and list it in the root's `mc:Ignorable`,
+ * reusing the prefix the root binds to the compatibility namespace, else
+ * declaring `mc`. A root that binds `w14` or `mc` to another namespace is
+ * left as it is (#653).
+ */
+function declareIgnorableW14(root: Element): void {
+    const bindings = new Map<string, string>();
+    for (let i = 0; i < root.attributes.length; i += 1) {
+        const attr = root.attributes[i];
+        if (attr?.name.startsWith("xmlns:")) bindings.set(attr.name.slice("xmlns:".length), attr.value);
+    }
+    const w14 = bindings.get("w14");
+    if (w14 !== undefined && w14 !== W14_NAMESPACE) return;
+    let mc = [...bindings].find(([, uri]) => uri === NS.MC)?.[0];
+    if (mc === undefined) {
+        if (bindings.has("mc")) return;
+        mc = "mc";
+        root.setAttributeNS(XMLNS_NAMESPACE, "xmlns:mc", NS.MC);
+    }
+    // A namespace-qualified declaration, so the serializer sees w14 in scope
+    // and stops declaring it again on each stamped element.
+    if (w14 === undefined) root.setAttributeNS(XMLNS_NAMESPACE, "xmlns:w14", W14_NAMESPACE);
+    const ignorable = root.getAttributeNodeNS(NS.MC, "Ignorable");
+    const tokens = (ignorable?.value ?? "").split(/\s+/).filter(Boolean);
+    if (tokens.includes("w14")) return;
+    root.setAttributeNS(NS.MC, ignorable?.name ?? `${mc}:Ignorable`, [...tokens, "w14"].join(" "));
 }
 
 function isExternalRelationship(rel: Element, target: string): boolean {

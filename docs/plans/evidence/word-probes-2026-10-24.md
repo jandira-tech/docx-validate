@@ -1,6 +1,6 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD), and what session 33 settled for story references with an empty, missing or ISO Strict `r:id`, story roots stored as `word/header1.xml`, and markup compatibility in relationships parts (#623, #624, #625, #631, #632, adversarial reviews BE and BG), what session 34 settled for parts reached only through a relationship markup compatibility selects and for markup-compatibility errors in relationships parts (#634, #635, #636, the adversarial review of #632's fix), and what session 35 settled for the adversarial review of layer 130: relationship ids `rels-missing-sidecar` counts that Word never resolves (#638), and story-reference ids outside the body `w:sectPr`; and what session 36 settled for the adversarial reviews of #636 and layer 131: which relationships parts' markup-compatibility errors Word rejects (#644), a chart no drawing references (#645), and a root-wrapped package relationships part (#640, #646); and what session 37 settled for #644's remaining sidecars and #645's boundary shapes (#647); and the package relationships root wrappers #646's fix accepts (session 38); and the chart sources and package-root wrapper combinations layer 133's review found accepted without evidence (#661, #662, session 39).
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD), and what session 33 settled for story references with an empty, missing or ISO Strict `r:id`, story roots stored as `word/header1.xml`, and markup compatibility in relationships parts (#623, #624, #625, #631, #632, adversarial reviews BE and BG), what session 34 settled for parts reached only through a relationship markup compatibility selects and for markup-compatibility errors in relationships parts (#634, #635, #636, the adversarial review of #632's fix), and what session 35 settled for the adversarial review of layer 130: relationship ids `rels-missing-sidecar` counts that Word never resolves (#638), and story-reference ids outside the body `w:sectPr`; and what session 36 settled for the adversarial reviews of #636 and layer 131: which relationships parts' markup-compatibility errors Word rejects (#644), a chart no drawing references (#645), and a root-wrapped package relationships part (#640, #646); and what session 37 settled for #644's remaining sidecars and #645's boundary shapes (#647); and the package relationships root wrappers #646's fix accepts (session 38); and the chart sources and package-root wrapper combinations layer 133's review found accepted without evidence (#661, #662, session 39); and the paragraph-id repair's output and the External relationship targets #653's and #665's fixes change (session 40).
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
@@ -278,6 +278,11 @@ Session 39 adds:
     - Each shape's referenced twin got the recovery offer (`s39c`), most followed by "Word experienced an error trying to open the file.": the drawing in the header, in the glossary's footnotes or document, in a selected Fallback (beside an unselected `foo` Choice), naming one of two chart relationships, or naming the equivalent-target relationship. Every commit rejects all six with `rels-missing-sidecar`. The first four twins change only the reference. The last two also replace their unreferenced shape's s36b bare chart with the s36d clustered bar chart, so for those two pairs the chart changes along with the reference ([#669](https://github.com/jandira-tech/docx-validate/issues/669)). Word opened an unreferenced clustered bar chart clean in the other four shapes, and an unreferenced bare chart clean in s36b.
 - **#662: Word resolves compound package-root wrappers as it resolves single ones** (`s39b`). Six `_rels/.rels` roots that markup compatibility reduces to the package part's one `Relationships` element opened clean: a Fallback holding a second wrapper, three nested wrappers, an unselected `foo` Choice before a selected `w14` Choice that holds it, the first of two `w14` Choices holding it (the second holds a foreign element), the Fallback wrapper carrying `mc:MustUnderstand="w14"`, and the Fallback wrapper around a `Relationships` element that declares `mc:Ignorable="foo"` and holds a `foo:bad` child. ab2e324f rejects all six with `opc-relationships-structure` and `word-main-document-part`, 3788f719 with `opc-relationships-structure`; 4295889a passes them, and strict still rejects them through the XSD walk.
 
+Session 40 adds:
+
+- **#653: Word opens the paragraph-id repair's output with w14 declared and ignorable on the root, as it opens the earlier output** (`s40a`). The repaired main document, taken from `repairMissingParaIds` itself, opened clean for a root with neither `w14` nor `mc` (the root gains both and `mc:Ignorable="w14"`), one listing `w15` (`mc:Ignorable="w15 w14"`) and one binding the compatibility namespace to `compat` (`compat:Ignorable="w15 w14"`). Release's output, with `xmlns:w14` on each stamped paragraph and row and no Ignorable entry, opened clean too. Every commit passes all four; the earlier output's `mce-extension-not-ignorable` is a schema-preprocessing warning, which Word-valid does not emit.
+- **#665: Word does not resolve a `TargetMode="External"` relationship's target as a part** (`s40a`, `s40b`). External hyperlinks to `file:///missing.rels`, `file:///C:/docs/_rels/missing.xml` and `../customXml/missing.xml`, the targets Word-valid's `rels-broken` blocking keeps, opened clean as direct children of `word/_rels/document.xml.rels` and inside a selected `w14` Choice, as did `file:///missing.rels` named by a `w:hyperlink` and the non-blocking `file:///C:/missing.pdf`. f3bbf27c rejects the seven blocking-target shapes under Word-valid with `rels-broken` and all eight under strict; 0e06e03e passes them under Word-valid, and strict rejects only the Choice placements, through `opc-relationships-markup-compatibility` (#632).
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -353,6 +358,8 @@ Session 37 ran in the foreground, one driver run per chunk (`s37a` 08:04Z and `s
 Session 38 ran in the foreground, one driver run (`s38a`, 08:54Z on 2026-10-25). Nothing was set aside, and every row is attributed by an alert or a manifest entry naming its staged file. Before the run, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, there was no `word.lock`, and no Word process was running, so the driver launched one (`word_pid=34260`, `launched_by_us=True`, `open_documents=0`, `started_clean=True`). The unselected-Choice row stalled the first pass; the driver recycled Word once and its second pass reproduced the recovery offer and the open error. `~/Library/Logs/DiagnosticReports` holds no Word report from the session. `s38a` was built from #646's lane (aed11e4e with the fix that became 4295889a) with the session 38 builder below. The validator columns were recomputed from the stored specimens at `release/0.53.0-rc.2` (ab2e324f), at the layer 132 head (3788f719) and at 4295889a. Session 37's 76bb5622 is #645's lane commit, which layer 133 carries as 7cb7517c. Both sets of columns were first computed before the stack was rebased onto #664, #666 and #667; recomputed at 3788f719 and 4295889a they match row for row, and so does session 37's 76bb5622 column (`s37b`) at 4295889a.
 
 Session 39 ran in the foreground, one driver run per chunk (`s39a` 09:34Z, `s39b` 09:35Z and `s39c` 09:35Z–09:39Z on 2026-10-25). Nothing was set aside, and every row is attributed by an alert or a manifest entry naming its staged file. Before each run, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, there was no `word.lock`, and no Word process was running, so the driver launched one each time (`word_pid=13188`, `14078` and `14761`, `launched_by_us=True`, `open_documents=0`, `started_clean=True`). In `s39c` Word opened nothing for three documents in a row twice, and the driver recycled it twice; every referenced twin's row carries the unreadable-content offer, and both controls opened clean after the recycles. `~/Library/Logs/DiagnosticReports` holds no Word report from the session. The specimens were built at layer 133 (rebased, source identical to 4295889a) with the session 39 builder below, which follows the shapes of the layer 133 review's own builder. The validator columns were recomputed from the stored specimens at `release/0.53.0-rc.2` (ab2e324f), at the layer 132 head (3788f719) and at 4295889a.
+
+Session 40 ran in the foreground, one driver run per chunk (`s40a` 23:22Z and `s40b` 23:23Z on 2026-10-25). Nothing was set aside, and every row is attributed by a manifest entry naming its staged file; Word showed no alert in either run. Before the runs, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, there was no `word.lock` (this session held one for the two runs), and no Word process was running, so the driver launched one each time (`word_pid=54167` and `54433`, `launched_by_us=True`, `open_documents=0`, `started_clean=True`). `~/Library/Logs/DiagnosticReports` holds no Word report from the session. The specimens were built at layer 135 with the session 40 builder below, from source identical to 0e06e03e; the #653 rows are the bytes `repairMissingParaIds` wrote, and release's shape rebuilds that output with the root left as it was. The validator columns were recomputed from the stored specimens at f3bbf27c, the layer before the fixes, and at 0e06e03e.
 
 Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
 
@@ -2375,6 +2382,52 @@ The chart sources (#661) and package-root wrapper combinations (#662) the layer 
 {"run": "s39c", "name": "chart-two-relationships-one-reference", "sha256": "38692fa07ce8d1fcfd4a72bcf8192e9a1876b1a28a0b77f3cf88888e52554048", "observedAt": "2026-10-25T09:38:14.974Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00005__wfv__chart-two-relationships-one-reference.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00005__wfv__chart-two-relationships-one-reference.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00005__wfv__chart-two-relationships-one-reference.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
 {"run": "s39c", "name": "chart-equivalent-target-referenced", "sha256": "a56b728ca9a3ab7bea131f935d4a156f04fd47b4d32678676539ea87750cb06e", "observedAt": "2026-10-25T09:35:31.007Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__chart-equivalent-target-referenced.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00000__wfv__chart-equivalent-target-referenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__chart-equivalent-target-referenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
 {"run": "s39c", "name": "s39c-control-minimal-end", "sha256": "9f7a3eb4f36859a7ac39d96ad28fe62f0d0aee8ee29682fe374b8bf3b5ec07ca", "observedAt": "2026-10-25T09:39:37+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 40: 23:22Z–23:23Z on 2026-10-25, validator columns at f3bbf27c and 0e06e03e
+
+The paragraph-id repair's output (#653) and the External relationship targets Word-valid blocked (#665), with two clean controls in each chunk. The driver opens a chunk's files in name order, so the controls were queued last in both chunks ([#671](https://github.com/jandira-tech/docx-validate/issues/671)); rows are listed in builder order.
+
+| Run    | Observed  | Specimen                              | Issue          | Shape                                                                                                                                                                                                                       | SHA-256 (first 16) | Word       | word-valid at f3bbf27c | word-valid at 0e06e03e | strict at f3bbf27c                                               | strict at 0e06e03e                                |
+| ------ | --------- | ------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ---------- | ---------------------- | ---------------------- | ---------------------------------------------------------------- | ------------------------------------------------- |
+| `s40a` | 23:22:46Z | `s40a-control-minimal`                | control        | `MINIMAL_PARTS`                                                                                                                                                                                                             | `b705a9a7e3509d7e` | clean-open | valid                  | valid                  | valid                                                            | valid                                             |
+| `s40a` | 23:22:46Z | `653-repaired-root-w14`               | #653           | a main document of two paragraphs and a one-row table, none with ids, its root declaring neither `w14` nor `mc`, after `repairMissingParaIds`: the root gains `xmlns:mc`, `xmlns:w14` and `mc:Ignorable="w14"`              | `7b2cb42973cc82d3` | clean-open | valid                  | valid                  | valid                                                            | valid                                             |
+| `s40a` | 23:22:46Z | `653-repaired-root-w14-w15`           | #653           | a main document of two paragraphs and a one-row table, none with ids, its root declaring `w15` and `mc` with `mc:Ignorable="w15"`, after the repair: `mc:Ignorable="w15 w14"`                                               | `52480de21e92f6ae` | clean-open | valid                  | valid                  | valid                                                            | valid                                             |
+| `s40a` | 23:22:46Z | `653-repaired-compat-prefix`          | #653           | a main document of two paragraphs and a one-row table, none with ids, its root binding the compatibility namespace to `compat` with `compat:Ignorable="w15"`, after the repair: `compat:Ignorable="w15 w14"`, no `xmlns:mc` | `dc820d6932ebe9d9` | clean-open | valid                  | valid                  | valid                                                            | valid                                             |
+| `s40a` | 23:22:46Z | `653-release-repair-shape`            | #653 (release) | `653-repaired-root-w14` with the root left as it was and `xmlns:w14` on each stamped paragraph and row, release's output                                                                                                    | `26e3d0785d441cab` | clean-open | valid                  | valid                  | valid                                                            | valid                                             |
+| `s40a` | 23:22:46Z | `665-external-file-pdf-direct`        | #665           | `MINIMAL_PARTS` plus an External hyperlink relationship `rId9` in `word/_rels/document.xml.rels` to `file:///C:/missing.pdf`; nothing names `rId9`                                                                          | `dc107a1ce7d34d0b` | clean-open | valid                  | valid                  | invalid: `rels-broken`                                           | valid                                             |
+| `s40a` | 23:22:46Z | `665-external-file-rels-direct`       | #665           | `MINIMAL_PARTS` plus an External hyperlink relationship `rId9` in `word/_rels/document.xml.rels` to `file:///missing.rels`; nothing names `rId9`                                                                            | `b8fe307421d13074` | clean-open | invalid: `rels-broken` | valid                  | invalid: `rels-broken`                                           | valid                                             |
+| `s40a` | 23:22:46Z | `s40a-control-minimal-end`            | control        | `MINIMAL_PARTS`                                                                                                                                                                                                             | `c1de2b26fda5b35c` | clean-open | valid                  | valid                  | valid                                                            | valid                                             |
+| `s40b` | 23:23:01Z | `s40b-control-minimal`                | control        | `MINIMAL_PARTS`                                                                                                                                                                                                             | `b72f9778371a8f0d` | clean-open | valid                  | valid                  | valid                                                            | valid                                             |
+| `s40b` | 23:23:01Z | `665-external-file-rels-choice`       | #665           | `665-external-file-rels-direct` with the relationship inside `<mc:AlternateContent><mc:Choice Requires="w14">`, beside an empty Fallback                                                                                    | `c91edf5cc7229093` | clean-open | invalid: `rels-broken` | valid                  | invalid: `opc-relationships-markup-compatibility`, `rels-broken` | invalid: `opc-relationships-markup-compatibility` |
+| `s40b` | 23:23:01Z | `665-external-underscore-rels-direct` | #665           | `MINIMAL_PARTS` plus an External hyperlink relationship `rId9` in `word/_rels/document.xml.rels` to `file:///C:/docs/_rels/missing.xml`; nothing names `rId9`                                                               | `36c2647c125e7f9f` | clean-open | invalid: `rels-broken` | valid                  | invalid: `rels-broken`                                           | valid                                             |
+| `s40b` | 23:23:01Z | `665-external-underscore-rels-choice` | #665           | `665-external-underscore-rels-direct` with the relationship inside `<mc:AlternateContent><mc:Choice Requires="w14">`, beside an empty Fallback                                                                              | `5e30a31fa5b4f429` | clean-open | invalid: `rels-broken` | valid                  | invalid: `opc-relationships-markup-compatibility`, `rels-broken` | invalid: `opc-relationships-markup-compatibility` |
+| `s40b` | 23:23:01Z | `665-external-customxml-direct`       | #665           | `MINIMAL_PARTS` plus an External hyperlink relationship `rId9` in `word/_rels/document.xml.rels` to `../customXml/missing.xml`; nothing names `rId9`                                                                        | `20857bf27a053f2c` | clean-open | invalid: `rels-broken` | valid                  | invalid: `rels-broken`                                           | valid                                             |
+| `s40b` | 23:23:01Z | `665-external-customxml-choice`       | #665           | `665-external-customxml-direct` with the relationship inside `<mc:AlternateContent><mc:Choice Requires="w14">`, beside an empty Fallback                                                                                    | `ddb88d905e1d0255` | clean-open | invalid: `rels-broken` | valid                  | invalid: `opc-relationships-markup-compatibility`, `rels-broken` | invalid: `opc-relationships-markup-compatibility` |
+| `s40b` | 23:23:01Z | `665-external-file-rels-referenced`   | #665           | `665-external-file-rels-direct` with the main document's run inside `<w:hyperlink r:id="rId9">`                                                                                                                             | `a09d694c5a0e5549` | clean-open | invalid: `rels-broken` | valid                  | invalid: `rels-broken`                                           | valid                                             |
+| `s40b` | 23:23:01Z | `s40b-control-minimal-end`            | control        | `MINIMAL_PARTS`                                                                                                                                                                                                             | `b72f9778371a8f0d` | clean-open | valid                  | valid                  | valid                                                            | valid                                             |
+
+<details><summary>Raw records, session 40</summary>
+
+```jsonl
+{"run": "s40a", "name": "s40a-control-minimal", "sha256": "b705a9a7e3509d7e235ef7087c37a80084caf55fcd3e0cf5e8a3888be400acdc", "observedAt": "2026-10-25T23:22:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s40a", "name": "653-repaired-root-w14", "sha256": "7b2cb42973cc82d3eb7750676e7c6b1ece6b0586589370923db09ea78c860423", "observedAt": "2026-10-25T23:22:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s40a", "name": "653-repaired-root-w14-w15", "sha256": "52480de21e92f6aec47e367e23db2673ff70527ac5a63fc006cc6ce55f7155b0", "observedAt": "2026-10-25T23:22:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s40a", "name": "653-repaired-compat-prefix", "sha256": "dc820d6932ebe9d9ef85f50531b005ebb5d9800e21bc6ffe9b994bf27457feb2", "observedAt": "2026-10-25T23:22:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s40a", "name": "653-release-repair-shape", "sha256": "26e3d0785d441caba7a25211d8a5907936334f353835a4d7ca420509592258ad", "observedAt": "2026-10-25T23:22:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s40a", "name": "665-external-file-pdf-direct", "sha256": "dc107a1ce7d34d0b610dd7069df6e003774b90d3d1a03ba76fd7b2d3cb9b953e", "observedAt": "2026-10-25T23:22:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s40a", "name": "665-external-file-rels-direct", "sha256": "b8fe307421d13074da756dad858475874094409a901969fd3fa4a9809ab335f1", "observedAt": "2026-10-25T23:22:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s40a", "name": "s40a-control-minimal-end", "sha256": "c1de2b26fda5b35cad7b5a9f4a70535a8c7cdd5d31ad02080dc20f0e4a1c2092", "observedAt": "2026-10-25T23:22:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s40b", "name": "s40b-control-minimal", "sha256": "b72f9778371a8f0d3227bc22d3b4637ce79a61debf4b50307b33ca882fdf97a4", "observedAt": "2026-10-25T23:23:01+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s40b", "name": "665-external-file-rels-choice", "sha256": "c91edf5cc72290931447f9cfcb0f6b98ebe75024b457e2e5e96c1ed1198f4d31", "observedAt": "2026-10-25T23:23:01+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s40b", "name": "665-external-underscore-rels-direct", "sha256": "36c2647c125e7f9f538272417f14b5d88ffe56a6e06335a5a5047711f175a8ce", "observedAt": "2026-10-25T23:23:01+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s40b", "name": "665-external-underscore-rels-choice", "sha256": "5e30a31fa5b4f429fbbbd4cf082428890f38819817af639f52b99c02a07cd996", "observedAt": "2026-10-25T23:23:01+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s40b", "name": "665-external-customxml-direct", "sha256": "20857bf27a053f2cb7773f99fa77bada8275d3cbd2043dae9016293b52b28618", "observedAt": "2026-10-25T23:23:01+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s40b", "name": "665-external-customxml-choice", "sha256": "ddb88d905e1d02556ad9047dfa4924755252ad114d340acfb911d4f15c2217db", "observedAt": "2026-10-25T23:23:01+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s40b", "name": "665-external-file-rels-referenced", "sha256": "a09d694c5a0e5549176dea86141c96c6b0263677cf8175abc3f1bb5000e674a5", "observedAt": "2026-10-25T23:23:01+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s40b", "name": "s40b-control-minimal-end", "sha256": "b72f9778371a8f0d3227bc22d3b4637ce79a61debf4b50307b33ca882fdf97a4", "observedAt": "2026-10-25T23:23:01+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 ```
 
 </details>
@@ -8745,6 +8798,205 @@ const chunks: Record<string, Array<[string, string, () => Promise<Uint8Array>]>>
         ],
         ["chart-equivalent-target-referenced", "#661 twin: equivalent target, the drawing names it", () => equivalentTarget(true)],
         ["s39c-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+Session 40's builder (`s40a`, `s40b`) is another standalone script, run the same way from the layer 135 worktree, with `CHUNK` naming the chunk:
+
+```ts
+// Session 40 (2026-10-25): the Word evidence #653 and #665 ask for before their fixes change a verdict or an output
+// Word could see. #653: repairMissingParaIds now declares w14 on the stamped part's root and lists it in mc:Ignorable;
+// s40a shows Word the repaired bytes the fix writes (taken from the real repair, not rebuilt) and release's shape, with
+// xmlns:w14 on each stamped element and no Ignorable entry. #665: the file-reference walk no longer resolves a
+// TargetMode="External" target as a part under strict and word-valid. Word-valid changes only for External targets
+// the rels-broken blocking predicate keeps (`.rels`, `/_rels/`, `../customXml/`), so s40a/s40b show Word those, as a
+// direct child and inside a selected w14 Choice, plus one a w:hyperlink names and one `file:///…pdf` reference.
+// Run from the layer 135 worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s40a pnpm exec tsx s40builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { NS } from "./src/lib/types";
+import { validate } from "./src/scripts/office/validate";
+import { DOCXSchemaValidator } from "./src/scripts/office/validators/docx";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { DOCUMENT_RELS, MCE_DECLARATIONS } from "./tests/support/relationships-markup-compatibility-specimens";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const W14 = "http://schemas.microsoft.com/office/word/2010/wordml";
+const W15 = "http://schemas.microsoft.com/office/word/2012/wordml";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const HYPERLINK = `${R}/hyperlink`;
+const MAIN = "word/document.xml";
+const replaceOnce = (text: string, from: string | RegExp, to: string): string => {
+    const next = text.replace(from, to);
+    if (next === text) throw new Error(`missing ${from}`);
+    return next;
+};
+
+// tests/paraid-repair-w14-ignorable.test.ts: a main document whose root carries `rootAttributes` and whose two
+// paragraphs and one table row have no ids.
+const withoutParaIds = (rootAttributes: string): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    [MAIN]:
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<w:document xmlns:w="${W}"${rootAttributes}><w:body>` +
+        `<w:p><w:r><w:t>one</w:t></w:r></w:p>` +
+        `<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/></w:tblPr><w:tblGrid><w:gridCol w:w="4000"/></w:tblGrid>` +
+        `<w:tr><w:tc><w:p/></w:tc></w:tr></w:tbl>` +
+        `<w:sectPr><w:pgSz w:w="12240" w:h="15840"/></w:sectPr></w:body></w:document>`,
+});
+
+// The bytes repairMissingParaIds writes for `parts`, read back from the directory it repaired.
+const workRoot = path.join(process.env.BUILD_DIR ?? ".", "..", "work");
+const repairedParts = async (name: string, parts: Record<string, string>): Promise<Record<string, string>> => {
+    const dir = path.join(workRoot, name);
+    for (const [part, xml] of Object.entries(parts)) {
+        mkdirSync(path.dirname(path.join(dir, part)), { recursive: true });
+        writeFileSync(path.join(dir, part), xml, "utf-8");
+    }
+    const repairs = await new DOCXSchemaValidator({ unpackedDir: dir }).repairMissingParaIds();
+    if (repairs !== 6) throw new Error(`${name}: expected 6 stamps, got ${repairs}`);
+    const out: Record<string, string> = {};
+    for (const entry of readdirSync(dir, { recursive: true, withFileTypes: true })) {
+        if (!entry.isFile()) continue;
+        const file = path.join(entry.parentPath, entry.name);
+        out[path.relative(dir, file).split(path.sep).join("/")] = readFileSync(file, "utf-8");
+    }
+    return out;
+};
+const repaired = async (name: string, rootAttributes: string) => buildDocx(await repairedParts(name, withoutParaIds(rootAttributes)));
+
+// Release's repair shape: the same stamps with xmlns:w14 on each stamped element and the root left as it was.
+const releaseShape = async () => {
+    const parts = await repairedParts("653-release-repair-shape", withoutParaIds(""));
+    const fixed = replaceOnce(parts[MAIN]!, ` xmlns:mc="${NS.MC}" xmlns:w14="${W14}" mc:Ignorable="w14"`, "");
+    const release = fixed.replace(/<w:(p|tr) w14:paraId=/g, `<w:$1 xmlns:w14="${W14}" w14:paraId=`);
+    if ((release.match(/xmlns:w14=/g) ?? []).length !== 3) throw new Error("release shape: expected three stamped elements");
+    return buildDocx({ ...parts, [MAIN]: release });
+};
+
+// tests/rels-external-target.integration.test.ts: the minimal package plus hyperlink relationship rId9 to `target`,
+// a direct child or inside a selected w14 Choice; `referenced` adds a w:hyperlink naming rId9.
+const withHyperlink = (target: string, placement: "direct" | "choice", referenced = false) => {
+    const relationship = `<Relationship Id="rId9" Type="${HYPERLINK}" Target="${target}" TargetMode="External"/>`;
+    const content =
+        placement === "direct"
+            ? relationship
+            : `<mc:AlternateContent><mc:Choice Requires="w14">${relationship}</mc:Choice><mc:Fallback/></mc:AlternateContent>`;
+    const rels = MINIMAL_PARTS[DOCUMENT_RELS]!;
+    const parts: Record<string, string> = {
+        ...MINIMAL_PARTS,
+        [DOCUMENT_RELS]: replaceOnce(
+            placement === "direct" ? rels : replaceOnce(rels, "<Relationships ", `<Relationships ${MCE_DECLARATIONS} `),
+            "</Relationships>",
+            `${content}</Relationships>`,
+        ),
+    };
+    if (referenced) {
+        parts[MAIN] = replaceOnce(
+            replaceOnce(parts[MAIN]!, "<w:document ", `<w:document xmlns:r="${R}" `),
+            "<w:r><w:t>Hello</w:t></w:r>",
+            `<w:hyperlink r:id="rId9"><w:r><w:t>Hello</w:t></w:r></w:hyperlink>`,
+        );
+    }
+    return buildDocx(parts);
+};
+const control = () => buildDocx({ ...MINIMAL_PARTS });
+
+const chunks: Record<string, Array<[string, string, () => Promise<Uint8Array>]>> = {
+    s40a: [
+        ["s40a-control-minimal", "control", control],
+        [
+            "653-repaired-root-w14",
+            '#653: the repair\'s output for a root with neither w14 nor mc (root gains both, mc:Ignorable="w14")',
+            () => repaired("653-repaired-root-w14", ""),
+        ],
+        [
+            "653-repaired-root-w14-w15",
+            '#653: the repair\'s output for a root listing w15 (mc:Ignorable="w15 w14")',
+            () => repaired("653-repaired-root-w14-w15", ` xmlns:w15="${W15}" xmlns:mc="${NS.MC}" mc:Ignorable="w15"`),
+        ],
+        [
+            "653-repaired-compat-prefix",
+            '#653: the repair\'s output for a root binding compat to the MC namespace (compat:Ignorable="w15 w14")',
+            () => repaired("653-repaired-compat-prefix", ` xmlns:compat="${NS.MC}" compat:Ignorable="w15" xmlns:w15="${W15}"`),
+        ],
+        ["653-release-repair-shape", "#653: release's output, xmlns:w14 on each stamped element and no Ignorable entry", releaseShape],
+        [
+            "665-external-file-pdf-direct",
+            "#665: External hyperlink file:///C:/missing.pdf, direct child, no reference",
+            () => withHyperlink("file:///C:/missing.pdf", "direct"),
+        ],
+        [
+            "665-external-file-rels-direct",
+            "#665: External hyperlink file:///missing.rels, direct child, no reference",
+            () => withHyperlink("file:///missing.rels", "direct"),
+        ],
+        ["s40a-control-minimal-end", "control", control],
+    ],
+    s40b: [
+        ["s40b-control-minimal", "control", control],
+        [
+            "665-external-file-rels-choice",
+            "#665: External hyperlink file:///missing.rels in a selected w14 Choice",
+            () => withHyperlink("file:///missing.rels", "choice"),
+        ],
+        [
+            "665-external-underscore-rels-direct",
+            "#665: External hyperlink file:///C:/docs/_rels/missing.xml, direct child",
+            () => withHyperlink("file:///C:/docs/_rels/missing.xml", "direct"),
+        ],
+        [
+            "665-external-underscore-rels-choice",
+            "#665: External hyperlink file:///C:/docs/_rels/missing.xml in a selected w14 Choice",
+            () => withHyperlink("file:///C:/docs/_rels/missing.xml", "choice"),
+        ],
+        [
+            "665-external-customxml-direct",
+            "#665: External hyperlink ../customXml/missing.xml, direct child",
+            () => withHyperlink("../customXml/missing.xml", "direct"),
+        ],
+        [
+            "665-external-customxml-choice",
+            "#665: External hyperlink ../customXml/missing.xml in a selected w14 Choice",
+            () => withHyperlink("../customXml/missing.xml", "choice"),
+        ],
+        [
+            "665-external-file-rels-referenced",
+            "#665: External hyperlink file:///missing.rels, direct child, named by a w:hyperlink",
+            () => withHyperlink("file:///missing.rels", "direct", true),
+        ],
+        ["s40b-control-minimal-end", "control", control],
     ],
 };
 
