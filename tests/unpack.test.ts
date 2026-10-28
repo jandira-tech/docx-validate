@@ -422,4 +422,23 @@ describe("unpack", () => {
             expect(bytes.equals(Buffer.from(document, "utf8"))).toBe(true);
         });
     });
+
+    it("leaves such a part byte-for-byte however long its declaration is (#881)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "macintosh-long.docx");
+            const outputDir = path.join(dir, "out");
+            // "Café" as Mac Roman stores it (é is 0x8E), behind a declaration longer than 200 bytes.
+            const document = Buffer.from(
+                MINIMAL_DOCUMENT.replace('encoding="UTF-8"', `${" ".repeat(240)}encoding="macintosh"`).replace("Hello", "Caf\u008e"),
+                "latin1",
+            );
+            await fs.writeFile(inputFile, await buildMinimalDocx({ ...MINIMAL_PARTS, "word/document.xml": document }));
+
+            const result = await unpack(inputFile, outputDir);
+            expect(result.ok).toBe(true);
+
+            const bytes = await fs.readFile(path.join(outputDir, "word", "document.xml"));
+            expect(bytes.equals(document)).toBe(true);
+        });
+    });
 });

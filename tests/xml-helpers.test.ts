@@ -270,6 +270,16 @@ describe("decodeXmlPart / encodeXmlPart", () => {
         expect(decodeXmlPart(utf8('<?xml version="1.0" encoding="ISO-8859-1"?><a>ok</a>'))).toBeUndefined();
     });
 
+    it("refuses an encoding it cannot decode however long the declaration is (#881)", () => {
+        const padding = " ".repeat(240);
+        const macintosh = `<?xml version="1.0"${padding} encoding="macintosh"?><a>ok</a>`;
+        expect(decodeXmlPart(utf8(macintosh))).toBeUndefined();
+        expect(decodeXmlPart(utf8(`<?xml version="1.0"${padding} encoding="windows-1252"?><a>ok</a>`))).toBeUndefined();
+        expect(decodeXmlBytes(utf8(macintosh))).toBe(macintosh);
+        const utf8Long = `<?xml version="1.0"${padding} encoding="UTF-8"?><a>ok</a>`;
+        expect(decodeXmlPart(utf8(utf8Long))).toEqual({ text: utf8Long, encoding: "utf-8", bom: undefined });
+    });
+
     it("decodes US-ASCII, whose every byte UTF-8 encodes the same way", () => {
         const ascii = '<?xml version="1.0" encoding="US-ASCII"?><a>ok</a>';
         expect(decodeXmlPart(utf8(ascii))).toEqual({ text: ascii, encoding: "utf-8", bom: undefined });
