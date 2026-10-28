@@ -1003,9 +1003,12 @@ session 62 (s62a/s62d, same evidence, two runs, all readings agree) offered
 recovery for a dangling footnote or endnote reference in a main document stored
 as `word/main.xml`, and opened clean an unrelated `word/header9.xml` holding
 one.
-References in a read header are not judged (session 62 s62d/s62e,
-[#806](https://github.com/jandira-tech/docx-validate/issues/806)); dangling
-references in footers, comments, nested notes beyond session 16's exclusion
+References in a read header or footer are not judged (session 62 s62d/s62e
+for a header,
+[#806](https://github.com/jandira-tech/docx-validate/issues/806);
+session 63 s63d for a footer,
+[#826](https://github.com/jandira-tech/docx-validate/issues/826)); dangling
+references in comments, nested notes beyond session 16's exclusion
 and reached glossaries stay judged but are unprobed.
 Both note checks compare ids by integer value: session 62 (s62b, same
 evidence, two runs, all readings agree) opened clean a footnote or endnote
@@ -1015,9 +1018,10 @@ spelling compares as written, unprobed. When the package view cannot be read, or
 its `officeDocument` relationship names no stored main document, the read model
 and the relationship walks return nothing, so both note checks fall back to the
 reading they used before #800 — references from the name-based story list but
-its headers, which are not judged (#806), definitions from the parts named
-`footnotes.xml` / `endnotes.xml` wherever stored — as the comment checks fall
-back to a by-name lookup when no relationship names the main document, and a
+its headers and footers, which are not judged (#806, #826), definitions from
+the parts named `footnotes.xml` / `endnotes.xml` wherever stored — as the
+comment checks fall back to a by-name lookup when no relationship names the
+main document, and a
 dangling reference still draws its finding beside the package defect's own
 ([#816](https://github.com/jandira-tech/docx-validate/issues/816)); no Word
 session has shown a note reference in such a package, so the fallback reading is

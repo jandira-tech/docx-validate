@@ -32,23 +32,24 @@
  * The references are read from the parts Word reads, as the read model
  * (`wordReadTypedTargets`) resolves them, wherever they are stored: every
  * main document and reached glossary (segment `officeDocument`), plus the
- * used footer, comments, footnotes and endnotes parts their
+ * used comments, footnotes and endnotes parts their
  * references make Word read (#800). The name-based story list it replaces
  * missed a main document stored as `word/main.xml`, whose dangling footnote
  * and endnote references Word session 62 refused (s62a), and read a
  * `word/header9.xml` no relationship reaches, whose dangling footnote
- * reference opened clean (s62d). References in a read header are not
- * judged: session 62 (s62d, s62e) opened clean dangling endnote and footnote
- * references there (#806). Dangling references in read footers, comments,
- * nested notes (beyond session 16's exclusion) and reached glossaries stay
- * judged but are unprobed.
+ * reference opened clean (s62d). References in a read header or footer
+ * are not judged: session 62 (s62d, s62e) opened clean dangling endnote
+ * and footnote references in a read header (#806), and session 63 (s63d)
+ * opened the read-footer twins clean (#826). Dangling references in
+ * comments, nested notes (beyond session 16's exclusion) and reached
+ * glossaries stay judged but are unprobed.
  *
  * When the package view cannot be read, or names no stored main document,
  * the read model and the relationship walks all return nothing, and a
  * dangling reference would pass unjudged beside the package defect's own
  * findings (#816). Both note checks then fall back to the reading they used
- * before #800 — references from the name-based story list but its headers,
- * definitions from the parts named `<kind>s.xml` wherever stored — as `comments.ts` falls
+ * before #800 — references from the name-based story list but its headers
+ * and footers, definitions from the parts named `<kind>s.xml` wherever stored — as `comments.ts` falls
  * back to a by-name lookup when no relationship names the main document.
  * When the package view can be read, nothing changes. No Word session has
  * shown a note reference in such a package; the reading is unprobed, and the
@@ -67,12 +68,13 @@ import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
 
 /**
  * The story segments whose parts the references this check judges live in
- * (#800): the used footers, comments, footnotes and endnotes parts; headers
- * are excluded by session 62 (s62d, s62e, #806).
+ * (#800): the used comments, footnotes and endnotes parts; headers are
+ * excluded by session 62 (s62d, s62e, #806) and footers by session 63
+ * (s63d, #826).
  * A story root itself — the main document or a reached glossary, wherever
  * stored — is typed `officeDocument`.
  */
-const STORY_SEGMENTS: ReadonlySet<string> = new Set(["footer", "comments", "footnotes", "endnotes"]);
+const STORY_SEGMENTS: ReadonlySet<string> = new Set(["comments", "footnotes", "endnotes"]);
 
 /**
  * A w:id is ST_DecimalNumber (xsd:integer), and Word compares note ids by
@@ -152,8 +154,8 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
         // before #800, as `comments.ts` falls back to a by-name lookup when
         // no relationship names the main document: definitions from the
         // parts named `<kind>s.xml` wherever stored, references from the
-        // name-based story list but its headers. No Word session has shown a
-        // note reference in such a package; the reading is unprobed.
+        // name-based story list but its headers and footers. No Word session
+        // has shown a note reference in such a package; the reading is unprobed.
         const readTargets = await wordReadTypedTargets(ctx, profile);
         if (!readTargets.some((target) => target.segment === "officeDocument")) {
             for (const part of ctx.partNames) {
@@ -162,8 +164,8 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
                 }
             }
             for (const xmlFile of ctx.storyParts()) {
-                // A header is not judged here either (#806).
-                if (/^header\d*\.xml$/i.test(path.posix.basename(xmlFile))) {
+                // A header or footer is not judged here either (#806, #826).
+                if (/^(header|footer)\d*\.xml$/i.test(path.posix.basename(xmlFile))) {
                     continue;
                 }
                 judged(xmlFile);
@@ -190,12 +192,14 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
         // make Word read (#800). A story-named part no relationship reaches
         // is no longer read for references (session 62 s62d opened one
         // holding a dangling reference clean), and a renamed main document
-        // now is (s62a refused its dangling references). Read headers are
-        // excluded too: session 62 (s62d, s62e) opened their dangling endnote
-        // and footnote references clean (#806). Footers, comments, nested
-        // notes beyond session 16's exclusion and reached glossaries stay
-        // judged but are unprobed. Filter before deduping so a header reach
-        // does not hide a part read through another judged segment.
+        // now is (s62a refused its dangling references). Read headers and
+        // footers are excluded too: session 62 (s62d, s62e) opened a read
+        // header's dangling endnote and footnote references clean (#806),
+        // and session 63 (s63d) the read-footer twins (#826). Comments,
+        // nested notes beyond session 16's exclusion and reached glossaries
+        // stay judged but are unprobed. Filter before deduping so a header
+        // or footer reach does not hide a part read through another judged
+        // segment.
         const seen = new Set<string>();
         for (const target of readTargets) {
             if (target.segment !== "officeDocument" && !STORY_SEGMENTS.has(target.segment)) {
