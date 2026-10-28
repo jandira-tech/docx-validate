@@ -2299,6 +2299,20 @@ describe("wordPossiblyReadParts (#1116, #1125)", () => {
         expect(await named(storyViaGlossary("header", WELLFORMED_STORY.header))).toContain(story);
     });
 
+    // #1147 (review 1138 F7): the exception covers the lazy story types only.
+    // A reached glossary's customXml relationship, which the read model does
+    // not follow (session 20), still names its part.
+    it("lists the part a reached glossary relates as customXml", async () => {
+        const parts = storyViaGlossary(
+            "header",
+            WELLFORMED_STORY.header,
+            glossaryWith("", ""),
+            relsPart(`<Relationship Id="rIdC" Type="${R}/customXml" Target="item1.xml"/>`),
+        );
+        parts["word/glossary/item1.xml"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<root/>`;
+        expect(await named(parts)).toContain(canonicalPartName("word/glossary/item1.xml"));
+    });
+
     // The read model reaches the main document through the Fallback Word
     // selects in the package relationships part (#634), so the main
     // document's sidecar is a root's.

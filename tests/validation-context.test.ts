@@ -254,6 +254,24 @@ describe("ValidationContext: a view with unparseable parts (#307)", () => {
             expect(a.gateKey).not.toBe(ctx.gateKey);
         });
 
+        // #1147 (review 1138 F5): with two parts sharing a reason, only a sort
+        // by part name makes the insertion order irrelevant.
+        it("is one for two parts with the same reason inserted in either order", () => {
+            const a = ctx.withUnparseable(
+                new Map([
+                    ["word/styles.xml", "unclosed"],
+                    ["word/document.xml", "unclosed"],
+                ]),
+            );
+            const b = ctx.withUnparseable(
+                new Map([
+                    ["word/document.xml", "unclosed"],
+                    ["word/styles.xml", "unclosed"],
+                ]),
+            );
+            expect(b.gateKey).toBe(a.gateKey);
+        });
+
         it("differs for another part, another reason, and another package with the same entries", () => {
             const styles = ctx.withUnparseable(new Map([["word/styles.xml", "not well-formed"]]));
             expect(ctx.withUnparseable(new Map([["word/document.xml", "not well-formed"]])).gateKey).not.toBe(styles.gateKey);

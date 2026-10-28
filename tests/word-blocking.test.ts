@@ -13,6 +13,7 @@ import {
     hasWordRelationshipReference,
     isWordBlockingIssue,
     isUnreadByWord,
+    needsPossiblyReadParts,
     unobservedReferenceAttributeValues,
 } from "../src/scripts/office/validators/word-blocking";
 
@@ -263,6 +264,15 @@ describe("isWordBlockingIssue", () => {
         // An unknown list, or a finding with no part, says nothing.
         expect(isUnreadByWord(issue("mce-malformed", { path: "word/header83.xml" }), undefined)).toBe(false);
         expect(isUnreadByWord(issue("mce-malformed"), named)).toBe(false);
+    });
+
+    // #1147 (review 1138 F6): only the two markup-compatibility codes read
+    // the list, so a run without either skips the relationships scan.
+    it("needs the possibly-read list only for an mce-malformed or mce-must-understand finding", () => {
+        expect(needsPossiblyReadParts([])).toBe(false);
+        expect(needsPossiblyReadParts([issue("xml-syntax"), issue("mce-unbound-prefix"), issue("mce-invalid-token")])).toBe(false);
+        expect(needsPossiblyReadParts([issue("xml-syntax"), issue("mce-malformed")])).toBe(true);
+        expect(needsPossiblyReadParts([issue("mce-must-understand", { severity: "warning" })])).toBe(true);
     });
 
     it("blocks an unrecognized content type only on the observed reach (#707, #718)", () => {

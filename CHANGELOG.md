@@ -6,6 +6,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- Pin three properties review 1138 found unpinned ([#1147](https://github.com/jandira-tech/docx-validate/issues/1147)). Tests only.
+    - `ValidationContext.gateKey` is one key for two unparseable parts sharing a reason, inserted in either order. With distinct reasons, a sort by reason was canonical too, so the existing row passed it.
+    - `wordPossiblyReadParts` runs only in a run holding `mce-malformed` or `mce-must-understand`. `needsPossiblyReadParts` and a spy on the full, `--checks` and refused-item-name runs pin it, with a positive control.
+    - A reached glossary's `customXml` relationship names its part: #1125's exception covers the lazy story types only.
+      The six surviving mutations each fail a new row.
 - Keep `mce-malformed` and `mce-must-understand` blocking in a comments or notes part the main document relates when its only reference sits in a used header or footer ([#1145](https://github.com/jandira-tech/docx-validate/issues/1145)). The read model decides whether a story root uses its comments, footnotes or endnotes part from the root's own XML, and #1125 let a story root's own relationship to such a part name it only when the read model keeps it. So a `word/footnotes.xml`, `word/endnotes.xml` or `word/comments.xml` referenced only from a used header lost its finding's block (review 1138). Whether Word reads such a part is unprobed: session 62 (s62d/s62e) opened clean a used header's dangling note reference, which fits either reading. So `wordPossiblyReadParts` now keeps the part named when a header or footer the read model reads holds a reference of that kind, or fails the byte-level XML checks. An unused header names nothing (session 84 s84a), and neither does a reference inside a notes or comments part: session 16 (s16a) opened clean a malformed endnotes part only a footnote referenced.
 - Pin how wide `wordPossiblyReadParts` reads ([#1134](https://github.com/jandira-tech/docx-validate/issues/1134)). Tests only. Review 1126 showed four plausible narrower readings that passed every test. New rows:
     - a part only a relationship of a custom type (`urn:custom:hdr`) names, in a stray relationships part and among the main document's own;

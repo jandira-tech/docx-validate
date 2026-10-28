@@ -25,9 +25,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import JSZip from "jszip";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
+import * as wordReadParts from "../src/lib/word-read-parts";
 import { validate } from "../src/scripts/office/validate";
 import { MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildRawZip } from "./support/raw-zip";
@@ -650,6 +651,33 @@ describe("markup compatibility in a word/ part Word does not read warns under wo
             expect((await mceRun(parts, "word-valid", checks)).mce).toEqual(["mce-must-understand:warning@word/endnotes.xml"]);
         },
     );
+
+    // #1147 (review 1138 F6): the relationships scan runs only for a run that
+    // holds one of the two findings, on every path that applies the profile:
+    // the full run, a --checks run, and a packed file with a refused item
+    // name, whose rest is judged through the archive (#629, #454).
+    describe("computes the possibly-read list only for a run with an mce finding (#1147)", () => {
+        afterEach(() => {
+            vi.restoreAllMocks();
+        });
+        const scans = async (parts: Parts, checks: readonly string[] | undefined, refused: boolean): Promise<number> =>
+            withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                const entries = [...parts].map(([name, content]) => ({ name, content }));
+                writeFileSync(file, buildRawZip(refused ? [...entries, { name: "/abs/x.xml", content: "<x/>" }] : entries));
+                const spy = vi.spyOn(wordReadParts, "wordPossiblyReadParts");
+                await validate(file, checks === undefined ? { profile: "word-valid" } : { profile: "word-valid", checks });
+                return spy.mock.calls.length;
+            });
+
+        it.each(RUNS.flatMap(([label, checks]) => [false, true].map((refused) => [label, refused, checks] as const)))(
+            "%s run (refused item name: %s) scans for a finding and not without one",
+            async (_label, refused, checks) => {
+                expect(await scans(minimal(), checks, refused)).toBe(0);
+                expect(await scans(mustUnderstandHeader(), checks, refused)).toBeGreaterThan(0);
+            },
+        );
+    });
 
     it("strict keeps mce-malformed an error in a header the main document relates but does not use", async () => {
         const choice = relateHeader(withUnrelatedHeader(await load(CHOICE_CLEAN), await load(CHOICE_BROKEN)), false);
