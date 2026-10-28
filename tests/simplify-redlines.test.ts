@@ -164,6 +164,41 @@ describe("simplifyRedlines", () => {
             expect(after).toMatch(/bar/);
         });
     });
+
+    // #1139: the walk keeps its own stack, so a part nested deeper than the
+    // call stack is simplified as a shallow one is.
+    it("merges the tracked changes of a main document nested 50 000 elements deep (#1139)", async () => {
+        await withTempDir(async (dir) => {
+            const depth = 50_000;
+            const docPath = await writeDoc(
+                dir,
+                `<w:body>${"<w:customXml>".repeat(depth)}<w:p>` +
+                    '<w:ins w:id="1" w:author="Alice"><w:r><w:t>foo</w:t></w:r></w:ins>' +
+                    '<w:ins w:id="2" w:author="Alice"><w:r><w:t>bar</w:t></w:r></w:ins>' +
+                    `</w:p>${"</w:customXml>".repeat(depth)}</w:body>`,
+            );
+            expect(await simplifyRedlines(dir)).toEqual({ count: 1, message: "Simplified 1 tracked changes" });
+            const after = await fs.readFile(docPath, "utf8");
+            expect((after.match(/<w:ins[ >]/g) ?? []).length).toBe(1);
+        });
+    });
+
+    // #1139: the stack walk starts at the root, as the recursive one did, so
+    // a part whose root is a paragraph has its tracked changes merged.
+    it("merges the tracked changes of a part whose root is a paragraph (#1139)", async () => {
+        await withTempDir(async (dir) => {
+            await fs.mkdir(path.join(dir, "word"), { recursive: true });
+            const docPath = path.join(dir, "word", "document.xml");
+            await fs.writeFile(
+                docPath,
+                `<?xml version="1.0" encoding="UTF-8"?>\n<w:p ${W}>` +
+                    '<w:ins w:id="1" w:author="Alice"><w:r><w:t>foo</w:t></w:r></w:ins>' +
+                    '<w:ins w:id="2" w:author="Alice"><w:r><w:t>bar</w:t></w:r></w:ins></w:p>',
+                "utf8",
+            );
+            expect(await simplifyRedlines(dir)).toEqual({ count: 1, message: "Simplified 1 tracked changes" });
+        });
+    });
 });
 
 describe("inferAuthor", () => {

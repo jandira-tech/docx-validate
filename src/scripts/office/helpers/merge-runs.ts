@@ -98,20 +98,26 @@ function matchesTag(node: Element, tag: string): boolean {
     return name === tag || name.endsWith(`:${tag}`);
 }
 
+/**
+ * `root` and its descendant elements named `tag`, in document order. The walk
+ * keeps its own stack, children pushed last first, so a part nested deeper
+ * than the call stack is walked as a shallow one is (#1139).
+ */
 function findElements(root: Node, tag: string): Element[] {
     const results: Element[] = [];
-    const traverse = (node: Node): void => {
-        if (node.nodeType === ELEMENT_NODE) {
-            const el = node as Element;
-            if (matchesTag(el, tag)) {
-                results.push(el);
-            }
-            for (let child = node.firstChild; child; child = child.nextSibling) {
-                traverse(child);
-            }
+    const stack: Node[] = [root];
+    while (stack.length > 0) {
+        const node = stack.pop()!;
+        if (node.nodeType !== ELEMENT_NODE) {
+            continue;
         }
-    };
-    traverse(root);
+        if (matchesTag(node as Element, tag)) {
+            results.push(node as Element);
+        }
+        for (let child = node.lastChild; child; child = child.previousSibling) {
+            stack.push(child);
+        }
+    }
     return results;
 }
 

@@ -441,4 +441,28 @@ describe("unpack", () => {
             expect(bytes.equals(document)).toBe(true);
         });
     });
+
+    // #1139: mergeRuns and simplifyRedlines walk with their own stack, so a
+    // main document nested deeper than the call stack still unpacks.
+    it("unpacks a main document nested 50 000 elements deep, merging its runs and tracked changes (#1139)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "deep.docx");
+            const outputDir = path.join(dir, "out");
+            const depth = 50_000;
+            const document = MINIMAL_DOCUMENT.replace(
+                "<w:sectPr",
+                `${"<w:customXml>".repeat(depth)}<w:p>` +
+                    "<w:r><w:t>foo</w:t></w:r><w:r><w:t>bar</w:t></w:r>" +
+                    '<w:ins w:id="1" w:author="Alice"><w:r><w:t>x</w:t></w:r></w:ins>' +
+                    '<w:ins w:id="2" w:author="Alice"><w:r><w:t>y</w:t></w:r></w:ins>' +
+                    `</w:p>${"</w:customXml>".repeat(depth)}<w:sectPr`,
+            );
+            await fs.writeFile(inputFile, await buildMinimalDocx({ ...MINIMAL_PARTS, "word/document.xml": document }));
+
+            const result = await unpack(inputFile, outputDir);
+            expect(result.ok).toBe(true);
+            expect(result.message).toMatch(/simplified 1 tracked changes/);
+            expect(result.message).toMatch(/merged 2 runs/);
+        });
+    });
 });

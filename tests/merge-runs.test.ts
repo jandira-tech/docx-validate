@@ -211,4 +211,32 @@ describe("mergeRuns", () => {
             expect((await fs.readFile(docPath)).equals(document)).toBe(true);
         });
     });
+
+    // #1139: the walk keeps its own stack, so a part nested deeper than the
+    // call stack is merged as a shallow one is.
+    it("merges the runs of a main document nested 50 000 elements deep (#1139)", async () => {
+        await withTempDir(async (dir) => {
+            const depth = 50_000;
+            const docPath = await writeDoc(
+                dir,
+                `<w:body>${"<w:customXml>".repeat(depth)}` +
+                    "<w:p><w:r><w:t>foo</w:t></w:r><w:r><w:t>bar</w:t></w:r></w:p>" +
+                    `${"</w:customXml>".repeat(depth)}</w:body>`,
+            );
+            expect(await mergeRuns(dir)).toEqual({ count: 1, message: "Merged 1 runs" });
+            expect(await fs.readFile(docPath, "utf8")).toContain("<w:r><w:t>foobar</w:t></w:r>");
+        });
+    });
+
+    // #1139: the stack walk starts at the root, as the recursive one did, so
+    // a part whose root is a run has that run's rsid attributes stripped.
+    it("strips the rsid attributes of a part whose root is a run (#1139)", async () => {
+        await withTempDir(async (dir) => {
+            await fs.mkdir(path.join(dir, "word"), { recursive: true });
+            const docPath = path.join(dir, "word", "document.xml");
+            await fs.writeFile(docPath, `<?xml version="1.0" encoding="UTF-8"?>\n<w:r ${W} w:rsidR="00AB0001"><w:t>x</w:t></w:r>`, "utf8");
+            expect(await mergeRuns(dir)).toEqual({ count: 0, message: "Merged 0 runs" });
+            expect(await fs.readFile(docPath, "utf8")).not.toContain("rsid");
+        });
+    });
 });
