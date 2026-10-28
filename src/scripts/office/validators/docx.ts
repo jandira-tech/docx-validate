@@ -736,7 +736,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                dom = await this.readPartDom(xmlFile);
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -776,7 +776,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                dom = await this.readPartDom(xmlFile);
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -816,7 +816,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                dom = await this.readPartDom(xmlFile);
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -936,7 +936,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let dom: Document;
         try {
-            dom = parseXmlBytes(await fs.readFile(stylesPath));
+            dom = await this.readPartDom(stylesPath);
         } catch {
             return { valid: true, issues: [] };
         }
@@ -1040,7 +1040,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const appXml = path.join(this.unpackedDir, "docProps", "app.xml");
         let dom: Document;
         try {
-            dom = parseXmlBytes(await fs.readFile(appXml));
+            dom = await this.readPartDom(appXml);
         } catch {
             return { valid: true, issues: [] };
         }
@@ -1079,7 +1079,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const defined = new Set<string>();
         if (stylesPath) {
             try {
-                const dom = parseXmlBytes(await fs.readFile(stylesPath));
+                const dom = await this.readPartDom(stylesPath);
                 for (const ns of WORD_PARAGRAPH_NAMESPACES) {
                     const list = getElementsByTagNameNSAll(dom, ns, "style");
                     for (let i = 0; i < list.length; i += 1) {
@@ -1102,7 +1102,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
@@ -1164,7 +1164,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
@@ -1234,7 +1234,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
@@ -1364,7 +1364,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 // Mirrors Python's bare except — silently skip.
                 continue;
@@ -1579,7 +1579,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             if (!isRelationshipsPartName(name)) continue;
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
@@ -1637,7 +1637,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let dom: Document;
         try {
-            dom = parseXmlBytes(await fs.readFile(fontTablePath));
+            dom = await this.readPartDom(fontTablePath);
         } catch {
             return { valid: true, issues: [] };
         }
@@ -1681,7 +1681,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let dom: Document;
         try {
-            dom = parseXmlBytes(await fs.readFile(stylesPath));
+            dom = await this.readPartDom(stylesPath);
         } catch {
             return { valid: true, issues: [] };
         }
@@ -1720,7 +1720,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
@@ -1764,7 +1764,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
@@ -1819,7 +1819,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
@@ -1875,7 +1875,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             if (!isRelationshipsPartName(part)) continue;
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
@@ -1932,7 +1932,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let stylesDom: Document;
         try {
-            stylesDom = parseXmlBytes(await fs.readFile(stylesPath));
+            stylesDom = await this.readPartDom(stylesPath);
         } catch {
             return { valid: true, issues: [] };
         }
@@ -1971,7 +1971,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
@@ -2838,7 +2838,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let dom: Document;
         try {
-            dom = parseXmlBytes(await fs.readFile(stylesPath));
+            dom = await this.readPartDom(stylesPath);
         } catch {
             return out;
         }

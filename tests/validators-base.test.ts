@@ -38,6 +38,14 @@ class HarnessValidator extends BaseSchemaValidator {
     originalErrors(xmlFile: string): Promise<Set<string>> {
         return this._getOriginalFileErrors(xmlFile);
     }
+
+    partDom(file: string): Promise<Document> {
+        return this.readPartDom(file);
+    }
+
+    inRun<T>(run: () => Promise<T>): Promise<T> {
+        return this.withinBaselineRun(run);
+    }
 }
 
 const RELS_HEADER = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`;
@@ -67,6 +75,76 @@ describe("direct relationships outside legacy lenient (#434)", () => {
             expect(strict.issues.filter((issue) => issue.code === code)).toEqual([]);
             const lenient = await new HarnessValidator({ unpackedDir: dir, profile: "lenient" })[method]();
             expect(lenient.issues).toContainEqual(expect.objectContaining({ code, severity: "error" }));
+        });
+    });
+});
+
+describe("readPartDom shares one parse per run", () => {
+    const writeParts = async (dir: string): Promise<string> => {
+        for (const [part, xml] of Object.entries(MINIMAL_PARTS)) await writeFile(path.join(dir, part), xml);
+        return path.join(dir, "word/document.xml");
+    };
+
+    it("returns the same Document for the same bytes within a run, and a fresh one outside it", async () => {
+        await withTempDir(async (dir) => {
+            const file = await writeParts(dir);
+            const validator = new HarnessValidator({ unpackedDir: dir });
+            await validator.inRun(async () => {
+                const [a, b] = await Promise.all([validator.partDom(file), validator.partDom(file)]);
+                expect(a).toBe(b);
+                expect(await validator.partDom(file)).toBe(a);
+            });
+            const outside = await validator.partDom(file);
+            expect(await validator.partDom(file)).not.toBe(outside);
+            // A later run starts from nothing the previous run parsed.
+            const [first] = await validator.inRun(async () => [await validator.partDom(file)]);
+            await validator.inRun(async () => expect(await validator.partDom(file)).not.toBe(first));
+        });
+    });
+
+    it("parses a part written during the run afresh", async () => {
+        await withTempDir(async (dir) => {
+            const file = await writeParts(dir);
+            const validator = new HarnessValidator({ unpackedDir: dir });
+            await validator.inRun(async () => {
+                const before = await validator.partDom(file);
+                await fs.writeFile(file, `<w:document ${W_NS}><w:body><w:p/><w:p/></w:body></w:document>`, "utf-8");
+                const after = await validator.partDom(file);
+                expect(after).not.toBe(before);
+                expect(after.getElementsByTagName("w:p")).toHaveLength(2);
+            });
+        });
+    });
+
+    it("replays a parse failure to every caller that reads the same bytes", async () => {
+        await withTempDir(async (dir) => {
+            const file = await writeParts(dir);
+            await fs.writeFile(file, "<w:document", "utf-8");
+            const validator = new HarnessValidator({ unpackedDir: dir });
+            await validator.inRun(async () => {
+                const errors = await Promise.all([validator.partDom(file), validator.partDom(file)].map((p) => p.catch((e: unknown) => e)));
+                expect(errors[0]).toBeInstanceOf(Error);
+                expect(errors[1]).toBe(errors[0]);
+            });
+        });
+    });
+
+    it("leaves validateUniqueIds' AlternateContent stripping out of the shared Document", async () => {
+        await withTempDir(async (dir) => {
+            const file = await writeParts(dir);
+            await fs.writeFile(
+                file,
+                `<w:document ${W_NS} xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"><w:body>` +
+                    `<mc:AlternateContent><mc:Choice Requires="w"><w:p/></mc:Choice></mc:AlternateContent></w:body></w:document>`,
+                "utf-8",
+            );
+            const validator = new HarnessValidator({ unpackedDir: dir });
+            await validator.inRun(async () => {
+                const shared = await validator.partDom(file);
+                await validator.validateUniqueIds();
+                expect(shared.getElementsByTagName("mc:AlternateContent")).toHaveLength(1);
+                expect(await validator.partDom(file)).toBe(shared);
+            });
         });
     });
 });

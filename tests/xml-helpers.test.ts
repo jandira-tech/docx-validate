@@ -83,6 +83,50 @@ describe("xml-helpers element collectors", () => {
         // 3 = x:a + x:b + nested x:a; the starting element itself is excluded.
         expect(getElementsByTagNameAll(aRoot)).toHaveLength(3);
     });
+
+    it("a Document-rooted query sees every change made to the document since the last query", () => {
+        const dom = parseXml(DOC);
+        const texts = () => getElementsByTagNameNSAll(dom, "urn:a", "p").map((p) => p.textContent);
+        expect(texts()).toEqual(["one", "tworun"]);
+
+        const body = getElementsByTagNameNSAll(dom, "urn:a", "body")[0]!;
+        const added = dom.createElementNS("urn:a", "pkga:p");
+        added.appendChild(dom.createTextNode("zero"));
+        body.insertBefore(added, body.firstChild);
+        expect(texts()).toEqual(["zero", "one", "tworun"]);
+
+        body.removeChild(getElementsByTagNameNSAll(dom, "urn:a", "p")[1]!);
+        expect(texts()).toEqual(["zero", "tworun"]);
+
+        // A change below another element counts too.
+        const run = getElementsByTagNameNSAll(dom, "urn:a", "r")[0]!;
+        run.appendChild(dom.createElementNS("urn:a", "pkga:p"));
+        expect(getElementsByTagNameNSAll(dom, "urn:a", "p")).toHaveLength(3);
+        expect(getElementsByTagNameNSAll(dom, "*", "*")).toHaveLength(8);
+    });
+
+    it("a Document-rooted query returns a new array each call, in the order an Element-rooted walk finds", () => {
+        const dom = parseXml(DOC);
+        const first = getElementsByTagNameNSAll(dom, "*", "*");
+        first.length = 0;
+        expect(getElementsByTagNameNSAll(dom, "*", "*")).toHaveLength(7);
+        getElementsByTagNameNSAll(dom, "urn:a", "p").pop();
+        expect(getElementsByTagNameNSAll(dom, "urn:a", "p")).toHaveLength(2);
+
+        const root = dom.documentElement!;
+        for (const [ns, local] of [
+            ["*", "*"],
+            ["*", "p"],
+            ["urn:a", "*"],
+            ["urn:b", "p"],
+            ["urn:a", "missing"],
+            ["urn:missing", "p"],
+        ] as const) {
+            const viaRoot = getElementsByTagNameNSAll(root, ns, local);
+            const rootMatches = (ns === "*" || root.namespaceURI === ns) && (local === "*" || root.localName === local);
+            expect(getElementsByTagNameNSAll(dom, ns, local)).toEqual(rootMatches ? [root, ...viaRoot] : viaRoot);
+        }
+    });
 });
 
 describe("decodeXmlBytes", () => {
