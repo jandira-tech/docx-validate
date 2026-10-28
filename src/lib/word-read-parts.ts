@@ -736,8 +736,10 @@ const readStoryPartsCache = new WeakMap<ValidationContext, Map<string, Promise<r
  * Word refused a hyperlink's shape (session 82) and eleven rules' shapes
  * (session 83) in a main document stored as `word/main.xml`, and opened them
  * clean in an unrelated `word/header9.xml` or `word/header83.xml`. With no
- * main document the read model reads nothing, so the parts named like a story
- * stand in, as the note checks fall back (#816); that reading is unprobed.
+ * main document the read model reads nothing, so every part named like a
+ * story stands in, headers, footers, comments and notes parts included; that
+ * reading is unprobed. It is wider than the note checks' #816 fallback, which
+ * judges references in none of those four kinds (#1119).
  */
 export const wordReadStoryParts = (context: ValidationContext, profile?: Profile): Promise<readonly string[]> => {
     const byProfile = readStoryPartsCache.get(context) ?? new Map<string, Promise<readonly string[]>>();

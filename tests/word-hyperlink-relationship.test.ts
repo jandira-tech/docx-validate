@@ -196,12 +196,25 @@ describe("word-hyperlink-relationship judges the parts Word reads (#1106)", () =
     );
 
     // #816: with no main document the read model reads nothing, so the rule
-    // keeps judging the story parts by name, as the note checks do.
+    // keeps judging the story parts by name, headers, footers, comments and
+    // notes parts included, which the note checks' fallback does not (#1119).
     it("keeps judging word/document.xml by name when the officeDocument relationship names no stored part", async () => {
         const parts = main("word/document.xml", "HYPERLINK");
         parts["_rels/.rels"] = once(parts["_rels/.rels"]!, 'Target="word/document.xml"', 'Target="word/missing.xml"');
         const found = await run(parts, "word-valid");
         expect(found.judged).toEqual(["error word/document.xml"]);
+    });
+
+    it("keeps judging a header named like a story in that package, which the note checks' fallback would not (#1119)", async () => {
+        const parts: Record<string, string> = {
+            ...main("word/document.xml", "HYPERLINK"),
+            "word/header9.xml": HEADER,
+            "word/_rels/header9.xml.rels": relsPart(link("HYPERLINK")),
+            [CT]: override("word/header9.xml", `${WML}.header+xml`),
+        };
+        parts["_rels/.rels"] = once(parts["_rels/.rels"]!, 'Target="word/document.xml"', 'Target="word/missing.xml"');
+        const found = await run(parts, "word-valid");
+        expect(found.judged).toEqual(["error word/document.xml", "error word/header9.xml"]);
     });
 
     // #1118 (review 1115 F1): the read model lists a part once per segment

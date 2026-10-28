@@ -714,8 +714,11 @@ Some of them also read parts by name:
   `w:tblPrEx` in the read stories, and a table-property element outside its
   containers in every WordprocessingML part.
 
-When the package names no stored main document, the rules keep the parts
-named like a story, as the note checks do (#816); that reading is unprobed.
+When the package names no stored main document, the rules keep every part
+named like a story, headers, footers, comments and notes parts included; that
+reading is unprobed. The note checks' fallback there (#816) is narrower: it
+judges references in no header, footer, comments or notes part
+([#1119](https://github.com/jandira-tech/docx-validate/issues/1119)).
 
 `word-duplicate-endnotes-relationship` reports the main document's relationships part when it holds two or more exact-Type `endnotes` relationships and that main document's own content holds a `w:endnoteReference`: Word 16.115 offered recovery for every such shape probed — whichever part held the note, and whether the second part was typed `endnotes+xml` or `application/octet-stream` — and opened the same pair with no endnote reference clean ([#807](https://github.com/jandira-tech/docx-validate/issues/807); session 62, `s62c` and `s62e`, in [docs/plans/evidence/word-probes-2026-10-24.md](docs/plans/evidence/word-probes-2026-10-24.md)), while a referenced pair in a reached glossary's own sidecar is unprobed and stays unjudged. The count reads exact Types whatever their target or `TargetMode`, in either relationship namespace, so two relationships to the same part, an internal plus an External one and a Strict-Type pair are judged too; session 62's rows are two internal Transitional relationships to distinct parts, so those shapes are unprobed.
 
@@ -1705,8 +1708,10 @@ missed or judged by name, and opened the same shape clean in an unrelated
 `word/header9.xml`, a glossary no relationship reaches, a header no section
 references and a footnotes part nothing references, which it rejected. When
 the package names no stored main document, the read model reads nothing and
-the rule keeps the parts named like a story, as the note checks do (#816);
-that reading is unprobed.
+the rule keeps every part named like a story, headers, footers, comments and
+notes parts included; that reading is unprobed. The note checks' fallback
+there (#816) is narrower: it judges references in no header, footer, comments
+or notes part ([#1119](https://github.com/jandira-tech/docx-validate/issues/1119)).
 
 `word-header-footer-relationship` requires every `w:headerReference` and
 `w:footerReference` in a story root's `w:sectPr` to name a relationship whose
