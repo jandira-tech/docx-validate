@@ -19,6 +19,14 @@
  * whatever the target's bytes hold, clean or refused, as does one
  * naming no relationship. The UTF-8 byte scan follows only the exact
  * Type; the Type check is `word-attached-toolbar-relationship`.
+ *
+ * The walk judges the parts `xmlPartNames` accepts, not only literal
+ * `.xml` spellings — a `word/customizations.XML` and its
+ * `customizations.XML.rels` get the recovery offer — and reads each
+ * part's sidecar by OPC part-name equivalence as `sidecarOf` finds it,
+ * so a `customizations.xml.RELS` spelling is read; Word read the same
+ * way, refusing the `.XML` specimen and opening the `.RELS` one clean
+ * (session 54, s54c; #743). An empty `r:id` is not judged (s54c).
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
@@ -28,6 +36,8 @@ import type { ValidationIssue } from "../../../lib/types";
 import path from "node:path";
 import { registerStoryReferenceIdentity } from "../story-reference-identity";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
+import { xmlPartNames } from "./xml";
+import { sidecarOf } from "../../../lib/word-read-parts";
 
 const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
@@ -37,7 +47,8 @@ const ATTACHED_TOOLBARS_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office
 /** One `wne:toolbarData r:id`, resolved against its part's own sidecar. */
 type ToolbarReference = {
     readonly xmlFile: string;
-    readonly relsFile: string;
+    /** The stored spelling of the part's sidecar, or `undefined` when the part has none. */
+    readonly relsFile: string | undefined;
     readonly elem: Element;
     readonly rid: string;
     /** The relationships namespace the `r:id` was read in; `""` for a literal `r:id`. */
@@ -47,18 +58,21 @@ type ToolbarReference = {
 };
 
 /**
- * Each `wne:toolbarData r:id` in the package's XML parts with the
- * relationship its part's own sidecar gives it. A part with no sidecar
+ * Each `wne:toolbarData r:id` in the package's XML parts — as
+ * `xmlPartNames` names them, so a `.XML` spelling is judged (session
+ * 54, s54c; #743) — with the relationship its part's own sidecar gives
+ * it, the sidecar found by `sidecarOf`'s OPC part-name equivalence,
+ * so a `.RELS` spelling is read (s54c). A part with no sidecar
  * resolves every `r:id` to `undefined`; an unparseable sidecar yields
  * nothing, left for `xml-syntax` to report.
  */
 const toolbarReferences = function* (ctx: ValidationContext): Generator<ToolbarReference> {
     const wordmlNs = "http://schemas.microsoft.com/office/word/2006/wordml";
     const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
-    for (const xmlFile of ctx.partNames) {
-        if (!xmlFile.endsWith(".xml")) {
-            continue;
-        }
+    const xmlParts = xmlPartNames(ctx.partNames, (part) => ctx.bytes(part));
+    // Iterating the set itself keeps one pass over the part names total:
+    // a second index read per entry fails the #358 bounded-scan test.
+    for (const xmlFile of xmlParts) {
         const parsed = ctx.effectiveXml(xmlFile);
         if (!parsed?.ok) {
             continue;
@@ -67,8 +81,8 @@ const toolbarReferences = function* (ctx: ValidationContext): Generator<ToolbarR
         if (toolbarData.length === 0) {
             continue;
         }
-        const relsFile = path.posix.join(path.posix.dirname(xmlFile), "_rels", `${path.posix.basename(xmlFile)}.rels`);
-        const parsedRels = ctx.effectiveXml(relsFile);
+        const relsFile = sidecarOf(ctx.partNames, xmlFile);
+        const parsedRels = relsFile === undefined ? undefined : ctx.effectiveXml(relsFile);
         if (parsedRels !== undefined && !parsedRels.ok) {
             continue;
         }
@@ -190,7 +204,7 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
             if (!target) {
                 continue;
             }
-            const resolved = resolveToolbarTarget(relsFile, target);
+            const resolved = relsFile === undefined ? null : resolveToolbarTarget(relsFile, target);
             // The entry the target names is both the key and the reported
             // path, so two spellings of one part yield one finding under
             // its real name (#350).

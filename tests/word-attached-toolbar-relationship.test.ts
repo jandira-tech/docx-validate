@@ -52,6 +52,93 @@ const dangling = async (file: string): Promise<Uint8Array> => {
     return zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
 };
 
+describe("session 54 (s54c) spellings (#743)", { timeout: 60000 }, () => {
+    const UTF8 = "word-attached-toolbar-utf8";
+    const TOOLBAR = [CODE, UTF8];
+
+    /** The fixture re-zipped unchanged, or with each `renames` pair applied in order (the session's shape). */
+    const renamed = async (file: string, ...renames: readonly [string, string][]): Promise<Uint8Array> => {
+        const zip = await JSZip.loadAsync(await fs.readFile(file));
+        for (const [from, to] of renames) {
+            const entry = zip.file(from);
+            if (!entry) throw new Error(`no ${from}`);
+            zip.file(to, await entry.async("uint8array"));
+            zip.remove(from);
+        }
+        return zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
+    };
+    /** The fixture re-zipped with `part`'s only occurrence of `from` replaced by `to`. */
+    const replaced = async (file: string, part: string, from: string, to: string): Promise<Uint8Array> => {
+        const zip = await JSZip.loadAsync(await fs.readFile(file));
+        const text = await zip.file(part)!.async("string");
+        if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from} in ${part}`);
+        zip.file(part, text.replace(from, to));
+        return zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
+    };
+    const run = async (dir: string, name: string, bytes: Uint8Array) => {
+        const file = path.join(dir, `${name}.docx`);
+        await fs.writeFile(file, bytes);
+        return {
+            full: await validate(file, { profile: "word-valid" }),
+            selected: await validate(file, { profile: "word-valid", checks: TOOLBAR }),
+        };
+    };
+
+    it("keeps the clean calibration clean re-zipped unchanged", async () => {
+        await withTempDir(async (dir) => {
+            const { full, selected } = await run(dir, "toolbar-clean-rezipped", await renamed(CLEAN));
+            expect(full.valid).toBe(true);
+            expect(selected.valid).toBe(true);
+        });
+    });
+
+    it("keeps the refused calibration refused re-zipped unchanged", async () => {
+        await withTempDir(async (dir) => {
+            const { full, selected } = await run(dir, "toolbar-refused-rezipped", await renamed(BROKEN));
+            expect(full.valid).toBe(false);
+            expect(full.issues.some((issue) => issue.severity === "error" && issue.code === UTF8)).toBe(true);
+            expect(selected.issues.some((issue) => issue.severity === "error" && issue.code === UTF8)).toBe(true);
+        });
+    });
+
+    it("reads the sidecar stored as customizations.xml.RELS (s54c: Word opens clean)", async () => {
+        await withTempDir(async (dir) => {
+            const { full, selected } = await run(
+                dir,
+                "toolbar-clean-upper-rels",
+                await renamed(CLEAN, [RELS, "word/_rels/customizations.xml.RELS"]),
+            );
+            expect(full.valid).toBe(true);
+            expect(selected.valid).toBe(true);
+        });
+    });
+
+    it("judges customizations.XML and its customizations.XML.rels (s54c: recovery offer)", async () => {
+        await withTempDir(async (dir) => {
+            const { full, selected } = await run(
+                dir,
+                "toolbar-refused-upper-xml",
+                await renamed(BROKEN, ["word/customizations.xml", "word/customizations.XML"], [RELS, "word/_rels/customizations.XML.rels"]),
+            );
+            expect(full.valid).toBe(false);
+            expect(full.issues.some((issue) => issue.severity === "error" && issue.code === UTF8)).toBe(true);
+            expect(selected.issues.some((issue) => issue.severity === "error" && issue.code === UTF8)).toBe(true);
+        });
+    });
+
+    it("keeps an empty wne:toolbarData r:id clean (s54c)", async () => {
+        await withTempDir(async (dir) => {
+            const { full, selected } = await run(
+                dir,
+                "toolbar-clean-empty-id",
+                await replaced(CLEAN, "word/customizations.xml", 'r:id="rId1"', 'r:id=""'),
+            );
+            expect(full.valid).toBe(true);
+            expect(selected.valid).toBe(true);
+        });
+    });
+});
+
 describe("word-attached-toolbar-relationship (#716; session 48)", { timeout: 60000 }, () => {
     const run = async (dir: string, name: string, bytes: Uint8Array) => {
         const file = path.join(dir, `${name}.docx`);
