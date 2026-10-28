@@ -2,7 +2,7 @@
  * Copyright 2026 Jandira Technologies, LLC
  * Licensed under the Apache License, Version 2.0.
  */
-import { writeFileSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
@@ -62,6 +62,16 @@ const run = async (bytes: Buffer, options: Parameters<typeof validate>[1] = {}, 
         writeFileSync(file, bytes);
         return validate(file, options);
     });
+
+/**
+ * Whether this host's file system holds `Å` and `å` under one name, a fold
+ * `assertPlaceableNames` does not make (case-insensitive APFS does), so a
+ * subset keeping both names loads but cannot be staged here (#874).
+ */
+const HOST_FOLDS_A_RING = await withTempDir(async (dir) => {
+    writeFileSync(path.join(dir, "\u00c5"), "");
+    return existsSync(path.join(dir, "\u00e5"));
+});
 
 describe("a refused item name no longer hides the rest of the package (#629)", { timeout: 120_000 }, () => {
     it.each(PROFILES)("%s: reports the refused name as its own error and still judges the other entries", async (profile) => {
@@ -211,6 +221,7 @@ describe("a refused item name no longer hides the rest of the package (#629)", {
         expect(errors(result)).toEqual(
             expect.arrayContaining([`${ID}@${ABS_HOSTILE}`, "package-extract-failed@", "xml-syntax@word/document.xml"]),
         );
+        expect(errors(result).filter((entry) => entry === "package-extract-failed@")).toHaveLength(1);
     });
 
     it("runs no fallback for a ZIP64 tail the subset rewrite cannot move", async () => {
@@ -312,3 +323,35 @@ describe("a refused item name no longer hides the rest of the package (#629)", {
         );
     });
 });
+
+describe.skipIf(!HOST_FOLDS_A_RING)(
+    "a subset the host cannot stage keeps the failure it had before #629 (#874)",
+    { timeout: 120_000 },
+    () => {
+        // `word/Å.xml` and `word/å.xml` are two portable names, so the subset
+        // without the refused name loads, but this host holds them under one name
+        // and the subset's own extraction fails.
+        const hostCollision = (): Buffer =>
+            malformedDocx(
+                { name: "word/\u00c5.xml", utf8: true, content: "<a/>" },
+                { name: "word/\u00e5.xml", utf8: true, content: "<a/>" },
+                { name: ABS_HOSTILE, content: "<x/>" },
+            );
+
+        it.each(PROFILES)("%s: one package-extract-failed, naming the refused name, beside what the subset offers", async (profile) => {
+            const result = await run(hostCollision(), { profile });
+            expect(result.valid).toBe(false);
+            const failures = result.issues.filter((issue) => issue.code === "package-extract-failed");
+            expect(failures).toHaveLength(1);
+            expect(failures[0]!.message).toContain(ABS_HOSTILE);
+            expect(errors(result)).toEqual(expect.arrayContaining([`${ID}@${ABS_HOSTILE}`, "xml-syntax@word/document.xml"]));
+            expect(result.xsdWalk.started).toBe(false);
+        });
+
+        it("discloses no repair, since none ran", async () => {
+            const result = await run(hostCollision(), { autoRepair: true });
+            expect(result.issues.map((issue) => issue.code)).not.toContain("auto-repair-staged-copy");
+            expect(result.issues.filter((issue) => issue.code === "package-extract-failed")).toHaveLength(1);
+        });
+    },
+);
