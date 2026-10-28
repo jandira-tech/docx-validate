@@ -28,6 +28,7 @@
 import { existsSync, promises as fs } from "node:fs";
 import path from "node:path";
 
+import { relationshipTargetFolder } from "../../../lib/content-types";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
 import { getElementsByTagNameNSAll, parseXmlBytes } from "../../../lib/xml-helpers";
@@ -370,6 +371,11 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
                 if (!relType.includes("notesSlide")) continue;
                 const target = rel.getAttribute("Target");
                 if (!target) continue;
+                // A target naming a folder names no part (#962, #975), so it
+                // shares no notes slide with the part its path spells (#991).
+                // The walk lists only `ppt/slides/_rels/*.xml.rels`, so every
+                // target resolves against `ppt/slides`.
+                if (relationshipTargetFolder("ppt/slides", target) !== undefined) continue;
                 const normalizedTarget = target
                     .split("/")
                     .filter((p) => p !== ".." && p !== ".")

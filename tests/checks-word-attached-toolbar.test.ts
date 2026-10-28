@@ -167,7 +167,8 @@ it.each(["/word/attachedToolbars.bin#toolbar", "attachedToolbars.bin"])(
         expect(await wordAttachedToolbarUtf8Check.run(ctx)).toHaveLength(1);
     },
 );
-it.each(["../../escape.bin", "#fragment", "missing.bin"])("leaves unavailable or escaping target %s alone", async (target) => {
+// `../../escape.bin` names `/escape.bin`, which is not stored (#991).
+it.each(["../../escape.bin", "#fragment", "missing.bin"])("leaves target %s, which names no stored part, alone", async (target) => {
     const ctx = ValidationContext.fromEntries({
         "word/fontTable.xml": document(`<wne:toolbarData r:id="rId1"/>`),
         "word/_rels/fontTable.xml.rels": rels(toolbarRelation("rId1", "", target)),
@@ -182,4 +183,40 @@ it("skips absent ids, unrelated types, absent targets, and unparseable sidecars"
         });
         expect(await wordAttachedToolbarUtf8Check.run(ctx)).toEqual([]);
     }
+});
+
+// #991: the toolbar resolver reads a target as the read model and both
+// file-reference walks read it. A target whose last segment is `.` or `..`,
+// or that ends in `/`, names a folder, which names no part (#962, #975), so
+// the stored part its path spells is not the toolbar; a climb past the
+// package root stops at the root (#984, #986), so `word/`'s
+// `../../attachedToolbars.bin` names the stored `/attachedToolbars.bin`. An
+// attachedToolbars climb is unprobed in Word; the reading follows the six
+// relationship types sessions 63, 64 and 74 to 78 probed.
+describe("toolbar targets read as the read model reads them (#991)", () => {
+    const replacement = new Uint8Array([0xef, 0xbf, 0xbd]);
+    const findings = async (target: string, stored: string) =>
+        (
+            await wordAttachedToolbarUtf8Check.run(
+                ValidationContext.fromEntries({
+                    "word/fontTable.xml": document(`<wne:toolbarData r:id="rId1"/>`),
+                    "word/_rels/fontTable.xml.rels": rels(toolbarRelation("rId1", "", target)),
+                    [stored]: replacement,
+                }),
+            )
+        ).map((issue) => [issue.code, issue.path]);
+
+    it.each(["attachedToolbars.bin/.", "attachedToolbars.bin/x/..", "attachedToolbars.bin/", "/word/attachedToolbars.bin/."])(
+        "reads no toolbar through the folder target %s beside the stored word/attachedToolbars.bin",
+        async (target) => {
+            expect(await findings(target, "word/attachedToolbars.bin")).toEqual([]);
+        },
+    );
+
+    it.each(["../../attachedToolbars.bin", "../../../attachedToolbars.bin", "/../attachedToolbars.bin"])(
+        "reads the root toolbar the climbing target %s names",
+        async (target) => {
+            expect(await findings(target, "attachedToolbars.bin")).toEqual([["word-attached-toolbar-utf8", "attachedToolbars.bin"]]);
+        },
+    );
 });
