@@ -210,6 +210,12 @@ const codesAt = (issues: readonly ValidationIssue[], code: string): string[] =>
     issues.filter((i) => i.code === code).map((i) => i.path ?? "-");
 
 const PROFILES = ["strict", "lenient", "word-valid"] as const;
+const UNMAPPED_GLOSSARY_STYLES: ValidationIssue = {
+    severity: "info",
+    code: "xsd-no-schema",
+    path: "word/zglossary/styles.xml",
+    message: "The bundled schemas map no schema to this part; XSD validation skipped for this part.",
+};
 
 describe("style checks read the styles part the main document relates (#688)", () => {
     it.each(PROFILES)(
@@ -292,7 +298,9 @@ describe("the by-name fallback judges only the main document's folder (#699)", (
         expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
         expect(codesAt(issues, "latent-styles-missing")).toEqual(["word/styles.xml"]);
         expect(codesAt(issues, "cell-borders-redundant")).toEqual(["word/document.xml"]);
-        expect(issues.filter((issue) => issue.path === "word/zglossary/styles.xml")).toEqual([]);
+        expect(issues.filter((issue) => issue.path === "word/zglossary/styles.xml")).toEqual(
+            profile === "word-valid" ? [] : [UNMAPPED_GLOSSARY_STYLES],
+        );
     });
 
     it.each(PROFILES)(
@@ -302,7 +310,9 @@ describe("the by-name fallback judges only the main document's folder (#699)", (
             expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
             expect(codesAt(issues, "latent-styles-missing")).toEqual(["word/styles.xml"]);
             expect(codesAt(issues, "cell-borders-redundant")).toEqual(["word/document.xml"]);
-            expect(issues.filter((issue) => issue.path === "word/zglossary/styles.xml")).toEqual([]);
+            expect(issues.filter((issue) => issue.path === "word/zglossary/styles.xml")).toEqual(
+                profile === "word-valid" ? [] : [UNMAPPED_GLOSSARY_STYLES],
+            );
         },
     );
 
@@ -311,7 +321,9 @@ describe("the by-name fallback judges only the main document's folder (#699)", (
         expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
         expect(codesAt(issues, "latent-styles-missing")).toEqual(["word/styles.xml"]);
         expect(codesAt(issues, "cell-borders-redundant")).toEqual(["word/document.xml"]);
-        expect(issues.filter((issue) => issue.path === "word/zglossary/styles.xml")).toEqual([]);
+        expect(issues.filter((issue) => issue.path === "word/zglossary/styles.xml")).toEqual(
+            profile === "word-valid" ? [] : [UNMAPPED_GLOSSARY_STYLES],
+        );
     });
 
     it.each(["strict", "word-valid"] as const)(
@@ -320,7 +332,9 @@ describe("the by-name fallback judges only the main document's folder (#699)", (
             const issues = await validated(MALFORMED_PACKAGE_RELS, profile);
             expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
             expect(codesAt(issues, "latent-styles-missing")).toEqual(["word/styles.xml"]);
-            expect(issues.filter((issue) => issue.path === "word/zglossary/styles.xml")).toEqual([]);
+            expect(issues.filter((issue) => issue.path === "word/zglossary/styles.xml")).toEqual(
+                profile === "word-valid" ? [] : [UNMAPPED_GLOSSARY_STYLES],
+            );
         },
     );
 
@@ -335,7 +349,9 @@ describe("the by-name fallback judges only the main document's folder (#699)", (
         const issues = await validated(STYLES_RELATIONSHIP_IN_ALTERNATE_CONTENT, profile);
         expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
         expect(codesAt(issues, "latent-styles-missing")).toEqual(["word/styles.xml"]);
-        expect(issues.filter((issue) => issue.path === "word/zglossary/styles.xml")).toEqual([]);
+        expect(issues.filter((issue) => issue.path === "word/zglossary/styles.xml")).toEqual(
+            profile === "word-valid" ? [] : [UNMAPPED_GLOSSARY_STYLES],
+        );
     });
 
     it("repair defines a missing well-known style in word/styles.xml when no relationship names one, never the glossary's", async () => {

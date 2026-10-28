@@ -76,13 +76,20 @@ describe("PPTX relationships parts keep the stored view under every profile (#64
         },
     );
 
-    it("lenient keeps its byte-identical output: the descendant scan reads the Fallback relationship", async () => {
+    it("lenient keeps its descendant scan: it reads the Fallback relationship", async () => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "specimen.pptx");
             await writeFile(file, await buildPptx(PPTX_SPECIMEN));
             const result = await validate(file, { profile: "lenient" });
             expect(result.valid).toBe(true);
-            expect(pinned(result.issues)).toEqual([]);
+            expect(pinned(result.issues)).toEqual(
+                ["ppt/slideLayouts/slideLayout1.xml", "ppt/slideMasters/slideMaster1.xml", "ppt/slides/slide1.xml"].map((path) => ({
+                    severity: "info",
+                    code: "xsd-no-schema",
+                    path,
+                    message: "The bundled schemas map no schema to this part; XSD validation skipped for this part.",
+                })),
+            );
         });
     });
 

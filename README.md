@@ -203,7 +203,14 @@ diagram parts (`diagrams/dataN.xml`, `layoutN.xml`, `quickStyleN.xml`,
 `colorsN.xml` under `word/`, `ppt/` or `xl/`) use `dml-diagram.xsd` (#628). A
 part with no mapped schema, such as `customXml/item1.xml` or a diagram's
 `drawingN.xml` cache, is not sent: `xsdWalk.parts` lists exactly the parts
-that were.
+that were. Each such well-formed part draws one info-level `xsd-no-schema`
+issue naming it, so the parts the walk skipped can be audited; validity,
+`xsdWalk` and `metadata.schemaCompleted` do not change, lenient's
+`--original` comparison never removes it, and a malformed part, a Strict part
+lenient skips and a part the run's deadline never reached draw none (#628).
+In a PPTX the slides, slide layouts and slide masters are among these parts:
+no rule maps a PresentationML part below `ppt/` yet (#864). The CLI prints
+the finding with `--json`; its human output lists errors only.
 
 Full DOCX/DOCM validation reports duplicate relationship `Id` values as
 `rels-id-duplicate`, judging the relationships part of every owner part in

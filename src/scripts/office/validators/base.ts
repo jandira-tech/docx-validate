@@ -1628,7 +1628,15 @@ export class BaseSchemaValidator {
                 noteStrict();
                 return false;
             }
-            if (!this._getSchemaPath(xmlFile)) return false;
+            if (!this._getSchemaPath(xmlFile)) {
+                issues.push({
+                    severity: "info",
+                    message: "The bundled schemas map no schema to this part; XSD validation skipped for this part.",
+                    path: this.relPath(xmlFile),
+                    code: "xsd-no-schema",
+                });
+                return false;
+            }
             this.xsdWalk.eligible += 1;
             return true;
         };

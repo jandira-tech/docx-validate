@@ -454,11 +454,25 @@ describe("a relationship naming a stored non-XML part judges and repairs nothing
 });
 
 describe("the by-name fallback judges only the main document's folder (#699)", () => {
-    it.each(PROFILES)("a glossary's fontTable.xml draws no finding when the main document relates no font table (%s)", async (profile) => {
-        const issues = await validated(GLOSSARY_FONT_TABLE_BY_NAME, profile);
-        expect(codesAt(issues, "font-table-empty")).toEqual([]);
-        expect(issues.filter((issue) => issue.path === "word/zglossary/fontTable.xml")).toEqual([]);
-    });
+    it.each(PROFILES)(
+        "a glossary's fontTable.xml draws no font-table-empty when the main document relates no font table (%s)",
+        async (profile) => {
+            const issues = await validated(GLOSSARY_FONT_TABLE_BY_NAME, profile);
+            expect(codesAt(issues, "font-table-empty")).toEqual([]);
+            expect(issues.filter((issue) => issue.path === "word/zglossary/fontTable.xml")).toEqual(
+                profile === "word-valid"
+                    ? []
+                    : [
+                          {
+                              severity: "info",
+                              code: "xsd-no-schema",
+                              path: "word/zglossary/fontTable.xml",
+                              message: "The bundled schemas map no schema to this part; XSD validation skipped for this part.",
+                          },
+                      ],
+            );
+        },
+    );
 
     it("a glossary's commentsIds.xml is not rewritten when the main document relates no comments", async () => {
         await withTempDir(async (dir) => {
