@@ -222,3 +222,54 @@ describe("hyperlink TargetMode scope (#773)", () => {
         ]);
     });
 });
+
+/**
+ * #1089: a full word-valid or strict run reports a `w:hyperlink` the rule
+ * refuses once, through the rule. The legacy walk's `rels-id-mismatch` or
+ * `rels-id-missing` copy of the same element is handed off (#616), for an id
+ * in either relationships namespace (#1065, #1079). Lenient runs no Word
+ * rule and keeps the legacy finding.
+ */
+describe("a refused w:hyperlink is one report in a full run (#1089)", () => {
+    const LEGACY = new Set(["rels-id-mismatch", "rels-id-missing"]);
+    /** Session 28's shape with the hyperlink's ids replaced by `ids`; `rId1` is MINIMAL_PARTS' styles relationship. */
+    const withIds = (ids: string): Record<string, string> => {
+        const parts = hyperlinkRelTypeParts(`${R}/hyperlink`);
+        parts["word/document.xml"] = parts["word/document.xml"]!.replace(
+            `<w:document xmlns:w="${W}"`,
+            `<w:document xmlns:rs="${RS}" xmlns:w="${W}"`,
+        ).replace('<w:hyperlink r:id="rIdH">', `<w:hyperlink ${ids}>`);
+        return parts;
+    };
+    it.each([
+        ["word-valid", 'r:id="rId1"'],
+        ["strict", 'r:id="rId1"'],
+        ["word-valid", 'r:id="rIdX"'],
+        ["strict", 'r:id="rIdX"'],
+        ["word-valid", 'rs:id="rIdY"'],
+        ["strict", 'rs:id="rIdY"'],
+        ["word-valid", 'r:id="rIdX" rs:id="rIdY"'],
+        ["strict", 'r:id="rIdX" rs:id="rIdY"'],
+    ] as const)("reports it once under %s for %s", async (profile, ids) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "refused-hyperlink.docx");
+            writeFileSync(file, await buildDocx(withIds(ids)));
+            const result = await validate(file, { profile });
+            expect(result.issues.filter((issue) => issue.code === "word-hyperlink-relationship")).toHaveLength(1);
+            expect(result.issues.filter((issue) => LEGACY.has(issue.code ?? ""))).toEqual([]);
+        });
+    });
+
+    it.each([
+        ['r:id="rId1"', "rels-id-mismatch"],
+        ['r:id="rIdX"', "rels-id-missing"],
+    ] as const)("lenient keeps the legacy finding for %s", async (ids, code) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "refused-hyperlink.docx");
+            writeFileSync(file, await buildDocx(withIds(ids)));
+            const result = await validate(file, { profile: "lenient" });
+            expect(result.issues.filter((issue) => issue.code === "word-hyperlink-relationship")).toEqual([]);
+            expect(result.issues.filter((issue) => LEGACY.has(issue.code ?? "")).map((issue) => issue.code)).toEqual([code]);
+        });
+    });
+});

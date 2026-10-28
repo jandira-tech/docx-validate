@@ -428,7 +428,6 @@
                 "valid": false,
                 "errorCodes": [
                     "paraid-missing-element",
-                    "rels-id-missing",
                     "rels-unreferenced",
                     "style-default-missing",
                     "style-reference-undefined",

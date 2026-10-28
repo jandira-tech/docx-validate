@@ -29,6 +29,7 @@ import { sidecarOf } from "../../../lib/word-read-parts";
 import { targetModeRelationshipParts } from "./opc-relationships-target-mode";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
+import { otherRelationshipIds, registerStoryReferenceIdentity } from "../story-reference-identity";
 
 const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
@@ -70,8 +71,10 @@ const externalHyperlinkRelationshipIds = (
     return out;
 };
 
+export const WORD_HYPERLINK_RELATIONSHIP = "word-hyperlink-relationship";
+
 export const wordHyperlinkRelationshipCheck: CheckDefinition = {
-    id: "word-hyperlink-relationship",
+    id: WORD_HYPERLINK_RELATIONSHIP,
     description: "Hyperlink ids name external hyperlink relationships.",
     groups: ["relationships"],
     formats: ["docx"],
@@ -96,10 +99,12 @@ export const wordHyperlinkRelationshipCheck: CheckDefinition = {
                 const links = getElementsByTagNameNSAll(dom, ns, "hyperlink");
                 for (const link of links) {
                     let rid: string | null = null;
+                    let ridNamespaceURI = "";
                     for (const relNs of relationshipNamespaces) {
                         const value = link.getAttributeNS(relNs, "id");
                         if (value) {
                             rid = value;
+                            ridNamespaceURI = relNs;
                             break;
                         }
                     }
@@ -131,7 +136,7 @@ export const wordHyperlinkRelationshipCheck: CheckDefinition = {
                     } else {
                         why = `Relationship '${rid}' has TargetMode '${rel.targetMode || "(none)"}'`;
                     }
-                    issues.push({
+                    const issue: ValidationIssue = {
                         severity: "error",
                         message:
                             `<w:hyperlink> r:id="${rid}" does not reference an external hyperlink relationship (${why}). ` +
@@ -139,8 +144,20 @@ export const wordHyperlinkRelationshipCheck: CheckDefinition = {
                             `Use a Relationship of Type ${ACCEPTED_HYPERLINK_RELATIONSHIP_TYPES[0]} ` +
                             `(or the ISO Strict ${ACCEPTED_HYPERLINK_RELATIONSHIP_TYPES[1]}) with TargetMode External, or remove the r:id.`,
                         path: xmlFile,
-                        code: "word-hyperlink-relationship",
+                        code: WORD_HYPERLINK_RELATIONSHIP,
+                    };
+                    // #1089: the full run's hand-off pairs this finding with
+                    // the legacy walk's rels-id-mismatch or rels-id-missing
+                    // copy of either id through the registered identity.
+                    registerStoryReferenceIdentity(issue, {
+                        part: xmlFile,
+                        namespaceURI: ns,
+                        localName: "hyperlink",
+                        rid,
+                        ridNamespaceURI,
+                        otherRids: otherRelationshipIds(link, relationshipNamespaces, rid),
                     });
+                    issues.push(issue);
                 }
             }
         }
