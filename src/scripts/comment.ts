@@ -56,6 +56,7 @@ import {
     relationshipTargetPartName,
     resolveContentType,
 } from "../lib/content-types";
+import { applyMarkupCompatibility, RELATIONSHIPS_UNDERSTOOD_NAMESPACES } from "../lib/markup-compatibility";
 import { commanderExitCode, runCli } from "../lib/run-cli";
 import { nextSecureLongHexNumber } from "../lib/secure-id";
 import { NS as XML_NS } from "../lib/types";
@@ -269,20 +270,40 @@ function getNextRid(dom: Document): number {
 }
 
 /**
+ * The relationships a stored relationships part holds as the checks read
+ * them: markup compatibility selects a branch first, with the namespaces the
+ * read model understands in a relationships part, so a relationship a
+ * selected `mc:Fallback` or an understood `mc:Choice` holds counts, and one
+ * only an unselected branch holds does not (#927); before, the stored root's
+ * direct children were read as stored, so a selected branch's relationship
+ * was read as absent — a package whose `officeDocument` relationship sat in
+ * one was refused, and a `comments` relationship in one got a second set
+ * beside it (#932). The issues the processor reports (`mce-malformed`, for
+ * example) are not addComment's to judge: validation reports them.
+ * `getNextRid` and every write keep the stored DOM (#918).
+ */
+function effectiveRelationships(dom: Document): Element[] {
+    return getRelationshipChildren(applyMarkupCompatibility(dom, { understood: RELATIONSHIPS_UNDERSTOOD_NAMESPACES }).document);
+}
+
+/**
  * Whether a relationship in `dom` relates `partName`: an internal
  * relationship of the comments type, Transitional or Strict, whose target
  * resolves to `partName` under OPC part-name equivalence (#906). The
- * relationships are read through `getRelationshipChildren`, so a part whose
- * root binds the package-relationships namespace to a prefix is read too,
- * and an element in another namespace is not read as a relationship, even
- * one named `Relationship` (#918). An External relationship, or one of
- * another type, does not count; before, it stopped addComment adding the
- * comments relationships, so it reported success with the comments parts
- * related to nothing (#917).
+ * relationships are read on the effective view `effectiveRelationships`
+ * returns — the stored DOM after markup compatibility selects a branch —
+ * so a relationship a selected `mc:Fallback` or an understood `mc:Choice`
+ * holds counts, and one only an unselected branch holds does not (#932,
+ * #927); a part whose root binds the package-relationships namespace to a
+ * prefix is read too, and an element in another namespace is not read as a
+ * relationship, even one named `Relationship` (#918). An External
+ * relationship, or one of another type, does not count; before, it stopped
+ * addComment adding the comments relationships, so it reported success with
+ * the comments parts related to nothing (#917).
  */
 function relatesCommentsPart(dom: Document, baseDir: string, partName: string): boolean {
     const key = canonicalPartName(partName);
-    const rels = getRelationshipChildren(dom);
+    const rels = effectiveRelationships(dom);
     for (let i = 0; i < rels.length; i += 1) {
         const rel = rels[i]!;
         if (!COMMENTS_PART_RELATIONSHIP_TYPES.has(rel.getAttribute("Type") ?? "")) {
@@ -356,9 +377,13 @@ async function storedPartNames(unpackedDir: string): Promise<string[]> {
  * part is the conventional `word/document.xml`, keeps the wiring #895
  * established; a package naming another main document wires through that
  * document's own relationships part, under its stored name. The
- * relationships are read through `getRelationshipChildren`, so a part whose
- * root binds the package-relationships namespace to a prefix is read too,
- * and an element in another namespace is not read as a relationship (#918).
+ * relationships are read on the effective view `effectiveRelationships`
+ * returns — the stored DOM after markup compatibility selects a branch —
+ * so a relationship a selected `mc:Fallback` or an understood `mc:Choice`
+ * holds counts, and one only an unselected branch holds does not (#932); a
+ * part whose root binds the package-relationships namespace to a prefix is
+ * read too, and an element in another namespace is not read as a
+ * relationship (#918).
  * What cannot be resolved — a URI scheme, an empty reference, a target that
  * climbs past the package root, or a named part that is not stored, the
  * conventional `word/document.xml` included — is refused, naming `_rels/.rels`
@@ -382,7 +407,7 @@ async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring>
         const detail = err instanceof Error ? err.message : String(err);
         return { kind: "refused", message: `Error: ${packageRelsPath} is not well-formed XML: ${detail}` };
     }
-    const relationships = getRelationshipChildren(dom);
+    const relationships = effectiveRelationships(dom);
     let mainRel: Element | undefined;
     let sawOfficeDocument = false;
     for (let i = 0; i < relationships.length; i += 1) {

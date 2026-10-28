@@ -50,6 +50,9 @@ const STRICT_COMMENTS_RELATIONSHIP_TYPE = "http://purl.oclc.org/ooxml/officeDocu
 const HYPERLINK_RELATIONSHIP_TYPE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
 const STYLES_RELATIONSHIP_TYPE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles";
 const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
+const MARKUP_COMPATIBILITY_NAMESPACE = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const W14_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordml";
+const UNKNOWN_NAMESPACE = "urn:unknown";
 const COMMENTS_EXTENDED_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2011/relationships/commentsExtended";
 const COMMENTS_IDS_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2016/09/relationships/commentsIds";
 const COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible";
@@ -75,6 +78,26 @@ const officeDocumentRels = (target: string): string => packageRels(`Type="${OFFI
 /** The package relationships part with its namespace bound to the `p:` prefix, holding one relationship with `attributes` (#918). */
 const prefixedPackageRels = (attributes: string): string =>
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<p:Relationships xmlns:p="${PACKAGE_RELATIONSHIPS_NAMESPACE}">\n  <p:Relationship Id="rId1" ${attributes}/>\n</p:Relationships>`;
+
+/** A relationships stream whose root also binds `mc`, `u` and `w14`, holding `body` between its root tags (#932). */
+const mcRelationships = (body: string): string =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="${PACKAGE_RELATIONSHIPS_NAMESPACE}" xmlns:mc="${MARKUP_COMPATIBILITY_NAMESPACE}" xmlns:u="${UNKNOWN_NAMESPACE}" xmlns:w14="${W14_NAMESPACE}">${body}</Relationships>`;
+
+/** An `mc:AlternateContent` whose Fallback is selected: its Choice requires `u`, a namespace nothing understands (#932). */
+const fallbackBranch = (content: string): string =>
+    `<mc:AlternateContent><mc:Choice Requires="u"/><mc:Fallback>${content}</mc:Fallback></mc:AlternateContent>`;
+
+/** An `mc:AlternateContent` whose Choice is selected: it requires `w14`, a namespace the checks understand (#932). */
+const understoodChoiceBranch = (content: string): string =>
+    `<mc:AlternateContent><mc:Choice Requires="w14">${content}</mc:Choice><mc:Fallback/></mc:AlternateContent>`;
+
+/** An `mc:AlternateContent` whose Choice is not selected: it requires `u`, a namespace nothing understands, and its Fallback is empty (#927). */
+const unselectedChoiceBranch = (content: string): string =>
+    `<mc:AlternateContent><mc:Choice Requires="u">${content}</mc:Choice><mc:Fallback/></mc:AlternateContent>`;
+
+/** The package relationships part whose only relationship, with `attributes`, sits inside the branch `branch` wraps it in (#932). */
+const branchedPackageRels = (branch: (content: string) => string, attributes: string): string =>
+    mcRelationships(branch(`<Relationship Id="rId1" ${attributes}/>`));
 
 /** The four relationships a first comment appends, with ids counting from `firstRid`. */
 const firstCommentRelationships = (firstRid: number): string[][] => [
@@ -1425,6 +1448,167 @@ describe("addComment", () => {
             expect(await readTree(dir)).toEqual(before);
         });
     });
+
+    it.each([
+        ["a selected Fallback", fallbackBranch],
+        ["an understood Choice", understoodChoiceBranch],
+    ])(
+        "relates a first comment through an officeDocument relationship %s of _rels/.rels holds (#932)",
+        { timeout: 30000 },
+        async (_label, branch) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(
+                    dir,
+                    branchedPackageRels(branch, `Type="${OFFICE_DOCUMENT_RELATIONSHIP_TYPE}" Target="word/document.xml"`),
+                    "word/document.xml",
+                );
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // The checks follow a relationship a selected branch holds as
+                // they follow a direct child, so the wiring resolves through it
+                // and the four relationships land in the conventional sidecar.
+                const relsPath = path.join(dir, "word", "_rels", "document.xml.rels");
+                expect(relationshipRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual(firstCommentRelationships(1));
+
+                // The marked, packed tree validates: the branch-held relationship
+                // is the one the checks read.
+                await fs.writeFile(path.join(dir, "word", "document.xml"), markedMainDocument(), "utf-8");
+                const file = path.join(dir, "branched-package-rels.docx");
+                await packTree(dir, file);
+                const validation = await validate(file, { profile: "word-valid" });
+                expect(validation.issues.filter((issue) => issue.code === "comment-marker-missing")).toEqual([]);
+                expect(validation.valid).toBe(true);
+            });
+        },
+    );
+
+    it("refuses a first comment when _rels/.rels's only officeDocument relationship sits in an unselected Choice, changing nothing (#932)", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(
+                dir,
+                branchedPackageRels(unselectedChoiceBranch, `Type="${OFFICE_DOCUMENT_RELATIONSHIP_TYPE}" Target="word/document.xml"`),
+            );
+
+            const before = await readTree(dir);
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "x",
+                author: "TestAuthor",
+                initials: "TA",
+            });
+
+            // Nothing selects the Choice, so the checks read no officeDocument
+            // relationship, and neither does addComment.
+            expect(result.paraId).toBe("");
+            expect(result.message).toBe(`Error: ${path.join(dir, "_rels", ".rels")} names no officeDocument relationship`);
+            expect(await readTree(dir)).toEqual(before);
+        });
+    });
+
+    it.each([
+        ["a selected Fallback", fallbackBranch],
+        ["an understood Choice", understoodChoiceBranch],
+    ])(
+        "adds no second set of relationships when %s of the main document's relationships part already relates word/comments.xml (#932)",
+        { timeout: 30000 },
+        async (_label, branch) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+                const relsPath = path.join(dir, "word", "_rels", "document.xml.rels");
+                await fs.mkdir(path.dirname(relsPath), { recursive: true });
+                await fs.writeFile(
+                    relsPath,
+                    mcRelationships(branch(`<Relationship Id="rId1" Type="${COMMENTS_RELATIONSHIP_TYPE}" Target="comments.xml"/>`)),
+                    "utf-8",
+                );
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // The branch-held relationship relates the comments part as a
+                // direct child does, so nothing is appended: the part keeps
+                // exactly the one comments relationship it stored.
+                expect(relationshipRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual([
+                    ["rId1", COMMENTS_RELATIONSHIP_TYPE, "comments.xml", ""],
+                ]);
+
+                // The marked, packed tree validates: the branch-held
+                // relationship is the one the checks read the comments part
+                // through.
+                await fs.writeFile(path.join(dir, "word", "document.xml"), markedMainDocument(), "utf-8");
+                const file = path.join(dir, "branched-sidecar-rels.docx");
+                await packTree(dir, file);
+                const validation = await validate(file, { profile: "word-valid" });
+                expect(validation.issues.filter((issue) => issue.code === "comment-marker-missing")).toEqual([]);
+                expect(validation.valid).toBe(true);
+            });
+        },
+    );
+
+    it(
+        "adds the four relationships beside a comments relationship only an unselected Choice holds (#927)",
+        { timeout: 30000 },
+        async () => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+                const relsPath = path.join(dir, "word", "_rels", "document.xml.rels");
+                await fs.mkdir(path.dirname(relsPath), { recursive: true });
+                await fs.writeFile(
+                    relsPath,
+                    mcRelationships(
+                        unselectedChoiceBranch(`<Relationship Id="rId1" Type="${COMMENTS_RELATIONSHIP_TYPE}" Target="comments.xml"/>`),
+                    ),
+                    "utf-8",
+                );
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // The checks read no relationship the unselected Choice holds, so
+                // the comments part is related to nothing and the four relationships
+                // are added on the stored root, beside the untouched branch: the
+                // part holds two comments relationships, and the new ids skip the
+                // rId1 the stored one uses, unselected as it is.
+                expect(relationshipRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual([
+                    ["rId1", COMMENTS_RELATIONSHIP_TYPE, "comments.xml", ""],
+                    ...firstCommentRelationships(2),
+                ]);
+
+                // The marked, packed tree validates: the markers name a comment
+                // the added relationship relates.
+                await fs.writeFile(path.join(dir, "word", "document.xml"), markedMainDocument(), "utf-8");
+                const file = path.join(dir, "unselected-choice-rels.docx");
+                await packTree(dir, file);
+                const validation = await validate(file, { profile: "word-valid" });
+                expect(validation.issues.filter((issue) => issue.code === "comment-marker-missing")).toEqual([]);
+                expect(validation.valid).toBe(true);
+            });
+        },
+    );
 
     it.each([
         [

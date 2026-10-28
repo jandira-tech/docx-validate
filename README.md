@@ -1959,7 +1959,16 @@ root's prefix, and their ids are numbered past every `rId<N>` id the part holds,
 whatever its namespace; before, a prefixed `_rels/.rels` was refused as naming
 no `officeDocument` relationship, and a prefixed main-document relationships
 part got unnamespaced relationships with a repeated id
-([#918](https://github.com/jandira-tech/docx-validate/issues/918)). When the
+([#918](https://github.com/jandira-tech/docx-validate/issues/918)). Both
+relationships parts are read as the checks read them, after markup compatibility
+selects a branch: a relationship a selected `mc:Fallback` or an understood
+`mc:Choice` holds counts, one only an unselected branch holds does not; before,
+a selected branch's relationship was not read, so a package whose
+`officeDocument` relationship sat in one was refused and a `comments`
+relationship in one got a second set beside it
+([#932](https://github.com/jandira-tech/docx-validate/issues/932)), and before
+#918 an unselected branch's relationship counted
+([#927](https://github.com/jandira-tech/docx-validate/issues/927)). When the
 main document has no relationships part, `addComment` creates one; before, it
 reported success and left the comments parts related to nothing
 ([#895](https://github.com/jandira-tech/docx-validate/issues/895)). It types the
