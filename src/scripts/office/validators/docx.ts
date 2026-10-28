@@ -3524,8 +3524,13 @@ export function withoutRepeatedCompatibilityFindings(schema: ValidationResult, r
  * (review BE F1) is the same element name's other spelling. The key is the
  * same element name — namespace URI and local name — with the same Id in
  * the same part, not the element instance: every legacy copy of it is
- * dropped, the unselected twin's copy with it, and no finding is dropped
- * for another part, another Id or another element name. The former
+ * dropped, the unselected twin's copy with it. That holds through an
+ * `otherRids` key too, so a twin naming one of the element's other ids
+ * reads as that element's spelling and its copy is dropped (review 1084's
+ * S10). No finding is dropped for another part, another element name, or
+ * an Id that is neither the finding's `rid` nor one of its `otherRids`;
+ * and the legacy walk registers an identity only on an `r:id` copy, so an
+ * `r:embed` or `r:link` copy is never dropped (#1086). The former
  * message-prose pairing let a quoted `r:id`
  * double the report and a crafted `r:id` consume a foreign element's only
  * mismatch. A finding without a registered identity — another producer, or
