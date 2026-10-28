@@ -62,6 +62,7 @@ import {
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { wordReadTypedTargets } from "../../../lib/word-read-parts";
+import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 import { REPORTING_SEGMENT_ORDER } from "./word-part-content-type-generic";
 import {
     expectedContentTypesFor,
@@ -162,8 +163,10 @@ const segmentForMediaType = (mediaType: string): string | undefined =>
  * while the exact-typed styles part a comments, endnotes or footnotes
  * relationship nothing references also targets opens clean (s58a/s58b)
  * — the observed shape is the read story typed styles, not the styles
- * part co-reached. Word refused every shape whatever the Override says,
- * so a matching reach on the same part exempts none of it, and typings
+ * part co-reached. Session 58's rows were own-root parts, so its pairs
+ * co-reach only a part holding the story's own root (#803). Word refused
+ * every shape whatever the Override says, so a matching reach on the
+ * same part exempts none of it, and typings
  * no session showed keep their verdict. Main-document reaches only: a
  * glossary's own relationship co-reaches nothing here. An exact spelling
  * only; an inexact one is the inexact check's finding.
@@ -248,13 +251,25 @@ export const wordPartContentTypeMismatchFindings = async (
         // comments, footnotes or endnotes relationship the body references
         // whose part is typed with one of the observed pairs' mapped types,
         // which no matching reach exempts — the main document's reaches
-        // only, never a glossary's own relationship.
-        const isReadStoryCoreach = (entry: (typeof entries)[number]): boolean =>
-            LAZY_OBSERVED_SEGMENTS.has(entry.segment) &&
-            entry.via !== "glossary" &&
-            asciiLowercase(declared) === mediaType &&
-            readKeys?.has(`${entry.via ?? "main"}\n${canonical}\n${entry.segment}`) === true &&
-            READ_STORY_COREACH_SESSIONS.has(`${entry.segment}\n${segmentForMediaType(mediaType)}`);
+        // only, never a glossary's own relationship. Session 58 showed
+        // own-root parts, so its pairs co-reach only a part whose
+        // effective root is the story's own (#803).
+        const ownStoryRoot = (segment: string): boolean => {
+            const parsed = ctx.effectiveXml(part);
+            const root = parsed?.ok === true ? parsed.document.documentElement : null;
+            return root?.localName === segment && WORD_PARAGRAPH_NAMESPACES.includes(root?.namespaceURI ?? "");
+        };
+        const isReadStoryCoreach = (entry: (typeof entries)[number]): boolean => {
+            const session = READ_STORY_COREACH_SESSIONS.get(`${entry.segment}\n${segmentForMediaType(mediaType)}`);
+            return (
+                session !== undefined &&
+                LAZY_OBSERVED_SEGMENTS.has(entry.segment) &&
+                entry.via !== "glossary" &&
+                asciiLowercase(declared) === mediaType &&
+                readKeys?.has(`${entry.via ?? "main"}\n${canonical}\n${entry.segment}`) === true &&
+                (session !== "session 58" || ownStoryRoot(entry.segment))
+            );
+        };
         // The observed set covers the read header/footer swaps, the eagerly
         // parsed reaches — the main document and the main document's own
         // styles, settings and numbering relationships, which need no usage
