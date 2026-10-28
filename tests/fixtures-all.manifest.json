@@ -1,6 +1,6 @@
 {
     "generatedAt": "2026-10-23T09:03:55.628Z",
-    "totalFixtures": 677,
+    "totalFixtures": 681,
     "entries": [
         {
             "relativePath": "broken/comments.unmatched-comment-marker.docx",
@@ -292,6 +292,23 @@
             }
         },
         {
+            "relativePath": "broken/package.word-duplicate-numbering.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["word-duplicate-numbering-relationship"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "unreadable-content-warning",
+                "sha256": "c8916291d7eedd9163084660376314ac3f917b7547c48853f82649e3593735ef",
+                "observedAt": "2026-10-26T08:41:16.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
             "relativePath": "broken/package.word-duplicate-settings.docx",
             "strict": {
                 "valid": false,
@@ -311,6 +328,23 @@
                 "outcome": "unreadable-content-warning",
                 "sha256": "f9ee736e620997bc774eee52ef8efbe28fa0ff8c0fd6234121e1caa941357038",
                 "observedAt": "2026-10-26T01:36:14.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "broken/package.word-duplicate-styles.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["word-duplicate-styles-relationship"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "unreadable-content-warning",
+                "sha256": "714222ecaedec663f1cbbdf0d25a5dbf28565a8ceb4e1e5bf026964e9ced880b",
+                "observedAt": "2026-10-26T08:08:22.000Z",
                 "wordVersion": "16.115"
             }
         },
@@ -10114,6 +10148,23 @@
             }
         },
         {
+            "relativePath": "working/package.word-duplicate-numbering-removed.docx",
+            "strict": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "77e8bdd24a4fa0608318fb7a467c3245719b71cc6f0f59ad42d0502450af0887",
+                "observedAt": "2026-10-26T08:44:17.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
             "relativePath": "working/package.word-duplicate-settings-removed.docx",
             "strict": {
                 "valid": false,
@@ -10127,6 +10178,23 @@
                 "outcome": "clean-open",
                 "sha256": "97c58c1673774516b0665a034f225575b68548f9b9659aaf7602b3a3e3efdc24",
                 "observedAt": "2026-10-26T01:36:14.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-duplicate-styles-removed.docx",
+            "strict": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "972265f3d7c6faa831a608a13c155df55c8d11fe49844fc9874a444e18a89f68",
+                "observedAt": "2026-10-26T08:08:22.000Z",
                 "wordVersion": "16.115"
             }
         },

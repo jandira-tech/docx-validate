@@ -162,7 +162,7 @@ const isKnownOfficeNamespace = (type: string): boolean =>
  * type with an extra path segment such as `…/relationships/custom/styles`
  * is an unknown type inside the namespace, not the `styles` type (#519).
  */
-const officeRelationshipTypeSegment = (type: string): string | undefined => {
+export const officeRelationshipTypeSegment = (type: string): string | undefined => {
     const prefix = type.startsWith(RELATIONSHIP_TYPES_TRANSITIONAL)
         ? RELATIONSHIP_TYPES_TRANSITIONAL
         : type.startsWith(RELATIONSHIP_TYPES_STRICT)

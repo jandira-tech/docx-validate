@@ -24,12 +24,25 @@
  * recovery (fixture 0689). A second relationship that targets
  * the same settings.xml still warns. One settings relationship
  * opens clean.
+ *
+ * Two `styles` relationships in one `.rels` part make Word offer
+ * to recover the file, to two parts in either order — listed in
+ * Id order or against it — and to the same part (#694; session
+ * 45). One styles relationship opens clean. A type counts only
+ * as the namespace plus the one segment — Word reads Types
+ * exactly (session 27) — so `…/relationships/custom/styles` is
+ * no styles type (#519); session 47 opened one beside a real
+ * styles relationship clean. Two `numbering` relationships make
+ * Word offer to recover the file the same way; one opens clean.
+ * Two `footnotes` relationships open clean, so footnotes keeps
+ * no check of its own.
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
 import { isRelationshipsPartName } from "../../../lib/content-types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { ValidationIssue } from "../../../lib/types";
+import { officeRelationshipTypeSegment } from "../../../lib/word-read-parts";
 import { getRelationshipChildren } from "../../../lib/xml-helpers";
 
 export const wordDuplicateThemeRelationshipCheck: CheckDefinition = {
@@ -201,6 +214,94 @@ export const wordDuplicateSettingsRelationshipCheck: CheckDefinition = {
                     `(${settingsIds.join(", ")}). Microsoft Word offers to recover the file. Keep one settings relationship.`,
                 path: relsFile,
                 code: "word-duplicate-settings-relationship",
+            });
+        }
+
+        return issues;
+    },
+};
+
+export const wordDuplicateStylesRelationshipCheck: CheckDefinition = {
+    id: "word-duplicate-styles-relationship",
+    description: "Relationship parts contain at most one styles relationship.",
+    groups: ["relationships"],
+    formats: ["docx"],
+    requires: ["xml-syntax"],
+    run: (ctx: ValidationContext): ValidationIssue[] => {
+        const issues: ValidationIssue[] = [];
+
+        for (const relsFile of ctx.partNames) {
+            if (!isRelationshipsPartName(relsFile)) {
+                continue;
+            }
+            const parsed = ctx.effectiveXml(relsFile);
+            if (!parsed?.ok) {
+                continue;
+            }
+            const dom = parsed.document;
+            const rels = getRelationshipChildren(dom);
+            const stylesIds: string[] = [];
+            for (const rel of rels) {
+                const type = rel.getAttribute("Type") ?? "";
+                if (officeRelationshipTypeSegment(type) !== "styles") {
+                    continue;
+                }
+                stylesIds.push(rel.getAttribute("Id") ?? "");
+            }
+            if (stylesIds.length < 2) {
+                continue;
+            }
+            issues.push({
+                severity: "error",
+                message:
+                    `${relsFile} contains ${stylesIds.length} styles relationships ` +
+                    `(${stylesIds.join(", ")}). Microsoft Word offers to recover the file. Keep one styles relationship.`,
+                path: relsFile,
+                code: "word-duplicate-styles-relationship",
+            });
+        }
+
+        return issues;
+    },
+};
+
+export const wordDuplicateNumberingRelationshipCheck: CheckDefinition = {
+    id: "word-duplicate-numbering-relationship",
+    description: "Relationship parts contain at most one numbering relationship.",
+    groups: ["relationships"],
+    formats: ["docx"],
+    requires: ["xml-syntax"],
+    run: (ctx: ValidationContext): ValidationIssue[] => {
+        const issues: ValidationIssue[] = [];
+
+        for (const relsFile of ctx.partNames) {
+            if (!isRelationshipsPartName(relsFile)) {
+                continue;
+            }
+            const parsed = ctx.effectiveXml(relsFile);
+            if (!parsed?.ok) {
+                continue;
+            }
+            const dom = parsed.document;
+            const rels = getRelationshipChildren(dom);
+            const numberingIds: string[] = [];
+            for (const rel of rels) {
+                const type = rel.getAttribute("Type") ?? "";
+                if (officeRelationshipTypeSegment(type) !== "numbering") {
+                    continue;
+                }
+                numberingIds.push(rel.getAttribute("Id") ?? "");
+            }
+            if (numberingIds.length < 2) {
+                continue;
+            }
+            issues.push({
+                severity: "error",
+                message:
+                    `${relsFile} contains ${numberingIds.length} numbering relationships ` +
+                    `(${numberingIds.join(", ")}). Microsoft Word offers to recover the file. Keep one numbering relationship.`,
+                path: relsFile,
+                code: "word-duplicate-numbering-relationship",
             });
         }
 

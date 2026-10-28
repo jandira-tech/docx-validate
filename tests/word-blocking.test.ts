@@ -137,6 +137,10 @@ describe("isWordBlockingIssue", () => {
         "word-duplicate-font-table-relationship",
         "word-duplicate-web-settings-relationship",
         "word-duplicate-settings-relationship",
+        // Two styles or two numbering relationships in one .rels part make
+        // Word offer recovery (#694, session 45).
+        "word-duplicate-styles-relationship",
+        "word-duplicate-numbering-relationship",
         "word-numbering-picture-bullet",
         "word-footnote-reference-missing",
         "documentbuilder-insert-unresolved",

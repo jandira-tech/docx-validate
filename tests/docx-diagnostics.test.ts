@@ -605,6 +605,8 @@ describe("repair plan vs repair() coverage (#622)", () => {
         { code: "word-duplicate-font-table-relationship", expected: "unavailable", fixture: "package.word-duplicate-font-table.docx" },
         { code: "word-duplicate-web-settings-relationship", expected: "unavailable", fixture: "package.word-duplicate-web-settings.docx" },
         { code: "word-duplicate-settings-relationship", expected: "unavailable", fixture: "package.word-duplicate-settings.docx" },
+        { code: "word-duplicate-styles-relationship", expected: "unavailable", fixture: "package.word-duplicate-styles.docx" },
+        { code: "word-duplicate-numbering-relationship", expected: "unavailable", fixture: "package.word-duplicate-numbering.docx" },
         { code: "xsd-error", expected: "repaired", profile: "strict", parts: scaffoldSpecimen() },
         { code: "xsd-error", expected: "repaired", profile: "lenient", parts: scaffoldSpecimen() },
         {
