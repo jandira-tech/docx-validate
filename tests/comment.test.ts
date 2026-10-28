@@ -2205,6 +2205,40 @@ describe("addComment", () => {
             (dir: string) => `${path.join(dir, "_rels", ".rels")} names an External officeDocument relationship`,
             undefined,
         ],
+        // A target whose path is empty names no part at all, not a part
+        // outside the package (#1002).
+        [
+            "the officeDocument target is empty",
+            officeDocumentRels(""),
+            "word/main.xml",
+            (dir: string) =>
+                `${path.join(dir, "_rels", ".rels")} names an officeDocument target with an empty path, which names no main document`,
+            undefined,
+        ],
+        [
+            "the officeDocument target is only a fragment",
+            officeDocumentRels("#main"),
+            "word/main.xml",
+            (dir: string) =>
+                `${path.join(dir, "_rels", ".rels")} names an officeDocument target with an empty path, which names no main document`,
+            undefined,
+        ],
+        [
+            "the officeDocument target is only a query",
+            officeDocumentRels("?x"),
+            "word/main.xml",
+            (dir: string) =>
+                `${path.join(dir, "_rels", ".rels")} names an officeDocument target with an empty path, which names no main document`,
+            undefined,
+        ],
+        [
+            "the officeDocument relationship has no Target",
+            packageRels(`Type="${OFFICE_DOCUMENT_RELATIONSHIP_TYPE}"`),
+            "word/main.xml",
+            (dir: string) =>
+                `${path.join(dir, "_rels", ".rels")} names an officeDocument target with an empty path, which names no main document`,
+            undefined,
+        ],
         [
             "the officeDocument target climbs past the package root to an absent part",
             officeDocumentRels("../outside/main.xml"),

@@ -499,9 +499,20 @@ async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring>
     // or an empty target names no part, the query and fragment are dropped),
     // a climb past the package root stopping there, as Word read
     // `../word/document.xml` and `/../word/document.xml` (session 78, #986).
-    const reference = relationshipTargetPartName(".", mainRel.getAttribute("Target") ?? "");
+    const target = mainRel.getAttribute("Target") ?? "";
+    const reference = relationshipTargetPartName(".", target);
     if (reference === undefined) {
-        return { kind: "refused", message: `Error: ${packageRelsPath} names a main document outside the package` };
+        // A URI names a part outside the package; a target whose path is
+        // empty — no Target, or only a query or fragment — names no part at
+        // all (#1002).
+        const [targetPath = ""] = target.replace(/\\/g, "/").split(/[?#]/, 1);
+        return {
+            kind: "refused",
+            message:
+                targetPath === ""
+                    ? `Error: ${packageRelsPath} names an officeDocument target with an empty path, which names no main document`
+                    : `Error: ${packageRelsPath} names a main document outside the package`,
+        };
     }
     // A reference ending in `/` names a folder, which Word refuses as the
     // main document (session 70, #962), and so does the package root,
