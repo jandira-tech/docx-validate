@@ -18,6 +18,7 @@ import { describe, expect, it } from "vitest";
 import type { ValidationIssue } from "../src/lib/types";
 import { ValidationContext, type PartContent } from "../src/lib/validation-context";
 import { wordShadingColorCheck } from "../src/scripts/office/checks/shading-color";
+import { MINIMAL_PARTS } from "./support/minimal-docx";
 
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const STRICT = "http://purl.oclc.org/ooxml/wordprocessingml/main";
@@ -163,5 +164,33 @@ describe("shading-color check", () => {
         );
         expect(issues).toHaveLength(1);
         expect(issues[0]!.path).toBe("word/footer1.xml");
+    });
+
+    // #1122: since #1113 the story list holds the main document wherever it
+    // is stored, so one stored under a styles or numbering name is in both
+    // lists the check walks.
+    describe("a main document stored under a styles or numbering name (#1122)", () => {
+        const DEFECT = documentXml(`<w:p><w:pPr><w:shd w:val="clear" w:fill=""/></w:pPr></w:p>`);
+        /** A package whose officeDocument relationship names `main`, holding one empty w:fill. */
+        const mainAt = (main: string, extra: Readonly<Record<string, PartContent>> = {}): Record<string, PartContent> => ({
+            "_rels/.rels": MINIMAL_PARTS["_rels/.rels"]!.replace('Target="word/document.xml"', `Target="${main}"`),
+            [main]: DEFECT,
+            ...extra,
+        });
+
+        it.each(["word/styles.xml", "word/numbering.xml"])("reports the main document stored as %s once", async (main) => {
+            expect((await findings(mainAt(main))).map((issue) => issue.path)).toEqual([main]);
+        });
+
+        // Two stored entries with OPC-equivalent names are two parts with
+        // their own bytes, so each is walked: the walk keys on the stored
+        // name, not the canonical one.
+        it("walks each stored part once, a second spelling of the main document's name included", async () => {
+            const styles =
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+                `<w:styles xmlns:w="${W}"><w:style w:type="paragraph" w:styleId="P"><w:pPr><w:shd w:val="clear" w:fill=""/></w:pPr></w:style></w:styles>`;
+            const issues = await findings(mainAt("word/Styles.xml", { "word/styles.xml": styles }));
+            expect(issues.map((issue) => issue.path)).toEqual(["word/Styles.xml", "word/styles.xml"]);
+        });
     });
 });

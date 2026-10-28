@@ -87,6 +87,33 @@ describe("shading-color integration: synthetic single-defect package", { timeout
     });
 });
 
+/** `parts` with its main document stored as `main`, in place of the part there, and no main-document sidecar (#1122). */
+const mainStoredAs = (parts: Readonly<Record<string, string>>, main: string): Record<string, string> => {
+    const { "word/document.xml": document, "word/_rels/document.xml.rels": _sidecar, ...rest } = parts;
+    return {
+        ...rest,
+        "[Content_Types].xml": rest["[Content_Types].xml"]!.replace(new RegExp(`<Override PartName="/${main}"[^>]*/>`), "").replace(
+            'PartName="/word/document.xml"',
+            `PartName="/${main}"`,
+        ),
+        "_rels/.rels": rest["_rels/.rels"]!.replace('Target="word/document.xml"', `Target="${main}"`),
+        [main]: document!,
+    };
+};
+
+// #1122 (review 1117 F1): a main document stored as word/styles.xml or
+// word/numbering.xml is a read story part and a styles/numbering part; its
+// finding is reported once, in a full run as in the check.
+describe("shading-color integration: a main document stored under a styles or numbering name (#1122)", { timeout: 120000 }, () => {
+    it.each(["word/styles.xml", "word/numbering.xml"])(
+        "a full word-valid run reports the main document stored as %s once",
+        async (main) => {
+            const bytes = await buildDocx(mainStoredAs(partsWith(`<w:shd w:val="clear" w:fill=""/>`), main));
+            expect(advisories((await validateBytes(bytes, "word-valid")).issues).map((issue) => issue.path)).toEqual([main]);
+        },
+    );
+});
+
 describe("shading-color integration: jubarte 0.13.0 lane specimens", () => {
     /** k06_1 (#221) and k06_2 (#215): 60 empty `w:fill` per document part. */
     const SPECIMENS: readonly { file: string; issue: number; documentFindings: number }[] = [

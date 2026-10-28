@@ -116,10 +116,14 @@ const COLOUR_ATTRIBUTES: ReadonlyMap<string, ColourSpace> = new Map(
     } satisfies Record<string, ColourSpace>),
 );
 
-/** The story parts Word reads (#1113) plus styles.xml and numbering.xml, where `CT_Shd` may legally appear. */
+/**
+ * The story parts Word reads (#1113) plus styles.xml and numbering.xml, where
+ * `CT_Shd` may legally appear, each stored part once: a main document stored
+ * as `word/styles.xml` is in both lists (#1122). The stored name is the key,
+ * so two entries whose names OPC equates stay two parts with their own bytes.
+ */
 const shadingParts = (storyParts: readonly string[], partNames: readonly string[]): readonly string[] => [
-    ...storyParts,
-    ...partNames.filter((name) => /(?:^|\/)(?:styles|numbering)\.xml$/i.test(name)),
+    ...new Set([...storyParts, ...partNames.filter((name) => /(?:^|\/)(?:styles|numbering)\.xml$/i.test(name))]),
 ];
 
 export const wordShadingColorCheck: CheckDefinition = {
