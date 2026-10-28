@@ -11,6 +11,7 @@ import { parseXml } from "../src/lib/xml-helpers";
 import {
     hasWordRelationshipReference,
     isWordBlockingIssue,
+    nonPictureRelationshipAttributeValues,
     relationshipAttributeValues,
 } from "../src/scripts/office/validators/word-blocking";
 
@@ -532,5 +533,23 @@ describe("relationshipAttributeValues (#647)", () => {
                 `<w:body><dgm:relIds r:dm="rId1" r:lo="rId2" r:qs="" rs:cs="rId3"/><w:p o:relid="rId4" o:spid="rId5" w:rsidR="rId6" id="rId7"/></w:body></w:document>`,
         );
         expect([...relationshipAttributeValues(document)].sort()).toEqual(["rId1", "rId2", "rId3", "rId4"]);
+    });
+});
+
+describe("nonPictureRelationshipAttributeValues (#701)", () => {
+    // An image relationship's Id counts as referenced unless only a picture's
+    // a:blip r:embed names it, the shape session 44 opened clean.
+    it("leaves out a:blip r:embed, Transitional and ISO Strict, and keeps every other reference", () => {
+        const document = parseXml(
+            `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ` +
+                `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" ` +
+                `xmlns:rs="http://purl.oclc.org/ooxml/officeDocument/relationships" ` +
+                `xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:as="http://purl.oclc.org/ooxml/drawingml/main" ` +
+                `xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:x="urn:x" xmlns:o="urn:schemas-microsoft-com:office:office">` +
+                `<w:body><a:blip r:embed="rId1" r:link="rId2"/><as:blip rs:embed="rId3"/><x:blip r:embed="rId4"/>` +
+                `<c:chart r:id="rId5"/><w:p o:relid="rId6"/></w:body></w:document>`,
+        );
+        expect([...nonPictureRelationshipAttributeValues(document)].sort()).toEqual(["rId2", "rId4", "rId5", "rId6"]);
+        expect([...relationshipAttributeValues(document)].sort()).toEqual(["rId1", "rId2", "rId3", "rId4", "rId5", "rId6"]);
     });
 });

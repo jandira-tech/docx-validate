@@ -84,17 +84,35 @@ export const wordRelationshipReferenceIds = (document: Document): ReadonlySet<st
  * diagram data through `r:dm`, which that set does not count, so a reference
  * of any spelling keeps the reach-based blocking verdict.
  */
-export const relationshipAttributeValues = (document: Document): ReadonlySet<string> => {
+export const relationshipAttributeValues = (document: Document): ReadonlySet<string> => relationshipAttributes(document, false);
+
+/**
+ * {@link relationshipAttributeValues} without a picture's `a:blip r:embed`,
+ * Transitional or ISO Strict DrawingML: the one reference to an `image`
+ * relationship Word was shown, clean, for a part with no sidecar (session 44
+ * s44a/s44b). Every other attribute naming an image relationship's Id keeps
+ * the reach blocking (#701).
+ */
+export const nonPictureRelationshipAttributeValues = (document: Document): ReadonlySet<string> => relationshipAttributes(document, true);
+
+const DRAWINGML_MAIN_NAMESPACES: ReadonlySet<string> = new Set([
+    "http://schemas.openxmlformats.org/drawingml/2006/main",
+    "http://purl.oclc.org/ooxml/drawingml/main",
+]);
+const RELATIONSHIP_ATTRIBUTE_NAMESPACES: ReadonlySet<string> = new Set([NS.R, "http://purl.oclc.org/ooxml/officeDocument/relationships"]);
+
+const relationshipAttributes = (document: Document, skipPictureEmbed: boolean): ReadonlySet<string> => {
     const values = new Set<string>();
     for (const element of getElementsByTagNameAll(document)) {
+        const picture = skipPictureEmbed && element.localName === "blip" && DRAWINGML_MAIN_NAMESPACES.has(element.namespaceURI ?? "");
         for (let i = 0; i < element.attributes.length; i++) {
             const attribute = element.attributes.item(i);
+            if (attribute === null || attribute.value === "") continue;
+            const relationshipAttribute = RELATIONSHIP_ATTRIBUTE_NAMESPACES.has(attribute.namespaceURI ?? "");
+            if (picture && relationshipAttribute && attribute.localName === "embed") continue;
             if (
-                attribute !== null &&
-                attribute.value !== "" &&
-                (attribute.namespaceURI === NS.R ||
-                    attribute.namespaceURI === "http://purl.oclc.org/ooxml/officeDocument/relationships" ||
-                    (attribute.namespaceURI === "urn:schemas-microsoft-com:office:office" && attribute.localName === "relid"))
+                relationshipAttribute ||
+                (attribute.namespaceURI === "urn:schemas-microsoft-com:office:office" && attribute.localName === "relid")
             ) {
                 values.add(attribute.value);
             }
