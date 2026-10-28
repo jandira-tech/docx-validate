@@ -885,13 +885,14 @@ export const wordReferenceLoadedSources = async (
         }
         const baseDir = relationshipsBaseDir(name);
         // The part this relationships part belongs to, when it is a `_rels`
-        // sidecar; `undefined` for `_rels/.rels` (the package's own) and for
-        // a `.rels` name no `_rels` folder owns.
+        // sidecar — the folder segment compared canonically, as the sidecar
+        // lookup compares it, so an escaped spelling owns its source part
+        // too (#772, #781); `undefined` for `_rels/.rels` (the package's
+        // own) and for a `.rels` name no `_rels` folder owns.
         const dir = path.posix.dirname(name);
-        const source =
-            path.posix.basename(dir).toLowerCase() === "_rels"
-                ? lookup(path.posix.join(path.posix.dirname(dir), path.posix.basename(name).replace(/\.rels$/i, "")))
-                : undefined;
+        const source = isRelationshipsFolderName(path.posix.basename(dir))
+            ? lookup(path.posix.join(path.posix.dirname(dir), path.posix.basename(name).replace(/\.rels$/i, "")))
+            : undefined;
         for (const relationship of relationshipsOf(context, name, profile)) {
             if (relationship.getAttribute("TargetMode") === "External") {
                 continue;

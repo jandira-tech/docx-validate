@@ -2181,6 +2181,27 @@ describe("DOCXSchemaValidator", () => {
                 expect(result.valid).toBe(true);
             });
         });
+
+        // #781: the `_rels` folder segment compares canonically, so a relative
+        // target in a sidecar under an escaped spelling resolves against the
+        // source part's folder, not inside the sidecar folder.
+        it.each(["_rels", "_RELS", "_%72els", "%5Frels", "_r%65ls"] as const)(
+            "resolves a relative target from a sidecar stored under word/%s",
+            async (folder) => {
+                await withTempDir(async (dir) => {
+                    await writeFile(
+                        path.join(dir, "word", folder, "document.xml.rels"),
+                        `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                            `<Relationship Id="rId1" Type="http://..." Target="styles.xml"/>` +
+                            `</Relationships>`,
+                    );
+                    await writeFile(path.join(dir, "word", "styles.xml"), `<?xml version="1.0"?><w:styles ${W_NS}/>`);
+                    const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                    const result = await v.validateOrphanedRelationships();
+                    expect(result.issues.filter((i) => i.code === "rels-target-missing")).toEqual([]);
+                });
+            },
+        );
     });
 
     // ----- Plan 02: Font table retention --------------------------------------

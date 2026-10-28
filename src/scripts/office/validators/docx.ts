@@ -48,7 +48,7 @@
 
 import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
-import { canonicalPartName, isRelationshipsPartName, resolvePartName } from "../../../lib/content-types";
+import { canonicalPartName, isRelationshipsFolderName, isRelationshipsPartName, resolvePartName } from "../../../lib/content-types";
 import { opcNameIssueSeverity } from "../../../lib/mode-policy";
 import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { PackageFormat, ValidationIssue, ValidationResult } from "../../../lib/types";
@@ -3316,8 +3316,10 @@ function resolveRelationshipTargetPath(unpackedDir: string, relsFile: string, ta
         resolved = path.resolve(unpackedDir, targetWithoutFragment.replace(/^\/+/, ""));
     } else {
         const relsDir = path.dirname(relsFile);
-        // `_RELS` is the `_rels` folder: part names compare case-insensitively (#346).
-        const baseDir = /^_rels$/i.test(path.basename(relsDir)) ? path.dirname(relsDir) : relsDir;
+        // `_RELS` is the `_rels` folder: part names compare case-insensitively
+        // (#346), canonically in fact, so an escaped spelling of the folder
+        // resolves its targets against the source part's folder too (#781).
+        const baseDir = isRelationshipsFolderName(path.basename(relsDir)) ? path.dirname(relsDir) : relsDir;
         resolved = path.resolve(baseDir, targetWithoutFragment);
     }
 

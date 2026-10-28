@@ -44,7 +44,7 @@ import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { BYTE_REJECTED_MAIN_PARTS } from "./support/word-profile-regression-specimens";
 import { STORY_FOOTER_XML, storyContentType, storyReferenceParts } from "./support/story-content-type-specimens";
 import { DOCUMENT_RELS, fallback, PACKAGE_RELS, wrapRelationship } from "./support/relationships-markup-compatibility-specimens";
-import { BARE_CHART_XML } from "./support/chart-specimens";
+import { BARE_CHART_XML, referencedChartSpecimenParts } from "./support/chart-specimens";
 
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
@@ -1795,6 +1795,51 @@ describe("wordReferenceLoadedSources (#645, #647)", () => {
         );
         expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toBe(undefined);
     });
+
+    // #781: the sidecar's `_rels` folder segment compares canonically — the
+    // same equivalence the sidecar lookup finds the part by — so a sidecar
+    // stored under an escaped spelling still names the source part whose
+    // reference loads the reach.
+    it.each(["_rels", "_RELS", "_%72els", "%5Frels", "_r%65ls"] as const)(
+        "names the source part of a chart a sidecar under %s reaches",
+        async (folder) => {
+            const { "word/_rels/document.xml.rels": sidecar, ...rest } = withDocRel(
+                { ...MINIMAL_PARTS, "charts/chart1.xml": BARE_CHART_XML },
+                "rId9",
+                `${R}/chart`,
+                "../charts/chart1.xml",
+            );
+            const parts: Parts = { ...rest, [`word/${folder}/document.xml.rels`]: sidecar! };
+            expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toEqual([
+                { source: "word/document.xml", id: "rId9", reference: "declared" },
+            ]);
+        },
+    );
+
+    // #781: a `source` of `undefined` cannot credit the Word-read part's
+    // reference, so the reach is recorded "unreferenced" and a full
+    // word-valid run demotes its `rels-missing-sidecar` to a warning the
+    // `_rels` and `_RELS` spellings keep blocking.
+    it.each(["_rels", "_RELS", "_%72els", "%5Frels", "_r%65ls"] as const)(
+        "keeps a referenced no-sidecar chart a sidecar under %s reaches word-blocking",
+        { timeout: 60_000 },
+        async (folder) => {
+            const { "word/_rels/document.xml.rels": sidecar, ...rest } = referencedChartSpecimenParts(
+                "charts/chart1.xml",
+                "../charts/chart1.xml",
+                true,
+            );
+            const parts: Parts = { ...rest, [`word/${folder}/document.xml.rels`]: sidecar! };
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                writeFileSync(file, await buildDocx(parts));
+                const result = await validate(file, { profile: "word-valid" });
+                expect(
+                    result.issues.find((issue) => issue.code === "rels-missing-sidecar" && issue.path === "charts/chart1.xml")?.severity,
+                ).toBe("error");
+            });
+        },
+    );
 });
 
 describe("wordExactTypeTargets (#690)", () => {
