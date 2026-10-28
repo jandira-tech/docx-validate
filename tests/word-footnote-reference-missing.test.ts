@@ -512,6 +512,87 @@ describe("note references in a read header (#806, session 62 s62d/s62e)", { time
     });
 });
 
+describe("note ids spelled 01 or +1 against a note spelled 1 (#801, session 62 s62b)", { timeout: 30000 }, () => {
+    /**
+     * The s62b builder's `referenced`: `word/<kind>s.xml` holding the note
+     * `held`, related by the main document and typed by its Override, and a
+     * `w:<kind>Reference w:id="<spelled>"` run appended in the main document's
+     * only paragraph.
+     */
+    const referenced = (kind: "footnote" | "endnote", held: string, spelled: string): Promise<Buffer> =>
+        buildDocx({
+            ...MINIMAL_PARTS,
+            "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+                "</w:r></w:p>",
+                `</w:r><w:r><w:${kind}Reference w:id="${spelled}"/></w:r></w:p>`,
+            ),
+            [`word/${kind}s.xml`]:
+                `<w:${kind}s xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+                `<w:${kind} w:id="${held}"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:${kind}></w:${kind}s>`,
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdN" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/${kind}s" Target="${kind}s.xml"/></Relationships>`,
+            ),
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/word/${kind}s.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${kind}s+xml"/></Types>`,
+            ),
+        });
+
+    it.each([
+        ["footnote", "01", "word-footnote-reference-missing"],
+        ["endnote", "01", "word-endnote-reference-missing"],
+        ["footnote", "+1", "word-footnote-reference-missing"],
+        ["endnote", "+1", "word-endnote-reference-missing"],
+    ] as const)("accepts the %s reference spelled %s against note 1", async (kind, spelled, code) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "spelled.docx");
+            await writeFile(file, await referenced(kind, "1", spelled));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+            const selected = await validate(file, { profile: "word-valid", checks: [code] });
+            expect(selected.valid).toBe(result.valid);
+            expect(selected.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+        });
+    });
+
+    it.each([
+        ["footnote", "01", "word-footnote-reference-missing"],
+        ["endnote", "+1", "word-endnote-reference-missing"],
+    ] as const)("accepts the %s calibration spelling note and reference %s alike", async (kind, spelled, code) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "spelled-calibration.docx");
+            await writeFile(file, await referenced(kind, spelled, spelled));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+            const selected = await validate(file, { profile: "word-valid", checks: [code] });
+            expect(selected.valid).toBe(result.valid);
+            expect(selected.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+        });
+    });
+
+    it.each([
+        ["footnote", "word-footnote-reference-missing", "footnote reference uses id 01"],
+        ["endnote", "word-endnote-reference-missing", "endnote reference uses id 01"],
+    ] as const)("still rejects the %s reference spelled 01 against note 5", async (kind, code, message) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "spelled-other-id.docx");
+            await writeFile(file, await referenced(kind, "5", "01"));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            const errors = result.issues.filter((issue) => issue.severity === "error");
+            expect(errors).toEqual([
+                expect.objectContaining({ code, path: "word/document.xml", message: expect.stringContaining(message) }),
+            ]);
+            const selected = await validate(file, { profile: "word-valid", checks: [code] });
+            expect(selected.valid).toBe(result.valid);
+            expect(selected.issues.filter((issue) => issue.severity === "error")).toEqual(errors);
+        });
+    });
+});
+
 describe("word-valid dangling footnote reference", { timeout: 30000 }, () => {
     it("rejects a footnote reference whose id is not a footnote id", async () => {
         const result = await validate(BROKEN, { profile: "word-valid" });

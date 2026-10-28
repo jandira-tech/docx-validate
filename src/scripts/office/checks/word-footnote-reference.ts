@@ -61,6 +61,18 @@ import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
  */
 const STORY_SEGMENTS: ReadonlySet<string> = new Set(["footer", "comments", "footnotes", "endnotes"]);
 
+/**
+ * A w:id is ST_DecimalNumber (xsd:integer), and Word compares note ids by
+ * integer value: session 62 (s62b) opened clean a reference spelled `01` or
+ * `+1` against a note spelled `1`, each PDF the size of its matching
+ * calibration's (#801). An id whose whole string is an optionally signed
+ * digit run therefore compares as its BigInt value — `-0`, `+0` and `00`
+ * all equal `0`. Any other spelling compares as its raw string, exactly as
+ * before: whitespace-padded, empty and non-integer ids are unprobed. The
+ * issue message keeps the reference's stored spelling.
+ */
+const noteIdKey = (id: string): string | bigint => (/^[+-]?[0-9]+$/.test(id) ? BigInt(id) : id);
+
 const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinition => ({
     id: `word-${kind}-reference-missing`,
     description: `${kind === "footnote" ? "Footnote" : "Endnote"} references name ${kind}s present in the package.`,
@@ -70,7 +82,7 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
     run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
 
-        const defined = new Set<string>();
+        const defined = new Set<string | bigint>();
         const collect = (part: string): void => {
             const parsed = ctx.effectiveXml(part);
             if (!parsed?.ok) {
@@ -82,7 +94,7 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
                 for (const entry of notes) {
                     const id = entry?.getAttributeNS(ns, "id");
                     if (id) {
-                        defined.add(id);
+                        defined.add(noteIdKey(id));
                     }
                 }
             }
@@ -140,7 +152,7 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
                 const refs = getElementsByTagNameNSAll(dom, ns, `${kind}Reference`);
                 for (const entry of refs) {
                     const id = entry?.getAttributeNS(ns, "id");
-                    if (!id || defined.has(id)) {
+                    if (!id || defined.has(noteIdKey(id))) {
                         continue;
                     }
                     issues.push({

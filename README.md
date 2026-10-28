@@ -983,6 +983,11 @@ References in a read header are not judged (session 62 s62d/s62e,
 [#806](https://github.com/jandira-tech/docx-validate/issues/806)); dangling
 references in footers, comments, nested notes beyond session 16's exclusion
 and reached glossaries stay judged but are unprobed.
+Both note checks compare ids by integer value: session 62 (s62b, same
+evidence, two runs, all readings agree) opened clean a footnote or endnote
+reference spelled `01` or `+1` against a note spelled `1`
+([#801](https://github.com/jandira-tech/docx-validate/issues/801)); any other
+spelling compares as written, unprobed.
 
 Named `word-math-parse` runs and full runs that cannot stage the archive retain
 the positioned XML diagnostics without repeating `word-math-parse` for the same
