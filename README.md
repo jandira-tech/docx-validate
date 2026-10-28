@@ -1239,9 +1239,14 @@ header/footer rule's does. `r:lo`, `r:qs` and `r:cs` are deliberately not
 checked — Word opened them clean naming the image and the chart relationship,
 with the part's cached diagramDrawing rendered — and neither are `a:blip
 r:embed` nor `v:imagedata o:relid`, which Word opened clean naming a
-relationship of another type. A part with no relationships part is left to
-`rels-missing-sidecar`, as the header/footer rule leaves it; an unparseable
-one is skipped for `xml-syntax` to report. The finding is an
+relationship of another type. A part with no
+relationships part is judged
+like one whose relationships part lacks the id — session 55 (s55a) saw
+Word refuse a referenced `word/header1.xml` with no relationships part
+holding each of the three references, as it does one whose relationships
+part lacks the id, and open clean the same header with no `r:` reference —
+while `rels-missing-sidecar` still reports the absent sidecar itself; an
+unparseable one is skipped for `xml-syntax` to report. The finding is an
 error, and Word-blocking, under word-valid and strict; lenient runs no Word
 rule. In a full word-valid or strict run, a dangling Transitional `r:id` on a
 `c:chart` or an `o:OLEObject` is reported once, through this rule: every
