@@ -144,6 +144,38 @@ const children = (element: Element): Element[] => Array.from(element.childNodes)
 // cannot draw Word's line. CDATA sections are unprobed.
 const holdsCharacterData = (element: Element): boolean =>
     Array.from(element.childNodes).some((node) => node.nodeType === 3 && (node.nodeValue ?? "").match(/[^ \t\n\r]/) !== null);
+
+// A part alone cannot show its package's conformance class, and sessions 65
+// and 67 stored Transitional packages, so the processor reports the finding
+// without them and registers it by issue object, as rels-finding-facts.ts
+// registers its facts; a consumer that sees the package cites the sessions
+// through withWordSessionCitation (#1016).
+const ALTERNATE_CONTENT_CHARACTER_DATA = "AlternateContent holds character data directly inside it";
+const characterDataFindings = new WeakSet<ValidationIssue>();
+
+/** Whether `issue` is a registered AlternateContent character-data finding (#1016). */
+export const isAlternateContentCharacterData = (issue: ValidationIssue): boolean => characterDataFindings.has(issue);
+
+/** `issue` with `fields` replaced, keeping its registration, so a relocated finding can still be cited (#1016). */
+export const relocateCompatibilityIssue = (issue: ValidationIssue, fields: Partial<ValidationIssue>): ValidationIssue => {
+    const copy = { ...issue, ...fields };
+    if (characterDataFindings.has(issue)) {
+        characterDataFindings.add(copy);
+    }
+    return copy;
+};
+
+/**
+ * A registered character-data finding citing the Word sessions that showed
+ * it; any other issue unchanged. Callers ask only for a WordprocessingML
+ * package of the class those sessions stored (#1016).
+ */
+export const withWordSessionCitation = (issue: ValidationIssue): ValidationIssue =>
+    characterDataFindings.has(issue)
+        ? relocateCompatibilityIssue(issue, {
+              message: `${ALTERNATE_CONTENT_CHARACTER_DATA}; Word 16.115 offered recovery for every position probed (sessions 65 and 67).`,
+          })
+        : issue;
 const namespaceUri = (element: Element, prefix: string): string | null => (prefix === "xml" ? NS.XML : element.lookupNamespaceURI(prefix));
 const unboundPrefixIssue = (directive: string, prefix: string): ValidationIssue => ({
     severity: "error",
@@ -288,12 +320,13 @@ export const applyMarkupCompatibility = (
             }
             const branches = children(element);
             if (holdsCharacterData(element)) {
-                issues.push({
+                const issue: ValidationIssue = {
                     severity: "error",
                     code: "mce-malformed",
-                    message:
-                        "AlternateContent holds character data directly inside it; Word 16.115 offered recovery for every position probed (sessions 65 and 67).",
-                });
+                    message: `${ALTERNATE_CONTENT_CHARACTER_DATA}.`,
+                };
+                characterDataFindings.add(issue);
+                issues.push(issue);
             }
             let choices = 0;
             let fallbacks = 0;

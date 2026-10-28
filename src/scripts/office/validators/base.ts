@@ -61,10 +61,13 @@ import {
 } from "../../../lib/content-types";
 import {
     applyMarkupCompatibility,
+    isAlternateContentCharacterData,
+    relocateCompatibilityIssue,
     RELATIONSHIPS_UNDERSTOOD_NAMESPACES,
     STRICT_UNDERSTOOD_NAMESPACES,
     UNDERSTOOD_NAMESPACES,
     understoodNamespacesForPart,
+    withWordSessionCitation,
 } from "../../../lib/markup-compatibility";
 import { STRICT_OOXML_NS_PREFIX } from "../../../lib/conformance-class";
 import { opcNameIssueSeverity, wordObservedIssueSeverity } from "../../../lib/mode-policy";
@@ -2012,6 +2015,16 @@ export class BaseSchemaValidator {
     }
 
     /**
+     * Whether a markup-compatibility finding may cite the Word sessions that
+     * showed it (#1016). Word was shown WordprocessingML packages only, so
+     * PPTX and every other format never cites them; DOCX/DOCM asks the
+     * package's conformance class.
+     */
+    protected citesWordSessions(): boolean {
+        return false;
+    }
+
+    /**
      * The relationships part `part` as the non-lenient walks read it.
      * DOCX/DOCM applies markup compatibility — Word 16.115 resolves
      * `mc:AlternateContent` and `mc:Ignorable` in `.rels` streams (probe
@@ -2246,12 +2259,17 @@ export class BaseSchemaValidator {
                 : UNDERSTOOD_NAMESPACES;
             const understood = schemaNamespace ? new Set([...baseUnderstood, schemaNamespace]) : baseUnderstood;
             const compatible = applyMarkupCompatibility(dom, { understood });
-            const located = (found: readonly ValidationIssue[]): ValidationIssue[] =>
-                found.map((issue) => ({
-                    ...issue,
-                    path: rel,
-                    message: issue.code === "mce-extension-not-ignorable" ? `${rel}: ${issue.message}` : issue.message,
-                }));
+            const located = (found: readonly ValidationIssue[]): ValidationIssue[] => {
+                const relocated = found.map((issue) =>
+                    relocateCompatibilityIssue(issue, {
+                        path: rel,
+                        message: issue.code === "mce-extension-not-ignorable" ? `${rel}: ${issue.message}` : issue.message,
+                    }),
+                );
+                return relocated.some(isAlternateContentCharacterData) && this.citesWordSessions()
+                    ? relocated.map(withWordSessionCitation)
+                    : relocated;
+            };
             if (this.profile === "lenient" && compatible.rootUnwrapElementCount !== undefined) {
                 // #640 preserves lenient's diagnostics byte for byte. Previously
                 // a multi-root unwrap reached the existing XSD failure path as

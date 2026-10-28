@@ -9,8 +9,11 @@ import path from "node:path";
 
 import {
     applyMarkupCompatibility,
+    isAlternateContentCharacterData,
+    relocateCompatibilityIssue,
     STRICT_UNDERSTOOD_NAMESPACES,
     UNDERSTOOD_NAMESPACES,
+    withWordSessionCitation,
     WORD_UNDERSTOOD_NAMESPACES,
 } from "../src/lib/markup-compatibility";
 import { defaultSchemasDir } from "../src/scripts/office/validators/base";
@@ -432,4 +435,53 @@ describe("root unwrapping (#640)", () => {
             expect(serializeXml(result.document)).toContain("<!--after-->");
         });
     }
+});
+
+// #1016: a part alone cannot show the package's conformance class, so the
+// processor reports character data inside AlternateContent without the Word
+// sessions (65 and 67, Transitional packages) and registers the finding;
+// the consumers that see the package add the citation.
+describe("the AlternateContent character-data finding's citation (#1016)", () => {
+    const stray = () =>
+        process(
+            wrap(`<mc:AlternateContent><mc:Choice Requires="w"><w:r/></mc:Choice>Stray<mc:Fallback/></mc:AlternateContent>`),
+        ).issues.find((issue) => issue.code === "mce-malformed")!;
+
+    it("reports the finding uncited and registered", () => {
+        const issue = stray();
+        expect(issue).toEqual({
+            severity: "error",
+            code: "mce-malformed",
+            message: "AlternateContent holds character data directly inside it.",
+        });
+        expect(isAlternateContentCharacterData(issue)).toBe(true);
+    });
+
+    it("carries the registration to a relocated copy and cites the sessions on request", () => {
+        const moved = relocateCompatibilityIssue(stray(), { path: "word/document.xml" });
+        expect(moved).toEqual({
+            severity: "error",
+            code: "mce-malformed",
+            message: "AlternateContent holds character data directly inside it.",
+            path: "word/document.xml",
+        });
+        expect(isAlternateContentCharacterData(moved)).toBe(true);
+        expect(withWordSessionCitation(moved)).toEqual({
+            ...moved,
+            message:
+                "AlternateContent holds character data directly inside it; Word 16.115 offered recovery for every position probed (sessions 65 and 67).",
+        });
+    });
+
+    it("cites nothing on an unregistered copy or another finding", () => {
+        const copy = { ...stray() };
+        expect(isAlternateContentCharacterData(copy)).toBe(false);
+        expect(withWordSessionCitation(copy)).toBe(copy);
+        const other = {
+            severity: "error" as const,
+            code: "mce-malformed",
+            message: "AlternateContent holds character data directly inside it.",
+        };
+        expect(withWordSessionCitation(other)).toBe(other);
+    });
 });

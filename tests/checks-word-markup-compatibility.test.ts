@@ -179,4 +179,25 @@ describe("character data directly inside AlternateContent (#851, sessions 65 and
     it("accepts the body calibration without the text (session 67 s67b)", async () => {
         expect(await check.run(ValidationContext.fromEntries(bodyRun("")))).toEqual([]);
     });
+
+    // #1016: sessions 65 and 67 stored Transitional packages.
+    it("cites sessions 65 and 67 in a Transitional package and drops them beside a Strict part (#1016)", async () => {
+        expect((await malformed(bodyRun("Stray"), "word/document.xml")).map((issue) => issue.message)).toEqual([
+            "AlternateContent holds character data directly inside it; Word 16.115 offered recovery for every position probed (sessions 65 and 67).",
+        ]);
+        const strictApp = {
+            ...bodyRun("Stray"),
+            "docProps/app.xml": '<Properties xmlns="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"/>',
+        };
+        const strictComments = {
+            ...commentsRoot(`${CHOICE}Stray${FALLBACK}`),
+            "word/styles.xml": '<w:styles xmlns:w="http://purl.oclc.org/ooxml/wordprocessingml/main"/>',
+        };
+        expect((await malformed(strictApp, "word/document.xml")).map((issue) => issue.message)).toEqual([
+            "AlternateContent holds character data directly inside it.",
+        ]);
+        expect((await malformed(strictComments, "word/comments.xml")).map((issue) => issue.message)).toEqual([
+            "AlternateContent holds character data directly inside it.",
+        ]);
+    });
 });

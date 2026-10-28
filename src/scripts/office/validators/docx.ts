@@ -100,8 +100,10 @@ import {
 } from "./base";
 
 import { runChecks } from "../../../lib/check-scheduler";
+import { citesWordSession } from "../../../lib/conformance-class";
 import { normalizePartName, type ValidationContext } from "../../../lib/validation-context";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
+import { xmlPartNames } from "../checks/xml";
 import { WORD_HEADER_FOOTER_RELATIONSHIP } from "../checks/word-header-footer";
 import { WORD_PART_REFERENCE_RELATIONSHIP } from "../checks/word-part-reference";
 import { WORD_ATTACHED_TOOLBAR_RELATIONSHIP } from "../checks/word-attached-toolbar";
@@ -559,6 +561,24 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 byName = xmlFile;
         }
         return byName;
+    }
+
+    /**
+     * Sessions 65 and 67 stored Transitional packages, so the schema walk's
+     * markup-compatibility findings cite them only in a package with no
+     * Strict part (#1016). A package the context cannot read shows no class
+     * and cites nothing.
+     */
+    protected override citesWordSessions(): boolean {
+        try {
+            const context = this.context();
+            return citesWordSession(
+                context,
+                xmlPartNames(context.partNames, (name) => context.bytes(name)),
+            );
+        } catch {
+            return false;
+        }
     }
 
     /**

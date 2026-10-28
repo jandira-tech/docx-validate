@@ -673,6 +673,38 @@ describe("character data directly inside AlternateContent (#851, sessions 65 and
         60_000,
     );
 
+    // #1016: sessions 65 and 67 stored Transitional packages, so every
+    // profile drops their citation beside a Strict part.
+    it.each(["word-valid", "lenient", "strict"] as const)(
+        "cites sessions 65 and 67 under %s only in a Transitional package (#1016)",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                for (const [parts, message] of [
+                    [
+                        bodyAlternate("Stray"),
+                        "AlternateContent holds character data directly inside it; Word 16.115 offered recovery for every position probed (sessions 65 and 67).",
+                    ],
+                    [
+                        {
+                            ...bodyAlternate("Stray"),
+                            "docProps/app.xml": '<Properties xmlns="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"/>',
+                        },
+                        "AlternateContent holds character data directly inside it.",
+                    ],
+                ] as const) {
+                    const file = path.join(dir, "specimen.docx");
+                    await writeFile(file, await buildDocx(parts));
+                    const result = await validate(file, { profile });
+                    expect(result.valid).toBe(false);
+                    expect(
+                        result.issues.filter((issue) => issue.code === "mce-malformed").map((issue) => [issue.path, issue.message]),
+                    ).toEqual([["word/document.xml", message]]);
+                }
+            });
+        },
+        60_000,
+    );
+
     it.each(calibrations)(
         "keeps the used comments part clean with %s",
         async (_shape, inner) => {

@@ -690,3 +690,27 @@ describe("PPTXSchemaValidator.validate", () => {
         expect(exp._getExpectedRelationshipType("sldLayoutId")).toBe("slidelayout");
     });
 });
+
+// #1016: Word sessions 65 and 67 opened DOCX packages only, so a PowerPoint
+// part's AlternateContent character data is reported without them.
+describe("AlternateContent character data in a slide cites no Word session (#1016)", () => {
+    it.each(["lenient", "strict"] as const)("reports it uncited under %s", async (profile) => {
+        await withTempDir(async (dir) => {
+            const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+            const parts: Record<string, string> = { ...MINIMAL_PPTX_PARTS };
+            const slide = "ppt/slides/slide1.xml";
+            expect(parts[slide]).toContain("<p:cSld");
+            parts[slide] = parts[slide]!.replace(
+                /(<p:cSld[^>]*>)/,
+                `$1<mc:AlternateContent xmlns:mc="${MC}"><mc:Choice Requires="p14" xmlns:p14="http://schemas.microsoft.com/office/powerpoint/2010/main"/>Stray<mc:Fallback/></mc:AlternateContent>`,
+            );
+            const file = path.join(dir, "stray.pptx");
+            await fs.writeFile(file, await buildPptx(parts));
+            const result = await validate(file, { profile });
+            expect(result.valid).toBe(false);
+            expect(result.issues.filter((issue) => issue.code === "mce-malformed").map((issue) => [issue.path, issue.message])).toEqual([
+                [slide, "AlternateContent holds character data directly inside it."],
+            ]);
+        });
+    });
+});

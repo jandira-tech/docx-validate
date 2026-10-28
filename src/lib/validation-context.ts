@@ -29,7 +29,7 @@
 
 import type JSZip from "jszip";
 
-import { applyMarkupCompatibility, understoodNamespacesForPart } from "./markup-compatibility";
+import { applyMarkupCompatibility, relocateCompatibilityIssue, understoodNamespacesForPart } from "./markup-compatibility";
 import { zipCentralDirectoryEntries } from "./zip-central-directory";
 import type { ValidationIssue } from "./types";
 import { decodeXmlBytes, parseXml } from "./xml-helpers";
@@ -424,7 +424,7 @@ export class ValidationContext {
         const view = applyMarkupCompatibility(document, { understood: understoodNamespacesForPart(name) });
         const effective = {
             part: { ok: true, document: view.document } as const,
-            issues: view.issues.map((issue) => ({ ...issue, path: name })),
+            issues: view.issues.map((issue) => relocateCompatibilityIssue(issue, { path: name })),
         };
         this.effectiveCache.set(name, effective);
         return effective;

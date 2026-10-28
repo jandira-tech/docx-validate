@@ -25,8 +25,11 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
+import { citesWordSession } from "../../../lib/conformance-class";
 import { canonicalPartName, isRelationshipsPartName } from "../../../lib/content-types";
+import { isAlternateContentCharacterData, withWordSessionCitation } from "../../../lib/markup-compatibility";
 import type { ValidationIssue } from "../../../lib/types";
+import { xmlPartNames } from "./xml";
 
 const WORD_XML_PART = /^word\/.+\.xml$/;
 
@@ -46,8 +49,17 @@ export const wordMarkupCompatibilityCheck: CheckDefinition = {
     groups: ["xml"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx): ValidationIssue[] =>
-        ctx.partNames
+    run: (ctx): ValidationIssue[] => {
+        const issues = ctx.partNames
             .filter(isMarkupCompatibilityJudgedPart)
-            .flatMap((name) => ctx.compatibilityIssues(name).filter((issue) => issue.severity === "error")),
+            .flatMap((name) => ctx.compatibilityIssues(name).filter((issue) => issue.severity === "error"));
+        // Sessions 65 and 67 stored Transitional packages (#1016).
+        return issues.some(isAlternateContentCharacterData) &&
+            citesWordSession(
+                ctx,
+                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name)),
+            )
+            ? issues.map(withWordSessionCitation)
+            : issues;
+    },
 };
