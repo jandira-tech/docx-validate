@@ -60,6 +60,7 @@ import {
     wordChartRelationshipSources,
     wordReadParts,
     wordStoryRootParts,
+    wordTypedRelationshipTargets,
     wordUnobservedRelationshipTargets,
 } from "../../../lib/word-read-parts";
 import { hasWordRelationshipReference, isWordBlockingIssue, wordRelationshipReferenceIds } from "./word-blocking";
@@ -208,6 +209,9 @@ const KNOWN_OOXML_PREFIX_URIS: Readonly<Record<string, string>> = {
     am3d: "http://schemas.microsoft.com/office/drawing/2017/model3d",
     oel: "http://schemas.microsoft.com/office/2019/extlst",
 };
+
+/** The relationship type segment that names the main document's styles part (#688). */
+const MAIN_STYLES_SEGMENT: ReadonlySet<string> = new Set(["styles"]);
 
 /**
  * Canonical `<w:style>` definitions for well-known styleIds that writers
@@ -421,6 +425,32 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         if (!this.inRun) return contextFromDirectory(this.unpackedDir);
         this.runContext ??= contextFromDirectory(this.unpackedDir);
         return this.runContext;
+    }
+
+    /**
+     * The styles part the style checks and `repairMissingStyleDefinitions`
+     * read: the one the main document's `styles` relationship names,
+     * Transitional or Strict, so a reached glossary's own styles part is
+     * never judged for the main document, wherever it is stored (#688).
+     * When that relationship names no stored part, or the package view
+     * cannot be read, the last `styles.xml` by name, as before.
+     */
+    private async mainStylesPath(): Promise<string | null> {
+        try {
+            const targets = await wordTypedRelationshipTargets(this.context(), MAIN_STYLES_SEGMENT, this.profile);
+            for (const target of targets) {
+                if (target.via !== undefined) continue;
+                const file = this.xmlFiles.find((xmlFile) => this.entryName(xmlFile) === target.part);
+                if (file !== undefined) return file;
+            }
+        } catch {
+            // An unreadable package view is reported by its own checks.
+        }
+        let byName: string | null = null;
+        for (const xmlFile of this.xmlFiles) {
+            if (baseName(xmlFile) === "styles.xml") byName = xmlFile;
+        }
+        return byName;
     }
 
     /**
@@ -936,10 +966,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validateStyleDefaults(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
-        let stylesPath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
-        }
+        const stylesPath = await this.mainStylesPath();
         if (!stylesPath) return { valid: true, issues: [] };
 
         let dom: Document;
@@ -1080,10 +1107,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // Find styles.xml; if absent, every reference is dangling — but
         // most documents lacking styles.xml are abnormal in other ways
         // already detected.
-        let stylesPath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
-        }
+        const stylesPath = await this.mainStylesPath();
         const defined = new Set<string>();
         if (stylesPath) {
             try {
@@ -1682,10 +1706,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      */
     async validateLatentStyles(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        let stylesPath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
-        }
+        const stylesPath = await this.mainStylesPath();
         if (!stylesPath) return { valid: true, issues: [] };
 
         let dom: Document;
@@ -1933,10 +1954,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
 
         // Find and parse styles.xml for docDefaults.
-        let stylesPath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
-        }
+        const stylesPath = await this.mainStylesPath();
         if (!stylesPath) return { valid: true, issues: [] };
 
         let stylesDom: Document;
@@ -2340,10 +2358,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * mean). Pairs with `validateStyleReferences`.
      */
     async repairMissingStyleDefinitions(): Promise<number> {
-        let stylesPath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
-        }
+        const stylesPath = await this.mainStylesPath();
         if (!stylesPath) return 0;
 
         let stylesDom: Document;
@@ -2846,7 +2861,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     private async tableStyleBordersByStyleId(): Promise<Map<string, BorderSignature>> {
         const out = new Map<string, BorderSignature>();
-        const stylesPath = this.xmlFiles.find((xmlFile) => baseName(xmlFile) === "styles.xml");
+        const stylesPath = await this.mainStylesPath();
         if (!stylesPath) return out;
 
         let dom: Document;
