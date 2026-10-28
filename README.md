@@ -193,10 +193,12 @@ element in another namespace, such as a foreign element in a `p:ext` sharing
 a PresentationML local name, keeps that reading, as lenient and DOCX do
 ([#1058](https://github.com/jandira-tech/docx-validate/issues/1058),
 [#1061](https://github.com/jandira-tech/docx-validate/issues/1061)).
-Outside lenient the check reads `r:id`, `r:embed` and `r:link` in the Strict
-relationships namespace too, so a Strict package's ids are judged; lenient
-reads only the Transitional one
-([#1065](https://github.com/jandira-tech/docx-validate/issues/1065)).
+Outside lenient the id walk reads the Strict relationships namespace too, so
+a Strict package's ids are judged: `r:id` for its type here, and `r:id`,
+`r:embed` and `r:link` for `rels-id-missing`. Lenient reads only the
+Transitional namespace
+([#1065](https://github.com/jandira-tech/docx-validate/issues/1065),
+[#1073](https://github.com/jandira-tech/docx-validate/issues/1073)).
 
 The `strict` profile runs the Word rules and applicable XSD schemas. Schema
 conformance is stricter than Word openability. A leading BOM is at most a warning

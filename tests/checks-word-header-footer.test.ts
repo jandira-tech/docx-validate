@@ -1123,10 +1123,11 @@ describe("#619: a story reference whose r:id names no Relationship (Word 16.115 
     /**
      * Review BE F1: the Word rule reads the markup-compatibility view, where
      * the Choice's footerReference carries its id in the ISO Strict
-     * relationships namespace; the legacy walk reads the raw part and only
-     * the Transitional one, so it reports the Fallback's footerReference —
-     * the same element's other spelling, which #727's pairing drops with
-     * the Word rule's own finding: one element, one report.
+     * relationships namespace; the legacy walk reads the raw part, so it
+     * reports the Fallback's footerReference and, outside lenient, the
+     * Choice's too (#1065) — spellings of the same element, which #727's
+     * pairing drops with the Word rule's own finding: one element, one
+     * report.
      */
     const choiceFallbackParts = (rid: string): Record<string, string> => ({
         ...MINIMAL_PARTS,

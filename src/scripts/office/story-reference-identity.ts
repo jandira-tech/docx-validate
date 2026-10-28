@@ -43,11 +43,11 @@ export const isStoryReferenceLocalName = (name: string): name is StoryReferenceL
  * paths), the element's namespace URI, its local name, the raw `r:id`
  * attribute value, and the namespace URI that attribute was read in. The
  * Word rule reads the markup-compatibility view and both relationships
- * namespaces, the legacy walk the raw part and only the Transitional one,
- * so an `mc:Choice` reference with an ISO Strict `r:id` and its
- * `mc:Fallback` twin with a Transitional one differ only in that last
- * field (review BE F1); the hand-off's pairing deliberately ignores that
- * field (#727), so both spellings of one element pair as one defect.
+ * namespaces, the legacy walk the raw part, in both namespaces outside
+ * lenient (#1065), so an `mc:Choice` reference with an ISO Strict `r:id`
+ * and its `mc:Fallback` twin with a Transitional one differ only in that
+ * last field (review BE F1); the hand-off's pairing deliberately ignores
+ * that field (#727), so both spellings of one element pair as one defect.
  */
 export interface StoryReferenceIdentity {
     readonly part: string;
