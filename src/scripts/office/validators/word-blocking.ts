@@ -15,6 +15,7 @@ import { sidecarOf } from "../../../lib/word-read-parts";
 import { NS, type ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameAll } from "../../../lib/xml-helpers";
 import { relsBrokenTarget, relsEmptyElementShape } from "../rels-finding-facts";
+import { isCommentReferenceMissing } from "../comment-finding-facts";
 import {
     SCHEMA_DECLARED_ELEMENTS,
     SCHEMA_REFERENCE_ELEMENTS,
@@ -305,6 +306,9 @@ export const isWordBlockingIssue = (
         case "word-duplicate-numbering-relationship":
         case "word-numbering-picture-bullet":
         case "word-footnote-reference-missing":
+        // Word session 58 (s58a) offers recovery for a dangling endnote
+        // reference; the matching-id calibration opens clean (#784).
+        case "word-endnote-reference-missing":
         // Both root-caused against real Word (minimal-repair + re-probe) and
         // verified disjoint from the Word-clean corpus (0/350): an unresolved
         // DocumentBuilder <Insert> directive -> OPEN_ERROR; a docProps boolean
@@ -392,12 +396,12 @@ export const isWordBlockingIssue = (
             const source = part === undefined ? undefined : canonicalPartName(part).match(/^(.*\/)?_rels\/([^/]+)\.rels$/);
             return source !== undefined && source !== null && storyRootParts.has(`${source[1] ?? ""}${source[2]}`);
         }
-        // NB: comment-orphan-start/end and comment-marker-missing are NOT
-        // promoted here. Empirically Word TOLERATES an orphan comment-range
-        // marker (a commentRangeStart with no End, referencing a missing
-        // comment) — verified: comments.unmatched-comment-marker_from_html.docx
-        // carries the exact same orphan and opens cleanly in real Word. So an
-        // orphan marker does not predict Word rejection; keep it a warning.
+        // Word session 58 (s58a) refuses a dangling w:commentReference
+        // (#784). Range-only markers stay warnings: the unmatched-comment
+        // fixture opens clean with its orphan range start, while both of
+        // its w:commentReference ids name existing comments.
+        case "comment-marker-missing":
+            return isCommentReferenceMissing(issue);
         case "rels-missing-sidecar": {
             // #638, session 35, chunks s35a/s35b: Word opens unread parts,
             // unselected MC branches and rs:id on w:name cleanly, but offers

@@ -792,6 +792,8 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "remove the w:lvlPicBulletId that names no w:numPicBullet, or add that picture bullet";
         case "word-footnote-reference-missing":
             return "remove the w:footnoteReference whose id matches no w:footnote, or add that footnote";
+        case "word-endnote-reference-missing":
+            return "remove the w:endnoteReference whose id matches no w:endnote, or add that endnote";
         case "word-textbox-deleted-text":
             return "remove w:delText and w:delInstrText that sit in the text box outside a w:del; mc:Fallback text boxes and a w:del inside the text box are not this defect";
         case "word-move-from-deleted-text":

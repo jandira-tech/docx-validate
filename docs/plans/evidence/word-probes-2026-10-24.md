@@ -17942,3 +17942,393 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
 `````
 
 </details>
+
+### Session 58: 17:50Z–17:56Z on 2026-10-26, validator columns at bfb8eb75
+
+The confound in session 57's #776 calibrations ([#776](https://github.com/jandira-tech/docx-validate/issues/776)): its comments, footnotes and endnotes co-reach specimens reference an id that `word/styles.xml`, rooted `w:styles`, cannot hold. Two chunks, each opening and closing with the minimal control. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 14 of 14 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen.
+
+- A used `word/comments.xml` holding comment 5, the body's `w:commentReference` naming `w:id="0"`, gets the recovery offer, and so does a used `word/endnotes.xml` holding endnote 5, the body's `w:endnoteReference` naming `w:id="1"`. The matching-id calibrations open clean. Word-valid at bfb8eb75 accepts both dangling references: two false negatives. A dangling footnote reference was already refused (fixture 1829, `word-footnote-reference-missing`).
+- `word/styles.xml`, exact styles type, also the target of a comments, endnotes or footnotes relationship, with no reference in the body, opens clean. Session 57's comments and endnotes co-reach calibrations were therefore refused for their dangling references, not for the co-reach; its header calibration had no such reference.
+- A used `word/comments.xml`, `word/endnotes.xml` or `word/footnotes.xml`, its own root with a matching reference, typed by its Override with the styles content type, gets the recovery offer. Word-valid at bfb8eb75 accepts all three: three false negatives.
+
+| Run    | Observed             | Specimen                                      | Shape                                                                                                          | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at bfb8eb75 | strict at bfb8eb75                                                                                    |
+| ------ | -------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------- |
+| `s58a` | 17:50:56Z, 17:54:08Z | `s58a-control-minimal`                        | control                                                                                                        | `3c3a6fb737d5451c` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                                                                 |
+| `s58a` | 17:50:56Z, 17:54:08Z | `comments-dangling-reference`                 | #776: a used word/comments.xml holding comment 5, the body's w:commentReference naming w:id="0"                | `0df2a5e972d98038` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `comment-marker-missing`, `comment-thread-count-mismatch`, `paraid-missing-element`          |
+| `s58a` | 17:50:56Z, 17:54:08Z | `comments-matching-reference-calibration`     | #776 calibration: the same holding comment 0                                                                   | `63c0bd62c80e39df` | clean-open     | clean-open     | clean-open                 | valid                  | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`                                    |
+| `s58a` | 17:50:56Z, 17:54:08Z | `endnotes-dangling-reference`                 | #776: a used word/endnotes.xml holding endnote 5, the body's w:endnoteReference naming w:id="1"                | `94a559f3e0e10cfc` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `paraid-missing-element`                                                                     |
+| `s58a` | 17:50:56Z, 17:54:08Z | `endnotes-matching-reference-calibration`     | #776 calibration: the same holding endnote 1                                                                   | `d7f604e93195f5fe` | clean-open     | clean-open     | clean-open                 | valid                  | invalid: `paraid-missing-element`                                                                     |
+| `s58a` | 17:50:56Z, 17:54:08Z | `styles-exact-comments-coreach-no-reference`  | #776: word/styles.xml (exact styles type) also the target of a comments relationship; no reference in the body | `c4545463a7692867` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                                                                 |
+| `s58a` | 17:50:56Z, 17:54:08Z | `styles-exact-endnotes-coreach-no-reference`  | #776: the same with an endnotes relationship                                                                   | `3d752f650b35fa24` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                                                                 |
+| `s58a` | 17:50:56Z, 17:54:08Z | `s58a-control-minimal-end`                    | control                                                                                                        | `feb2c538aa56bbd1` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                                                                 |
+| `s58b` | 17:52:49Z, 17:56:14Z | `s58b-control-minimal`                        | control                                                                                                        | `feb2c538aa56bbd1` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                                                                 |
+| `s58b` | 17:52:49Z, 17:56:14Z | `styles-exact-footnotes-coreach-no-reference` | #776: the same with a footnotes relationship                                                                   | `53a9f96b638fd964` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                                                                 |
+| `s58b` | 17:52:49Z, 17:56:14Z | `comments-used-typed-styles`                  | #776/#778: a used word/comments.xml (comment 0, referenced) typed by its Override with the styles content type | `7a205d7cc1fe883f` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `word-part-content-type-mismatch`, `comment-thread-count-mismatch`, `paraid-missing-element` |
+| `s58b` | 17:52:49Z, 17:56:14Z | `endnotes-used-typed-styles`                  | #776/#778: a used word/endnotes.xml (endnote 1, referenced) typed with the styles content type                 | `ec375e8959359da9` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `word-part-content-type-mismatch`, `paraid-missing-element`                                  |
+| `s58b` | 17:52:49Z, 17:56:14Z | `footnotes-used-typed-styles`                 | #776/#778: a used word/footnotes.xml (footnote 1, referenced) typed with the styles content type               | `4720b49dfb7e5fa7` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `word-part-content-type-mismatch`, `paraid-missing-element`                                  |
+| `s58b` | 17:52:49Z, 17:56:14Z | `s58b-control-minimal-end`                    | control                                                                                                        | `feb2c538aa56bbd1` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                                                                 |
+
+<details><summary>Raw records, session 58</summary>
+
+```jsonl
+{"run": "s58a", "pass": 1, "name": "s58a-control-minimal", "sha256": "3c3a6fb737d5451ce2f3356eebfb32bf0a1bc8e5d73c73c9719b702550805130", "observedAt": "2026-10-26T17:50:56+00:00", "staged": "00005__wfv__s58a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s58a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s58a", "pass": 2, "name": "s58a-control-minimal", "sha256": "3c3a6fb737d5451ce2f3356eebfb32bf0a1bc8e5d73c73c9719b702550805130", "observedAt": "2026-10-26T17:54:08+00:00", "staged": "00005__wfv__s58a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s58a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s58a", "pass": 1, "name": "comments-dangling-reference", "sha256": "0df2a5e972d9803871a85bd63d6b66234f2159fd1c4e2c4a2c7db8261381e55c", "observedAt": "2026-10-26T17:50:56+00:00", "staged": "00000__wfv__comments-dangling-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:50:32.594 \"Word found unreadable content in 00000__wfv__comments-dangling-reference.docx. Do you want to recov … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s58a", "pass": 2, "name": "comments-dangling-reference", "sha256": "0df2a5e972d9803871a85bd63d6b66234f2159fd1c4e2c4a2c7db8261381e55c", "observedAt": "2026-10-26T17:54:08+00:00", "staged": "00000__wfv__comments-dangling-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:54:00.249 Microsoft Word, Word found unreadable content in 00000__wfv__comments-dangling-reference.docx. Do yo … t? If you trust the source of this document, click Yes."]}
+{"run": "s58a", "pass": 1, "name": "comments-matching-reference-calibration", "sha256": "63c0bd62c80e39df5e2a7279be3306eec7f59fa924def31c8a15cd075a21ba45", "observedAt": "2026-10-26T17:50:56+00:00", "staged": "00001__wfv__comments-matching-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-matching-reference-calibration_byword.pdf (32928 bytes), no dialog named the file"]}
+{"run": "s58a", "pass": 2, "name": "comments-matching-reference-calibration", "sha256": "63c0bd62c80e39df5e2a7279be3306eec7f59fa924def31c8a15cd075a21ba45", "observedAt": "2026-10-26T17:54:08+00:00", "staged": "00001__wfv__comments-matching-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-matching-reference-calibration_byword.pdf (32928 bytes), no dialog named the file"]}
+{"run": "s58a", "pass": 1, "name": "endnotes-dangling-reference", "sha256": "94a559f3e0e10cfc95ef2094cdc6c7082ddd8512b0796cd9fde7f7510480ebc3", "observedAt": "2026-10-26T17:50:56+00:00", "staged": "00002__wfv__endnotes-dangling-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:50:54.378 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00002__wfv__endnotes-dangling-referen...)'", "2026-10-26 13:50:54.570 \"Word found unreadable content in 00002__wfv__endnotes-dangling-reference.docx. Do you want to recov … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s58a", "pass": 2, "name": "endnotes-dangling-reference", "sha256": "94a559f3e0e10cfc95ef2094cdc6c7082ddd8512b0796cd9fde7f7510480ebc3", "observedAt": "2026-10-26T17:54:08+00:00", "staged": "00002__wfv__endnotes-dangling-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:54:06.422 \"Word found unreadable content in 00002__wfv__endnotes-dangling-reference.docx. Do you want to recov … ? If you trust the source of this document, click Yes.\"", "2026-10-26 13:54:06.423 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__endnotes-dangling-referen...)\""]}
+{"run": "s58a", "pass": 1, "name": "endnotes-matching-reference-calibration", "sha256": "d7f604e93195f5fe7a8f2ee1574c55ef55377bc980463ab2886eaa773c0fb2cd", "observedAt": "2026-10-26T17:50:56+00:00", "staged": "00003__wfv__endnotes-matching-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-matching-reference-calibration_byword.pdf (14992 bytes), no dialog named the file"]}
+{"run": "s58a", "pass": 2, "name": "endnotes-matching-reference-calibration", "sha256": "d7f604e93195f5fe7a8f2ee1574c55ef55377bc980463ab2886eaa773c0fb2cd", "observedAt": "2026-10-26T17:54:08+00:00", "staged": "00003__wfv__endnotes-matching-reference-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-matching-reference-calibration_byword.pdf (14992 bytes), no dialog named the file"]}
+{"run": "s58a", "pass": 1, "name": "styles-exact-comments-coreach-no-reference", "sha256": "c4545463a76928677f063bfe8cc34e413ba6b2d573003dc5861b59fa39dccc0c", "observedAt": "2026-10-26T17:50:56+00:00", "staged": "00006__wfv__styles-exact-comments-coreach-no-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-exact-comments-coreach-no-reference_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s58a", "pass": 2, "name": "styles-exact-comments-coreach-no-reference", "sha256": "c4545463a76928677f063bfe8cc34e413ba6b2d573003dc5861b59fa39dccc0c", "observedAt": "2026-10-26T17:54:08+00:00", "staged": "00006__wfv__styles-exact-comments-coreach-no-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-exact-comments-coreach-no-reference_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s58a", "pass": 1, "name": "styles-exact-endnotes-coreach-no-reference", "sha256": "3d752f650b35fa24056fac769cf3b8b52e006a4907660d91afbd8f5410484a07", "observedAt": "2026-10-26T17:50:56+00:00", "staged": "00007__wfv__styles-exact-endnotes-coreach-no-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-exact-endnotes-coreach-no-reference_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s58a", "pass": 2, "name": "styles-exact-endnotes-coreach-no-reference", "sha256": "3d752f650b35fa24056fac769cf3b8b52e006a4907660d91afbd8f5410484a07", "observedAt": "2026-10-26T17:54:08+00:00", "staged": "00007__wfv__styles-exact-endnotes-coreach-no-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-exact-endnotes-coreach-no-reference_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s58a", "pass": 1, "name": "s58a-control-minimal-end", "sha256": "feb2c538aa56bbd1fca2dd4df049151320679ec256f5c2c2018780f36450c0da", "observedAt": "2026-10-26T17:50:56+00:00", "staged": "00004__wfv__s58a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s58a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s58a", "pass": 2, "name": "s58a-control-minimal-end", "sha256": "feb2c538aa56bbd1fca2dd4df049151320679ec256f5c2c2018780f36450c0da", "observedAt": "2026-10-26T17:54:08+00:00", "staged": "00004__wfv__s58a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s58a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s58b", "pass": 1, "name": "s58b-control-minimal", "sha256": "feb2c538aa56bbd1fca2dd4df049151320679ec256f5c2c2018780f36450c0da", "observedAt": "2026-10-26T17:52:49+00:00", "staged": "00004__wfv__s58b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s58b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s58b", "pass": 2, "name": "s58b-control-minimal", "sha256": "feb2c538aa56bbd1fca2dd4df049151320679ec256f5c2c2018780f36450c0da", "observedAt": "2026-10-26T17:56:14+00:00", "staged": "00004__wfv__s58b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s58b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s58b", "pass": 1, "name": "styles-exact-footnotes-coreach-no-reference", "sha256": "53a9f96b638fd96411e94c54ccef3b9561225bd5ea21918b9da4098255099427", "observedAt": "2026-10-26T17:52:49+00:00", "staged": "00005__wfv__styles-exact-footnotes-coreach-no-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-exact-footnotes-coreach-no-reference_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s58b", "pass": 2, "name": "styles-exact-footnotes-coreach-no-reference", "sha256": "53a9f96b638fd96411e94c54ccef3b9561225bd5ea21918b9da4098255099427", "observedAt": "2026-10-26T17:56:14+00:00", "staged": "00005__wfv__styles-exact-footnotes-coreach-no-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-exact-footnotes-coreach-no-reference_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s58b", "pass": 1, "name": "comments-used-typed-styles", "sha256": "7a205d7cc1fe883fb6dff8160392d7fa8477be5c1b2bd65e273a42a25747ac31", "observedAt": "2026-10-26T17:52:49+00:00", "staged": "00000__wfv__comments-used-typed-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:51:25.235 \"Word found unreadable content in 00000__wfv__comments-used-typed-styles.docx. Do you want to recove … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s58b", "pass": 2, "name": "comments-used-typed-styles", "sha256": "7a205d7cc1fe883fb6dff8160392d7fa8477be5c1b2bd65e273a42a25747ac31", "observedAt": "2026-10-26T17:56:14+00:00", "staged": "00000__wfv__comments-used-typed-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:54:33.857 \"Word found unreadable content in 00000__wfv__comments-used-typed-styles.docx. Do you want to recove … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s58b", "pass": 1, "name": "endnotes-used-typed-styles", "sha256": "ec375e8959359da9a3bf071a0168521ff9e8edb48306e2b63ec6d2e01c5ff082", "observedAt": "2026-10-26T17:52:49+00:00", "staged": "00001__wfv__endnotes-used-typed-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:52:14.830 Microsoft Word, Word found unreadable content in 00001__wfv__endnotes-used-typed-styles.docx. Do you … t? If you trust the source of this document, click Yes."]}
+{"run": "s58b", "pass": 2, "name": "endnotes-used-typed-styles", "sha256": "ec375e8959359da9a3bf071a0168521ff9e8edb48306e2b63ec6d2e01c5ff082", "observedAt": "2026-10-26T17:56:14+00:00", "staged": "00001__wfv__endnotes-used-typed-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:55:21.304 'Word found unreadable content in 00001__wfv__endnotes-used-typed-styles.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 13:55:21.973 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__endnotes-used-typed-style...)\""]}
+{"run": "s58b", "pass": 1, "name": "footnotes-used-typed-styles", "sha256": "4720b49dfb7e5fa790d4db312eaab96d68b4df7603a3b9883c43a3bee87f1790", "observedAt": "2026-10-26T17:52:49+00:00", "staged": "00002__wfv__footnotes-used-typed-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:52:46.367 'Word found unreadable content in 00002__wfv__footnotes-used-typed-styles.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s58b", "pass": 2, "name": "footnotes-used-typed-styles", "sha256": "4720b49dfb7e5fa790d4db312eaab96d68b4df7603a3b9883c43a3bee87f1790", "observedAt": "2026-10-26T17:56:14+00:00", "staged": "00002__wfv__footnotes-used-typed-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 13:56:11.782 'Word found unreadable content in 00002__wfv__footnotes-used-typed-styles.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s58b", "pass": 1, "name": "s58b-control-minimal-end", "sha256": "feb2c538aa56bbd1fca2dd4df049151320679ec256f5c2c2018780f36450c0da", "observedAt": "2026-10-26T17:52:49+00:00", "staged": "00003__wfv__s58b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s58b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s58b", "pass": 2, "name": "s58b-control-minimal-end", "sha256": "feb2c538aa56bbd1fca2dd4df049151320679ec256f5c2c2018780f36450c0da", "observedAt": "2026-10-26T17:56:14+00:00", "staged": "00003__wfv__s58b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s58b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 58 builder, cross-check and section scripts</summary>
+
+Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s58builder.mts`:
+
+```ts
+// Session 58 (2026-10-26): the confound in session 57's #776 calibrations. s57e/s57f's comments, footnotes and endnotes
+// co-reach specimens reference an id (`w:commentReference w:id="0"`, `w:footnoteReference`/`w:endnoteReference w:id="1"`)
+// that word/styles.xml, rooted w:styles, cannot hold, so each row carries a dangling reference besides the co-reach.
+// - s58a: a dangling comment reference and a dangling endnote reference alone (well-formed parts lacking the id), each
+//   with its matching-id calibration; and the styles co-reach by a comments or endnotes relationship with no reference.
+// - s58b: the same no-reference co-reach by a footnotes relationship, and a used comments, endnotes or footnotes part
+//   (its own root, matching reference) typed by its Override with the styles content type (#778's class on other stories).
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s58a pnpm exec node --import tsx s58builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const STYLES_TYPE = `${WML}.styles+xml`;
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+const TEXT_P = "<w:p><w:r><w:t>x</w:t></w:r></w:p>";
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+const control = () => buildDocx({ ...P });
+
+/** `parts` with the main document's `r:` prefix declared and `run` appended inside its only paragraph (session 57's mainWith). */
+const mainWith = (parts: Record<string, string>, run: string): Record<string, string> => ({
+    ...parts,
+    [MAIN]: replaceOnce(replaceOnce(parts[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`), "</w:r></w:p>", `</w:r>${run}</w:p>`),
+});
+
+/** Each story: its own root holding one item with `id`, its content type, and the body run referencing `id`. */
+const STORIES = {
+    comments: {
+        root: (id: string) =>
+            `${XML_DECL}<w:comments xmlns:w="${W}"><w:comment w:id="${id}" w:author="a">${TEXT_P}</w:comment></w:comments>`,
+        type: `${WML}.comments+xml`,
+        ref: (id: string) => `<w:r><w:commentReference w:id="${id}"/></w:r>`,
+    },
+    endnotes: {
+        root: (id: string) => `${XML_DECL}<w:endnotes xmlns:w="${W}"><w:endnote w:id="${id}">${TEXT_P}</w:endnote></w:endnotes>`,
+        type: `${WML}.endnotes+xml`,
+        ref: (id: string) => `<w:r><w:endnoteReference w:id="${id}"/></w:r>`,
+    },
+    footnotes: {
+        root: (id: string) => `${XML_DECL}<w:footnotes xmlns:w="${W}"><w:footnote w:id="${id}">${TEXT_P}</w:footnote></w:footnotes>`,
+        type: `${WML}.footnotes+xml`,
+        ref: (id: string) => `<w:r><w:footnoteReference w:id="${id}"/></w:r>`,
+    },
+};
+type Story = keyof typeof STORIES;
+
+/** A used `word/<story>.xml` holding item `held`, the body referencing `referenced`, typed `type` (its own type by default). */
+const usedStory = (story: Story, held: string, referenced: string, type: string = STORIES[story].type) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [`word/${story}.xml`]: STORIES[story].root(held),
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", story, `${story}.xml`)),
+                [CT]: overrides(P[CT]!, [`word/${story}.xml`, type]),
+            },
+            STORIES[story].ref(referenced),
+        ),
+    );
+/** word/styles.xml, exact styles type, also the target of a `story` relationship; the body references nothing. */
+const stylesCoReachNoReference = (story: Story) =>
+    buildDocx({ ...P, [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdX", story, "styles.xml")) });
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+
+const chunks: Record<string, Row[]> = {
+    s58a: withControls("s58a", [
+        [
+            "comments-dangling-reference",
+            '#776: a used word/comments.xml holding comment 5, the body\'s w:commentReference naming w:id="0"',
+            () => usedStory("comments", "5", "0"),
+        ],
+        ["comments-matching-reference-calibration", "#776 calibration: the same holding comment 0", () => usedStory("comments", "0", "0")],
+        [
+            "endnotes-dangling-reference",
+            '#776: a used word/endnotes.xml holding endnote 5, the body\'s w:endnoteReference naming w:id="1"',
+            () => usedStory("endnotes", "5", "1"),
+        ],
+        ["endnotes-matching-reference-calibration", "#776 calibration: the same holding endnote 1", () => usedStory("endnotes", "1", "1")],
+        [
+            "styles-exact-comments-coreach-no-reference",
+            "#776: word/styles.xml (exact styles type) also the target of a comments relationship; no reference in the body",
+            () => stylesCoReachNoReference("comments"),
+        ],
+        [
+            "styles-exact-endnotes-coreach-no-reference",
+            "#776: the same with an endnotes relationship",
+            () => stylesCoReachNoReference("endnotes"),
+        ],
+    ]),
+    s58b: withControls("s58b", [
+        [
+            "styles-exact-footnotes-coreach-no-reference",
+            "#776: the same with a footnotes relationship",
+            () => stylesCoReachNoReference("footnotes"),
+        ],
+        [
+            "comments-used-typed-styles",
+            "#776/#778: a used word/comments.xml (comment 0, referenced) typed by its Override with the styles content type",
+            () => usedStory("comments", "0", "0", STYLES_TYPE),
+        ],
+        [
+            "endnotes-used-typed-styles",
+            "#776/#778: a used word/endnotes.xml (endnote 1, referenced) typed with the styles content type",
+            () => usedStory("endnotes", "1", "1", STYLES_TYPE),
+        ],
+        [
+            "footnotes-used-typed-styles",
+            "#776/#778: a used word/footnotes.xml (footnote 1, referenced) typed with the styles content type",
+            () => usedStory("footnotes", "1", "1", STYLES_TYPE),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-58 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s58a", "s58b")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s58/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-58 parts of docs/plans/evidence/word-probes-2026-10-24.md into s58/section.md.
+
+Reads each chunk's specimens.jsonl (validator columns at bfb8eb75, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s58/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s58a", "s58b")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s58/results.json").read_text())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends = [], [], [], []
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    f"### Session 58: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at bfb8eb75",
+    "",
+    "The confound in session 57's #776 calibrations "
+    "([#776](https://github.com/jandira-tech/docx-validate/issues/776)): its comments, footnotes and endnotes co-reach specimens "
+    "reference an id that `word/styles.xml`, rooted `w:styles`, cannot hold. Two chunks, each opening and closing with the minimal "
+    "control. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from "
+    f"its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs "
+    f"and both readings agree, and `unknown` otherwise; {agreed} of {len(rows)} rows agree. The two times in Observed are the ends of "
+    "the first and second runs. Shape is the builder's description of the specimen.",
+    "",
+    "- A used `word/comments.xml` holding comment 5, the body's `w:commentReference` naming `w:id=\"0\"`, gets the recovery offer, "
+    "and so does a used `word/endnotes.xml` holding endnote 5, the body's `w:endnoteReference` naming `w:id=\"1\"`. The "
+    "matching-id calibrations open clean. Word-valid at bfb8eb75 accepts both dangling references: two false negatives. A dangling "
+    "footnote reference was already refused (fixture 1829, `word-footnote-reference-missing`).",
+    "- `word/styles.xml`, exact styles type, also the target of a comments, endnotes or footnotes relationship, with no reference in "
+    "the body, opens clean. Session 57's comments and endnotes co-reach calibrations were therefore refused for their dangling "
+    "references, not for the co-reach; its header calibration had no such reference.",
+    "- A used `word/comments.xml`, `word/endnotes.xml` or `word/footnotes.xml`, its own root with a matching reference, typed by its "
+    "Override with the styles content type, gets the recovery offer. Word-valid at bfb8eb75 accepts all three: three false "
+    "negatives.",
+    "",
+    "| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at bfb8eb75 | strict at bfb8eb75 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 58</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 58 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s58builder.mts", ROOT / "s58builder.mts", "ts"), ("compare.py", ROOT / "s58/compare.py", "python"),
+                         ("section.py", ROOT / "s58/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s58/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>

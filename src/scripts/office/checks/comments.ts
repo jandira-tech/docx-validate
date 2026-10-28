@@ -9,6 +9,7 @@ import type { CheckDefinition } from "../../../lib/check-registry";
 import { findEquivalentPart } from "../../../lib/content-types";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
+import { registerCommentReferenceMissing } from "../comment-finding-facts";
 import {
     COMMENTS_EXTENDED_RELATIONSHIP_TYPE,
     COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE,
@@ -214,12 +215,16 @@ export const commentMarkersCheck: CheckDefinition = {
             const invalidRefs = setDiff(markerIds, commentIds);
             for (const id of sortIdsNumeric(invalidRefs)) {
                 if (!id) continue;
-                issues.push({
+                const issue: ValidationIssue = {
                     severity: "error",
                     message: `marker id="${id}" references non-existent comment`,
                     path: documentXml,
                     code: "comment-marker-missing",
-                });
+                };
+                if (references.has(id)) {
+                    registerCommentReferenceMissing(issue);
+                }
+                issues.push(issue);
             }
         }
 
