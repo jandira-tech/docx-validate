@@ -1946,7 +1946,14 @@ name: it adds an Override when nothing covers the part or a `.rels` Default
 names another type, which it leaves alone, and corrects an Override that names
 the part with another type, under any OPC-equivalent spelling; before, a `.rels`
 Default of another type left the part mistyped
-([#901](https://github.com/jandira-tech/docx-validate/issues/901)).
+([#901](https://github.com/jandira-tech/docx-validate/issues/901)). It reads
+and writes `[Content_Types].xml` in its namespace, whatever prefix the stream
+binds it to (`<ct:Types xmlns:ct="…">`): each Override it adds is created in
+that namespace with the prefix the root uses, and an Override in another
+namespace is not read as typing a part; before, a prefixed stream got Overrides
+in no namespace, which left the comments parts typed `application/xml` and the
+created relationships part mistyped
+([#923](https://github.com/jandira-tech/docx-validate/issues/923)).
 
 A first comment is refused with an error naming the part, changing nothing,
 when the tree has no `[Content_Types].xml`, or when `_rels/.rels` cannot be

@@ -29,8 +29,8 @@ vi.mock("node:crypto", async (importOriginal) => {
 });
 
 import { withTempDir } from "../src/lib/run-cli";
-import { canonicalPartName } from "../src/lib/content-types";
-import { parseXml } from "../src/lib/xml-helpers";
+import { canonicalPartName, CONTENT_TYPES_NAMESPACE, parseContentTypes, resolveContentType } from "../src/lib/content-types";
+import { getElementsByTagNameNSAll, parseXml } from "../src/lib/xml-helpers";
 import { SECURE_LONG_HEX_EXCLUSIVE_MAX } from "../src/lib/secure-id";
 import { addComment, generateHexId } from "../src/scripts/comment";
 import { validate } from "../src/scripts/office/validate";
@@ -81,6 +81,18 @@ const firstCommentRelationships = (firstRid: number): string[][] => [
 /** A content-types stream whose `.rels` Default names `relsType`, with `overrides` spliced in (#901). */
 const contentTypes = (relsType: string, overrides: readonly string[] = []): string =>
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="${relsType}"/>${overrides.join("")}</Types>`;
+
+/** A content-types stream whose namespace is bound to the `ct:` prefix, with a `.rels` Default naming `relsType` and `overrides` spliced in (#923). */
+const prefixedContentTypes = (relsType: string, overrides: readonly string[] = []): string =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<ct:Types xmlns:ct="${CONTENT_TYPES_NAMESPACE}"><ct:Default Extension="rels" ContentType="${relsType}"/>${overrides.join("")}</ct:Types>`;
+
+/** The four comments parts a first comment types, each with the type it gets (#923). */
+const COMMENT_PART_TYPES: readonly [string, string][] = [
+    ["/word/comments.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml"],
+    ["/word/commentsExtended.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml"],
+    ["/word/commentsIds.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsIds+xml"],
+    ["/word/commentsExtensible.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtensible+xml"],
+];
 
 /** The minimal main document with a paired marker triple for comment 0. */
 const markedMainDocument = (): string =>
@@ -169,6 +181,22 @@ function overridesNaming(dom: ReturnType<typeof parseXml>, partName: string): [s
         const override = overrides.item(i)!;
         if (canonicalPartName(override.getAttribute("PartName") ?? "") === canonicalPartName(partName)) {
             found.push([override.getAttribute("PartName") ?? "", override.getAttribute("ContentType") ?? ""]);
+        }
+    }
+    return found;
+}
+
+/** Every [namespaceURI, prefix, PartName, ContentType] row of the content-types Override elements naming `partName` under OPC equivalence (#923). */
+function namespacedOverridesNaming(dom: ReturnType<typeof parseXml>, partName: string): [string, string, string, string][] {
+    const found: [string, string, string, string][] = [];
+    for (const override of getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Override")) {
+        if (canonicalPartName(override.getAttribute("PartName") ?? "") === canonicalPartName(partName)) {
+            found.push([
+                override.namespaceURI ?? "",
+                override.prefix ?? "",
+                override.getAttribute("PartName") ?? "",
+                override.getAttribute("ContentType") ?? "",
+            ]);
         }
     }
     return found;
@@ -582,6 +610,175 @@ describe("addComment", () => {
             });
         },
     );
+
+    it("types the comments parts in the content-types namespace, whatever prefix the stream binds (#923)", { timeout: 30000 }, async () => {
+        await withTempDir(async (dir) => {
+            // The stream binds its namespace to `ct:`; before, the four
+            // Overrides landed in no namespace, where the read model
+            // cannot see them, so the comments parts resolved to the `xml`
+            // Default's generic type.
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.writeFile(
+                path.join(dir, "[Content_Types].xml"),
+                prefixedContentTypes(RELATIONSHIPS_TYPE, [
+                    `<ct:Override PartName="/word/document.xml" ContentType="${MAIN_DOCUMENT_CONTENT_TYPE}"/>`,
+                ]),
+                "utf-8",
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // Each comment part is typed by exactly one Override, in the
+            // content-types namespace under the root's prefix, so the
+            // read model resolves each part to its own type.
+            const dom = parseXml(await fs.readFile(path.join(dir, "[Content_Types].xml"), "utf-8"));
+            const table = parseContentTypes(dom);
+            for (const [partName, contentType] of COMMENT_PART_TYPES) {
+                expect(namespacedOverridesNaming(dom, partName)).toEqual([[CONTENT_TYPES_NAMESPACE, "ct", partName, contentType]]);
+                expect(resolveContentType(table, partName)).toEqual({ contentType, source: "override" });
+            }
+
+            // The typed, packed tree draws none of the findings the
+            // un-namespaced Overrides drew: no schema error on the
+            // stream itself, no generic typing on the comments parts.
+            await fs.writeFile(path.join(dir, "word", "document.xml"), markedMainDocument(), "utf-8");
+            const file = path.join(dir, "prefixed-ct.docx");
+            await packTree(dir, file);
+            const validation = await validate(file, { profile: "strict" });
+            expect(
+                validation.issues.filter(
+                    (issue) => (issue.code === "xsd-error" || issue.code === "xsd-summary") && issue.path === "[Content_Types].xml",
+                ),
+            ).toEqual([]);
+            expect(validation.issues.filter((issue) => issue.code === "word-part-content-type-generic")).toEqual([]);
+        });
+    });
+
+    it("corrects a prefixed Override of another type naming the relationships part it creates (#923)", async () => {
+        await withTempDir(async (dir) => {
+            // No main-document relationships part, and the prefixed Override
+            // naming the part addComment will create carries the wrong type:
+            // #901's rewrite must reach it through the prefix.
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.writeFile(
+                path.join(dir, "[Content_Types].xml"),
+                prefixedContentTypes(RELATIONSHIPS_TYPE, [
+                    `<ct:Override PartName="/word/_rels/document.xml.rels" ContentType="application/xml"/>`,
+                    `<ct:Override PartName="/word/document.xml" ContentType="${MAIN_DOCUMENT_CONTENT_TYPE}"/>`,
+                ]),
+                "utf-8",
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The Override is rewritten in place, not answered with a second
+            // one, and the read model resolves the created part through it.
+            const dom = parseXml(await fs.readFile(path.join(dir, "[Content_Types].xml"), "utf-8"));
+            expect(resolveContentType(parseContentTypes(dom), "/word/_rels/document.xml.rels")).toEqual({
+                contentType: RELATIONSHIPS_TYPE,
+                source: "override",
+            });
+            expect(namespacedOverridesNaming(dom, "/word/_rels/document.xml.rels")).toEqual([
+                [CONTENT_TYPES_NAMESPACE, "ct", "/word/_rels/document.xml.rels", RELATIONSHIPS_TYPE],
+            ]);
+        });
+    });
+
+    it("adds no Override when a prefixed Override already types word/comments.xml (#923)", async () => {
+        await withTempDir(async (dir) => {
+            const commentsType = COMMENT_PART_TYPES[0]![1];
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.writeFile(
+                path.join(dir, "[Content_Types].xml"),
+                prefixedContentTypes(RELATIONSHIPS_TYPE, [
+                    `<ct:Override PartName="/word/document.xml" ContentType="${MAIN_DOCUMENT_CONTENT_TYPE}"/>`,
+                    `<ct:Override PartName="/word/comments.xml" ContentType="${commentsType}"/>`,
+                ]),
+                "utf-8",
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The prefixed Override is read as typing the part, so the stream
+            // keeps exactly one Override naming each part it named: none is
+            // added, none rewritten, and the created relationships part is
+            // covered by the Default alone.
+            const dom = parseXml(await fs.readFile(path.join(dir, "[Content_Types].xml"), "utf-8"));
+            expect(namespacedOverridesNaming(dom, "/word/comments.xml")).toEqual([
+                [CONTENT_TYPES_NAMESPACE, "ct", "/word/comments.xml", commentsType],
+            ]);
+            expect(namespacedOverridesNaming(dom, "/word/document.xml")).toEqual([
+                [CONTENT_TYPES_NAMESPACE, "ct", "/word/document.xml", MAIN_DOCUMENT_CONTENT_TYPE],
+            ]);
+            // Counted across every namespace, so an Override added in no
+            // namespace would show up here too.
+            expect(getElementsByTagNameNSAll(dom, "*", "Override")).toHaveLength(2);
+        });
+    });
+
+    it("does not read an Override in another namespace as typing the comments parts (#923)", async () => {
+        await withTempDir(async (dir) => {
+            // An unprefixed stream whose Override naming word/comments.xml
+            // binds another namespace types nothing: the four Overrides are
+            // added in the content-types namespace beside it, serialized
+            // exactly as an unprefixed stream is today — no new declaration.
+            const commentsType = COMMENT_PART_TYPES[0]![1];
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.writeFile(
+                path.join(dir, "[Content_Types].xml"),
+                contentTypes(RELATIONSHIPS_TYPE, [
+                    `<Override PartName="/word/document.xml" ContentType="${MAIN_DOCUMENT_CONTENT_TYPE}"/>`,
+                    `<x:Override xmlns:x="urn:example:other" PartName="/word/comments.xml" ContentType="${commentsType}"/>`,
+                ]),
+                "utf-8",
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            const ctAfter = await fs.readFile(path.join(dir, "[Content_Types].xml"), "utf-8");
+            expect(ctAfter).toContain(`<Override PartName="/word/comments.xml" ContentType="${commentsType}"/>`);
+            const dom = parseXml(ctAfter);
+            for (const [partName, contentType] of COMMENT_PART_TYPES) {
+                expect(namespacedOverridesNaming(dom, partName)).toEqual([[CONTENT_TYPES_NAMESPACE, "", partName, contentType]]);
+            }
+            expect(resolveContentType(parseContentTypes(dom), "/word/comments.xml")).toEqual({
+                contentType: commentsType,
+                source: "override",
+            });
+        });
+    });
 
     it("relates the comments parts through a renamed main document's own relationships part (#906)", { timeout: 30000 }, async () => {
         await withTempDir(async (dir) => {
