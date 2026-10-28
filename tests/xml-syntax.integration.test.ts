@@ -35,6 +35,8 @@ import { xmlSyntaxCheck } from "../src/scripts/office/checks/xml";
 import { contextFromDirectory } from "../src/scripts/office/package-context";
 import { validate } from "../src/scripts/office/validate";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
+import { buildDocx } from "./support/minimal-docx";
+import { climbingCore, climbingStyles } from "./support/climbing-target-specimens";
 
 const W_NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
 const CONTENT_TYPES =
@@ -363,5 +365,39 @@ describe("validate() — input is never rewritten", () => {
             expect(result.suffix).toBe(".docx");
             expect(result.issues.some((i) => i.code === "xml-bom-leading")).toBe(true);
         });
+    });
+});
+
+// #996, Word session 81 (s81a, two runs, all readings agree): a properties
+// part and an eagerly parsed styles part named by a target climbing past the
+// package root are read at the root, so an unclosed root there got the
+// recovery offer its in-package twin gets (#409; session 15), and the
+// well-formed calibrations opened clean.
+describe("a malformed part named by a climbing target (#996, session 81)", () => {
+    const judged = (parts: Record<string, string>) =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "climbing-part.docx");
+            await fs.writeFile(file, await buildDocx(parts));
+            return validate(file, { profile: "word-valid" });
+        });
+
+    it.each([
+        ["docProps/core.xml named by ../docProps/core.xml", climbingCore(false), "docProps/core.xml"],
+        ["/styles.xml named by ../../styles.xml", climbingStyles(false), "styles.xml"],
+    ])("blocks the unclosed %s, as Word refused it", async (_row, parts, part) => {
+        const result = await judged(parts);
+        expect(result.valid).toBe(false);
+        expect(result.issues.filter((issue) => issue.severity === "error").map((issue) => [issue.code, issue.path])).toEqual([
+            ["xml-syntax", part],
+        ]);
+    });
+
+    it.each([
+        ["docProps/core.xml named by ../docProps/core.xml", climbingCore(true)],
+        ["/styles.xml named by ../../styles.xml", climbingStyles(true)],
+    ])("accepts the well-formed %s, which Word opened clean", async (_row, parts) => {
+        const result = await judged(parts);
+        expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+        expect(result.valid).toBe(true);
     });
 });

@@ -1235,7 +1235,15 @@ a main document named from `_rels/.rels` by `../word/document.xml`,
 `../../word/document.xml` or `/../word/document.xml`. Word-valid rejected each
 of those clean rows, with `comment-marker-missing` or
 `word-main-document-part`; session 75 had read an escaping styles and header
-target from the root.
+target from the root. Session 81 then offered recovery for what such a climb reaches,
+for the reason Word refuses its in-package twin, and opened each calibration
+clean: a read footer at `/footer1.xml` named by `../../footer1.xml` and typed
+styles, an unclosed `docProps/core.xml` named by `../docProps/core.xml` or
+`/styles.xml` named by `../../styles.xml`, and a `word/footnotes.xml` the body
+and a glossary both use when the glossary's target or its notes target climbs.
+Word-valid blocks each, with `word-part-content-type-mismatch`, `xml-syntax`
+or `word-shared-story-part`
+([#996](https://github.com/jandira-tech/docx-validate/issues/996)).
 
 `word-shared-story-part` rejects a comments, footnotes or endnotes part that
 the read model lists for both a main-document entry and a glossary entry

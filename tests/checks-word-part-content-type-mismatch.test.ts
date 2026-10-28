@@ -16,6 +16,7 @@ import { wordPartContentTypeGenericFindings } from "../src/scripts/office/checks
 import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
 import { glossaryStoryParts, glossaryStylesParts } from "./support/glossary-content-type-specimens";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { climbingFooterTyped } from "./support/climbing-target-specimens";
 import { RELATED_PART_SPECIMENS, relatedContentTypeParts } from "./support/related-content-type-specimens";
 import {
     footerWithHeaderRelationship,
@@ -1721,4 +1722,32 @@ describe("read story typed styles (#785, session 58)", () => {
         },
         60_000,
     );
+});
+
+// #996, Word session 81 (s81a, two runs, all readings agree): a read footer
+// named by a target climbing past the package root is read at the root, as
+// every read-model walk reads it since #986, so its styles typing got the
+// recovery offer session 53 gave the in-package twin, and the footer typing
+// opened clean with `Foot` rendered.
+describe("a read footer named by a climbing target (#996, session 81)", () => {
+    const judged = (parts: Record<string, string>) =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "climbing-footer.docx");
+            writeFileSync(file, await buildDocx(parts));
+            return validate(file, { profile: "word-valid" });
+        });
+
+    it("blocks /footer1.xml named by ../../footer1.xml and typed styles, as Word refused it", async () => {
+        const result = await judged(climbingFooterTyped("styles"));
+        expect(result.valid).toBe(false);
+        expect(result.issues.filter((issue) => issue.severity === "error").map((issue) => [issue.code, issue.path])).toEqual([
+            [ID, "footer1.xml"],
+        ]);
+    });
+
+    it("accepts the same footer typed footer, which Word opened clean", async () => {
+        const result = await judged(climbingFooterTyped("footer"));
+        expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+        expect(result.valid).toBe(true);
+    });
 });

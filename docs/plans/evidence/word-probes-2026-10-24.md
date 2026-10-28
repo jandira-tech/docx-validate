@@ -28736,3 +28736,568 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
 `````
 
 </details>
+
+### Session 81: 01:04Z–01:15Z on 2026-10-28, validator columns at cf1a2990
+
+The blocks [#996](https://github.com/jandira-tech/docx-validate/issues/996) asked about. Since #986 every read-model walk stops a target climbing past the package root at the root, as Word reads it (sessions 74 to 78), so four checks began reading a part named by such a target that they had not read before: the content-type checks, the XML syntax check, and `word-shared-story-part`. Whether Word then refuses the part for the reason it refuses the in-package twin was unprobed. Chunk s81a stores a footer holding `Foot` at `/footer1.xml`, named from `word/` by `../../footer1.xml` and referenced by the section, typed footer (calibration) and typed styles by its Override (E1); `docProps/core.xml` named from `_rels/.rels` by `../docProps/core.xml`, well-formed (calibration) and with its root unclosed (F1); the styles part stored at `/styles.xml` and named from `word/` by `../../styles.xml`, well-formed (calibration, session 75's reading) and with its root unclosed (G1); `word/footnotes.xml` used by the body and by a glossary reached by `../../word/glossary/document.xml` whose sidecar relates it by `../footnotes.xml` (I2), and the same glossary using no note (calibration); the glossary reached by `glossary/document.xml` relating the notes by `../../../word/footnotes.xml`, both roots using footnote 1 (I2'); and a repeat of session 67's in-package shared notes row. Chunk s81b rebuilt I2' and the repeat and ran them again, as one run of each was lost in s81a (below): the same parts, byte for byte, in the same order, though the archives' hashes differ, as JSZip stamps each entry with its build time. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 14 of 16 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`cf1a299061fa2cbf1657a62dba2605eb7ba2f583`).
+
+The driver opens files in name order. In s81a, the first run lost the repeat and the second run lost I2' to an AppleEvent timeout (`Microsoft Word got an error: AppleEvent timed out.`, no log evidence and no PDF), so those two rows are `unknown` there, though each of their three other readings was the recovery offer; s81b ran both twice and every reading was the recovery offer. Every calibration and control opened clean. The footer calibration's PDF holds `Hello Foot`, so Word read the footer at the root; the notes calibration's holds `Hello1 Note`, the body's note; every other clean row's holds `Hello` (`pdftotext`, both runs). No refused row left a PDF.
+
+- **A read footer typed styles (E1).** Word offered recovery, as session 53 did for the in-package twin, and opened the footer-typed calibration clean, rendering `Foot`.
+- **An unclosed part read at the root (F1, G1).** Word offered recovery for the unclosed core properties part and the unclosed root styles part, as for an in-package malformed part (#409; session 15), and opened both well-formed calibrations clean.
+- **A notes part both roots use through a climbing target (I2, I2').** Word offered recovery whether the glossary was reached, or related the notes part, by a climbing target, as session 67 did in-package (its repeat here was refused too), and opened clean the climbing glossary that uses no note.
+
+Word-valid at cf1a2990 rejects each refused row with the finding #996 asked about — `word-part-content-type-mismatch` at `footer1.xml`, `xml-syntax` at `docProps/core.xml` and at `styles.xml`, `word-shared-story-part` at `word/footnotes.xml` — and accepts every calibration, so it matches Word on 14 of 16 rows, every row whose readings agree. [#996](https://github.com/jandira-tech/docx-validate/issues/996) pins these rows in each check's tests.
+
+| Run    | Observed             | Specimen                           | Shape                                                                                                                                                    | SHA-256 (first 16) | Word, run 1                    | Word, run 2                    | Outcome                    | word-valid at cf1a2990                     | strict at cf1a2990                                                                    |
+| ------ | -------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------------------ | ------------------------------ | -------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------- |
+| `s81a` | 01:04:05Z, 01:12:35Z | `s81a-control-minimal`             | control                                                                                                                                                  | `db873b3122407df6` | clean-open                     | clean-open                     | clean-open                 | valid                                      | valid                                                                                 |
+| `s81a` | 01:04:05Z, 01:12:35Z | `footer-climb-calibration`         | calibration: a footer holding Foot stored at /footer1.xml, named from word/ by ../../footer1.xml, referenced by the section, typed footer                | `8da303f798db0caf` | clean-open                     | clean-open                     | clean-open                 | valid                                      | invalid: `paraid-missing-element`                                                     |
+| `s81a` | 01:04:05Z, 01:12:35Z | `footer-climb-typed-styles`        | #996 E1: the same footer typed styles by its Override                                                                                                    | `b0ea119570050923` | repair-warning                 | repair-warning                 | unreadable-content-warning | invalid: `word-part-content-type-mismatch` | invalid: `word-part-content-type-mismatch`, `paraid-missing-element`                  |
+| `s81a` | 01:04:05Z, 01:12:35Z | `core-climb-calibration`           | calibration: docProps/core.xml named from _rels/.rels by ../docProps/core.xml                                                                            | `afaaa66854d74041` | clean-open                     | clean-open                     | clean-open                 | valid                                      | valid                                                                                 |
+| `s81a` | 01:04:05Z, 01:12:35Z | `core-climb-unclosed`              | #996 F1: the same core properties part with its root unclosed                                                                                            | `597c6b99ebf316af` | repair-warning                 | repair-warning                 | unreadable-content-warning | invalid: `xml-syntax`                      | invalid: `xml-syntax`                                                                 |
+| `s81a` | 01:04:05Z, 01:12:35Z | `styles-climb-calibration`         | calibration: the styles part stored at /styles.xml, named from word/ by ../../styles.xml (session 75's reading)                                          | `32bcec9255bf2a77` | clean-open                     | clean-open                     | clean-open                 | valid                                      | valid                                                                                 |
+| `s81a` | 01:04:05Z, 01:12:35Z | `styles-climb-unclosed`            | #996 G1: the same root styles part with its root unclosed                                                                                                | `bd1db9b392d79664` | repair-warning                 | repair-warning                 | unreadable-content-warning | invalid: `xml-syntax`                      | invalid: `xml-syntax`                                                                 |
+| `s81a` | 01:04:05Z, 01:12:35Z | `notes-glossary-climb-shared`      | #996 I2: word/footnotes.xml used by the body and by a glossary reached by ../../word/glossary/document.xml, whose sidecar relates it by ../footnotes.xml | `21c9b255399f6596` | repair-warning                 | repair-warning                 | unreadable-content-warning | invalid: `word-shared-story-part`          | invalid: `paraid-missing-element`, `paraid-missing-element`, `word-shared-story-part` |
+| `s81a` | 01:04:05Z, 01:12:35Z | `notes-glossary-climb-calibration` | calibration: the same, the glossary's docPart referencing no note                                                                                        | `3aa08384b4dd2ad4` | clean-open                     | clean-open                     | clean-open                 | valid                                      | invalid: `paraid-missing-element`, `paraid-missing-element`                           |
+| `s81a` | 01:04:05Z, 01:12:35Z | `notes-climb-shared`               | #996 I2': the glossary reached by glossary/document.xml, its sidecar relating the notes by ../../../word/footnotes.xml; both use footnote 1              | `06720c45142bacae` | repair-warning                 | log: no-evidence; table: other | unknown                    | invalid: `word-shared-story-part`          | invalid: `paraid-missing-element`, `paraid-missing-element`, `word-shared-story-part` |
+| `s81a` | 01:04:05Z, 01:12:35Z | `notes-shared-repeat`              | repeat of s67a: the glossary reached by glossary/document.xml, its sidecar relating the notes by ../footnotes.xml; both use footnote 1                   | `6e587f631e4f6f51` | log: no-evidence; table: other | repair-warning                 | unknown                    | invalid: `word-shared-story-part`          | invalid: `paraid-missing-element`, `paraid-missing-element`, `word-shared-story-part` |
+| `s81a` | 01:04:05Z, 01:12:35Z | `s81a-control-minimal-end`         | control                                                                                                                                                  | `edcbf1125bafbc1c` | clean-open                     | clean-open                     | clean-open                 | valid                                      | valid                                                                                 |
+| `s81b` | 01:14:30Z, 01:15:59Z | `s81b-control-minimal`             | control                                                                                                                                                  | `51a47cf8aa71bae0` | clean-open                     | clean-open                     | clean-open                 | valid                                      | valid                                                                                 |
+| `s81b` | 01:14:30Z, 01:15:59Z | `notes-climb-shared`               | #996 I2': the glossary reached by glossary/document.xml, its sidecar relating the notes by ../../../word/footnotes.xml; both use footnote 1              | `19bb014e0e4cd9f8` | repair-warning                 | repair-warning                 | unreadable-content-warning | invalid: `word-shared-story-part`          | invalid: `paraid-missing-element`, `paraid-missing-element`, `word-shared-story-part` |
+| `s81b` | 01:14:30Z, 01:15:59Z | `notes-shared-repeat`              | repeat of s67a: the glossary reached by glossary/document.xml, its sidecar relating the notes by ../footnotes.xml; both use footnote 1                   | `46101ae0c976cc52` | repair-warning                 | repair-warning                 | unreadable-content-warning | invalid: `word-shared-story-part`          | invalid: `paraid-missing-element`, `paraid-missing-element`, `word-shared-story-part` |
+| `s81b` | 01:14:30Z, 01:15:59Z | `s81b-control-minimal-end`         | control                                                                                                                                                  | `51a47cf8aa71bae0` | clean-open                     | clean-open                     | clean-open                 | valid                                      | valid                                                                                 |
+
+<details><summary>Raw records, session 81</summary>
+
+```jsonl
+{"run": "s81a", "pass": 1, "name": "s81a-control-minimal", "sha256": "db873b3122407df64523ed4078d04b8d0736b4f03b8c57582c7ff02eb1879534", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:04:05+00:00", "staged": "00009__wfv__s81a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s81a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s81a", "pass": 2, "name": "s81a-control-minimal", "sha256": "db873b3122407df64523ed4078d04b8d0736b4f03b8c57582c7ff02eb1879534", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:12:35+00:00", "staged": "00009__wfv__s81a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s81a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s81a", "pass": 1, "name": "footer-climb-calibration", "sha256": "8da303f798db0caf205a0ec69ada7014b66a00fac31134f134de45c309a1cabf", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:04:05+00:00", "staged": "00002__wfv__footer-climb-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footer-climb-calibration_byword.pdf (14303 bytes), no dialog named the file"]}
+{"run": "s81a", "pass": 2, "name": "footer-climb-calibration", "sha256": "8da303f798db0caf205a0ec69ada7014b66a00fac31134f134de45c309a1cabf", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:12:35+00:00", "staged": "00002__wfv__footer-climb-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footer-climb-calibration_byword.pdf (14303 bytes), no dialog named the file"]}
+{"run": "s81a", "pass": 1, "name": "footer-climb-typed-styles", "sha256": "b0ea119570050923a0b5f0d79d6c5f423fd1de15e4064110b6b7179911bfb58a", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:04:05+00:00", "staged": "00003__wfv__footer-climb-typed-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 20:57:37.967 \"Word found unreadable content in 00003__wfv__footer-climb-typed-styles.docx. Do you want to recover … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00003__wfv__footer-climb-typed-styles.docx; refusing to guess"}
+{"run": "s81a", "pass": 2, "name": "footer-climb-typed-styles", "sha256": "b0ea119570050923a0b5f0d79d6c5f423fd1de15e4064110b6b7179911bfb58a", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:12:35+00:00", "staged": "00003__wfv__footer-climb-typed-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 21:04:58.573 \"Word found unreadable content in 00003__wfv__footer-climb-typed-styles.docx. Do you want to recover … ? If you trust the source of this document, click Yes.\"", "2026-10-27 21:04:58.574 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__footer-climb-typed-styles...)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00003__wfv__footer-climb-typed-styles.docx; refusing to guess"}
+{"run": "s81a", "pass": 1, "name": "core-climb-calibration", "sha256": "afaaa66854d74041cf8bd06380e89e39c94bb6ecc290ca0f506fe98eef858faf", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:04:05+00:00", "staged": "00000__wfv__core-climb-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF core-climb-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s81a", "pass": 2, "name": "core-climb-calibration", "sha256": "afaaa66854d74041cf8bd06380e89e39c94bb6ecc290ca0f506fe98eef858faf", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:12:35+00:00", "staged": "00000__wfv__core-climb-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF core-climb-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s81a", "pass": 1, "name": "core-climb-unclosed", "sha256": "597c6b99ebf316af221396102060df085bbb979ecaa66011f435ce564b8c7707", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:04:05+00:00", "staged": "00001__wfv__core-climb-unclosed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 20:57:26.137 \"Word found unreadable content in 00001__wfv__core-climb-unclosed.docx. Do you want to recover the c … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__core-climb-unclosed.docx; refusing to guess"}
+{"run": "s81a", "pass": 2, "name": "core-climb-unclosed", "sha256": "597c6b99ebf316af221396102060df085bbb979ecaa66011f435ce564b8c7707", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:12:35+00:00", "staged": "00001__wfv__core-climb-unclosed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 21:04:40.402 'Word found unreadable content in 00001__wfv__core-climb-unclosed.docx. Do you want to recover the c … ? If you trust the source of this document, click Yes.'"], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__core-climb-unclosed.docx; refusing to guess"}
+{"run": "s81a", "pass": 1, "name": "styles-climb-calibration", "sha256": "32bcec9255bf2a7773361067f6a2b5c47f3c78eb2989aaecf227800e1efecd00", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:04:05+00:00", "staged": "00010__wfv__styles-climb-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-climb-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s81a", "pass": 2, "name": "styles-climb-calibration", "sha256": "32bcec9255bf2a7773361067f6a2b5c47f3c78eb2989aaecf227800e1efecd00", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:12:35+00:00", "staged": "00010__wfv__styles-climb-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-climb-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s81a", "pass": 1, "name": "styles-climb-unclosed", "sha256": "bd1db9b392d7966447c09eb2317c54d3b187bafe511425b3251531732eaf887d", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:04:05+00:00", "staged": "00011__wfv__styles-climb-unclosed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 21:04:01.516 'Word found unreadable content in 00011__wfv__styles-climb-unclosed.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.'", "2026-10-27 21:04:02.599 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00011__wfv__styles-climb-unclosed.docx)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s81a", "pass": 2, "name": "styles-climb-unclosed", "sha256": "bd1db9b392d7966447c09eb2317c54d3b187bafe511425b3251531732eaf887d", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:12:35+00:00", "staged": "00011__wfv__styles-climb-unclosed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 21:10:06.388 'Word found unreadable content in 00011__wfv__styles-climb-unclosed.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.'", "2026-10-27 21:10:15.498 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00011__wfv__styles-climb-unclosed.docx)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00011__wfv__styles-climb-unclosed.docx; refusing to guess"}
+{"run": "s81a", "pass": 1, "name": "notes-glossary-climb-shared", "sha256": "21c9b255399f65967602b1544627a77c8c75bbde7298d8bc6ed87f53dfa809fe", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:04:05+00:00", "staged": "00006__wfv__notes-glossary-climb-shared.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 20:59:05.099 \"Word found unreadable content in 00006__wfv__notes-glossary-climb-shared.docx. Do you want to recov … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00006__wfv__notes-glossary-climb-shared.docx; refusing to guess"}
+{"run": "s81a", "pass": 2, "name": "notes-glossary-climb-shared", "sha256": "21c9b255399f65967602b1544627a77c8c75bbde7298d8bc6ed87f53dfa809fe", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:12:35+00:00", "staged": "00006__wfv__notes-glossary-climb-shared.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 21:10:42.825 \"Word found unreadable content in 00006__wfv__notes-glossary-climb-shared.docx. Do you want to recov … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00006__wfv__notes-glossary-climb-shared.docx; refusing to guess"}
+{"run": "s81a", "pass": 1, "name": "notes-glossary-climb-calibration", "sha256": "3aa08384b4dd2ad4e4812c4d54d25bbd49d1c747e257defe75016d729a4ce9e2", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:04:05+00:00", "staged": "00005__wfv__notes-glossary-climb-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF notes-glossary-climb-calibration_byword.pdf (14684 bytes), no dialog named the file"]}
+{"run": "s81a", "pass": 2, "name": "notes-glossary-climb-calibration", "sha256": "3aa08384b4dd2ad4e4812c4d54d25bbd49d1c747e257defe75016d729a4ce9e2", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:12:35+00:00", "staged": "00005__wfv__notes-glossary-climb-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF notes-glossary-climb-calibration_byword.pdf (14684 bytes), no dialog named the file"]}
+{"run": "s81a", "pass": 1, "name": "notes-climb-shared", "sha256": "06720c45142bacaeb1f7499cedf1cb675a1232e3b1cce04b1dc97b48e82cc7eb", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:04:05+00:00", "staged": "00004__wfv__notes-climb-shared.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 20:58:35.182 Microsoft Word, Word found unreadable content in 00004__wfv__notes-climb-shared.docx. Do you want to … t? If you trust the source of this document, click Yes.", "2026-10-27 20:58:46.241 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … overy converter. (00004__wfv__notes-climb-shared.docx)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s81a", "pass": 2, "name": "notes-climb-shared", "sha256": "06720c45142bacaeb1f7499cedf1cb675a1232e3b1cce04b1dc97b48e82cc7eb", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:12:35+00:00", "staged": "00004__wfv__notes-climb-shared.docx", "logVerdict": "no-evidence", "tableVerdict": "other", "pdf": false, "evidence": [], "error": "Microsoft Word got an error: AppleEvent timed out."}
+{"run": "s81a", "pass": 1, "name": "notes-shared-repeat", "sha256": "6e587f631e4f6f511b0756b9faecb66f5b315cbcffb28279fd78402c8347ac3d", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:04:05+00:00", "staged": "00007__wfv__notes-shared-repeat.docx", "logVerdict": "no-evidence", "tableVerdict": "other", "pdf": false, "evidence": [], "error": "Microsoft Word got an error: AppleEvent timed out."}
+{"run": "s81a", "pass": 2, "name": "notes-shared-repeat", "sha256": "6e587f631e4f6f511b0756b9faecb66f5b315cbcffb28279fd78402c8347ac3d", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:12:35+00:00", "staged": "00007__wfv__notes-shared-repeat.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 21:12:35.832 \"Word found unreadable content in 00007__wfv__notes-shared-repeat.docx. Do you want to recover the c … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00007__wfv__notes-shared-repeat.docx; refusing to guess"}
+{"run": "s81a", "pass": 1, "name": "s81a-control-minimal-end", "sha256": "edcbf1125bafbc1c820f98f43e02279ca373201f20c6a74b65fa5707e4e0b98c", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:04:05+00:00", "staged": "00008__wfv__s81a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s81a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s81a", "pass": 2, "name": "s81a-control-minimal-end", "sha256": "edcbf1125bafbc1c820f98f43e02279ca373201f20c6a74b65fa5707e4e0b98c", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:12:35+00:00", "staged": "00008__wfv__s81a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s81a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s81b", "pass": 1, "name": "s81b-control-minimal", "sha256": "51a47cf8aa71bae0b68a84f961e57ea19feee999b1c4e9467e733a0d1c84868d", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:14:30+00:00", "staged": "00003__wfv__s81b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s81b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s81b", "pass": 2, "name": "s81b-control-minimal", "sha256": "51a47cf8aa71bae0b68a84f961e57ea19feee999b1c4e9467e733a0d1c84868d", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:15:59+00:00", "staged": "00003__wfv__s81b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s81b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s81b", "pass": 1, "name": "notes-climb-shared", "sha256": "19bb014e0e4cd9f87ed466833787c84817159210be097f9bf595c7fa4d4b355f", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:14:30+00:00", "staged": "00000__wfv__notes-climb-shared.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 21:13:25.076 'Word found unreadable content in 00000__wfv__notes-climb-shared.docx. Do you want to recover the co … ? If you trust the source of this document, click Yes.'", "2026-10-27 21:13:25.841 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … overy converter. (00000__wfv__notes-climb-shared.docx)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__notes-climb-shared.docx; refusing to guess"}
+{"run": "s81b", "pass": 2, "name": "notes-climb-shared", "sha256": "19bb014e0e4cd9f87ed466833787c84817159210be097f9bf595c7fa4d4b355f", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:15:59+00:00", "staged": "00000__wfv__notes-climb-shared.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 21:14:57.273 'Word found unreadable content in 00000__wfv__notes-climb-shared.docx. Do you want to recover the co … ? If you trust the source of this document, click Yes.'", "2026-10-27 21:14:58.209 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … overy converter. (00000__wfv__notes-climb-shared.docx)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__notes-climb-shared.docx; refusing to guess"}
+{"run": "s81b", "pass": 1, "name": "notes-shared-repeat", "sha256": "46101ae0c976cc52865dbc17b4e613e4a302d7337eaffe4acefb444aee26ff32", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:14:30+00:00", "staged": "00001__wfv__notes-shared-repeat.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 21:14:19.565 Microsoft Word, Word found unreadable content in 00001__wfv__notes-shared-repeat.docx. Do you want t … t? If you trust the source of this document, click Yes.", "2026-10-27 21:14:28.275 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … very converter. (00001__wfv__notes-shared-repeat.docx)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s81b", "pass": 2, "name": "notes-shared-repeat", "sha256": "46101ae0c976cc52865dbc17b4e613e4a302d7337eaffe4acefb444aee26ff32", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:15:59+00:00", "staged": "00001__wfv__notes-shared-repeat.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-27 21:15:50.181 Microsoft Word, Word found unreadable content in 00001__wfv__notes-shared-repeat.docx. Do you want t … t? If you trust the source of this document, click Yes."], "error": "repair prompt declined; Word could not read it"}
+{"run": "s81b", "pass": 1, "name": "s81b-control-minimal-end", "sha256": "51a47cf8aa71bae0b68a84f961e57ea19feee999b1c4e9467e733a0d1c84868d", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:14:30+00:00", "staged": "00002__wfv__s81b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s81b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s81b", "pass": 2, "name": "s81b-control-minimal-end", "sha256": "51a47cf8aa71bae0b68a84f961e57ea19feee999b1c4e9467e733a0d1c84868d", "validatorRevision": "cf1a299061fa2cbf1657a62dba2605eb7ba2f583", "observedAt": "2026-10-28T01:15:59+00:00", "staged": "00002__wfv__s81b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s81b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 81 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s81builder.mts`:
+
+```ts
+// Session 81 (2026-10-28): four word-valid blocks a climbing target reaches since #986 (#996, review 285 finding 3).
+// Since 57df0b9a every read-model walk stops a climb past the package root at the root, as Word read notes, styles,
+// header, customXml, comments and officeDocument climbs (sessions 74 to 78). Four consumers then judge parts no Word
+// session has shown reached by a climb: a read footer typed styles (session 53 refused the in-package twin), a malformed
+// core properties part (#409), a malformed eagerly read styles part (session 15) and a notes part a main document and a
+// reached glossary both use (session 67).
+// s81a: a footer holding Foot stored at /footer1.xml, named from word/ by ../../footer1.xml and referenced by the section,
+// typed footer (calibration) and styles; docProps/core.xml named from _rels/.rels by ../docProps/core.xml, well-formed
+// (calibration) and unclosed; a root styles.xml named from word/ by ../../styles.xml, well-formed (calibration) and
+// unclosed; and word/footnotes.xml (footnote 1) that the main document relates and references, with a glossary
+// word/glossary/document.xml whose sidecar relates the same notes part: the glossary reached by
+// ../../word/glossary/document.xml with the notes by ../footnotes.xml (its docPart referencing footnote 1, and, as a
+// calibration, referencing nothing), the glossary reached in-package with the notes by ../../../word/footnotes.xml, and
+// session 67's in-package row repeated.
+// Every row records the validator revision it was judged at (`validatorRevision`); the verdict helper is s67builder.mts's,
+// the glossary s67builder.mts's.
+// The builder empties the chunk's specimens.jsonl once before its row loop (promised on #825), and its src (#985).
+// Run from a worktree root: CHUNK=s81a pnpm exec node --import tsx <this file>
+// (the imports are absolute, so the file needs no copy into the worktree; `git rev-parse` reads the cwd's worktree).
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const WT = process.cwd();
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const { MINIMAL_PARTS, buildDocx } = await import(path.join(WT, "tests/support/minimal-docx.ts"));
+const REVISION = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
+const CT = "[Content_Types].xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const MAIN = P["word/document.xml"]!;
+const overrides = (ct: string, ...pairs: [string, string][]) =>
+    pairs.reduce(
+        (types, [part, type]) => replaceOnce(types, "</Types>", `<Override PartName="/${part}" ContentType="${type}"/></Types>`),
+        ct,
+    );
+const withR = (doc: string) => replaceOnce(doc, `<w:document xmlns:w="${W}"`, `<w:document xmlns:w="${W}" xmlns:r="${R}"`);
+
+/** A footer holding Foot stored at /footer1.xml, named from word/ by ../../footer1.xml, referenced by the section, typed `type`. */
+const climbingFooter = (type: string): Record<string, string> => ({
+    ...P,
+    "word/document.xml": replaceOnce(withR(MAIN), "<w:sectPr>", '<w:sectPr><w:footerReference w:type="default" r:id="rIdF"/>'),
+    "footer1.xml": `${XML_DECL}<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Foot</w:t></w:r></w:p></w:ftr>`,
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdF", "footer", "../../footer1.xml")),
+    [CT]: overrides(P[CT]!, ["footer1.xml", type]),
+});
+
+const CORE_RELATIONSHIP = "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties";
+const CORE_OPEN = `${XML_DECL}<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>S81</dc:title>`;
+/** docProps/core.xml holding `core`, named from _rels/.rels by ../docProps/core.xml. */
+const climbingCore = (core: string): Record<string, string> => ({
+    ...P,
+    "_rels/.rels": appendRels(P["_rels/.rels"]!, `<Relationship Id="rIdP" Type="${CORE_RELATIONSHIP}" Target="../docProps/core.xml"/>`),
+    "docProps/core.xml": core,
+    [CT]: overrides(P[CT]!, ["docProps/core.xml", "application/vnd.openxmlformats-package.core-properties+xml"]),
+});
+
+/** The styles part moved to the root as /styles.xml holding `styles`, named from word/ by ../../styles.xml. */
+const climbingStyles = (styles: string): Record<string, string> => {
+    const parts: Record<string, string> = {
+        ...P,
+        "styles.xml": styles,
+        [SIDECAR]: replaceOnce(P[SIDECAR]!, 'Target="styles.xml"', 'Target="../../styles.xml"'),
+        [CT]: replaceOnce(P[CT]!, 'PartName="/word/styles.xml"', 'PartName="/styles.xml"'),
+    };
+    delete parts["word/styles.xml"];
+    return parts;
+};
+const STYLES_UNCLOSED = replaceOnce(P["word/styles.xml"]!, "</w:styles>", "");
+
+const NOTE_REF = '<w:r><w:footnoteReference w:id="1"/></w:r>';
+const glossaryXml = (usesNote: boolean) =>
+    `${XML_DECL}<w:glossaryDocument xmlns:w="${W}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+    `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+    `<w:docPartBody><w:p><w:r><w:t>Text</w:t></w:r>${usesNote ? NOTE_REF : ""}</w:p></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`;
+/**
+ * word/footnotes.xml holding footnote 1, which the main document relates by footnotes.xml and references, and a glossary
+ * word/glossary/document.xml the main document relates by `glossaryTarget`, whose sidecar relates the same notes part
+ * by `notesTarget`; the glossary's docPart references footnote 1 when `glossaryUsesNote`.
+ */
+const sharedNotes = (glossaryTarget: string, notesTarget: string, glossaryUsesNote: boolean): Record<string, string> => ({
+    ...P,
+    "word/document.xml": replaceOnce(MAIN, "<w:r><w:t>Hello</w:t></w:r>", `<w:r><w:t>Hello</w:t></w:r>${NOTE_REF}`),
+    "word/footnotes.xml": `${XML_DECL}<w:footnotes xmlns:w="${W}"><w:footnote w:id="1"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:footnote></w:footnotes>`,
+    "word/glossary/document.xml": glossaryXml(glossaryUsesNote),
+    "word/glossary/_rels/document.xml.rels": `${XML_DECL}<Relationships xmlns="${PR}">${relationship("rId1", "footnotes", notesTarget)}</Relationships>`,
+    [SIDECAR]: appendRels(
+        P[SIDECAR]!,
+        relationship("rIdN", "footnotes", "footnotes.xml") + relationship("rIdG", "glossaryDocument", glossaryTarget),
+    ),
+    [CT]: overrides(P[CT]!, ["word/footnotes.xml", `${WML}.footnotes+xml`], ["word/glossary/document.xml", `${WML}.document.glossary+xml`]),
+});
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const control = () => buildDocx({ ...P });
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+
+const chunks: Record<string, Row[]> = {
+    s81a: withControls("s81a", [
+        [
+            "footer-climb-calibration",
+            "calibration: a footer holding Foot stored at /footer1.xml, named from word/ by ../../footer1.xml, referenced by the section, typed footer",
+            () => buildDocx(climbingFooter(`${WML}.footer+xml`)),
+        ],
+        [
+            "footer-climb-typed-styles",
+            "#996 E1: the same footer typed styles by its Override",
+            () => buildDocx(climbingFooter(`${WML}.styles+xml`)),
+        ],
+        [
+            "core-climb-calibration",
+            "calibration: docProps/core.xml named from _rels/.rels by ../docProps/core.xml",
+            () => buildDocx(climbingCore(`${CORE_OPEN}</cp:coreProperties>`)),
+        ],
+        ["core-climb-unclosed", "#996 F1: the same core properties part with its root unclosed", () => buildDocx(climbingCore(CORE_OPEN))],
+        [
+            "styles-climb-calibration",
+            "calibration: the styles part stored at /styles.xml, named from word/ by ../../styles.xml (session 75's reading)",
+            () => buildDocx(climbingStyles(P["word/styles.xml"]!)),
+        ],
+        [
+            "styles-climb-unclosed",
+            "#996 G1: the same root styles part with its root unclosed",
+            () => buildDocx(climbingStyles(STYLES_UNCLOSED)),
+        ],
+        [
+            "notes-glossary-climb-shared",
+            "#996 I2: word/footnotes.xml used by the body and by a glossary reached by ../../word/glossary/document.xml, whose sidecar relates it by ../footnotes.xml",
+            () => buildDocx(sharedNotes("../../word/glossary/document.xml", "../footnotes.xml", true)),
+        ],
+        [
+            "notes-glossary-climb-calibration",
+            "calibration: the same, the glossary's docPart referencing no note",
+            () => buildDocx(sharedNotes("../../word/glossary/document.xml", "../footnotes.xml", false)),
+        ],
+        [
+            "notes-climb-shared",
+            "#996 I2': the glossary reached by glossary/document.xml, its sidecar relating the notes by ../../../word/footnotes.xml; both use footnote 1",
+            () => buildDocx(sharedNotes("glossary/document.xml", "../../../word/footnotes.xml", true)),
+        ],
+        [
+            "notes-shared-repeat",
+            "repeat of s67a: the glossary reached by glossary/document.xml, its sidecar relating the notes by ../footnotes.xml; both use footnote 1",
+            () => buildDocx(sharedNotes("glossary/document.xml", "../footnotes.xml", true)),
+        ],
+    ]),
+    // s81a's notes-climb-shared (run 2) and notes-shared-repeat (run 1) each had one run with no Word evidence (an
+    // AppleEvent timeout); s81b runs the two rows again, twice.
+    s81b: withControls("s81b", [
+        [
+            "notes-climb-shared",
+            "#996 I2': the glossary reached by glossary/document.xml, its sidecar relating the notes by ../../../word/footnotes.xml; both use footnote 1",
+            () => buildDocx(sharedNotes("glossary/document.xml", "../../../word/footnotes.xml", true)),
+        ],
+        [
+            "notes-shared-repeat",
+            "repeat of s67a: the glossary reached by glossary/document.xml, its sidecar relating the notes by ../footnotes.xml; both use footnote 1",
+            () => buildDocx(sharedNotes("glossary/document.xml", "../footnotes.xml", true)),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+// A rerun starts from an empty src, so a removed or renamed row leaves no stale specimen for the staging and log-check
+// scripts to pick up (CodeRabbit on #985).
+rmSync(dir, { recursive: true, force: true });
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+    }
+};
+
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-81 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s81a", "s81b")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0], "unknown") if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["issue"] == "control",
+                     # A match needs agreed readings: an unknown row matches nothing (CodeRabbit on #985).
+                     "validatorMatchesWord": agreed and ((all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True))})
+(ROOT / "s81/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-81 parts of docs/plans/evidence/word-probes-2026-10-24.md into s81/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796). The text Word rendered is read from its own
+PDFs with pdftotext, so the narrative's "rendered" claims are checked here.
+"""
+import json
+import subprocess
+import zipfile
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s81a", "s81b")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s81/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def manifest(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return row
+    raise KeyError(file)
+
+
+def run_at(run, file):
+    return datetime.fromisoformat(manifest(run, file)["run_at"]).astimezone(timezone.utc)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+def rendered(run, file):
+    pdf = run / "pdf" / (Path(file).stem + "_byword.pdf")
+    if not pdf.exists():
+        return None
+    return " ".join(subprocess.run(["pdftotext", str(pdf), "-"], check=True, capture_output=True, text=True).stdout.split())
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            record = {"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                      "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                      "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                      "pdf": row["pdf"], "evidence": row["evidence"]}
+            error = manifest(r, s["file"]).get("error")
+            if error:
+                record["error"] = error
+            raw.append(json.dumps(record, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+
+REFUSED = {"footer-climb-typed-styles.docx", "core-climb-unclosed.docx", "styles-climb-unclosed.docx",
+           "notes-glossary-climb-shared.docx", "notes-climb-shared.docx", "notes-shared-repeat.docx"}
+# The two s81a rows a run lost to an AppleEvent timeout, which s81b settles.
+LOST = {("s81a", "notes-climb-shared.docx"): 2, ("s81a", "notes-shared-repeat.docx"): 1}
+# The narrative's claims about outcomes, checked against results.json: every reading Word gave of the refused rows was
+# the recovery offer, and every other row opened clean; word-valid at the probed revision rejects exactly the refused
+# rows, so it matches Word on every row whose readings agree.
+for (label, file), r in results.items():
+    lost = LOST.get((label, file))
+    readings = [x for i, x in enumerate(r["readings"]) if lost is None or i // 2 != lost - 1]
+    if lost is None:
+        assert r["agreed"], (label, file, r)
+    else:
+        assert not r["agreed"] and r["outcome"] == "unknown", (label, file, r)
+        assert r["readings"][2 * (lost - 1):2 * lost] == ["no-evidence", "other"], (label, file, r)
+    assert set(readings) == ({"repair-warning"} if file in REFUSED else {"clean-open"}), (label, file, r)
+    assert r["wordValid"] is (file not in REFUSED), (label, file, r)
+    assert r["validatorMatchesWord"] is (lost is None), (label, file, r)
+for label, file in LOST:
+    assert results[("s81b", file)]["agreed"] and results[("s81b", file)]["outcome"] == "unreadable-content-warning", file
+    # s81b rebuilt the row: the same part names and part bytes as s81a's, in the same order. The archives' hashes
+    # differ, as JSZip stamps each entry with its build time.
+    stored = []
+    for chunk in ("s81a", "s81b"):
+        with zipfile.ZipFile(ROOT / chunk / "src" / file) as z:
+            stored.append([(i.filename, z.read(i)) for i in z.infolist()])
+    assert stored[0] == stored[1], file
+assert agreed == len(rows) - len(LOST) == 14, (agreed, len(rows))
+# Where each run opened each row, from the driver's manifests (in open order, #671). The driver opens in name order.
+ORDER = {
+    "s81a": ["core-climb-calibration.docx", "core-climb-unclosed.docx", "footer-climb-calibration.docx",
+             "footer-climb-typed-styles.docx", "notes-climb-shared.docx", "notes-glossary-climb-calibration.docx",
+             "notes-glossary-climb-shared.docx", "notes-shared-repeat.docx", "s81a-control-minimal-end.docx",
+             "s81a-control-minimal.docx", "styles-climb-calibration.docx", "styles-climb-unclosed.docx"],
+    "s81b": ["notes-climb-shared.docx", "notes-shared-repeat.docx", "s81b-control-minimal-end.docx",
+             "s81b-control-minimal.docx"],
+}
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        opened = [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()]
+        assert opened == ORDER[label], (run, opened)
+# The text Word rendered in each row, both runs: the footer's "Foot" below "Hello", the body note's "1" and "Note", and
+# "Hello" alone elsewhere. A refused row, and a row a run lost, left no PDF.
+RENDERED = {"footer-climb-calibration.docx": "Hello Foot", "notes-glossary-climb-calibration.docx": "Hello1 Note"}
+for label in CHUNKS:
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for file in ORDER[label]:
+            text = rendered(run, file)
+            assert text == (None if file in REFUSED else RENDERED.get(file, "Hello")), (run, file, text)
+for (label, file), n in LOST.items():
+    run = ROOT / label if n == 1 else ROOT / label / "pass2"
+    assert manifest(run, file)["error"] == "Microsoft Word got an error: AppleEvent timed out.", (run, file)
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}", (min(starts), max(ends))
+matches = sum(r["validatorMatchesWord"] for r in results.values())
+out = [
+    f"### Session 81: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {at}",
+    "",
+    "The blocks [#996](https://github.com/jandira-tech/docx-validate/issues/996) asked about. Since #986 every read-model "
+    "walk stops a target climbing past the package root at the root, as Word reads it (sessions 74 to 78), so four checks "
+    "began reading a part named by such a target that they had not read before: the content-type checks, the XML syntax "
+    "check, and `word-shared-story-part`. Whether Word then refuses the part for the reason it refuses the in-package twin "
+    "was unprobed. Chunk s81a stores a footer holding `Foot` at `/footer1.xml`, named from `word/` by `../../footer1.xml` "
+    "and referenced by the section, typed footer (calibration) and typed styles by its Override (E1); `docProps/core.xml` "
+    "named from `_rels/.rels` by `../docProps/core.xml`, well-formed (calibration) and with its root unclosed (F1); the "
+    "styles part stored at `/styles.xml` and named from `word/` by `../../styles.xml`, well-formed (calibration, session "
+    "75's reading) and with its root unclosed (G1); `word/footnotes.xml` used by the body and by a glossary reached by "
+    "`../../word/glossary/document.xml` whose sidecar relates it by `../footnotes.xml` (I2), and the same glossary using "
+    "no note (calibration); the glossary reached by `glossary/document.xml` relating the notes by "
+    "`../../../word/footnotes.xml`, both roots using footnote 1 (I2'); and a repeat of session 67's in-package shared "
+    "notes row. Chunk s81b rebuilt I2' and the repeat and ran them again, as one run of each was lost in s81a (below): "
+    "the same parts, byte for byte, in the same order, though the archives' hashes differ, as JSZip stamps each entry "
+    "with its build time. Each "
+    "chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its "
+    "own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both "
+    f"runs and both readings agree, and `unknown` otherwise; {agreed} of {len(rows)} rows agree. The two times in "
+    "Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder "
+    f"recorded the validator revision in every row (`{rev}`).",
+    "",
+    "The driver opens files in name order. In s81a, the first run lost the repeat and the second run lost I2' to an "
+    "AppleEvent timeout (`Microsoft Word got an error: AppleEvent timed out.`, no log evidence and no PDF), so those two "
+    "rows are `unknown` there, though each of their three other readings was the recovery offer; s81b ran both twice "
+    "and every reading was the recovery offer. Every calibration and control opened clean. The footer calibration's PDF "
+    "holds `Hello Foot`, so Word read the footer at the root; the notes calibration's holds `Hello1 Note`, the body's "
+    "note; every other clean row's holds `Hello` (`pdftotext`, both runs). No refused row left a PDF.",
+    "",
+    "- **A read footer typed styles (E1).** Word offered recovery, as session 53 did for the in-package twin, and opened "
+    "the footer-typed calibration clean, rendering `Foot`.",
+    "- **An unclosed part read at the root (F1, G1).** Word offered recovery for the unclosed core properties part and "
+    "the unclosed root styles part, as for an in-package malformed part (#409; session 15), and opened both well-formed "
+    "calibrations clean.",
+    "- **A notes part both roots use through a climbing target (I2, I2').** Word offered recovery whether the glossary "
+    "was reached, or related the notes part, by a climbing target, as session 67 did in-package (its repeat here was "
+    "refused too), and opened clean the climbing glossary that uses no note.",
+    "",
+    f"Word-valid at {at} rejects each refused row with the finding #996 asked about — "
+    "`word-part-content-type-mismatch` at `footer1.xml`, `xml-syntax` at `docProps/core.xml` and at `styles.xml`, "
+    "`word-shared-story-part` at `word/footnotes.xml` — and accepts every calibration, so it matches Word on "
+    f"{matches} of {len(rows)} rows, every row whose readings agree. "
+    "[#996](https://github.com/jandira-tech/docx-validate/issues/996) pins these rows in each check's tests.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 81</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 81 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s81builder.mts", ROOT / "s81builder.mts", "ts"), ("compare.py", ROOT / "s81/compare.py", "python"),
+                         ("section.py", ROOT / "s81/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s81/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed,", matches, "match")
+`````
+
+</details>
