@@ -6,6 +6,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- Pin the two scopes #1155 changed that no row held ([#1162](https://github.com/jandira-tech/docx-validate/issues/1162)). Tests only. Review 1156 F2 found the gaps; #1164 fixed its F1.
+    - `mce-malformed` in a related footnotes part whose only reference sits in a used header warns, in a full and a `--checks` run, and blocks when the body references the part. Session 86 (s86c) showed Word both.
+    - `wordPossiblyReadParts` does not list a reached glossary's related comments, footnotes or endnotes part whose only reference sits in the glossary's used header, and lists it when the docPartBody references it. An integration row has `mce-must-understand` warn in the first comments part and block in the second. Session 86 (s86b) showed Word both.
+    - The sweep's three mutations each fail a new row: `mce-malformed` kept blocking in a header-referenced notes part, a glossary's comments and notes use left undecided, and the exception skipping a reached glossary's sidecar.
 - Record Word session 86 and cite it where the docs said the placements #1155 and #1158 decide were unprobed ([#1164](https://github.com/jandira-tech/docx-validate/issues/1164)). Docs only. Review 1156 F4 asked for the probe, and its F1 (#1162) found the #1155 bullet reading the footer-held reference as observed.
     - s86a: Word opened clean a footnotes, endnotes or comments part with an unknown root `mc:MustUnderstand` whose only reference sits in a used footer, and offered recovery for each referenced from the body.
     - s86b: Word reads a reached glossary's used header: it offered recovery for one carrying the attribute. It opened clean a glossary notes or comments part only that header references, and offered recovery for each referenced from the docPartBody.

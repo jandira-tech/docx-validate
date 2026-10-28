@@ -646,6 +646,91 @@ describe("markup compatibility in a word/ part Word does not read warns under wo
         },
     );
 
+    // #1162 (review 1156 F2), session 86 s86c: malformed compatibility follows
+    // the same rule. Word opened clean an undeclared-Requires Choice in a
+    // footnotes part only a read header references, and refused it referenced
+    // from the body.
+    const withMalformedFootnotes = (parts: Parts): Parts => {
+        const out: Parts = new Map(parts);
+        out.set(
+            "word/footnotes.xml",
+            `${DECL}<w:footnotes xmlns:w="${W}" xmlns:mc="${MC}"><w:footnote w:id="1"><w:p><mc:AlternateContent>` +
+                `<mc:Choice Requires="zz"><w:r><w:t>A</w:t></w:r></mc:Choice><mc:Fallback/></mc:AlternateContent></w:p></w:footnote></w:footnotes>`,
+        );
+        return out;
+    };
+    it.each(RUNS)(
+        "%s run warns for mce-malformed in a related footnotes part only a used header references, and blocks it body-referenced (session 86, #1162)",
+        async (_label, checks) => {
+            const header = withMalformedFootnotes(notesWithHeaderReference("footnotes", "", '<w:footnoteReference w:id="1"/>', true));
+            expect((await mceRun(header, "word-valid", checks)).mce).toEqual(["mce-malformed:warning@word/footnotes.xml"]);
+            const body = withMalformedFootnotes(notesWithHeaderReference("footnotes", "", "", false));
+            body.set(
+                MAIN,
+                once(textOf(body, MAIN), "<w:t>Hello</w:t></w:r>", '<w:t>Hello</w:t></w:r><w:r><w:footnoteReference w:id="1"/></w:r>'),
+            );
+            expect((await mceRun(body, "word-valid", checks)).mce).toEqual(["mce-malformed:error@word/footnotes.xml"]);
+        },
+    );
+
+    // #1162 (review 1156 F2), session 86 s86b: a reached glossary decides the
+    // same way. Word reads its used header, opened clean a related comments
+    // part only that header references, and refused it docPartBody-referenced.
+    const glossaryComments = (headerRun: string, bodyRun: string): Parts => {
+        const parts = minimal();
+        parts.set(
+            MAIN_RELS,
+            once(
+                textOf(parts, MAIN_RELS),
+                "</Relationships>",
+                `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/></Relationships>`,
+            ),
+        );
+        parts.set(
+            "word/glossary/document.xml",
+            `${DECL}<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+                `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E86}"/></w:docPartPr>` +
+                `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r>${bodyRun}</w:p><w:sectPr><w:headerReference w:type="default" r:id="rIdH"/></w:sectPr></w:docPartBody>` +
+                `</w:docPart></w:docParts></w:glossaryDocument>`,
+        );
+        parts.set(
+            "word/glossary/_rels/document.xml.rels",
+            `${DECL}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                `<Relationship Id="rIdH" Type="${R}/header" Target="header1.xml"/><Relationship Id="rIdC" Type="${R}/comments" Target="comments.xml"/></Relationships>`,
+        );
+        parts.set(
+            "word/glossary/header1.xml",
+            `${DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Glossary header</w:t></w:r>${headerRun}</w:p></w:hdr>`,
+        );
+        parts.set(
+            "word/glossary/comments.xml",
+            `${DECL}<w:comments xmlns:w="${W}" xmlns:mc="${MC}" xmlns:foo="urn:foo" mc:MustUnderstand="foo"><w:comment w:id="0" w:author="A"><w:p/></w:comment></w:comments>`,
+        );
+        parts.set(
+            CT,
+            once(
+                textOf(parts, CT),
+                "</Types>",
+                `<Override PartName="/word/glossary/document.xml" ContentType="${WML}.document.glossary+xml"/>` +
+                    `<Override PartName="/word/glossary/header1.xml" ContentType="${WML}.header+xml"/>` +
+                    `<Override PartName="/word/glossary/comments.xml" ContentType="${WML}.comments+xml"/></Types>`,
+            ),
+        );
+        return parts;
+    };
+    it.each(RUNS)(
+        "%s run warns for mce-must-understand in a reached glossary's comments part only its used header references, and blocks it docPartBody-referenced (session 86, #1162)",
+        async (_label, checks) => {
+            const reference = '<w:r><w:commentReference w:id="0"/></w:r>';
+            expect((await mceRun(glossaryComments(reference, ""), "word-valid", checks)).mce).toEqual([
+                "mce-must-understand:warning@word/glossary/comments.xml",
+            ]);
+            expect((await mceRun(glossaryComments("", reference), "word-valid", checks)).mce).toEqual([
+                "mce-must-understand:error@word/glossary/comments.xml",
+            ]);
+        },
+    );
+
     it.each(
         RUNS.flatMap(([label, checks]) => NOTE_KINDS.map(([kind, body, reference]) => [kind, label, checks, body, reference] as const)),
     )(

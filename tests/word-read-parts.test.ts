@@ -2256,6 +2256,37 @@ describe("wordPossiblyReadParts (#1116, #1125)", () => {
         },
     );
 
+    // #1162 (review 1156 F2), session 86 s86b: a reached glossary decides its
+    // comments and notes use the same way. Word reads its used header, and
+    // opened clean each kind only that header references.
+    it.each(NOTE_SEGMENTS)(
+        "does not list a reached glossary's related %s part only its used header references, and lists it docPartBody-referenced (session 86, #1162)",
+        async (segment) => {
+            const glossaryParts = (headerRun: string, bodyRun: string): Parts => {
+                const parts = storyViaGlossary(
+                    "header",
+                    holding("header", headerRun),
+                    glossaryWith(bodyRun, '<w:headerReference w:type="default" r:id="rIdH"/>'),
+                    relsPart(
+                        `<Relationship Id="rIdH" Type="${R}/header" Target="${STORY_FILE.header}"/>` +
+                            `<Relationship Id="rIdS" Type="${R}/${segment}" Target="${STORY_FILE[segment]}"/>`,
+                    ),
+                );
+                return {
+                    ...parts,
+                    [`word/glossary/${STORY_FILE[segment]}`]: WELLFORMED_STORY[segment],
+                    "[Content_Types].xml": (parts["[Content_Types].xml"] as string).replace(
+                        "</Types>",
+                        `<Override PartName="/word/glossary/${STORY_FILE[segment]}" ContentType="${CT[segment]}"/></Types>`,
+                    ),
+                };
+            };
+            const story = canonicalPartName(`word/glossary/${STORY_FILE[segment]}`);
+            expect(await named(glossaryParts(NOTE_REFERENCE[segment], ""))).not.toContain(story);
+            expect(await named(glossaryParts("<w:t>No reference</w:t>", `<w:r>${NOTE_REFERENCE[segment]}</w:r>`))).toContain(story);
+        },
+    );
+
     it.each(NOTE_SEGMENTS)(
         "does not list a related %s part the main document does not use when a used header fails the byte-level XML checks (#1155)",
         async (segment) => {
