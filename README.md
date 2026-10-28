@@ -994,8 +994,17 @@ session 61 (s61a/s61b, same evidence, two runs, all readings agree) offered
 recovery for a body reference whose note sat only in a `word/footnotes.xml` or
 `word/endnotes.xml` no relationship names, while the same part with nothing
 referencing it opened clean
-([#797](https://github.com/jandira-tech/docx-validate/issues/797)). Both note
-checks read references from the parts Word reads, found by relationship
+([#797](https://github.com/jandira-tech/docx-validate/issues/797)). References
+read through the main document (the main document and the stories it makes
+Word read) use only the notes parts its own relationships name: session 63
+(s63c, same evidence, two runs, all readings agree) offered recovery for a
+body footnote reference whose note only a reached glossary's notes part
+defines, while the main-related matching calibration opened clean
+([#828](https://github.com/jandira-tech/docx-validate/issues/828)). The endnotes
+twin is unprobed; generalising from footnotes follows #793's footnote-to-endnote
+reading. References read through a reached glossary keep the union of the main
+document's and reached glossaries' definitions; that reading is unprobed.
+Both note checks read references from the parts Word reads, found by relationship
 wherever stored (the main document, a reached glossary and the stories they
 make Word read), so a story-named part no relationship reaches is judged for
 none ([#800](https://github.com/jandira-tech/docx-validate/issues/800)):

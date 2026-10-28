@@ -25,9 +25,13 @@
  * the parts their relationships name, so the former basename reading is
  * gone (#797). The relationship walks are ungated by usage, so a
  * related-but-unused part defines its ids too — this set only adds
- * definitions, never a rejection. The union over the main document's and
- * reached glossaries' relationships is unprobed for a main-body reference
- * satisfied only by a glossary's notes part.
+ * definitions, never a rejection. References read through the main document
+ * use only its own relationships' definitions: session 63 (s63c) offered
+ * recovery for a body footnote reference whose note only a reached glossary's
+ * notes part defines, while the main-related matching calibration opened
+ * clean (#828). The endnotes twin is unprobed; it follows #793's shared
+ * footnote-to-endnote reading. References read through a reached glossary
+ * keep the union of both sets of definitions; that reading is unprobed.
  *
  * The references are read from the parts Word reads, as the read model
  * (`wordReadTypedTargets`) resolves them, wherever they are stored: every
@@ -114,8 +118,8 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
                 }
             }
         };
-        // The references one part holds, each judged against `defined`.
-        const judged = (xmlFile: string): void => {
+        // The references one part holds, each judged against its definitions.
+        const judged = (xmlFile: string, definitions: ReadonlySet<string | bigint>): void => {
             const parsed = ctx.effectiveXml(xmlFile);
             if (!parsed?.ok) {
                 return;
@@ -130,7 +134,7 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
                 const refs = getElementsByTagNameNSAll(dom, ns, `${kind}Reference`);
                 for (const entry of refs) {
                     const id = entry?.getAttributeNS(ns, "id");
-                    if (!id || defined.has(noteIdKey(id))) {
+                    if (!id || definitions.has(noteIdKey(id))) {
                         continue;
                     }
                     issues.push({
@@ -168,7 +172,7 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
                 if (/^(header|footer)\d*\.xml$/i.test(path.posix.basename(xmlFile))) {
                     continue;
                 }
-                judged(xmlFile);
+                judged(xmlFile, defined);
             }
             return issues;
         }
@@ -183,6 +187,10 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
         for (const target of await wordTypedRelationshipTargets(ctx, new Set([segment]), profile)) {
             collect(target.part);
         }
+        // Main-document references cannot use a glossary's definitions
+        // (session 63 s63c, #828). Glossary references keep the union,
+        // whose reading remains unprobed.
+        const mainDefined = new Set(defined);
         for (const target of await glossaryTypedRelationshipTargets(ctx, new Set([segment]), profile)) {
             collect(target.part);
         }
@@ -212,7 +220,7 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
                 continue;
             }
             seen.add(canonical);
-            judged(target.part);
+            judged(target.part, target.via === "glossary" ? defined : mainDefined);
         }
 
         return issues;

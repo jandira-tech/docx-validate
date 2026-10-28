@@ -235,6 +235,106 @@ describe("standard-name notes parts no relationship names (#797, session 61 s61a
     );
 });
 
+describe("notes defined only through a reached glossary (#828, session 63 s63c)", { timeout: 30000 }, () => {
+    /** The s63c builder's `glossaryWithFootnotes`; the endnotes twin is unprobed. */
+    const glossaryWithNotes = (kind: "footnote" | "endnote"): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/glossary/document.xml":
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+            '<w:glossaryDocument xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>' +
+            '<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>' +
+            "<w:docPartBody><w:p><w:r><w:t>Text</w:t></w:r></w:p></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>",
+        "word/glossary/_rels/document.xml.rels":
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+            `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/${kind}s" Target="${kind}s.xml"/></Relationships>`,
+        [`word/glossary/${kind}s.xml`]:
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+            `<w:${kind}s xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+            `<w:${kind} w:id="1"><w:p><w:r><w:t>Text</w:t></w:r></w:p></w:${kind}></w:${kind}s>`,
+        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            '<Relationship Id="rIdG" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/glossaryDocument" Target="glossary/document.xml"/></Relationships>',
+        ),
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            '<Override PartName="/word/glossary/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml"/>' +
+                `<Override PartName="/word/glossary/${kind}s.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${kind}s+xml"/></Types>`,
+        ),
+    });
+
+    it.each([
+        ["footnote", "full"],
+        ["footnote", "selected"],
+        ["endnote", "full"],
+        ["endnote", "selected"],
+    ] as const)("rejects the body %s reference defined only by the glossary in a %s run", async (kind, mode) => {
+        await withTempDir(async (dir) => {
+            const code = `word-${kind}-reference-missing`;
+            const parts = glossaryWithNotes(kind);
+            const file = path.join(dir, "glossary-only-notes.docx");
+            await writeFile(
+                file,
+                await buildDocx({
+                    ...parts,
+                    "word/document.xml": parts["word/document.xml"]!.replace(
+                        "</w:r></w:p>",
+                        `</w:r><w:r><w:${kind}Reference w:id="1"/></w:r></w:p>`,
+                    ),
+                }),
+            );
+            const result = await validate(file, { profile: "word-valid", ...(mode === "selected" ? { checks: [code] } : {}) });
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([
+                expect.objectContaining({
+                    code,
+                    path: "word/document.xml",
+                    message: expect.stringContaining(`${kind} reference uses id 1`),
+                }),
+            ]);
+            expect(result.valid).toBe(false);
+        });
+    });
+
+    it.each([
+        ["footnote", "glossary"],
+        ["endnote", "glossary"],
+        ["footnote", "main"],
+        ["endnote", "main"],
+    ] as const)("keeps the glossary's own %s reference satisfied by the %s notes (unprobed)", async (kind, owner) => {
+        await withTempDir(async (dir) => {
+            const code = `word-${kind}-reference-missing`;
+            const parts = glossaryWithNotes(kind);
+            if (owner === "main") {
+                parts[`word/${kind}s.xml`] = parts[`word/glossary/${kind}s.xml`]!;
+                delete parts[`word/glossary/${kind}s.xml`];
+                delete parts["word/glossary/_rels/document.xml.rels"];
+                parts["word/_rels/document.xml.rels"] = parts["word/_rels/document.xml.rels"]!.replace(
+                    "</Relationships>",
+                    `<Relationship Id="rIdN" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/${kind}s" Target="${kind}s.xml"/></Relationships>`,
+                );
+                parts["[Content_Types].xml"] = parts["[Content_Types].xml"]!.replace(`/word/glossary/${kind}s.xml`, `/word/${kind}s.xml`);
+            }
+            const file = path.join(dir, "glossary-reference.docx");
+            await writeFile(
+                file,
+                await buildDocx({
+                    ...parts,
+                    "word/glossary/document.xml": parts["word/glossary/document.xml"]!.replace(
+                        "</w:r></w:p>",
+                        `</w:r><w:r><w:${kind}Reference w:id="1"/></w:r></w:p>`,
+                    ),
+                }),
+            );
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+            const selected = await validate(file, { profile: "word-valid", checks: [code] });
+            expect(selected.valid).toBe(true);
+            expect(selected.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+        });
+    });
+});
+
 describe("a main document stored under another name (#800, session 62 s62a)", { timeout: 30000 }, () => {
     /** The #800 builder's `notesXml`: a notes part holding the note `held`, stored under its standard name. */
     const notesXml = (kind: "footnote" | "endnote", held: string): string =>
