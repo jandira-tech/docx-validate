@@ -319,6 +319,12 @@ export const isWordBlockingIssue = (
         // Word session 58 (s58a) offers recovery for a dangling endnote
         // reference; the matching-id calibration opens clean (#784).
         case "word-endnote-reference-missing":
+        // Word session 66 (s66a) offers recovery for a comments part both
+        // the main document and a reached glossary read, and session 67
+        // (s67a) for the shared footnotes part and its endnotes twin — each
+        // used by both roots; related by both but used by one, or by
+        // neither, opens clean (#850).
+        case "word-shared-story-part":
         // Both root-caused against real Word (minimal-repair + re-probe) and
         // verified disjoint from the Word-clean corpus (0/350): an unresolved
         // DocumentBuilder <Insert> directive -> OPEN_ERROR; a docProps boolean

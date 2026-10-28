@@ -513,7 +513,7 @@ names and input bytes unchanged.
 | `package`                 | `zip-bytes-after-eocd`, `zip-bytes-before-archive`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, `opc-part-name-word-refused`, `opc-item-name-refused`                                                                                                                                                                                                                                                                                              |
 | `math`, `tracked-changes` | `word-math-run-insertion`, `word-math-run-deletion`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `math`                    | `word-math-parse`, `word-math-spre-body`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-endnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`                                                                                                                                                      |
+| `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-endnote-reference-missing`, `word-shared-story-part`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`                                                                                                                            |
 | `tables`                  | `word-grid-column-attributes`, `word-cell-margin-order`, `word-table-properties-required`, `word-table-properties-misplaced`, `word-row-without-cell`, `word-cell-ends-with-table`                                                                                                                                                                                                                                                                                                                                                 |
 | `drawings`                | `word-textbox-content-namespace`, `word-drawing-extent-missing`, `word-drawing-extent-misplaced`, `word-picture-nvpicpr-missing`, `word-picture-sppr-missing`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-position-offset-and-align`, `word-drawing-scalar-whitespace`, `word-drawing-arc-radius`, `word-drawing-extent-negative`, `word-part-reference-relationship`                                                                                                                                            |
 | `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`, `word-part-content-type-generic`, `word-part-content-type-inexact`, `word-part-content-type-mismatch`, `word-part-content-type-unrecognized`                                                                                                                                                                                                                              |
@@ -1073,6 +1073,26 @@ calibration opened clean
 ([#830](https://github.com/jandira-tech/docx-validate/issues/830)). Other
 rules' relationship resolution keeps dropping an escaping target; those
 readings are unprobed.
+
+`word-shared-story-part` rejects a comments, footnotes or endnotes part that
+the read model lists for both a main-document entry and a glossary entry
+(`wordReadTypedTargets`, so the usage gate is the model's own): Word session 66
+(s66a in `docs/plans/evidence/word-probes-2026-10-24.md`, two runs, all four
+readings agree) offered recovery for a `word/comments.xml` the main document
+and a reached glossary both relate and reference — its comment holding
+nothing but text — while the same part read by the main document alone or by
+the glossary alone opened clean, and session 67 (s67a, same evidence, same
+readings) showed the refusal needs both roots to use the part — related by
+both but referenced by one, or by neither, opens clean — and covers notes
+parts too: a `word/footnotes.xml` the glossary relates as `../footnotes.xml`
+and both roots reference is refused, as is its endnotes twin, while the same
+part referenced by the body only opens clean
+([#850](https://github.com/jandira-tech/docx-validate/issues/850)). The
+finding cites session 66 for comments and session 67 for footnotes and
+endnotes, and reports the part through the main document's spelling. Shared
+header and footer parts, a part two glossaries share, and a part one root
+reads under one of these segments and the other under another are unprobed
+and unjudged.
 
 Named `word-math-parse` runs and full runs that cannot stage the archive retain
 the positioned XML diagnostics without repeating `word-math-parse` for the same

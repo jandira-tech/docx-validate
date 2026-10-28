@@ -160,6 +160,10 @@ describe("isWordBlockingIssue", () => {
         "word-duplicate-footnotes-relationship",
         "word-numbering-picture-bullet",
         "word-footnote-reference-missing",
+        // Word session 66 (s66a) offers recovery for a comments part both
+        // the main document and a reached glossary use, and session 67
+        // (s67a) for the shared footnotes part and its endnotes twin (#850).
+        "word-shared-story-part",
         "documentbuilder-insert-unresolved",
         "docprops-boolean-invalid",
         // Word 16.115 offers recovery for every duplicate spelling probed (#351).

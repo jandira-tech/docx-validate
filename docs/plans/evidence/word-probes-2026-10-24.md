@@ -21131,3 +21131,2096 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
 `````
 
 </details>
+
+### Session 65: 23:08Z–23:13Z on 2026-10-26, validator columns at 1dd3500b
+
+The Word questions the adversarial review of layers 211–216 raised ([#847](https://github.com/jandira-tech/docx-validate/issues/847), [#848](https://github.com/jandira-tech/docx-validate/issues/848), [#849](https://github.com/jandira-tech/docx-validate/issues/849)). Four chunks, each opening and closing with the minimal control. Each ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 29 of 29 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`1dd3500b331b8a0cafa774b9dc109242222c5b9f`).
+
+- **Nested note references (s65a, #849).** Footnote 1, whose paragraph also holds a footnote reference to 99 that no part defines, opens clean whether its notes part is reached by the escaping `../../footnotes.xml` (the note at `/footnotes.xml`) or related in-package as `word/footnotes.xml`. The endnotes twins (an endnote reference to 99 inside endnote 1) open clean too, as does the escaping calibration with no nested reference (session 64's row, repeated). Word-valid rejects both in-package rows: two false positives.
+- **The read comments part typed styles (s65b–s65d, #847).** A used `word/comments.xml` typed exactly with the styles type gets the recovery offer in every shape this session stored: session 63's s63b AlternateContent root (repeated); the same with text before the `w:comments` root inside the Choice, with text in the Fallback, or with text between the Choice and the Fallback; with the Choice requiring `w` instead of `w14`; with an ISO Strict `w:comments` root inside the Choice; and with an ISO Strict root stored directly, in a Transitional package. Each matching calibration typed comments opens clean, except the text between the branches, which Word refuses typed comments too. Word-valid rejects every styles-typed row, citing session 63 or 58, and accepts the between-text calibration: one false negative.
+- **A comments part with a footnote reference only a glossary defines (s65d, #848).** A comment holding a footnote reference to 1, which only the reached glossary's notes part defines, opens clean when only the main document reads the comments part, and when only the glossary reads it; read by both, it gets the recovery offer. Word-valid rejects the main-only row (a false positive) and the shared row. Session 66 separates the causes.
+
+| Run    | Observed             | Specimen                                                | Shape                                                                                                                                                                                          | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at 1dd3500b                     | strict at 1dd3500b                                                                                                                                        |
+| ------ | -------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `s65a` | 23:08:21Z, 23:08:34Z | `s65a-control-minimal`                                  | control                                                                                                                                                                                        | `98a6d76275a2bb1f` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                                                                                                                                     |
+| `s65a` | 23:08:21Z, 23:08:34Z | `footnotes-escaping-nested-dangling`                    | the only footnotes relationship targets ../../footnotes.xml from word/; /footnotes.xml holds footnote 1, whose paragraph also holds a footnote reference to 99; the body references footnote 1 | `31bc40730cddb26b` | clean-open     | clean-open     | clean-open                 | valid                                      | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing`                                                              |
+| `s65a` | 23:08:21Z, 23:08:34Z | `footnotes-in-package-nested-dangling`                  | the same notes part as word/footnotes.xml, related in-package: footnote 1 holds a footnote reference to 99; the body references footnote 1                                                     | `348f7e65ab3543ee` | clean-open     | clean-open     | clean-open                 | invalid: `word-footnote-reference-missing` | invalid: `paraid-missing-element`, `word-footnote-reference-missing`                                                                                      |
+| `s65a` | 23:08:21Z, 23:08:34Z | `endnotes-escaping-nested-dangling`                     | endnotes twin: ../../endnotes.xml; /endnotes.xml holds endnote 1, whose paragraph also holds an endnote reference to 99                                                                        | `a6f290e3ba6e1826` | clean-open     | clean-open     | clean-open                 | valid                                      | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing`                                                              |
+| `s65a` | 23:08:21Z, 23:08:34Z | `endnotes-in-package-nested-dangling`                   | endnotes twin, in-package word/endnotes.xml: endnote 1 holds an endnote reference to 99                                                                                                        | `f7c1796871eb13f3` | clean-open     | clean-open     | clean-open                 | invalid: `word-endnote-reference-missing`  | invalid: `paraid-missing-element`, `word-endnote-reference-missing`                                                                                       |
+| `s65a` | 23:08:21Z, 23:08:34Z | `footnotes-escaping-no-nested-calibration`              | calibration (repeat of s64a): ../../footnotes.xml; /footnotes.xml holds footnote 1 and nothing else; the body references footnote 1                                                            | `bd993358479dd506` | clean-open     | clean-open     | clean-open                 | valid                                      | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing`                                                              |
+| `s65a` | 23:08:21Z, 23:08:34Z | `s65a-control-minimal-end`                              | control                                                                                                                                                                                        | `98a6d76275a2bb1f` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                                                                                                                                     |
+| `s65b` | 23:08:57Z, 23:09:24Z | `s65b-control-minimal`                                  | control                                                                                                                                                                                        | `9bde15427bfaf236` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                                                                                                                                     |
+| `s65b` | 23:08:57Z, 23:09:24Z | `comments-root-alternate-styles-s63b-repeat`            | repeat of s63b: word/comments.xml's stored root is mc:AlternateContent whose w14 Choice holds the w:comments root, Fallback empty; typed styles                                                | `cb91c163a7dc1b84` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch` | invalid: `word-part-content-type-mismatch`, `comment-thread-count-mismatch`, `paraid-missing-element`, `mce-malformed`                                    |
+| `s65b` | 23:08:57Z, 23:09:24Z | `comments-alternate-choice-text-styles`                 | s63b's shape with text before the w:comments root inside the Choice; typed styles                                                                                                              | `da7c0dbd145f7bc6` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch` | invalid: `word-part-content-type-mismatch`, `comment-thread-count-mismatch`, `paraid-missing-element`, `mce-malformed`, `xsd-summary`, `xsd-error`        |
+| `s65b` | 23:08:57Z, 23:09:24Z | `comments-alternate-choice-text-comments-calibration`   | calibration: the same, typed comments                                                                                                                                                          | `9404335f3fa40f0c` | clean-open     | clean-open     | clean-open                 | valid                                      | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `mce-malformed`, `xsd-summary`, `xsd-error`                                           |
+| `s65b` | 23:08:57Z, 23:09:24Z | `comments-alternate-fallback-text-styles`               | s63b's shape with text in the Fallback; typed styles                                                                                                                                           | `9313171dd0e6469a` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch` | invalid: `word-part-content-type-mismatch`, `comment-thread-count-mismatch`, `paraid-missing-element`, `mce-malformed`, `xsd-summary`, `xsd-error`        |
+| `s65b` | 23:08:57Z, 23:09:24Z | `comments-alternate-fallback-text-comments-calibration` | calibration: the same, typed comments                                                                                                                                                          | `83a9842735c95eff` | clean-open     | clean-open     | clean-open                 | valid                                      | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `mce-malformed`, `xsd-summary`, `xsd-error`                                           |
+| `s65b` | 23:08:57Z, 23:09:24Z | `s65b-control-minimal-end`                              | control                                                                                                                                                                                        | `764f240c9c6f4840` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                                                                                                                                     |
+| `s65c` | 23:10:27Z, 23:12:25Z | `s65c-control-minimal`                                  | control                                                                                                                                                                                        | `764f240c9c6f4840` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                                                                                                                                     |
+| `s65c` | 23:10:27Z, 23:12:25Z | `comments-alternate-between-text-styles`                | s63b's shape with text between the Choice and the Fallback; typed styles                                                                                                                       | `a1cff64f1edf12ef` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch` | invalid: `word-part-content-type-mismatch`, `comment-thread-count-mismatch`, `paraid-missing-element`, `mce-malformed`, `xsd-summary`, `xsd-error`        |
+| `s65c` | 23:10:27Z, 23:12:25Z | `comments-alternate-between-text-comments-calibration`  | calibration: the same, typed comments                                                                                                                                                          | `ca6f47a1785d5ef4` | repair-warning | repair-warning | unreadable-content-warning | valid                                      | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `mce-malformed`, `xsd-summary`, `xsd-error`                                           |
+| `s65c` | 23:10:27Z, 23:12:25Z | `comments-alternate-requires-w-styles`                  | s63b's shape with the Choice requiring w (the WordprocessingML main namespace) instead of w14; typed styles                                                                                    | `61737bfdc9ebefe7` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch` | invalid: `word-part-content-type-mismatch`, `comment-thread-count-mismatch`, `paraid-missing-element`                                                     |
+| `s65c` | 23:10:27Z, 23:12:25Z | `comments-alternate-requires-w-comments-calibration`    | calibration: the same, typed comments                                                                                                                                                          | `9a7f859bf776c6f4` | clean-open     | clean-open     | clean-open                 | valid                                      | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`                                                                                        |
+| `s65c` | 23:10:27Z, 23:12:25Z | `comments-alternate-strict-root-styles`                 | s63b's shape with an ISO Strict w:comments root in the Choice (Transitional main document); typed styles                                                                                       | `693fab1366b18a6c` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch` | invalid: `word-part-content-type-mismatch`, `comment-thread-count-mismatch`, `paraid-missing-element`, `mce-malformed`, `xsd-summary`, `xsd-error`        |
+| `s65c` | 23:10:27Z, 23:12:25Z | `comments-alternate-strict-root-comments-calibration`   | calibration: the same, typed comments                                                                                                                                                          | `e2f0a2d9ac7dd3e1` | clean-open     | clean-open     | clean-open                 | valid                                      | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `mce-malformed`, `xsd-summary`, `xsd-error`                                           |
+| `s65c` | 23:10:27Z, 23:12:25Z | `s65c-control-minimal-end`                              | control                                                                                                                                                                                        | `764f240c9c6f4840` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                                                                                                                                     |
+| `s65d` | 23:12:59Z, 23:13:34Z | `s65d-control-minimal`                                  | control                                                                                                                                                                                        | `764f240c9c6f4840` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                                                                                                                                     |
+| `s65d` | 23:12:59Z, 23:13:34Z | `comments-strict-root-styles`                           | word/comments.xml's stored root is an ISO Strict w:comments (Transitional main document); typed styles                                                                                         | `decae62819f72270` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch` | invalid: `word-part-content-type-mismatch`, `comment-thread-count-mismatch`, `paraid-missing-element`                                                     |
+| `s65d` | 23:12:59Z, 23:13:34Z | `comments-strict-root-comments-calibration`             | calibration: the same, typed comments                                                                                                                                                          | `11aea989e4cfbfaa` | clean-open     | clean-open     | clean-open                 | valid                                      | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`                                                                                        |
+| `s65d` | 23:12:59Z, 23:13:34Z | `comments-footnote-glossary-only-main-reach`            | word/comments.xml, read by the main document only, holds a footnote reference to 1; only the reached glossary's notes part defines footnote 1                                                  | `4bf6c361bb811389` | clean-open     | clean-open     | clean-open                 | invalid: `word-footnote-reference-missing` | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `paraid-missing-element`, `paraid-missing-element`, `word-footnote-reference-missing` |
+| `s65d` | 23:12:59Z, 23:13:34Z | `comments-footnote-glossary-only-glossary-reach`        | the same comments part read by the glossary only (its docPart references comment 0; its sidecar relates ../comments.xml)                                                                       | `3f301c8e5ee478bd` | clean-open     | clean-open     | clean-open                 | valid                                      | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `paraid-missing-element`, `paraid-missing-element`                                    |
+| `s65d` | 23:12:59Z, 23:13:34Z | `comments-footnote-glossary-only-both-reaches`          | the same comments part read by both the main document and the glossary                                                                                                                         | `acb8ee294d8ce6ec` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-footnote-reference-missing` | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `paraid-missing-element`, `paraid-missing-element`, `word-footnote-reference-missing` |
+| `s65d` | 23:12:59Z, 23:13:34Z | `s65d-control-minimal-end`                              | control                                                                                                                                                                                        | `764f240c9c6f4840` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                                                                                                                                     |
+
+<details><summary>Raw records, session 65</summary>
+
+```jsonl
+{"run": "s65a", "pass": 1, "name": "s65a-control-minimal", "sha256": "98a6d76275a2bb1f530e3ba0c8ac668aa22d10d3d8aafd6db64c510d4f9af532", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:21+00:00", "staged": "00006__wfv__s65a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s65a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65a", "pass": 2, "name": "s65a-control-minimal", "sha256": "98a6d76275a2bb1f530e3ba0c8ac668aa22d10d3d8aafd6db64c510d4f9af532", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:34+00:00", "staged": "00006__wfv__s65a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s65a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65a", "pass": 1, "name": "footnotes-escaping-nested-dangling", "sha256": "31bc40730cddb26bd6a8eadcb70398f6303909ba0c0e56c13276703cecf5ea82", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:21+00:00", "staged": "00002__wfv__footnotes-escaping-nested-dangling.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-escaping-nested-dangling_byword.pdf (15513 bytes), no dialog named the file"]}
+{"run": "s65a", "pass": 2, "name": "footnotes-escaping-nested-dangling", "sha256": "31bc40730cddb26bd6a8eadcb70398f6303909ba0c0e56c13276703cecf5ea82", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:34+00:00", "staged": "00002__wfv__footnotes-escaping-nested-dangling.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-escaping-nested-dangling_byword.pdf (15513 bytes), no dialog named the file"]}
+{"run": "s65a", "pass": 1, "name": "footnotes-in-package-nested-dangling", "sha256": "348f7e65ab3543ee4dce93adf420b3e8da54812e330141c6e0e92f678cd47efd", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:21+00:00", "staged": "00004__wfv__footnotes-in-package-nested-dangling.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-in-package-nested-dangling_byword.pdf (15513 bytes), no dialog named the file"]}
+{"run": "s65a", "pass": 2, "name": "footnotes-in-package-nested-dangling", "sha256": "348f7e65ab3543ee4dce93adf420b3e8da54812e330141c6e0e92f678cd47efd", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:34+00:00", "staged": "00004__wfv__footnotes-in-package-nested-dangling.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-in-package-nested-dangling_byword.pdf (15513 bytes), no dialog named the file"]}
+{"run": "s65a", "pass": 1, "name": "endnotes-escaping-nested-dangling", "sha256": "a6f290e3ba6e1826811f3d45216bcabb28de95de8ac66f043300787c14fb0e3a", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:21+00:00", "staged": "00000__wfv__endnotes-escaping-nested-dangling.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-escaping-nested-dangling_byword.pdf (15783 bytes), no dialog named the file"]}
+{"run": "s65a", "pass": 2, "name": "endnotes-escaping-nested-dangling", "sha256": "a6f290e3ba6e1826811f3d45216bcabb28de95de8ac66f043300787c14fb0e3a", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:34+00:00", "staged": "00000__wfv__endnotes-escaping-nested-dangling.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-escaping-nested-dangling_byword.pdf (15783 bytes), no dialog named the file"]}
+{"run": "s65a", "pass": 1, "name": "endnotes-in-package-nested-dangling", "sha256": "f7c1796871eb13f3f2b5bd24838b526ac187821084917fecbb3ac803ab697323", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:21+00:00", "staged": "00001__wfv__endnotes-in-package-nested-dangling.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-in-package-nested-dangling_byword.pdf (15783 bytes), no dialog named the file"]}
+{"run": "s65a", "pass": 2, "name": "endnotes-in-package-nested-dangling", "sha256": "f7c1796871eb13f3f2b5bd24838b526ac187821084917fecbb3ac803ab697323", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:34+00:00", "staged": "00001__wfv__endnotes-in-package-nested-dangling.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-in-package-nested-dangling_byword.pdf (15783 bytes), no dialog named the file"]}
+{"run": "s65a", "pass": 1, "name": "footnotes-escaping-no-nested-calibration", "sha256": "bd993358479dd506f9767c0dd1c7a7d0611381ad11145a0fbfe63778531540f9", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:21+00:00", "staged": "00003__wfv__footnotes-escaping-no-nested-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-escaping-no-nested-calibration_byword.pdf (15513 bytes), no dialog named the file"]}
+{"run": "s65a", "pass": 2, "name": "footnotes-escaping-no-nested-calibration", "sha256": "bd993358479dd506f9767c0dd1c7a7d0611381ad11145a0fbfe63778531540f9", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:34+00:00", "staged": "00003__wfv__footnotes-escaping-no-nested-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-escaping-no-nested-calibration_byword.pdf (15513 bytes), no dialog named the file"]}
+{"run": "s65a", "pass": 1, "name": "s65a-control-minimal-end", "sha256": "98a6d76275a2bb1f530e3ba0c8ac668aa22d10d3d8aafd6db64c510d4f9af532", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:21+00:00", "staged": "00005__wfv__s65a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s65a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65a", "pass": 2, "name": "s65a-control-minimal-end", "sha256": "98a6d76275a2bb1f530e3ba0c8ac668aa22d10d3d8aafd6db64c510d4f9af532", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:34+00:00", "staged": "00005__wfv__s65a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s65a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65b", "pass": 1, "name": "s65b-control-minimal", "sha256": "9bde15427bfaf236fbab4a4bfc5c07d81056fe92ab5a51283107efb01ee3d2cb", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:57+00:00", "staged": "00006__wfv__s65b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s65b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65b", "pass": 2, "name": "s65b-control-minimal", "sha256": "9bde15427bfaf236fbab4a4bfc5c07d81056fe92ab5a51283107efb01ee3d2cb", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:09:24+00:00", "staged": "00006__wfv__s65b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s65b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65b", "pass": 1, "name": "comments-root-alternate-styles-s63b-repeat", "sha256": "cb91c163a7dc1b84d6e0aaede6aa7d7826a09908f471143497a57548285488d5", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:57+00:00", "staged": "00004__wfv__comments-root-alternate-styles-s63b-repeat.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:08:55.507 'Word found unreadable content in 00004__wfv__comments-root-alternate-styles-s63b-repeat.docx. Do yo … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:08:56.275 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__comments-root-alternate-s...)\""]}
+{"run": "s65b", "pass": 2, "name": "comments-root-alternate-styles-s63b-repeat", "sha256": "cb91c163a7dc1b84d6e0aaede6aa7d7826a09908f471143497a57548285488d5", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:09:24+00:00", "staged": "00004__wfv__comments-root-alternate-styles-s63b-repeat.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:09:22.988 'Word found unreadable content in 00004__wfv__comments-root-alternate-styles-s63b-repeat.docx. Do yo … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:09:23.869 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__comments-root-alternate-s...)\""]}
+{"run": "s65b", "pass": 1, "name": "comments-alternate-choice-text-styles", "sha256": "da7c0dbd145f7bc64ffd71d08eb713a24fd273ec67a2db2561fde3d8bbb33ea7", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:57+00:00", "staged": "00001__wfv__comments-alternate-choice-text-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:08:47.225 'Word found unreadable content in 00001__wfv__comments-alternate-choice-text-styles.docx. Do you wan … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:08:48.093 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__comments-alternate-choice...)\""]}
+{"run": "s65b", "pass": 2, "name": "comments-alternate-choice-text-styles", "sha256": "da7c0dbd145f7bc64ffd71d08eb713a24fd273ec67a2db2561fde3d8bbb33ea7", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:09:24+00:00", "staged": "00001__wfv__comments-alternate-choice-text-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:09:11.618 'Word found unreadable content in 00001__wfv__comments-alternate-choice-text-styles.docx. Do you wan … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:09:12.526 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__comments-alternate-choice...)\""]}
+{"run": "s65b", "pass": 1, "name": "comments-alternate-choice-text-comments-calibration", "sha256": "9404335f3fa40f0cd1eb128179d0121a549d2e65eab92fbc234d2be626e1e33a", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:57+00:00", "staged": "00000__wfv__comments-alternate-choice-text-comments-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-alternate-choice-text-comments-calibration_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s65b", "pass": 2, "name": "comments-alternate-choice-text-comments-calibration", "sha256": "9404335f3fa40f0cd1eb128179d0121a549d2e65eab92fbc234d2be626e1e33a", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:09:24+00:00", "staged": "00000__wfv__comments-alternate-choice-text-comments-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-alternate-choice-text-comments-calibration_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s65b", "pass": 1, "name": "comments-alternate-fallback-text-styles", "sha256": "9313171dd0e6469aecab9c53495674fc9dc59640e8e5dd0f6528db2cd9658f7f", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:57+00:00", "staged": "00003__wfv__comments-alternate-fallback-text-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:08:51.357 'Word found unreadable content in 00003__wfv__comments-alternate-fallback-text-styles.docx. Do you w … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:08:52.126 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__comments-alternate-fallba...)\""]}
+{"run": "s65b", "pass": 2, "name": "comments-alternate-fallback-text-styles", "sha256": "9313171dd0e6469aecab9c53495674fc9dc59640e8e5dd0f6528db2cd9658f7f", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:09:24+00:00", "staged": "00003__wfv__comments-alternate-fallback-text-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:09:17.612 'Word found unreadable content in 00003__wfv__comments-alternate-fallback-text-styles.docx. Do you w … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:09:18.510 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__comments-alternate-fallba...)\""]}
+{"run": "s65b", "pass": 1, "name": "comments-alternate-fallback-text-comments-calibration", "sha256": "83a9842735c95eff934697f492de73fdded70b91e335edbab5f17c00e3c282b8", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:57+00:00", "staged": "00002__wfv__comments-alternate-fallback-text-comments-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-alternate-fallback-text-comments-calibration_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s65b", "pass": 2, "name": "comments-alternate-fallback-text-comments-calibration", "sha256": "83a9842735c95eff934697f492de73fdded70b91e335edbab5f17c00e3c282b8", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:09:24+00:00", "staged": "00002__wfv__comments-alternate-fallback-text-comments-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-alternate-fallback-text-comments-calibration_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s65b", "pass": 1, "name": "s65b-control-minimal-end", "sha256": "764f240c9c6f484011b3d6179662a2b2509f872fe5d1f92616d6a1f7d8f6d8e4", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:08:57+00:00", "staged": "00005__wfv__s65b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s65b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65b", "pass": 2, "name": "s65b-control-minimal-end", "sha256": "764f240c9c6f484011b3d6179662a2b2509f872fe5d1f92616d6a1f7d8f6d8e4", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:09:24+00:00", "staged": "00005__wfv__s65b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s65b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65c", "pass": 1, "name": "s65c-control-minimal", "sha256": "764f240c9c6f484011b3d6179662a2b2509f872fe5d1f92616d6a1f7d8f6d8e4", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:10:27+00:00", "staged": "00007__wfv__s65c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s65c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65c", "pass": 2, "name": "s65c-control-minimal", "sha256": "764f240c9c6f484011b3d6179662a2b2509f872fe5d1f92616d6a1f7d8f6d8e4", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:12:25+00:00", "staged": "00007__wfv__s65c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s65c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65c", "pass": 1, "name": "comments-alternate-between-text-styles", "sha256": "a1cff64f1edf12efe3e2a19d82ec3d56c4d1eadc02fb18611c9e3bd3093e6520", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:10:27+00:00", "staged": "00001__wfv__comments-alternate-between-text-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:09:41.657 'Word found unreadable content in 00001__wfv__comments-alternate-between-text-styles.docx. Do you wa … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:09:42.409 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__comments-alternate-betwee...)\""]}
+{"run": "s65c", "pass": 2, "name": "comments-alternate-between-text-styles", "sha256": "a1cff64f1edf12efe3e2a19d82ec3d56c4d1eadc02fb18611c9e3bd3093e6520", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:12:25+00:00", "staged": "00001__wfv__comments-alternate-between-text-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:11:35.080 Microsoft Word, Word found unreadable content in 00001__wfv__comments-alternate-between-text-styles. … t? If you trust the source of this document, click Yes.", "2026-10-26 19:11:35.730 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__comments-alternate-betwee...)\""]}
+{"run": "s65c", "pass": 1, "name": "comments-alternate-between-text-comments-calibration", "sha256": "ca6f47a1785d5ef4c03ba95ab89858453d8472a33939de7bc7c74e0c11ad700d", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:10:27+00:00", "staged": "00000__wfv__comments-alternate-between-text-comments-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:09:37.474 'Word found unreadable content in 00000__wfv__comments-alternate-between-text-comments-calibra.... D … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:09:38.081 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__comments-alternate-betwee...)\""]}
+{"run": "s65c", "pass": 2, "name": "comments-alternate-between-text-comments-calibration", "sha256": "ca6f47a1785d5ef4c03ba95ab89858453d8472a33939de7bc7c74e0c11ad700d", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:12:25+00:00", "staged": "00000__wfv__comments-alternate-between-text-comments-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:10:43.207 'Word found unreadable content in 00000__wfv__comments-alternate-between-text-comments-calibra.... D … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:10:43.798 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__comments-alternate-betwee...)\""]}
+{"run": "s65c", "pass": 1, "name": "comments-alternate-requires-w-styles", "sha256": "61737bfdc9ebefe7d8cafe7002e8add8a3667296c53b4f5b84a9606fe26f7abd", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:10:27+00:00", "staged": "00003__wfv__comments-alternate-requires-w-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:09:45.986 'Word found unreadable content in 00003__wfv__comments-alternate-requires-w-styles.docx. Do you want … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:09:46.843 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__comments-alternate-requir...)\""]}
+{"run": "s65c", "pass": 2, "name": "comments-alternate-requires-w-styles", "sha256": "61737bfdc9ebefe7d8cafe7002e8add8a3667296c53b4f5b84a9606fe26f7abd", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:12:25+00:00", "staged": "00003__wfv__comments-alternate-requires-w-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:11:49.213 \"Word found unreadable content in 00003__wfv__comments-alternate-requires-w-styles.docx. Do you want … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s65c", "pass": 1, "name": "comments-alternate-requires-w-comments-calibration", "sha256": "9a7f859bf776c6f428a30623e3db9288f36940b64afb7fe1ba0464d500e80c00", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:10:27+00:00", "staged": "00002__wfv__comments-alternate-requires-w-comments-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-alternate-requires-w-comments-calibration_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s65c", "pass": 2, "name": "comments-alternate-requires-w-comments-calibration", "sha256": "9a7f859bf776c6f428a30623e3db9288f36940b64afb7fe1ba0464d500e80c00", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:12:25+00:00", "staged": "00002__wfv__comments-alternate-requires-w-comments-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-alternate-requires-w-comments-calibration_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s65c", "pass": 1, "name": "comments-alternate-strict-root-styles", "sha256": "693fab1366b18a6c0ea150f6c7cab62a7a626e6ff44e9a7eabd60f6fabf8eff7", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:10:27+00:00", "staged": "00005__wfv__comments-alternate-strict-root-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:09:51.577 'Word found unreadable content in 00005__wfv__comments-alternate-strict-root-styles.docx. Do you wan … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:09:52.532 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__comments-alternate-strict...)\""]}
+{"run": "s65c", "pass": 2, "name": "comments-alternate-strict-root-styles", "sha256": "693fab1366b18a6c0ea150f6c7cab62a7a626e6ff44e9a7eabd60f6fabf8eff7", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:12:25+00:00", "staged": "00005__wfv__comments-alternate-strict-root-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:12:03.305 \"Word found unreadable content in 00005__wfv__comments-alternate-strict-root-styles.docx. Do you wan … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s65c", "pass": 1, "name": "comments-alternate-strict-root-comments-calibration", "sha256": "e2f0a2d9ac7dd3e19f976e3c9211b8ce8253ce79962f3f3a7082f70ae090a373", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:10:27+00:00", "staged": "00004__wfv__comments-alternate-strict-root-comments-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-alternate-strict-root-comments-calibration_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s65c", "pass": 2, "name": "comments-alternate-strict-root-comments-calibration", "sha256": "e2f0a2d9ac7dd3e19f976e3c9211b8ce8253ce79962f3f3a7082f70ae090a373", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:12:25+00:00", "staged": "00004__wfv__comments-alternate-strict-root-comments-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-alternate-strict-root-comments-calibration_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s65c", "pass": 1, "name": "s65c-control-minimal-end", "sha256": "764f240c9c6f484011b3d6179662a2b2509f872fe5d1f92616d6a1f7d8f6d8e4", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:10:27+00:00", "staged": "00006__wfv__s65c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s65c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65c", "pass": 2, "name": "s65c-control-minimal-end", "sha256": "764f240c9c6f484011b3d6179662a2b2509f872fe5d1f92616d6a1f7d8f6d8e4", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:12:25+00:00", "staged": "00006__wfv__s65c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s65c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65d", "pass": 1, "name": "s65d-control-minimal", "sha256": "764f240c9c6f484011b3d6179662a2b2509f872fe5d1f92616d6a1f7d8f6d8e4", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:12:59+00:00", "staged": "00006__wfv__s65d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s65d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65d", "pass": 2, "name": "s65d-control-minimal", "sha256": "764f240c9c6f484011b3d6179662a2b2509f872fe5d1f92616d6a1f7d8f6d8e4", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:13:34+00:00", "staged": "00006__wfv__s65d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s65d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65d", "pass": 1, "name": "comments-strict-root-styles", "sha256": "decae62819f72270722655e999873bcd3b4f2f6651e2aa75d6f098db4a255e7c", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:12:59+00:00", "staged": "00004__wfv__comments-strict-root-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:12:58.882 \"Word found unreadable content in 00004__wfv__comments-strict-root-styles.docx. Do you want to recov … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s65d", "pass": 2, "name": "comments-strict-root-styles", "sha256": "decae62819f72270722655e999873bcd3b4f2f6651e2aa75d6f098db4a255e7c", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:13:34+00:00", "staged": "00004__wfv__comments-strict-root-styles.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:13:34.149 \"Word found unreadable content in 00004__wfv__comments-strict-root-styles.docx. Do you want to recov … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s65d", "pass": 1, "name": "comments-strict-root-comments-calibration", "sha256": "11aea989e4cfbfaa0491149e3e54e0d2b81ca1c1c04731c5f4da3eecc47828f6", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:12:59+00:00", "staged": "00003__wfv__comments-strict-root-comments-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-strict-root-comments-calibration_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s65d", "pass": 2, "name": "comments-strict-root-comments-calibration", "sha256": "11aea989e4cfbfaa0491149e3e54e0d2b81ca1c1c04731c5f4da3eecc47828f6", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:13:34+00:00", "staged": "00003__wfv__comments-strict-root-comments-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-strict-root-comments-calibration_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s65d", "pass": 1, "name": "comments-footnote-glossary-only-main-reach", "sha256": "4bf6c361bb811389ed523d8025c2fb9ba8918cb31d0d7b5b8875ef7a07188b4b", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:12:59+00:00", "staged": "00002__wfv__comments-footnote-glossary-only-main-reach.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-footnote-glossary-only-main-reach_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s65d", "pass": 2, "name": "comments-footnote-glossary-only-main-reach", "sha256": "4bf6c361bb811389ed523d8025c2fb9ba8918cb31d0d7b5b8875ef7a07188b4b", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:13:34+00:00", "staged": "00002__wfv__comments-footnote-glossary-only-main-reach.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-footnote-glossary-only-main-reach_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s65d", "pass": 1, "name": "comments-footnote-glossary-only-glossary-reach", "sha256": "3f301c8e5ee478bdea5660ff494782684a0d3480b970425e712917735fd465f3", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:12:59+00:00", "staged": "00001__wfv__comments-footnote-glossary-only-glossary-reach.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-footnote-glossary-only-glossary-reach_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65d", "pass": 2, "name": "comments-footnote-glossary-only-glossary-reach", "sha256": "3f301c8e5ee478bdea5660ff494782684a0d3480b970425e712917735fd465f3", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:13:34+00:00", "staged": "00001__wfv__comments-footnote-glossary-only-glossary-reach.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-footnote-glossary-only-glossary-reach_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65d", "pass": 1, "name": "comments-footnote-glossary-only-both-reaches", "sha256": "acb8ee294d8ce6ec0a43225382b672d56eb8227c812a5827ac6b7ce86f950112", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:12:59+00:00", "staged": "00000__wfv__comments-footnote-glossary-only-both-reaches.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:12:41.558 'Word found unreadable content in 00000__wfv__comments-footnote-glossary-only-both-reaches.docx. Do  … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:12:42.195 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__comments-footnote-glossar...)\""]}
+{"run": "s65d", "pass": 2, "name": "comments-footnote-glossary-only-both-reaches", "sha256": "acb8ee294d8ce6ec0a43225382b672d56eb8227c812a5827ac6b7ce86f950112", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:13:34+00:00", "staged": "00000__wfv__comments-footnote-glossary-only-both-reaches.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:13:16.892 'Word found unreadable content in 00000__wfv__comments-footnote-glossary-only-both-reaches.docx. Do  … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:13:17.496 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__comments-footnote-glossar...)\""]}
+{"run": "s65d", "pass": 1, "name": "s65d-control-minimal-end", "sha256": "764f240c9c6f484011b3d6179662a2b2509f872fe5d1f92616d6a1f7d8f6d8e4", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:12:59+00:00", "staged": "00005__wfv__s65d-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s65d-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s65d", "pass": 2, "name": "s65d-control-minimal-end", "sha256": "764f240c9c6f484011b3d6179662a2b2509f872fe5d1f92616d6a1f7d8f6d8e4", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:13:34+00:00", "staged": "00005__wfv__s65d-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s65d-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 65 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s65builder.mts`:
+
+```ts
+// Session 65 (2026-10-26): questions the adversarial review of layers 211-216 raised.
+// s65a: a dangling note reference inside a notes part, reached by an escaping target or in-package (#849).
+// s65b, s65c, s65d: s63b's AlternateContent comments root with text in it, a non-w14 Choice or a Strict root, and a Strict
+//       root stored directly, each typed styles beside a typed-comments calibration (#847); a comments part holding a
+//       footnote reference only a glossary's notes define, read by the main document, a glossary or both (#848).
+// Every row records the validator revision it was judged at (`validatorRevision`). Helpers are copied from s64builder.mts.
+// The builder empties the chunk's specimens.jsonl once before its row loop (promised on #825).
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s65a pnpm exec node --import tsx s65builder.tmp.mts
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import JSZip from "jszip";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const W14 = "http://schemas.microsoft.com/office/word/2010/wordml";
+const WS = "http://purl.oclc.org/ooxml/wordprocessingml/main";
+const U = "urn:example:unknown";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+const TEXT_P = "<w:p><w:r><w:t>Text</w:t></w:r></w:p>";
+const REVISION = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string, extra = "") =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"${extra}/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+const control = () => buildDocx({ ...P });
+
+/**
+ * `parts` with the main document's `r:` and `u:` prefixes declared (`u` is bound to a namespace Word does not
+ * understand and appears only in `Requires`), `sect` first in its `w:sectPr` and `run` appended inside its only paragraph.
+ */
+const mainWith = (parts: Record<string, string>, run: string, sect = ""): Record<string, string> => ({
+    ...parts,
+    [MAIN]: replaceOnce(
+        replaceOnce(
+            replaceOnce(parts[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}" xmlns:u="${U}"`),
+            "<w:sectPr>",
+            `<w:sectPr>${sect}`,
+        ),
+        "</w:r></w:p>",
+        `</w:r>${run}</w:p>`,
+    ),
+});
+/** `parts` with the main document stored as `word/<name>`: the part, its sidecar, the officeDocument target and its Override. */
+const renameMain = (parts: Record<string, string>, name: string): Record<string, string> => {
+    const next: Record<string, string> = { ...parts, [`word/${name}`]: parts[MAIN]!, [`word/_rels/${name}.rels`]: parts[SIDECAR]! };
+    delete next[MAIN];
+    delete next[SIDECAR];
+    next["_rels/.rels"] = replaceOnce(parts["_rels/.rels"]!, 'Target="word/document.xml"', `Target="word/${name}"`);
+    next[CT] = replaceOnce(parts[CT]!, 'PartName="/word/document.xml"', `PartName="/word/${name}"`);
+    return next;
+};
+
+type Kind = "footnote" | "endnote";
+const notesXml = (kind: Kind, held: string) =>
+    `${XML_DECL}<w:${kind}s xmlns:w="${W}"><w:${kind} w:id="${held}">${TEXT_P}</w:${kind}></w:${kind}s>`;
+const noteRef = (kind: Kind, id: string) => `<w:r><w:${kind}Reference w:id="${id}"/></w:r>`;
+/** The minimal parts with `word/<kind>s.xml` holding note `held`, related by the main document and typed by `type`. */
+const withNotes = (kind: Kind, held: string, type = `${WML}.${kind}s+xml`): Record<string, string> => ({
+    ...P,
+    [`word/${kind}s.xml`]: notesXml(kind, held),
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", `${kind}s`, `${kind}s.xml`)),
+    [CT]: overrides(P[CT]!, [`word/${kind}s.xml`, type]),
+});
+
+const comment = (id: string) => `<w:comment w:id="${id}" w:author="a">${TEXT_P}</w:comment>`;
+const commentsRoot = (body: string) =>
+    `${XML_DECL}<w:comments xmlns:w="${W}" xmlns:mc="${MC}" xmlns:w14="${W14}" xmlns:u="${U}">${body}</w:comments>`;
+/** The minimal parts with `word/comments.xml` holding `body`, related by the main document and typed by `type`. */
+const withComments = (body: string, type = `${WML}.comments+xml`): Record<string, string> => ({
+    ...P,
+    "word/comments.xml": commentsRoot(body),
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdC", "comments", "comments.xml")),
+    [CT]: overrides(P[CT]!, ["word/comments.xml", type]),
+});
+const commentRef = (id: string) => `<w:r><w:commentReference w:id="${id}"/></w:r>`;
+const alternate = (requires: string, choice: string, fallback: string) =>
+    `<mc:AlternateContent><mc:Choice Requires="${requires}">${choice}</mc:Choice><mc:Fallback>${fallback}</mc:Fallback></mc:AlternateContent>`;
+
+/** A read header (`word/header1.xml`, referenced by the section) holding `run` in its paragraph. */
+const withReadHeader = (parts: Record<string, string>, run: string): Record<string, string> =>
+    mainWith(
+        {
+            ...parts,
+            "word/header1.xml": `${XML_DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r>${run}</w:p></w:hdr>`,
+            [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
+            [CT]: overrides(parts[CT]!, ["word/header1.xml", `${WML}.header+xml`]),
+        },
+        "",
+        `<w:headerReference w:type="default" r:id="rIdH"/>`,
+    );
+
+/** Two endnotes relationships in document order: word/endnotes.xml holding `first`, then word/notes2.xml (endnotes+xml) holding `second`. */
+const twoEndnotes = (first: string, second: string, referenced: boolean) => {
+    const parts = withNotes("endnote", first);
+    const both = {
+        ...parts,
+        "word/notes2.xml": notesXml("endnote", second),
+        [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdN2", "endnotes", "notes2.xml")),
+        [CT]: overrides(parts[CT]!, ["word/notes2.xml", `${WML}.endnotes+xml`]),
+    };
+    return buildDocx(referenced ? mainWith(both, noteRef("endnote", "1")) : both);
+};
+
+/** The minimal parts with `word/footer1.xml` read through the section's default footer reference, holding `run`. */
+const withReadFooter = (parts: Record<string, string>, run: string): Record<string, string> =>
+    mainWith(
+        {
+            ...parts,
+            "word/footer1.xml": `${XML_DECL}<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Footer</w:t></w:r>${run}</w:p></w:ftr>`,
+            [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdF", "footer", "footer1.xml")),
+            [CT]: overrides(parts[CT]!, ["word/footer1.xml", `${WML}.footer+xml`]),
+        },
+        "",
+        `<w:footerReference w:type="default" r:id="rIdF"/>`,
+    );
+
+/** Two footnotes relationships in document order: word/footnotes.xml holding `first`, then word/notes2.xml (footnotes+xml) holding `second`; the body references footnote 1. */
+const twoFootnotes = (first: string, second: string) => {
+    const parts = withNotes("footnote", first);
+    return buildDocx(
+        mainWith(
+            {
+                ...parts,
+                "word/notes2.xml": notesXml("footnote", second),
+                [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdN2", "footnotes", "notes2.xml")),
+                [CT]: overrides(parts[CT]!, ["word/notes2.xml", `${WML}.footnotes+xml`]),
+            },
+            noteRef("footnote", "1"),
+        ),
+    );
+};
+
+/** Session 46's Word-saved ISO Strict fixture (pinned clean-open), with `edit` applied to its main document. */
+const STRICT01 = "tests/fixtures/working/word-clean-strict01.docx";
+const strict01 = async (edit: (main: string) => string = (main) => main) => {
+    const zip = await JSZip.loadAsync(readFileSync(STRICT01));
+    const parts: Record<string, string | Uint8Array> = {};
+    for (const [name, entry] of Object.entries(zip.files)) if (!entry.dir) parts[name] = await entry.async("uint8array");
+    parts[MAIN] = edit(Buffer.from(parts[MAIN] as Uint8Array).toString("utf8"));
+    return buildDocx(parts);
+};
+
+/** A used `word/comments.xml` whose stored root is mc:AlternateContent; its w14 Choice holds the w:comments root with comment 0. */
+const rootAlternateComments = (type: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                "word/comments.xml":
+                    `${XML_DECL}<mc:AlternateContent xmlns:mc="${MC}" xmlns:w14="${W14}"><mc:Choice Requires="w14">` +
+                    `<w:comments xmlns:w="${W}">${comment("0")}</w:comments></mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdC", "comments", "comments.xml")),
+                [CT]: overrides(P[CT]!, ["word/comments.xml", type]),
+            },
+            commentRef("0"),
+        ),
+    );
+/** Comment 0 (own root) with its range start inside an mc:Choice requiring `requires` (empty Fallback), the end and the reference outside. */
+const splitRange = (requires: string) =>
+    buildDocx(
+        mainWith(
+            withComments(comment("0")),
+            alternate(requires, `<w:commentRangeStart w:id="0"/>`, "") +
+                `<w:r><w:t>ranged</w:t></w:r><w:commentRangeEnd w:id="0"/>` +
+                commentRef("0"),
+        ),
+    );
+
+/** The minimal package with a reached glossary whose own sidecar relates word/glossary/footnotes.xml holding footnote `held`. */
+const glossaryWithFootnotes = (held: string): Record<string, string> => ({
+    ...P,
+    "word/glossary/document.xml":
+        `${XML_DECL}<w:glossaryDocument xmlns:w="${W}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+        `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+        `<w:docPartBody>${TEXT_P}</w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`,
+    "word/glossary/_rels/document.xml.rels": `${XML_DECL}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${relationship("rId1", "footnotes", "footnotes.xml")}</Relationships>`,
+    "word/glossary/footnotes.xml": notesXml("footnote", held),
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdG", "glossaryDocument", "glossary/document.xml")),
+    [CT]: overrides(
+        P[CT]!,
+        ["word/glossary/document.xml", `${WML}.document.glossary+xml`],
+        ["word/glossary/footnotes.xml", `${WML}.footnotes+xml`],
+    ),
+});
+/** Footnote 1 stored at `stored`, typed `type`, named only by a footnotes relationship with `target` and `extra`; the body references footnote 1. */
+const footnotesAt = (stored: string, type: string, target: string, extra = "") =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [stored]: notesXml("footnote", "1"),
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", "footnotes", target, extra)),
+                [CT]: overrides(P[CT]!, [stored, type]),
+            },
+            noteRef("footnote", "1"),
+        ),
+    );
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+const FOOTNOTES = `${WML}.footnotes+xml`;
+const STYLES = `${WML}.styles+xml`;
+const COMMENTS = `${WML}.comments+xml`;
+/** Note 1 of `kind` stored at `stored`, typed `type`, named only by a `<kind>s` relationship with `target`; the body references it. */
+const notesAt = (kind: Kind, stored: string, type: string, target: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [stored]: notesXml(kind, "1"),
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", `${kind}s`, target)),
+                [CT]: overrides(P[CT]!, [stored, type]),
+            },
+            noteRef(kind, "1"),
+        ),
+    );
+/** Note 1 of `kind` stored at `stored` (its paragraph also holding `nested`), named only by a `<kind>s` relationship with `target`; the body references note 1. */
+const notesWithNested = (kind: Kind, stored: string, target: string, nested: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [stored]: `${XML_DECL}<w:${kind}s xmlns:w="${W}"><w:${kind} w:id="1"><w:p><w:r><w:t>Text</w:t></w:r>${nested}</w:p></w:${kind}></w:${kind}s>`,
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", `${kind}s`, target)),
+                [CT]: overrides(P[CT]!, [stored, `${WML}.${kind}s+xml`]),
+            },
+            noteRef(kind, "1"),
+        ),
+    );
+/** A used `word/comments.xml` stored as `stored` and typed `type`; the body references comment 0. */
+const usedComments = (stored: string, type: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                "word/comments.xml": stored,
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdC", "comments", "comments.xml")),
+                [CT]: overrides(P[CT]!, ["word/comments.xml", type]),
+            },
+            commentRef("0"),
+        ),
+    );
+/** s63b's stored root (an mc:AlternateContent whose Choice holds the w:comments root) with `edit` applied: text before the root, a non-empty Fallback, text between the branches, another Requires, or a Strict root. */
+const alternateCommentsRoot = ({ before = "", fallback = "", between = "", requires = "w14", rootNs = W } = {}) =>
+    `${XML_DECL}<mc:AlternateContent xmlns:mc="${MC}" xmlns:w14="${W14}"${requires === "w" ? ` xmlns:w="${W}"` : ""}><mc:Choice Requires="${requires}">` +
+    `${before}<w:comments xmlns:w="${rootNs}">${comment("0")}</w:comments></mc:Choice>${between}` +
+    (fallback ? `<mc:Fallback>${fallback}</mc:Fallback>` : "<mc:Fallback/>") +
+    "</mc:AlternateContent>";
+/** A reached glossary relating its own word/glossary/footnotes.xml (footnote 1), plus word/comments.xml whose comment 0 holds a footnote reference to 1, read by the main document, the glossary or both. */
+const sharedComments = (main: boolean, glossary: boolean) => {
+    const parts = glossaryWithFootnotes("1");
+    const next: Record<string, string> = {
+        ...parts,
+        "word/comments.xml": `${XML_DECL}<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="a"><w:p><w:r><w:t>Text</w:t></w:r>${noteRef("footnote", "1")}</w:p></w:comment></w:comments>`,
+        [CT]: overrides(parts[CT]!, ["word/comments.xml", COMMENTS]),
+    };
+    if (glossary) {
+        next["word/glossary/document.xml"] = replaceOnce(
+            next["word/glossary/document.xml"]!,
+            "<w:docPartBody><w:p><w:r><w:t>Text</w:t></w:r></w:p>",
+            `<w:docPartBody><w:p><w:r><w:t>Text</w:t></w:r>${commentRef("0")}</w:p>`,
+        );
+        next["word/glossary/_rels/document.xml.rels"] = appendRels(
+            next["word/glossary/_rels/document.xml.rels"]!,
+            relationship("rIdC", "comments", "../comments.xml"),
+        );
+    }
+    if (!main) return buildDocx(next);
+    return buildDocx(
+        mainWith({ ...next, [SIDECAR]: appendRels(next[SIDECAR]!, relationship("rIdC", "comments", "comments.xml")) }, commentRef("0")),
+    );
+};
+
+const chunks: Record<string, Row[]> = {
+    s65a: withControls("s65a", [
+        [
+            "footnotes-escaping-nested-dangling",
+            "the only footnotes relationship targets ../../footnotes.xml from word/; /footnotes.xml holds footnote 1, whose paragraph also holds a footnote reference to 99; the body references footnote 1",
+            () => notesWithNested("footnote", "footnotes.xml", "../../footnotes.xml", noteRef("footnote", "99")),
+        ],
+        [
+            "footnotes-in-package-nested-dangling",
+            "the same notes part as word/footnotes.xml, related in-package: footnote 1 holds a footnote reference to 99; the body references footnote 1",
+            () => notesWithNested("footnote", "word/footnotes.xml", "footnotes.xml", noteRef("footnote", "99")),
+        ],
+        [
+            "endnotes-escaping-nested-dangling",
+            "endnotes twin: ../../endnotes.xml; /endnotes.xml holds endnote 1, whose paragraph also holds an endnote reference to 99",
+            () => notesWithNested("endnote", "endnotes.xml", "../../endnotes.xml", noteRef("endnote", "99")),
+        ],
+        [
+            "endnotes-in-package-nested-dangling",
+            "endnotes twin, in-package word/endnotes.xml: endnote 1 holds an endnote reference to 99",
+            () => notesWithNested("endnote", "word/endnotes.xml", "endnotes.xml", noteRef("endnote", "99")),
+        ],
+        [
+            "footnotes-escaping-no-nested-calibration",
+            "calibration (repeat of s64a): ../../footnotes.xml; /footnotes.xml holds footnote 1 and nothing else; the body references footnote 1",
+            () => notesAt("footnote", "footnotes.xml", FOOTNOTES, "../../footnotes.xml"),
+        ],
+    ]),
+    s65b: withControls("s65b", [
+        [
+            "comments-root-alternate-styles-s63b-repeat",
+            "repeat of s63b: word/comments.xml's stored root is mc:AlternateContent whose w14 Choice holds the w:comments root, Fallback empty; typed styles",
+            () => rootAlternateComments(STYLES),
+        ],
+        [
+            "comments-alternate-choice-text-styles",
+            "s63b's shape with text before the w:comments root inside the Choice; typed styles",
+            () => usedComments(alternateCommentsRoot({ before: "NOT-A-ROOT" }), STYLES),
+        ],
+        [
+            "comments-alternate-choice-text-comments-calibration",
+            "calibration: the same, typed comments",
+            () => usedComments(alternateCommentsRoot({ before: "NOT-A-ROOT" }), COMMENTS),
+        ],
+        [
+            "comments-alternate-fallback-text-styles",
+            "s63b's shape with text in the Fallback; typed styles",
+            () => usedComments(alternateCommentsRoot({ fallback: "NOT-EMPTY" }), STYLES),
+        ],
+        [
+            "comments-alternate-fallback-text-comments-calibration",
+            "calibration: the same, typed comments",
+            () => usedComments(alternateCommentsRoot({ fallback: "NOT-EMPTY" }), COMMENTS),
+        ],
+    ]),
+    s65c: withControls("s65c", [
+        [
+            "comments-alternate-between-text-styles",
+            "s63b's shape with text between the Choice and the Fallback; typed styles",
+            () => usedComments(alternateCommentsRoot({ between: "NOT-A-BRANCH" }), STYLES),
+        ],
+        [
+            "comments-alternate-between-text-comments-calibration",
+            "calibration: the same, typed comments",
+            () => usedComments(alternateCommentsRoot({ between: "NOT-A-BRANCH" }), COMMENTS),
+        ],
+        [
+            "comments-alternate-requires-w-styles",
+            "s63b's shape with the Choice requiring w (the WordprocessingML main namespace) instead of w14; typed styles",
+            () => usedComments(alternateCommentsRoot({ requires: "w" }), STYLES),
+        ],
+        [
+            "comments-alternate-requires-w-comments-calibration",
+            "calibration: the same, typed comments",
+            () => usedComments(alternateCommentsRoot({ requires: "w" }), COMMENTS),
+        ],
+        [
+            "comments-alternate-strict-root-styles",
+            "s63b's shape with an ISO Strict w:comments root in the Choice (Transitional main document); typed styles",
+            () => usedComments(alternateCommentsRoot({ rootNs: WS }), STYLES),
+        ],
+        [
+            "comments-alternate-strict-root-comments-calibration",
+            "calibration: the same, typed comments",
+            () => usedComments(alternateCommentsRoot({ rootNs: WS }), COMMENTS),
+        ],
+    ]),
+    s65d: withControls("s65d", [
+        [
+            "comments-strict-root-styles",
+            "word/comments.xml's stored root is an ISO Strict w:comments (Transitional main document); typed styles",
+            () => usedComments(`${XML_DECL}<w:comments xmlns:w="${WS}">${comment("0")}</w:comments>`, STYLES),
+        ],
+        [
+            "comments-strict-root-comments-calibration",
+            "calibration: the same, typed comments",
+            () => usedComments(`${XML_DECL}<w:comments xmlns:w="${WS}">${comment("0")}</w:comments>`, COMMENTS),
+        ],
+        [
+            "comments-footnote-glossary-only-main-reach",
+            "word/comments.xml, read by the main document only, holds a footnote reference to 1; only the reached glossary's notes part defines footnote 1",
+            () => sharedComments(true, false),
+        ],
+        [
+            "comments-footnote-glossary-only-glossary-reach",
+            "the same comments part read by the glossary only (its docPart references comment 0; its sidecar relates ../comments.xml)",
+            () => sharedComments(false, true),
+        ],
+        [
+            "comments-footnote-glossary-only-both-reaches",
+            "the same comments part read by both the main document and the glossary",
+            () => sharedComments(true, true),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+writeFileSync(path.join(dir, "..", "specimens.jsonl"), "");
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        validatorRevision: REVISION,
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-65 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s65a", "s65b", "s65c", "s65d")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s65/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-65 parts of docs/plans/evidence/word-probes-2026-10-24.md into s65/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796).
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s65a", "s65b", "s65c", "s65d")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s65/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                                   "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                                   "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+out = [
+    f"### Session 65: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at {at}",
+    "",
+    "The Word questions the adversarial review of layers 211–216 raised ([#847](https://github.com/jandira-tech/docx-validate/issues/847), [#848](https://github.com/jandira-tech/docx-validate/issues/848), "
+    "[#849](https://github.com/jandira-tech/docx-validate/issues/849)). Four chunks, each "
+    "opening and closing with the minimal control. Each ran twice, as two separate driver runs of byte-identical copies, and each "
+    "run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the "
+    "manifest spelling when both runs and both readings agree, and `unknown` otherwise; "
+    f"{agreed} of {len(rows)} rows agree. The two times in Observed are the ends of the first and second runs. Shape is the "
+    f"builder's description of the specimen. The builder recorded the validator revision in every row (`{rev}`).",
+    "",
+    "- **Nested note references (s65a, #849).** Footnote 1, whose paragraph also holds a footnote reference to 99 that no part "
+    "defines, opens clean whether its notes part is reached by the escaping `../../footnotes.xml` (the note at `/footnotes.xml`) "
+    "or related in-package as `word/footnotes.xml`. The endnotes twins (an endnote reference to 99 inside endnote 1) open clean "
+    "too, as does the escaping calibration with no nested reference (session 64's row, repeated). Word-valid rejects both "
+    "in-package rows: two false positives.",
+    "- **The read comments part typed styles (s65b–s65d, #847).** A used `word/comments.xml` typed exactly with the styles type "
+    "gets the recovery offer in every shape this session stored: session 63's s63b AlternateContent root (repeated); the same "
+    "with text before the `w:comments` root inside the Choice, with text in the Fallback, or with text between the Choice and "
+    "the Fallback; with the Choice requiring `w` instead of `w14`; with an ISO Strict `w:comments` root inside the Choice; and "
+    "with an ISO Strict root stored directly, in a Transitional package. Each matching calibration typed comments opens clean, "
+    "except the text between the branches, which Word refuses typed comments too. Word-valid rejects every styles-typed row, "
+    "citing session 63 or 58, and accepts the between-text calibration: one false negative.",
+    "- **A comments part with a footnote reference only a glossary defines (s65d, #848).** A comment holding a footnote "
+    "reference to 1, which only the reached glossary's notes part defines, opens clean when only the main document reads the "
+    "comments part, and when only the glossary reads it; read by both, it gets the recovery offer. Word-valid rejects the "
+    "main-only row (a false positive) and the shared row. Session 66 separates the causes.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 65</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 65 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s65builder.mts", ROOT / "s65builder.mts", "ts"), ("compare.py", ROOT / "s65/compare.py", "python"),
+                         ("section.py", ROOT / "s65/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s65/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>
+
+### Session 66: 23:17Z–23:21Z on 2026-10-26, validator columns at 1dd3500b
+
+Calibrations for session 65's surprises. One chunk, opening and closing with the minimal control. Each ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 8 of 8 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`1dd3500b331b8a0cafa774b9dc109242222c5b9f`).
+
+- **A comments part both the main document and a glossary read (s66a).** With no note reference at all, a `word/comments.xml` that both the main document and a reached glossary relate and reference gets the recovery offer, so the shared reach, not the note reference, is what Word refused in s65d (that row, repeated, is refused again). Word-valid accepts the calibration: a false negative.
+- **Dangling footnote references in comments (s66a).** With no footnotes part anywhere, a comment holding a footnote reference to 99 opens clean when only the main document, or only the glossary, reads the comments part; read by both, it gets the recovery offer, as the shared reach does without the reference. Word-valid rejects all three: the two single-reach rows are false positives.
+- **A footnote reference inside an endnotes part (s66a).** Endnote 1 holding a footnote reference to 99, with no footnotes part, opens clean. With session 16's endnote reference inside footnotes and session 65's same-kind rows, every nesting of a note reference in a notes part that these sessions stored opens clean. Word-valid rejects this row: a false positive.
+
+| Run    | Observed             | Specimen                                              | Shape                                                                                                                                                              | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at 1dd3500b                     | strict at 1dd3500b                                                                                                                                        |
+| ------ | -------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ | -------------- | -------------- | -------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `s66a` | 23:17:58Z, 23:21:10Z | `s66a-control-minimal`                                | control                                                                                                                                                            | `27fbf3b06ebb5498` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                                                                                                                                     |
+| `s66a` | 23:17:58Z, 23:21:10Z | `comments-both-reaches-no-note-reference`             | calibration for s65d: word/comments.xml read by both the main document and a reached glossary; comment 0 holds no note reference                                   | `09c8752902b90b70` | repair-warning | repair-warning | unreadable-content-warning | valid                                      | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `paraid-missing-element`                                                              |
+| `s66a` | 23:17:58Z, 23:21:10Z | `comments-footnote-glossary-only-both-reaches-repeat` | repeat of s65d: the same shared comments part, comment 0 holding a footnote reference to 1 that only the glossary's notes part defines                             | `9610d3c705316d6c` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-footnote-reference-missing` | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `paraid-missing-element`, `paraid-missing-element`, `word-footnote-reference-missing` |
+| `s66a` | 23:17:58Z, 23:21:10Z | `comments-main-reach-dangling-footnote-no-notes`      | word/comments.xml read by the main document only; comment 0 holds a footnote reference to 99; no part anywhere defines a footnote (the glossary has no notes part) | `f3ea7d981dec862b` | clean-open     | clean-open     | clean-open                 | invalid: `word-footnote-reference-missing` | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `paraid-missing-element`, `rels-empty-part`, `word-footnote-reference-missing`        |
+| `s66a` | 23:17:58Z, 23:21:10Z | `comments-glossary-reach-dangling-footnote-no-notes`  | the same comments part read by the glossary only; no part defines a footnote                                                                                       | `ee62b61a08118e91` | clean-open     | clean-open     | clean-open                 | invalid: `word-footnote-reference-missing` | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `paraid-missing-element`, `word-footnote-reference-missing`                           |
+| `s66a` | 23:17:58Z, 23:21:10Z | `comments-both-reaches-dangling-footnote-no-notes`    | the same comments part read by both; no part defines a footnote                                                                                                    | `72b98cefa6e9ac28` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-footnote-reference-missing` | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `paraid-missing-element`, `word-footnote-reference-missing`                           |
+| `s66a` | 23:17:58Z, 23:21:10Z | `endnotes-in-package-nested-dangling-footnote`        | word/endnotes.xml, related in-package: endnote 1 holds a footnote reference to 99 (no footnotes part); the body references endnote 1                               | `b127fb1716b4207d` | clean-open     | clean-open     | clean-open                 | invalid: `word-footnote-reference-missing` | invalid: `paraid-missing-element`, `word-footnote-reference-missing`                                                                                      |
+| `s66a` | 23:17:58Z, 23:21:10Z | `s66a-control-minimal-end`                            | control                                                                                                                                                            | `27fbf3b06ebb5498` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                                                                                                                                     |
+
+<details><summary>Raw records, session 66</summary>
+
+```jsonl
+{"run": "s66a", "pass": 1, "name": "s66a-control-minimal", "sha256": "27fbf3b06ebb5498f493ac924f7cf9843c8e6ff476b8d52a72c894b1d9c3acd9", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:17:58+00:00", "staged": "00007__wfv__s66a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s66a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s66a", "pass": 2, "name": "s66a-control-minimal", "sha256": "27fbf3b06ebb5498f493ac924f7cf9843c8e6ff476b8d52a72c894b1d9c3acd9", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:21:10+00:00", "staged": "00007__wfv__s66a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s66a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s66a", "pass": 1, "name": "comments-both-reaches-no-note-reference", "sha256": "09c8752902b90b702c9f397026581f27e1e490794023e6594144e2f7d6a2ab48", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:17:58+00:00", "staged": "00001__wfv__comments-both-reaches-no-note-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:16:11.967 Microsoft Word, Word found unreadable content in 00001__wfv__comments-both-reaches-no-note-reference … t? If you trust the source of this document, click Yes.", "2026-10-26 19:16:12.665 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__comments-both-reaches-no-...)\""]}
+{"run": "s66a", "pass": 2, "name": "comments-both-reaches-no-note-reference", "sha256": "09c8752902b90b702c9f397026581f27e1e490794023e6594144e2f7d6a2ab48", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:21:10+00:00", "staged": "00001__wfv__comments-both-reaches-no-note-reference.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:19:21.817 Microsoft Word, Word found unreadable content in 00001__wfv__comments-both-reaches-no-note-reference … t? If you trust the source of this document, click Yes.", "2026-10-26 19:19:22.514 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__comments-both-reaches-no-...)\""]}
+{"run": "s66a", "pass": 1, "name": "comments-footnote-glossary-only-both-reaches-repeat", "sha256": "9610d3c705316d6c6532dd9e09b5e55e65b4f5ec5a8a81e68b0393ee09872504", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:17:58+00:00", "staged": "00002__wfv__comments-footnote-glossary-only-both-reaches-repeat.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:17:00.579 Microsoft Word, Word found unreadable content in 00002__wfv__comments-footnote-glossary-only-both-re … t? If you trust the source of this document, click Yes.", "2026-10-26 19:17:01.264 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__comments-footnote-glossar...)\""]}
+{"run": "s66a", "pass": 2, "name": "comments-footnote-glossary-only-both-reaches-repeat", "sha256": "9610d3c705316d6c6532dd9e09b5e55e65b4f5ec5a8a81e68b0393ee09872504", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:21:10+00:00", "staged": "00002__wfv__comments-footnote-glossary-only-both-reaches-repeat.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:20:05.837 Microsoft Word, Word found unreadable content in 00002__wfv__comments-footnote-glossary-only-both-re … t? If you trust the source of this document, click Yes."]}
+{"run": "s66a", "pass": 1, "name": "comments-main-reach-dangling-footnote-no-notes", "sha256": "f3ea7d981dec862bb933c0b06d05efc6daef7ac9c4506fab296b4910e7f7d344", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:17:58+00:00", "staged": "00004__wfv__comments-main-reach-dangling-footnote-no-notes.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-main-reach-dangling-footnote-no-notes_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s66a", "pass": 2, "name": "comments-main-reach-dangling-footnote-no-notes", "sha256": "f3ea7d981dec862bb933c0b06d05efc6daef7ac9c4506fab296b4910e7f7d344", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:21:10+00:00", "staged": "00004__wfv__comments-main-reach-dangling-footnote-no-notes.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-main-reach-dangling-footnote-no-notes_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s66a", "pass": 1, "name": "comments-glossary-reach-dangling-footnote-no-notes", "sha256": "ee62b61a08118e9101de38d75191c518d374f2ca7682f9dd1f849a4288f80808", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:17:58+00:00", "staged": "00003__wfv__comments-glossary-reach-dangling-footnote-no-notes.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-glossary-reach-dangling-footnote-no-notes_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s66a", "pass": 2, "name": "comments-glossary-reach-dangling-footnote-no-notes", "sha256": "ee62b61a08118e9101de38d75191c518d374f2ca7682f9dd1f849a4288f80808", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:21:10+00:00", "staged": "00003__wfv__comments-glossary-reach-dangling-footnote-no-notes.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-glossary-reach-dangling-footnote-no-notes_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s66a", "pass": 1, "name": "comments-both-reaches-dangling-footnote-no-notes", "sha256": "72b98cefa6e9ac2856d4d1d4c760573570790073879d696140b74de0a854cee6", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:17:58+00:00", "staged": "00000__wfv__comments-both-reaches-dangling-footnote-no-notes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:15:19.256 'Word found unreadable content in 00000__wfv__comments-both-reaches-dangling-footnote-no-notes.... D … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:15:19.809 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__comments-both-reaches-dan...)\""]}
+{"run": "s66a", "pass": 2, "name": "comments-both-reaches-dangling-footnote-no-notes", "sha256": "72b98cefa6e9ac2856d4d1d4c760573570790073879d696140b74de0a854cee6", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:21:10+00:00", "staged": "00000__wfv__comments-both-reaches-dangling-footnote-no-notes.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:18:29.090 'Word found unreadable content in 00000__wfv__comments-both-reaches-dangling-footnote-no-notes.... D … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:18:29.647 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__comments-both-reaches-dan...)\""]}
+{"run": "s66a", "pass": 1, "name": "endnotes-in-package-nested-dangling-footnote", "sha256": "b127fb1716b4207dca4affdbd2a91c82040ddbcb17ecc78debda567f1a9bb3e3", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:17:58+00:00", "staged": "00005__wfv__endnotes-in-package-nested-dangling-footnote.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-in-package-nested-dangling-footnote_byword.pdf (15783 bytes), no dialog named the file"]}
+{"run": "s66a", "pass": 2, "name": "endnotes-in-package-nested-dangling-footnote", "sha256": "b127fb1716b4207dca4affdbd2a91c82040ddbcb17ecc78debda567f1a9bb3e3", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:21:10+00:00", "staged": "00005__wfv__endnotes-in-package-nested-dangling-footnote.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-in-package-nested-dangling-footnote_byword.pdf (15783 bytes), no dialog named the file"]}
+{"run": "s66a", "pass": 1, "name": "s66a-control-minimal-end", "sha256": "27fbf3b06ebb5498f493ac924f7cf9843c8e6ff476b8d52a72c894b1d9c3acd9", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:17:58+00:00", "staged": "00006__wfv__s66a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s66a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s66a", "pass": 2, "name": "s66a-control-minimal-end", "sha256": "27fbf3b06ebb5498f493ac924f7cf9843c8e6ff476b8d52a72c894b1d9c3acd9", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:21:10+00:00", "staged": "00006__wfv__s66a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s66a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 66 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s66builder.mts`:
+
+```ts
+// Session 66 (2026-10-26): calibrations for session 65's surprises.
+// s66a: s65d refused a comments part read by both the main document and a glossary (its comment holding a footnote
+//       reference only the glossary's notes define), and opened the main-only reach clean. Is the shared reach itself
+//       refused, and does Word judge a dangling footnote reference in a comments part at all? Also: s65a opened a
+//       footnote reference inside footnotes and an endnote reference inside endnotes clean; a footnote reference inside
+//       an endnotes part is the remaining cross-kind case.
+// Every row records the validator revision it was judged at (`validatorRevision`). Helpers are copied from s65builder.mts.
+// The builder empties the chunk's specimens.jsonl once before its row loop (promised on #825).
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s66a pnpm exec node --import tsx s66builder.tmp.mts
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import JSZip from "jszip";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const W14 = "http://schemas.microsoft.com/office/word/2010/wordml";
+const WS = "http://purl.oclc.org/ooxml/wordprocessingml/main";
+const U = "urn:example:unknown";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+const TEXT_P = "<w:p><w:r><w:t>Text</w:t></w:r></w:p>";
+const REVISION = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string, extra = "") =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"${extra}/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+const control = () => buildDocx({ ...P });
+
+/**
+ * `parts` with the main document's `r:` and `u:` prefixes declared (`u` is bound to a namespace Word does not
+ * understand and appears only in `Requires`), `sect` first in its `w:sectPr` and `run` appended inside its only paragraph.
+ */
+const mainWith = (parts: Record<string, string>, run: string, sect = ""): Record<string, string> => ({
+    ...parts,
+    [MAIN]: replaceOnce(
+        replaceOnce(
+            replaceOnce(parts[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}" xmlns:u="${U}"`),
+            "<w:sectPr>",
+            `<w:sectPr>${sect}`,
+        ),
+        "</w:r></w:p>",
+        `</w:r>${run}</w:p>`,
+    ),
+});
+/** `parts` with the main document stored as `word/<name>`: the part, its sidecar, the officeDocument target and its Override. */
+const renameMain = (parts: Record<string, string>, name: string): Record<string, string> => {
+    const next: Record<string, string> = { ...parts, [`word/${name}`]: parts[MAIN]!, [`word/_rels/${name}.rels`]: parts[SIDECAR]! };
+    delete next[MAIN];
+    delete next[SIDECAR];
+    next["_rels/.rels"] = replaceOnce(parts["_rels/.rels"]!, 'Target="word/document.xml"', `Target="word/${name}"`);
+    next[CT] = replaceOnce(parts[CT]!, 'PartName="/word/document.xml"', `PartName="/word/${name}"`);
+    return next;
+};
+
+type Kind = "footnote" | "endnote";
+const notesXml = (kind: Kind, held: string) =>
+    `${XML_DECL}<w:${kind}s xmlns:w="${W}"><w:${kind} w:id="${held}">${TEXT_P}</w:${kind}></w:${kind}s>`;
+const noteRef = (kind: Kind, id: string) => `<w:r><w:${kind}Reference w:id="${id}"/></w:r>`;
+/** The minimal parts with `word/<kind>s.xml` holding note `held`, related by the main document and typed by `type`. */
+const withNotes = (kind: Kind, held: string, type = `${WML}.${kind}s+xml`): Record<string, string> => ({
+    ...P,
+    [`word/${kind}s.xml`]: notesXml(kind, held),
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", `${kind}s`, `${kind}s.xml`)),
+    [CT]: overrides(P[CT]!, [`word/${kind}s.xml`, type]),
+});
+
+const comment = (id: string) => `<w:comment w:id="${id}" w:author="a">${TEXT_P}</w:comment>`;
+const commentsRoot = (body: string) =>
+    `${XML_DECL}<w:comments xmlns:w="${W}" xmlns:mc="${MC}" xmlns:w14="${W14}" xmlns:u="${U}">${body}</w:comments>`;
+/** The minimal parts with `word/comments.xml` holding `body`, related by the main document and typed by `type`. */
+const withComments = (body: string, type = `${WML}.comments+xml`): Record<string, string> => ({
+    ...P,
+    "word/comments.xml": commentsRoot(body),
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdC", "comments", "comments.xml")),
+    [CT]: overrides(P[CT]!, ["word/comments.xml", type]),
+});
+const commentRef = (id: string) => `<w:r><w:commentReference w:id="${id}"/></w:r>`;
+const alternate = (requires: string, choice: string, fallback: string) =>
+    `<mc:AlternateContent><mc:Choice Requires="${requires}">${choice}</mc:Choice><mc:Fallback>${fallback}</mc:Fallback></mc:AlternateContent>`;
+
+/** A read header (`word/header1.xml`, referenced by the section) holding `run` in its paragraph. */
+const withReadHeader = (parts: Record<string, string>, run: string): Record<string, string> =>
+    mainWith(
+        {
+            ...parts,
+            "word/header1.xml": `${XML_DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r>${run}</w:p></w:hdr>`,
+            [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
+            [CT]: overrides(parts[CT]!, ["word/header1.xml", `${WML}.header+xml`]),
+        },
+        "",
+        `<w:headerReference w:type="default" r:id="rIdH"/>`,
+    );
+
+/** Two endnotes relationships in document order: word/endnotes.xml holding `first`, then word/notes2.xml (endnotes+xml) holding `second`. */
+const twoEndnotes = (first: string, second: string, referenced: boolean) => {
+    const parts = withNotes("endnote", first);
+    const both = {
+        ...parts,
+        "word/notes2.xml": notesXml("endnote", second),
+        [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdN2", "endnotes", "notes2.xml")),
+        [CT]: overrides(parts[CT]!, ["word/notes2.xml", `${WML}.endnotes+xml`]),
+    };
+    return buildDocx(referenced ? mainWith(both, noteRef("endnote", "1")) : both);
+};
+
+/** The minimal parts with `word/footer1.xml` read through the section's default footer reference, holding `run`. */
+const withReadFooter = (parts: Record<string, string>, run: string): Record<string, string> =>
+    mainWith(
+        {
+            ...parts,
+            "word/footer1.xml": `${XML_DECL}<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Footer</w:t></w:r>${run}</w:p></w:ftr>`,
+            [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdF", "footer", "footer1.xml")),
+            [CT]: overrides(parts[CT]!, ["word/footer1.xml", `${WML}.footer+xml`]),
+        },
+        "",
+        `<w:footerReference w:type="default" r:id="rIdF"/>`,
+    );
+
+/** Two footnotes relationships in document order: word/footnotes.xml holding `first`, then word/notes2.xml (footnotes+xml) holding `second`; the body references footnote 1. */
+const twoFootnotes = (first: string, second: string) => {
+    const parts = withNotes("footnote", first);
+    return buildDocx(
+        mainWith(
+            {
+                ...parts,
+                "word/notes2.xml": notesXml("footnote", second),
+                [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdN2", "footnotes", "notes2.xml")),
+                [CT]: overrides(parts[CT]!, ["word/notes2.xml", `${WML}.footnotes+xml`]),
+            },
+            noteRef("footnote", "1"),
+        ),
+    );
+};
+
+/** Session 46's Word-saved ISO Strict fixture (pinned clean-open), with `edit` applied to its main document. */
+const STRICT01 = "tests/fixtures/working/word-clean-strict01.docx";
+const strict01 = async (edit: (main: string) => string = (main) => main) => {
+    const zip = await JSZip.loadAsync(readFileSync(STRICT01));
+    const parts: Record<string, string | Uint8Array> = {};
+    for (const [name, entry] of Object.entries(zip.files)) if (!entry.dir) parts[name] = await entry.async("uint8array");
+    parts[MAIN] = edit(Buffer.from(parts[MAIN] as Uint8Array).toString("utf8"));
+    return buildDocx(parts);
+};
+
+/** A used `word/comments.xml` whose stored root is mc:AlternateContent; its w14 Choice holds the w:comments root with comment 0. */
+const rootAlternateComments = (type: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                "word/comments.xml":
+                    `${XML_DECL}<mc:AlternateContent xmlns:mc="${MC}" xmlns:w14="${W14}"><mc:Choice Requires="w14">` +
+                    `<w:comments xmlns:w="${W}">${comment("0")}</w:comments></mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdC", "comments", "comments.xml")),
+                [CT]: overrides(P[CT]!, ["word/comments.xml", type]),
+            },
+            commentRef("0"),
+        ),
+    );
+/** Comment 0 (own root) with its range start inside an mc:Choice requiring `requires` (empty Fallback), the end and the reference outside. */
+const splitRange = (requires: string) =>
+    buildDocx(
+        mainWith(
+            withComments(comment("0")),
+            alternate(requires, `<w:commentRangeStart w:id="0"/>`, "") +
+                `<w:r><w:t>ranged</w:t></w:r><w:commentRangeEnd w:id="0"/>` +
+                commentRef("0"),
+        ),
+    );
+
+/** The minimal package with a reached glossary whose own sidecar relates word/glossary/footnotes.xml holding footnote `held`. */
+const glossaryWithFootnotes = (held: string): Record<string, string> => ({
+    ...P,
+    "word/glossary/document.xml":
+        `${XML_DECL}<w:glossaryDocument xmlns:w="${W}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+        `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+        `<w:docPartBody>${TEXT_P}</w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`,
+    "word/glossary/_rels/document.xml.rels": `${XML_DECL}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${relationship("rId1", "footnotes", "footnotes.xml")}</Relationships>`,
+    "word/glossary/footnotes.xml": notesXml("footnote", held),
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdG", "glossaryDocument", "glossary/document.xml")),
+    [CT]: overrides(
+        P[CT]!,
+        ["word/glossary/document.xml", `${WML}.document.glossary+xml`],
+        ["word/glossary/footnotes.xml", `${WML}.footnotes+xml`],
+    ),
+});
+/** Footnote 1 stored at `stored`, typed `type`, named only by a footnotes relationship with `target` and `extra`; the body references footnote 1. */
+const footnotesAt = (stored: string, type: string, target: string, extra = "") =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [stored]: notesXml("footnote", "1"),
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", "footnotes", target, extra)),
+                [CT]: overrides(P[CT]!, [stored, type]),
+            },
+            noteRef("footnote", "1"),
+        ),
+    );
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+const FOOTNOTES = `${WML}.footnotes+xml`;
+const STYLES = `${WML}.styles+xml`;
+const COMMENTS = `${WML}.comments+xml`;
+/** Note 1 of `kind` stored at `stored`, typed `type`, named only by a `<kind>s` relationship with `target`; the body references it. */
+const notesAt = (kind: Kind, stored: string, type: string, target: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [stored]: notesXml(kind, "1"),
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", `${kind}s`, target)),
+                [CT]: overrides(P[CT]!, [stored, type]),
+            },
+            noteRef(kind, "1"),
+        ),
+    );
+/** Note 1 of `kind` stored at `stored` (its paragraph also holding `nested`), named only by a `<kind>s` relationship with `target`; the body references note 1. */
+const notesWithNested = (kind: Kind, stored: string, target: string, nested: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [stored]: `${XML_DECL}<w:${kind}s xmlns:w="${W}"><w:${kind} w:id="1"><w:p><w:r><w:t>Text</w:t></w:r>${nested}</w:p></w:${kind}></w:${kind}s>`,
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", `${kind}s`, target)),
+                [CT]: overrides(P[CT]!, [stored, `${WML}.${kind}s+xml`]),
+            },
+            noteRef(kind, "1"),
+        ),
+    );
+/** A used `word/comments.xml` stored as `stored` and typed `type`; the body references comment 0. */
+const usedComments = (stored: string, type: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                "word/comments.xml": stored,
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdC", "comments", "comments.xml")),
+                [CT]: overrides(P[CT]!, ["word/comments.xml", type]),
+            },
+            commentRef("0"),
+        ),
+    );
+/** s63b's stored root (an mc:AlternateContent whose Choice holds the w:comments root) with `edit` applied: text before the root, a non-empty Fallback, text between the branches, another Requires, or a Strict root. */
+const alternateCommentsRoot = ({ before = "", fallback = "", between = "", requires = "w14", rootNs = W } = {}) =>
+    `${XML_DECL}<mc:AlternateContent xmlns:mc="${MC}" xmlns:w14="${W14}"${requires === "w" ? ` xmlns:w="${W}"` : ""}><mc:Choice Requires="${requires}">` +
+    `${before}<w:comments xmlns:w="${rootNs}">${comment("0")}</w:comments></mc:Choice>${between}` +
+    (fallback ? `<mc:Fallback>${fallback}</mc:Fallback>` : "<mc:Fallback/>") +
+    "</mc:AlternateContent>";
+/** A reached glossary relating its own word/glossary/footnotes.xml (footnote 1), plus word/comments.xml whose comment 0 holds a footnote reference to 1, read by the main document, the glossary or both. */
+const sharedComments = (main: boolean, glossary: boolean) => {
+    const parts = glossaryWithFootnotes("1");
+    const next: Record<string, string> = {
+        ...parts,
+        "word/comments.xml": `${XML_DECL}<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="a"><w:p><w:r><w:t>Text</w:t></w:r>${noteRef("footnote", "1")}</w:p></w:comment></w:comments>`,
+        [CT]: overrides(parts[CT]!, ["word/comments.xml", COMMENTS]),
+    };
+    if (glossary) {
+        next["word/glossary/document.xml"] = replaceOnce(
+            next["word/glossary/document.xml"]!,
+            "<w:docPartBody><w:p><w:r><w:t>Text</w:t></w:r></w:p>",
+            `<w:docPartBody><w:p><w:r><w:t>Text</w:t></w:r>${commentRef("0")}</w:p>`,
+        );
+        next["word/glossary/_rels/document.xml.rels"] = appendRels(
+            next["word/glossary/_rels/document.xml.rels"]!,
+            relationship("rIdC", "comments", "../comments.xml"),
+        );
+    }
+    if (!main) return buildDocx(next);
+    return buildDocx(
+        mainWith({ ...next, [SIDECAR]: appendRels(next[SIDECAR]!, relationship("rIdC", "comments", "comments.xml")) }, commentRef("0")),
+    );
+};
+
+/** word/comments.xml whose comment 0 holds `inComment`, read by the main document and/or the glossary; `notes` adds the glossary's footnotes part (footnote 1). */
+const commentsReach = (main: boolean, glossary: boolean, inComment: string, notes = true) => {
+    const parts = notes ? glossaryWithFootnotes("1") : glossaryWithFootnotes("1");
+    const next: Record<string, string> = {
+        ...parts,
+        "word/comments.xml": `${XML_DECL}<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="a"><w:p><w:r><w:t>Text</w:t></w:r>${inComment}</w:p></w:comment></w:comments>`,
+        [CT]: overrides(parts[CT]!, ["word/comments.xml", COMMENTS]),
+    };
+    if (!notes) {
+        delete next["word/glossary/footnotes.xml"];
+        next["word/glossary/_rels/document.xml.rels"] = replaceOnce(
+            next["word/glossary/_rels/document.xml.rels"]!,
+            relationship("rId1", "footnotes", "footnotes.xml"),
+            "",
+        );
+        next[CT] = replaceOnce(next[CT]!, `<Override PartName="/word/glossary/footnotes.xml" ContentType="${WML}.footnotes+xml"/>`, "");
+    }
+    if (glossary) {
+        next["word/glossary/document.xml"] = replaceOnce(
+            next["word/glossary/document.xml"]!,
+            "<w:docPartBody><w:p><w:r><w:t>Text</w:t></w:r></w:p>",
+            `<w:docPartBody><w:p><w:r><w:t>Text</w:t></w:r>${commentRef("0")}</w:p>`,
+        );
+        next["word/glossary/_rels/document.xml.rels"] = appendRels(
+            next["word/glossary/_rels/document.xml.rels"]!,
+            relationship("rIdC", "comments", "../comments.xml"),
+        );
+    }
+    if (!main) return buildDocx(next);
+    return buildDocx(
+        mainWith({ ...next, [SIDECAR]: appendRels(next[SIDECAR]!, relationship("rIdC", "comments", "comments.xml")) }, commentRef("0")),
+    );
+};
+
+const chunks: Record<string, Row[]> = {
+    s66a: withControls("s66a", [
+        [
+            "comments-both-reaches-no-note-reference",
+            "calibration for s65d: word/comments.xml read by both the main document and a reached glossary; comment 0 holds no note reference",
+            () => commentsReach(true, true, "", false),
+        ],
+        [
+            "comments-footnote-glossary-only-both-reaches-repeat",
+            "repeat of s65d: the same shared comments part, comment 0 holding a footnote reference to 1 that only the glossary's notes part defines",
+            () => sharedComments(true, true),
+        ],
+        [
+            "comments-main-reach-dangling-footnote-no-notes",
+            "word/comments.xml read by the main document only; comment 0 holds a footnote reference to 99; no part anywhere defines a footnote (the glossary has no notes part)",
+            () => commentsReach(true, false, noteRef("footnote", "99"), false),
+        ],
+        [
+            "comments-glossary-reach-dangling-footnote-no-notes",
+            "the same comments part read by the glossary only; no part defines a footnote",
+            () => commentsReach(false, true, noteRef("footnote", "99"), false),
+        ],
+        [
+            "comments-both-reaches-dangling-footnote-no-notes",
+            "the same comments part read by both; no part defines a footnote",
+            () => commentsReach(true, true, noteRef("footnote", "99"), false),
+        ],
+        [
+            "endnotes-in-package-nested-dangling-footnote",
+            "word/endnotes.xml, related in-package: endnote 1 holds a footnote reference to 99 (no footnotes part); the body references endnote 1",
+            () => notesWithNested("endnote", "word/endnotes.xml", "endnotes.xml", noteRef("footnote", "99")),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+writeFileSync(path.join(dir, "..", "specimens.jsonl"), "");
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        validatorRevision: REVISION,
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-66 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s66a",)
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s66/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-66 parts of docs/plans/evidence/word-probes-2026-10-24.md into s66/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796).
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s66a",)
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s66/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                                   "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                                   "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+out = [
+    f"### Session 66: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at {at}",
+    "",
+    "Calibrations for session 65's surprises. One chunk, "
+    "opening and closing with the minimal control. Each ran twice, as two separate driver runs of byte-identical copies, and each "
+    "run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the "
+    "manifest spelling when both runs and both readings agree, and `unknown` otherwise; "
+    f"{agreed} of {len(rows)} rows agree. The two times in Observed are the ends of the first and second runs. Shape is the "
+    f"builder's description of the specimen. The builder recorded the validator revision in every row (`{rev}`).",
+    "",
+    "- **A comments part both the main document and a glossary read (s66a).** With no note reference at all, a "
+    "`word/comments.xml` that both the main document and a reached glossary relate and reference gets the recovery offer, so "
+    "the shared reach, not the note reference, is what Word refused in s65d (that row, repeated, is refused again). Word-valid "
+    "accepts the calibration: a false negative.",
+    "- **Dangling footnote references in comments (s66a).** With no footnotes part anywhere, a comment holding a footnote "
+    "reference to 99 opens clean when only the main document, or only the glossary, reads the comments part; read by both, it "
+    "gets the recovery offer, as the shared reach does without the reference. Word-valid rejects all three: the two single-reach "
+    "rows are false positives.",
+    "- **A footnote reference inside an endnotes part (s66a).** Endnote 1 holding a footnote reference to 99, with no footnotes "
+    "part, opens clean. With session 16's endnote reference inside footnotes and session 65's same-kind rows, every nesting of "
+    "a note reference in a notes part that these sessions stored opens clean. Word-valid rejects this row: a false positive.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 66</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 66 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s66builder.mts", ROOT / "s66builder.mts", "ts"), ("compare.py", ROOT / "s66/compare.py", "python"),
+                         ("section.py", ROOT / "s66/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s66/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>
+
+### Session 67: 23:33Z–23:39Z on 2026-10-26, validator columns at 1dd3500b
+
+The scope of [#850](https://github.com/jandira-tech/docx-validate/issues/850) and [#851](https://github.com/jandira-tech/docx-validate/issues/851). Two chunks, each opening and closing with the minimal control. Each ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 20 of 20 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`1dd3500b331b8a0cafa774b9dc109242222c5b9f`).
+
+- **Parts both story roots read (s67a, #850).** Session 66's shared comments part, related and referenced by both the main document and a reached glossary, is refused again. Related by both but referenced by only one of them, or by neither, it opens clean, so the refusal needs both roots to use the part. A `word/footnotes.xml` that the main document relates and the glossary relates as `../footnotes.xml`, each referencing footnote 1, is refused too, and so is its endnotes twin; referenced by the body only, the shared footnotes part opens clean. Word-valid accepts all seven rows: three false negatives.
+- **Text directly inside `mc:AlternateContent` (s67b, #851).** In a used `word/comments.xml` typed comments whose stored root is s63b's AlternateContent, text before the Choice, text after the Fallback, text after a Choice with no Fallback, and text between two Choices (the second requiring a namespace Word does not understand) each get the recovery offer; the no-Fallback and two-Choice roots without the text open clean here, as s63b's root did in session 63, and so does a newline and spaces between the Choice and the Fallback. In the main document, a run-level AlternateContent with text between its Choice and its Fallback is refused, and without the text it opens clean. Word-valid accepts every row: five false negatives.
+
+| Run    | Observed             | Specimen                                            | Shape                                                                                                                                                               | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at 1dd3500b | strict at 1dd3500b                                                                                              |
+| ------ | -------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `s67a` | 23:33:50Z, 23:35:24Z | `s67a-control-minimal`                              | control                                                                                                                                                             | `d0e3c8b47eb4bdb8` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                                                                           |
+| `s67a` | 23:33:50Z, 23:35:24Z | `comments-both-reaches-repeat`                      | repeat of s66a: word/comments.xml related and referenced by both the main document and a reached glossary; comment 0 holds only text                                | `c388025ca85c5fdc` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `paraid-missing-element`                    |
+| `s67a` | 23:33:50Z, 23:35:24Z | `comments-both-relate-main-references`              | the same part related by both, referenced by the main document's body only                                                                                          | `f70bef8e6519a78c` | clean-open     | clean-open     | clean-open                 | valid                  | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `paraid-missing-element`                    |
+| `s67a` | 23:33:50Z, 23:35:24Z | `comments-both-relate-glossary-references`          | the same part related by both, referenced by the glossary's docPart only                                                                                            | `713bc7fb5878ee4e` | clean-open     | clean-open     | clean-open                 | valid                  | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `paraid-missing-element`                    |
+| `s67a` | 23:33:50Z, 23:35:24Z | `comments-both-relate-neither-references`           | the same part related by both, referenced by neither                                                                                                                | `881f03d3c1dbe8f7` | clean-open     | clean-open     | clean-open                 | valid                  | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `paraid-missing-element`                    |
+| `s67a` | 23:33:50Z, 23:35:24Z | `footnotes-shared-both-reaches`                     | word/footnotes.xml (footnote 1) related by the main document and by the glossary as ../footnotes.xml; the body and the glossary's docPart each reference footnote 1 | `abcc0fac2bc48f0e` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `paraid-missing-element`, `paraid-missing-element`                                                     |
+| `s67a` | 23:33:50Z, 23:35:24Z | `footnotes-shared-main-references-calibration`      | calibration: the same part related by both, referenced by the body only                                                                                             | `446f2d43db247077` | clean-open     | clean-open     | clean-open                 | valid                  | invalid: `paraid-missing-element`, `paraid-missing-element`                                                     |
+| `s67a` | 23:33:50Z, 23:35:24Z | `endnotes-shared-both-reaches`                      | the endnotes twin: word/endnotes.xml related by both, endnote 1 referenced by both                                                                                  | `2153feaf9deb0897` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `paraid-missing-element`, `paraid-missing-element`                                                     |
+| `s67a` | 23:33:50Z, 23:35:24Z | `s67a-control-minimal-end`                          | control                                                                                                                                                             | `d0e3c8b47eb4bdb8` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                                                                           |
+| `s67b` | 23:38:57Z, 23:39:28Z | `s67b-control-minimal`                              | control                                                                                                                                                             | `27bcfc1a0e00a71f` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                                                                           |
+| `s67b` | 23:38:57Z, 23:39:28Z | `comments-alternate-text-before-choice`             | word/comments.xml (typed comments), stored root mc:AlternateContent: text, then s63b's w14 Choice holding the w:comments root, then an empty Fallback               | `4b781ead68700fef` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `mce-malformed`, `xsd-summary`, `xsd-error` |
+| `s67b` | 23:38:57Z, 23:39:28Z | `comments-alternate-text-after-fallback`            | the same root with the text after the empty Fallback                                                                                                                | `9346be853e174d0b` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `mce-malformed`, `xsd-summary`, `xsd-error` |
+| `s67b` | 23:38:57Z, 23:39:28Z | `comments-alternate-text-no-fallback`               | the w14 Choice holding the root, then text, and no Fallback                                                                                                         | `ff1e727e9ac92bc8` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `mce-malformed`, `xsd-summary`, `xsd-error` |
+| `s67b` | 23:38:57Z, 23:39:28Z | `comments-alternate-no-fallback-calibration`        | calibration: the w14 Choice holding the root and no Fallback; no text                                                                                               | `dec3ac4665f1cdb9` | clean-open     | clean-open     | clean-open                 | valid                  | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `mce-malformed`                             |
+| `s67b` | 23:38:57Z, 23:39:28Z | `comments-alternate-whitespace-between-calibration` | calibration: a newline and spaces (whitespace only) between the Choice and the empty Fallback                                                                       | `fcb0add5c2f47995` | clean-open     | clean-open     | clean-open                 | valid                  | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `mce-malformed`                             |
+| `s67b` | 23:38:57Z, 23:39:28Z | `comments-alternate-two-choices-calibration`        | calibration: the w14 Choice holding the root, a second Choice requiring an unknown namespace holding the root, then an empty Fallback; no text                      | `839b9d1a00532438` | clean-open     | clean-open     | clean-open                 | valid                  | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `mce-malformed`                             |
+| `s67b` | 23:38:57Z, 23:39:28Z | `comments-alternate-text-between-choices`           | the same two Choices with text between them                                                                                                                         | `3d92ececc7c1eee0` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `comment-thread-count-mismatch`, `paraid-missing-element`, `mce-malformed`, `xsd-summary`, `xsd-error` |
+| `s67b` | 23:38:57Z, 23:39:28Z | `body-alternate-text-between`                       | the main document's paragraph holds a run-level mc:AlternateContent: a w14 Choice run, text, then a Fallback run                                                    | `07f5bbe6fe6c0c4c` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `xsd-summary`, `xsd-error`                                                                             |
+| `s67b` | 23:38:57Z, 23:39:28Z | `body-alternate-calibration`                        | calibration: the same run-level mc:AlternateContent without the text                                                                                                | `51032d34b23ccb5b` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                                                                           |
+| `s67b` | 23:38:57Z, 23:39:28Z | `s67b-control-minimal-end`                          | control                                                                                                                                                             | `dc98c013154c391a` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                                                                           |
+
+<details><summary>Raw records, session 67</summary>
+
+```jsonl
+{"run": "s67a", "pass": 1, "name": "s67a-control-minimal", "sha256": "d0e3c8b47eb4bdb8764342c094be54f9366e5fe92f9d32fe293bc0118e00273b", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:33:50+00:00", "staged": "00008__wfv__s67a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s67a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s67a", "pass": 2, "name": "s67a-control-minimal", "sha256": "d0e3c8b47eb4bdb8764342c094be54f9366e5fe92f9d32fe293bc0118e00273b", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:35:24+00:00", "staged": "00008__wfv__s67a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s67a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s67a", "pass": 1, "name": "comments-both-reaches-repeat", "sha256": "c388025ca85c5fdc6520a754470e8ced38bb7af654351582c5ec370a5249b2dd", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:33:50+00:00", "staged": "00000__wfv__comments-both-reaches-repeat.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:32:38.957 'Word found unreadable content in 00000__wfv__comments-both-reaches-repeat.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:32:39.492 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__comments-both-reaches-rep...)\""]}
+{"run": "s67a", "pass": 2, "name": "comments-both-reaches-repeat", "sha256": "c388025ca85c5fdc6520a754470e8ced38bb7af654351582c5ec370a5249b2dd", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:35:24+00:00", "staged": "00000__wfv__comments-both-reaches-repeat.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:34:21.986 'Word found unreadable content in 00000__wfv__comments-both-reaches-repeat.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:34:22.526 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__comments-both-reaches-rep...)\""]}
+{"run": "s67a", "pass": 1, "name": "comments-both-relate-main-references", "sha256": "f70bef8e6519a78ca63ef421218054701e37cd6123dfa4d9ee5472d9749e3a36", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:33:50+00:00", "staged": "00002__wfv__comments-both-relate-main-references.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-both-relate-main-references_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s67a", "pass": 2, "name": "comments-both-relate-main-references", "sha256": "f70bef8e6519a78ca63ef421218054701e37cd6123dfa4d9ee5472d9749e3a36", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:35:24+00:00", "staged": "00002__wfv__comments-both-relate-main-references.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-both-relate-main-references_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s67a", "pass": 1, "name": "comments-both-relate-glossary-references", "sha256": "713bc7fb5878ee4e33525c4b1d3b9b80f4257fa74d2e079a2a628c78c6d99f03", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:33:50+00:00", "staged": "00001__wfv__comments-both-relate-glossary-references.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-both-relate-glossary-references_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s67a", "pass": 2, "name": "comments-both-relate-glossary-references", "sha256": "713bc7fb5878ee4e33525c4b1d3b9b80f4257fa74d2e079a2a628c78c6d99f03", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:35:24+00:00", "staged": "00001__wfv__comments-both-relate-glossary-references.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-both-relate-glossary-references_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s67a", "pass": 1, "name": "comments-both-relate-neither-references", "sha256": "881f03d3c1dbe8f7b050a2a68d5af9bdc3469ee000627f5cab02d7b0cf40a96f", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:33:50+00:00", "staged": "00003__wfv__comments-both-relate-neither-references.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-both-relate-neither-references_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s67a", "pass": 2, "name": "comments-both-relate-neither-references", "sha256": "881f03d3c1dbe8f7b050a2a68d5af9bdc3469ee000627f5cab02d7b0cf40a96f", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:35:24+00:00", "staged": "00003__wfv__comments-both-relate-neither-references.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-both-relate-neither-references_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s67a", "pass": 1, "name": "footnotes-shared-both-reaches", "sha256": "abcc0fac2bc48f0e5790d3c6e16027bd27e617adae51ace5d888ac9be45647e9", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:33:50+00:00", "staged": "00005__wfv__footnotes-shared-both-reaches.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:33:48.915 Microsoft Word, Word found unreadable content in 00005__wfv__footnotes-shared-both-reaches.docx. Do  … t? If you trust the source of this document, click Yes.", "2026-10-26 19:33:49.566 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__footnotes-shared-both-rea...)\""]}
+{"run": "s67a", "pass": 2, "name": "footnotes-shared-both-reaches", "sha256": "abcc0fac2bc48f0e5790d3c6e16027bd27e617adae51ace5d888ac9be45647e9", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:35:24+00:00", "staged": "00005__wfv__footnotes-shared-both-reaches.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:35:22.925 Microsoft Word, Word found unreadable content in 00005__wfv__footnotes-shared-both-reaches.docx. Do  … t? If you trust the source of this document, click Yes."]}
+{"run": "s67a", "pass": 1, "name": "footnotes-shared-main-references-calibration", "sha256": "446f2d43db247077912fbd75dc5bf3f3b15bfa354c6be98a91eee0a3048a88b5", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:33:50+00:00", "staged": "00006__wfv__footnotes-shared-main-references-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-shared-main-references-calibration_byword.pdf (15513 bytes), no dialog named the file"]}
+{"run": "s67a", "pass": 2, "name": "footnotes-shared-main-references-calibration", "sha256": "446f2d43db247077912fbd75dc5bf3f3b15bfa354c6be98a91eee0a3048a88b5", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:35:24+00:00", "staged": "00006__wfv__footnotes-shared-main-references-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-shared-main-references-calibration_byword.pdf (15513 bytes), no dialog named the file"]}
+{"run": "s67a", "pass": 1, "name": "endnotes-shared-both-reaches", "sha256": "2153feaf9deb089731a2d054fb291ae5f6f6c2fde534515f2b89ce63b6de1682", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:33:50+00:00", "staged": "00004__wfv__endnotes-shared-both-reaches.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:32:56.924 \"Word found unreadable content in 00004__wfv__endnotes-shared-both-reaches.docx. Do you want to reco … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s67a", "pass": 2, "name": "endnotes-shared-both-reaches", "sha256": "2153feaf9deb089731a2d054fb291ae5f6f6c2fde534515f2b89ce63b6de1682", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:35:24+00:00", "staged": "00004__wfv__endnotes-shared-both-reaches.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:34:39.141 \"Word found unreadable content in 00004__wfv__endnotes-shared-both-reaches.docx. Do you want to reco … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s67a", "pass": 1, "name": "s67a-control-minimal-end", "sha256": "d0e3c8b47eb4bdb8764342c094be54f9366e5fe92f9d32fe293bc0118e00273b", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:33:50+00:00", "staged": "00007__wfv__s67a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s67a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s67a", "pass": 2, "name": "s67a-control-minimal-end", "sha256": "d0e3c8b47eb4bdb8764342c094be54f9366e5fe92f9d32fe293bc0118e00273b", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:35:24+00:00", "staged": "00007__wfv__s67a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s67a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s67b", "pass": 1, "name": "s67b-control-minimal", "sha256": "27bcfc1a0e00a71fad306f76af8b24b425f775f431822be43718a37529120815", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:38:57+00:00", "staged": "00010__wfv__s67b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s67b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s67b", "pass": 2, "name": "s67b-control-minimal", "sha256": "27bcfc1a0e00a71fad306f76af8b24b425f775f431822be43718a37529120815", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:39:28+00:00", "staged": "00010__wfv__s67b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s67b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s67b", "pass": 1, "name": "comments-alternate-text-before-choice", "sha256": "4b781ead68700fefca3f8ca5517472ffc9efc060d3acd9f3265067e477e48ad0", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:38:57+00:00", "staged": "00004__wfv__comments-alternate-text-before-choice.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:36:49.256 Microsoft Word, Word found unreadable content in 00004__wfv__comments-alternate-text-before-choice.d … t? If you trust the source of this document, click Yes.", "2026-10-26 19:36:49.287 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00004__wfv__comments-alternate-text-b...)'"]}
+{"run": "s67b", "pass": 2, "name": "comments-alternate-text-before-choice", "sha256": "4b781ead68700fefca3f8ca5517472ffc9efc060d3acd9f3265067e477e48ad0", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:39:28+00:00", "staged": "00004__wfv__comments-alternate-text-before-choice.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:39:17.735 'Word found unreadable content in 00004__wfv__comments-alternate-text-before-choice.docx. Do you wan … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:39:18.520 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__comments-alternate-text-b...)\""]}
+{"run": "s67b", "pass": 1, "name": "comments-alternate-text-after-fallback", "sha256": "9346be853e174d0b2457c1bd7549e4da80b5eab24b871f983ee0303c15093d44", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:38:57+00:00", "staged": "00003__wfv__comments-alternate-text-after-fallback.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:36:05.130 \"Word found unreadable content in 00003__wfv__comments-alternate-text-after-fallback.docx. Do you wa … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s67b", "pass": 2, "name": "comments-alternate-text-after-fallback", "sha256": "9346be853e174d0b2457c1bd7549e4da80b5eab24b871f983ee0303c15093d44", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:39:28+00:00", "staged": "00003__wfv__comments-alternate-text-after-fallback.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:39:13.570 'Word found unreadable content in 00003__wfv__comments-alternate-text-after-fallback.docx. Do you wa … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:39:14.370 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__comments-alternate-text-a...)\""]}
+{"run": "s67b", "pass": 1, "name": "comments-alternate-text-no-fallback", "sha256": "ff1e727e9ac92bc80ccff58963dfd2efe867f61978278090496494688b87c2bb", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:38:57+00:00", "staged": "00006__wfv__comments-alternate-text-no-fallback.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:38:55.652 \"Word found unreadable content in 00006__wfv__comments-alternate-text-no-fallback.docx. Do you want  … ? If you trust the source of this document, click Yes.\"", "2026-10-26 19:38:55.656 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__comments-alternate-text-n...)\""]}
+{"run": "s67b", "pass": 2, "name": "comments-alternate-text-no-fallback", "sha256": "ff1e727e9ac92bc80ccff58963dfd2efe867f61978278090496494688b87c2bb", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:39:28+00:00", "staged": "00006__wfv__comments-alternate-text-no-fallback.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:39:26.055 'Word found unreadable content in 00006__wfv__comments-alternate-text-no-fallback.docx. Do you want  … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:39:26.836 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00006__wfv__comments-alternate-text-n...)\""]}
+{"run": "s67b", "pass": 1, "name": "comments-alternate-no-fallback-calibration", "sha256": "dec3ac4665f1cdb9d8448cbc9975d2b8d561e0d3832b0ea79024dd9cd00e0c30", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:38:57+00:00", "staged": "00002__wfv__comments-alternate-no-fallback-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-alternate-no-fallback-calibration_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s67b", "pass": 2, "name": "comments-alternate-no-fallback-calibration", "sha256": "dec3ac4665f1cdb9d8448cbc9975d2b8d561e0d3832b0ea79024dd9cd00e0c30", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:39:28+00:00", "staged": "00002__wfv__comments-alternate-no-fallback-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-alternate-no-fallback-calibration_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s67b", "pass": 1, "name": "comments-alternate-whitespace-between-calibration", "sha256": "fcb0add5c2f4799567c90e7762738a1e06a7df8b78d2c1ff33bf930f3db1ea16", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:38:57+00:00", "staged": "00008__wfv__comments-alternate-whitespace-between-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-alternate-whitespace-between-calibration_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s67b", "pass": 2, "name": "comments-alternate-whitespace-between-calibration", "sha256": "fcb0add5c2f4799567c90e7762738a1e06a7df8b78d2c1ff33bf930f3db1ea16", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:39:28+00:00", "staged": "00008__wfv__comments-alternate-whitespace-between-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-alternate-whitespace-between-calibration_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s67b", "pass": 1, "name": "comments-alternate-two-choices-calibration", "sha256": "839b9d1a0053243886dc064a9edb833b1a779f39c47fad038ebde0e8326456bc", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:38:57+00:00", "staged": "00007__wfv__comments-alternate-two-choices-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-alternate-two-choices-calibration_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s67b", "pass": 2, "name": "comments-alternate-two-choices-calibration", "sha256": "839b9d1a0053243886dc064a9edb833b1a779f39c47fad038ebde0e8326456bc", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:39:28+00:00", "staged": "00007__wfv__comments-alternate-two-choices-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF comments-alternate-two-choices-calibration_byword.pdf (34583 bytes), no dialog named the file"]}
+{"run": "s67b", "pass": 1, "name": "comments-alternate-text-between-choices", "sha256": "3d92ececc7c1eee0a8f1299cb839972337218b5ab46be0c3f6d10f3e069f3e6e", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:38:57+00:00", "staged": "00005__wfv__comments-alternate-text-between-choices.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:38:50.404 'Word found unreadable content in 00005__wfv__comments-alternate-text-between-choices.docx. Do you w … ? If you trust the source of this document, click Yes.'"]}
+{"run": "s67b", "pass": 2, "name": "comments-alternate-text-between-choices", "sha256": "3d92ececc7c1eee0a8f1299cb839972337218b5ab46be0c3f6d10f3e069f3e6e", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:39:28+00:00", "staged": "00005__wfv__comments-alternate-text-between-choices.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:39:21.920 'Word found unreadable content in 00005__wfv__comments-alternate-text-between-choices.docx. Do you w … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:39:22.725 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__comments-alternate-text-b...)\""]}
+{"run": "s67b", "pass": 1, "name": "body-alternate-text-between", "sha256": "07f5bbe6fe6c0c4cba108e1963376df920d6193328e03ea057d0285ed67ba9f4", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:38:57+00:00", "staged": "00001__wfv__body-alternate-text-between.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:35:48.495 \"Word found unreadable content in 00001__wfv__body-alternate-text-between.docx. Do you want to recov … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s67b", "pass": 2, "name": "body-alternate-text-between", "sha256": "07f5bbe6fe6c0c4cba108e1963376df920d6193328e03ea057d0285ed67ba9f4", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:39:28+00:00", "staged": "00001__wfv__body-alternate-text-between.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 19:39:09.239 'Word found unreadable content in 00001__wfv__body-alternate-text-between.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 19:39:10.015 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__body-alternate-text-betwe...)\""]}
+{"run": "s67b", "pass": 1, "name": "body-alternate-calibration", "sha256": "51032d34b23ccb5bae56473d6f4759e165748a8ebf99e5bed7f204cd205f1409", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:38:57+00:00", "staged": "00000__wfv__body-alternate-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF body-alternate-calibration_byword.pdf (16007 bytes), no dialog named the file"]}
+{"run": "s67b", "pass": 2, "name": "body-alternate-calibration", "sha256": "51032d34b23ccb5bae56473d6f4759e165748a8ebf99e5bed7f204cd205f1409", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:39:28+00:00", "staged": "00000__wfv__body-alternate-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF body-alternate-calibration_byword.pdf (16007 bytes), no dialog named the file"]}
+{"run": "s67b", "pass": 1, "name": "s67b-control-minimal-end", "sha256": "dc98c013154c391afd0985e2f6d8fbe9ffe11927f110e5399c4547f322427e21", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:38:57+00:00", "staged": "00009__wfv__s67b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s67b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s67b", "pass": 2, "name": "s67b-control-minimal-end", "sha256": "dc98c013154c391afd0985e2f6d8fbe9ffe11927f110e5399c4547f322427e21", "validatorRevision": "1dd3500b331b8a0cafa774b9dc109242222c5b9f", "observedAt": "2026-10-26T23:39:28+00:00", "staged": "00009__wfv__s67b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s67b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 67 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s67builder.mts`:
+
+```ts
+// Session 67 (2026-10-26): the scope of #850 and #851.
+// s67a (#850): session 66 refused word/comments.xml read by both the main document and a reached glossary. Which half
+//       matters (both relating it, or both referencing it), and are shared footnotes and endnotes parts refused too?
+// s67b (#851): session 65 refused text directly inside a comments part's root mc:AlternateContent, between its Choice
+//       and its Fallback, and opened text inside the Choice or the Fallback clean. Are the other positions refused,
+//       is whitespace there clean, and is the same shape in a body run refused?
+// Every row records the validator revision it was judged at (`validatorRevision`). Helpers are copied from s66builder.mts.
+// The builder empties the chunk's specimens.jsonl once before its row loop (promised on #825).
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s67a pnpm exec node --import tsx s67builder.tmp.mts
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import JSZip from "jszip";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const W14 = "http://schemas.microsoft.com/office/word/2010/wordml";
+const WS = "http://purl.oclc.org/ooxml/wordprocessingml/main";
+const U = "urn:example:unknown";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+const TEXT_P = "<w:p><w:r><w:t>Text</w:t></w:r></w:p>";
+const REVISION = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string, extra = "") =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"${extra}/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+const control = () => buildDocx({ ...P });
+
+/**
+ * `parts` with the main document's `r:` and `u:` prefixes declared (`u` is bound to a namespace Word does not
+ * understand and appears only in `Requires`), `sect` first in its `w:sectPr` and `run` appended inside its only paragraph.
+ */
+const mainWith = (parts: Record<string, string>, run: string, sect = ""): Record<string, string> => ({
+    ...parts,
+    [MAIN]: replaceOnce(
+        replaceOnce(
+            replaceOnce(parts[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}" xmlns:u="${U}"`),
+            "<w:sectPr>",
+            `<w:sectPr>${sect}`,
+        ),
+        "</w:r></w:p>",
+        `</w:r>${run}</w:p>`,
+    ),
+});
+/** `parts` with the main document stored as `word/<name>`: the part, its sidecar, the officeDocument target and its Override. */
+const renameMain = (parts: Record<string, string>, name: string): Record<string, string> => {
+    const next: Record<string, string> = { ...parts, [`word/${name}`]: parts[MAIN]!, [`word/_rels/${name}.rels`]: parts[SIDECAR]! };
+    delete next[MAIN];
+    delete next[SIDECAR];
+    next["_rels/.rels"] = replaceOnce(parts["_rels/.rels"]!, 'Target="word/document.xml"', `Target="word/${name}"`);
+    next[CT] = replaceOnce(parts[CT]!, 'PartName="/word/document.xml"', `PartName="/word/${name}"`);
+    return next;
+};
+
+type Kind = "footnote" | "endnote";
+const notesXml = (kind: Kind, held: string) =>
+    `${XML_DECL}<w:${kind}s xmlns:w="${W}"><w:${kind} w:id="${held}">${TEXT_P}</w:${kind}></w:${kind}s>`;
+const noteRef = (kind: Kind, id: string) => `<w:r><w:${kind}Reference w:id="${id}"/></w:r>`;
+/** The minimal parts with `word/<kind>s.xml` holding note `held`, related by the main document and typed by `type`. */
+const withNotes = (kind: Kind, held: string, type = `${WML}.${kind}s+xml`): Record<string, string> => ({
+    ...P,
+    [`word/${kind}s.xml`]: notesXml(kind, held),
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", `${kind}s`, `${kind}s.xml`)),
+    [CT]: overrides(P[CT]!, [`word/${kind}s.xml`, type]),
+});
+
+const comment = (id: string) => `<w:comment w:id="${id}" w:author="a">${TEXT_P}</w:comment>`;
+const commentsRoot = (body: string) =>
+    `${XML_DECL}<w:comments xmlns:w="${W}" xmlns:mc="${MC}" xmlns:w14="${W14}" xmlns:u="${U}">${body}</w:comments>`;
+/** The minimal parts with `word/comments.xml` holding `body`, related by the main document and typed by `type`. */
+const withComments = (body: string, type = `${WML}.comments+xml`): Record<string, string> => ({
+    ...P,
+    "word/comments.xml": commentsRoot(body),
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdC", "comments", "comments.xml")),
+    [CT]: overrides(P[CT]!, ["word/comments.xml", type]),
+});
+const commentRef = (id: string) => `<w:r><w:commentReference w:id="${id}"/></w:r>`;
+const alternate = (requires: string, choice: string, fallback: string) =>
+    `<mc:AlternateContent><mc:Choice Requires="${requires}">${choice}</mc:Choice><mc:Fallback>${fallback}</mc:Fallback></mc:AlternateContent>`;
+
+/** A read header (`word/header1.xml`, referenced by the section) holding `run` in its paragraph. */
+const withReadHeader = (parts: Record<string, string>, run: string): Record<string, string> =>
+    mainWith(
+        {
+            ...parts,
+            "word/header1.xml": `${XML_DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r>${run}</w:p></w:hdr>`,
+            [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
+            [CT]: overrides(parts[CT]!, ["word/header1.xml", `${WML}.header+xml`]),
+        },
+        "",
+        `<w:headerReference w:type="default" r:id="rIdH"/>`,
+    );
+
+/** Two endnotes relationships in document order: word/endnotes.xml holding `first`, then word/notes2.xml (endnotes+xml) holding `second`. */
+const twoEndnotes = (first: string, second: string, referenced: boolean) => {
+    const parts = withNotes("endnote", first);
+    const both = {
+        ...parts,
+        "word/notes2.xml": notesXml("endnote", second),
+        [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdN2", "endnotes", "notes2.xml")),
+        [CT]: overrides(parts[CT]!, ["word/notes2.xml", `${WML}.endnotes+xml`]),
+    };
+    return buildDocx(referenced ? mainWith(both, noteRef("endnote", "1")) : both);
+};
+
+/** The minimal parts with `word/footer1.xml` read through the section's default footer reference, holding `run`. */
+const withReadFooter = (parts: Record<string, string>, run: string): Record<string, string> =>
+    mainWith(
+        {
+            ...parts,
+            "word/footer1.xml": `${XML_DECL}<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Footer</w:t></w:r>${run}</w:p></w:ftr>`,
+            [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdF", "footer", "footer1.xml")),
+            [CT]: overrides(parts[CT]!, ["word/footer1.xml", `${WML}.footer+xml`]),
+        },
+        "",
+        `<w:footerReference w:type="default" r:id="rIdF"/>`,
+    );
+
+/** Two footnotes relationships in document order: word/footnotes.xml holding `first`, then word/notes2.xml (footnotes+xml) holding `second`; the body references footnote 1. */
+const twoFootnotes = (first: string, second: string) => {
+    const parts = withNotes("footnote", first);
+    return buildDocx(
+        mainWith(
+            {
+                ...parts,
+                "word/notes2.xml": notesXml("footnote", second),
+                [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdN2", "footnotes", "notes2.xml")),
+                [CT]: overrides(parts[CT]!, ["word/notes2.xml", `${WML}.footnotes+xml`]),
+            },
+            noteRef("footnote", "1"),
+        ),
+    );
+};
+
+/** Session 46's Word-saved ISO Strict fixture (pinned clean-open), with `edit` applied to its main document. */
+const STRICT01 = "tests/fixtures/working/word-clean-strict01.docx";
+const strict01 = async (edit: (main: string) => string = (main) => main) => {
+    const zip = await JSZip.loadAsync(readFileSync(STRICT01));
+    const parts: Record<string, string | Uint8Array> = {};
+    for (const [name, entry] of Object.entries(zip.files)) if (!entry.dir) parts[name] = await entry.async("uint8array");
+    parts[MAIN] = edit(Buffer.from(parts[MAIN] as Uint8Array).toString("utf8"));
+    return buildDocx(parts);
+};
+
+/** A used `word/comments.xml` whose stored root is mc:AlternateContent; its w14 Choice holds the w:comments root with comment 0. */
+const rootAlternateComments = (type: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                "word/comments.xml":
+                    `${XML_DECL}<mc:AlternateContent xmlns:mc="${MC}" xmlns:w14="${W14}"><mc:Choice Requires="w14">` +
+                    `<w:comments xmlns:w="${W}">${comment("0")}</w:comments></mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdC", "comments", "comments.xml")),
+                [CT]: overrides(P[CT]!, ["word/comments.xml", type]),
+            },
+            commentRef("0"),
+        ),
+    );
+/** Comment 0 (own root) with its range start inside an mc:Choice requiring `requires` (empty Fallback), the end and the reference outside. */
+const splitRange = (requires: string) =>
+    buildDocx(
+        mainWith(
+            withComments(comment("0")),
+            alternate(requires, `<w:commentRangeStart w:id="0"/>`, "") +
+                `<w:r><w:t>ranged</w:t></w:r><w:commentRangeEnd w:id="0"/>` +
+                commentRef("0"),
+        ),
+    );
+
+/** The minimal package with a reached glossary whose own sidecar relates word/glossary/footnotes.xml holding footnote `held`. */
+const glossaryWithFootnotes = (held: string): Record<string, string> => ({
+    ...P,
+    "word/glossary/document.xml":
+        `${XML_DECL}<w:glossaryDocument xmlns:w="${W}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+        `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+        `<w:docPartBody>${TEXT_P}</w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`,
+    "word/glossary/_rels/document.xml.rels": `${XML_DECL}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${relationship("rId1", "footnotes", "footnotes.xml")}</Relationships>`,
+    "word/glossary/footnotes.xml": notesXml("footnote", held),
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdG", "glossaryDocument", "glossary/document.xml")),
+    [CT]: overrides(
+        P[CT]!,
+        ["word/glossary/document.xml", `${WML}.document.glossary+xml`],
+        ["word/glossary/footnotes.xml", `${WML}.footnotes+xml`],
+    ),
+});
+/** Footnote 1 stored at `stored`, typed `type`, named only by a footnotes relationship with `target` and `extra`; the body references footnote 1. */
+const footnotesAt = (stored: string, type: string, target: string, extra = "") =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [stored]: notesXml("footnote", "1"),
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", "footnotes", target, extra)),
+                [CT]: overrides(P[CT]!, [stored, type]),
+            },
+            noteRef("footnote", "1"),
+        ),
+    );
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+const FOOTNOTES = `${WML}.footnotes+xml`;
+const STYLES = `${WML}.styles+xml`;
+const COMMENTS = `${WML}.comments+xml`;
+/** Note 1 of `kind` stored at `stored`, typed `type`, named only by a `<kind>s` relationship with `target`; the body references it. */
+const notesAt = (kind: Kind, stored: string, type: string, target: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [stored]: notesXml(kind, "1"),
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", `${kind}s`, target)),
+                [CT]: overrides(P[CT]!, [stored, type]),
+            },
+            noteRef(kind, "1"),
+        ),
+    );
+/** Note 1 of `kind` stored at `stored` (its paragraph also holding `nested`), named only by a `<kind>s` relationship with `target`; the body references note 1. */
+const notesWithNested = (kind: Kind, stored: string, target: string, nested: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [stored]: `${XML_DECL}<w:${kind}s xmlns:w="${W}"><w:${kind} w:id="1"><w:p><w:r><w:t>Text</w:t></w:r>${nested}</w:p></w:${kind}></w:${kind}s>`,
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", `${kind}s`, target)),
+                [CT]: overrides(P[CT]!, [stored, `${WML}.${kind}s+xml`]),
+            },
+            noteRef(kind, "1"),
+        ),
+    );
+/** A used `word/comments.xml` stored as `stored` and typed `type`; the body references comment 0. */
+const usedComments = (stored: string, type: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                "word/comments.xml": stored,
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdC", "comments", "comments.xml")),
+                [CT]: overrides(P[CT]!, ["word/comments.xml", type]),
+            },
+            commentRef("0"),
+        ),
+    );
+/** s63b's stored root (an mc:AlternateContent whose Choice holds the w:comments root) with `edit` applied: text before the root, a non-empty Fallback, text between the branches, another Requires, or a Strict root. */
+const alternateCommentsRoot = ({ before = "", fallback = "", between = "", requires = "w14", rootNs = W } = {}) =>
+    `${XML_DECL}<mc:AlternateContent xmlns:mc="${MC}" xmlns:w14="${W14}"${requires === "w" ? ` xmlns:w="${W}"` : ""}><mc:Choice Requires="${requires}">` +
+    `${before}<w:comments xmlns:w="${rootNs}">${comment("0")}</w:comments></mc:Choice>${between}` +
+    (fallback ? `<mc:Fallback>${fallback}</mc:Fallback>` : "<mc:Fallback/>") +
+    "</mc:AlternateContent>";
+/** A reached glossary relating its own word/glossary/footnotes.xml (footnote 1), plus word/comments.xml whose comment 0 holds a footnote reference to 1, read by the main document, the glossary or both. */
+const sharedComments = (main: boolean, glossary: boolean) => {
+    const parts = glossaryWithFootnotes("1");
+    const next: Record<string, string> = {
+        ...parts,
+        "word/comments.xml": `${XML_DECL}<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="a"><w:p><w:r><w:t>Text</w:t></w:r>${noteRef("footnote", "1")}</w:p></w:comment></w:comments>`,
+        [CT]: overrides(parts[CT]!, ["word/comments.xml", COMMENTS]),
+    };
+    if (glossary) {
+        next["word/glossary/document.xml"] = replaceOnce(
+            next["word/glossary/document.xml"]!,
+            "<w:docPartBody><w:p><w:r><w:t>Text</w:t></w:r></w:p>",
+            `<w:docPartBody><w:p><w:r><w:t>Text</w:t></w:r>${commentRef("0")}</w:p>`,
+        );
+        next["word/glossary/_rels/document.xml.rels"] = appendRels(
+            next["word/glossary/_rels/document.xml.rels"]!,
+            relationship("rIdC", "comments", "../comments.xml"),
+        );
+    }
+    if (!main) return buildDocx(next);
+    return buildDocx(
+        mainWith({ ...next, [SIDECAR]: appendRels(next[SIDECAR]!, relationship("rIdC", "comments", "comments.xml")) }, commentRef("0")),
+    );
+};
+
+/** word/comments.xml whose comment 0 holds `inComment`, read by the main document and/or the glossary; `notes` adds the glossary's footnotes part (footnote 1). */
+const commentsReach = (main: boolean, glossary: boolean, inComment: string, notes = true) => {
+    const parts = notes ? glossaryWithFootnotes("1") : glossaryWithFootnotes("1");
+    const next: Record<string, string> = {
+        ...parts,
+        "word/comments.xml": `${XML_DECL}<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="a"><w:p><w:r><w:t>Text</w:t></w:r>${inComment}</w:p></w:comment></w:comments>`,
+        [CT]: overrides(parts[CT]!, ["word/comments.xml", COMMENTS]),
+    };
+    if (!notes) {
+        delete next["word/glossary/footnotes.xml"];
+        next["word/glossary/_rels/document.xml.rels"] = replaceOnce(
+            next["word/glossary/_rels/document.xml.rels"]!,
+            relationship("rId1", "footnotes", "footnotes.xml"),
+            "",
+        );
+        next[CT] = replaceOnce(next[CT]!, `<Override PartName="/word/glossary/footnotes.xml" ContentType="${WML}.footnotes+xml"/>`, "");
+    }
+    if (glossary) {
+        next["word/glossary/document.xml"] = replaceOnce(
+            next["word/glossary/document.xml"]!,
+            "<w:docPartBody><w:p><w:r><w:t>Text</w:t></w:r></w:p>",
+            `<w:docPartBody><w:p><w:r><w:t>Text</w:t></w:r>${commentRef("0")}</w:p>`,
+        );
+        next["word/glossary/_rels/document.xml.rels"] = appendRels(
+            next["word/glossary/_rels/document.xml.rels"]!,
+            relationship("rIdC", "comments", "../comments.xml"),
+        );
+    }
+    if (!main) return buildDocx(next);
+    return buildDocx(
+        mainWith({ ...next, [SIDECAR]: appendRels(next[SIDECAR]!, relationship("rIdC", "comments", "comments.xml")) }, commentRef("0")),
+    );
+};
+
+/** The minimal package with a reached glossary whose docPart body holds `gloss` in its paragraph; the glossary relates no notes part. */
+const glossaryBare = (gloss = ""): Record<string, string> => {
+    const parts = glossaryWithFootnotes("1");
+    const next: Record<string, string> = { ...parts };
+    delete next["word/glossary/footnotes.xml"];
+    next["word/glossary/_rels/document.xml.rels"] = replaceOnce(
+        next["word/glossary/_rels/document.xml.rels"]!,
+        relationship("rId1", "footnotes", "footnotes.xml"),
+        "",
+    );
+    next[CT] = replaceOnce(next[CT]!, `<Override PartName="/word/glossary/footnotes.xml" ContentType="${WML}.footnotes+xml"/>`, "");
+    next["word/glossary/document.xml"] = replaceOnce(
+        next["word/glossary/document.xml"]!,
+        "<w:docPartBody><w:p><w:r><w:t>Text</w:t></w:r></w:p>",
+        `<w:docPartBody><w:p><w:r><w:t>Text</w:t></w:r>${gloss}</w:p>`,
+    );
+    return next;
+};
+/** word/comments.xml (comment 0, typed comments) related and referenced by the main document and the glossary as the flags say. */
+const commentsShared = (mainRel: boolean, mainRef: boolean, glossRel: boolean, glossRef: boolean) => {
+    const next = glossaryBare(glossRef ? commentRef("0") : "");
+    next["word/comments.xml"] = commentsRoot(comment("0"));
+    next[CT] = overrides(next[CT]!, ["word/comments.xml", COMMENTS]);
+    if (glossRel)
+        next["word/glossary/_rels/document.xml.rels"] = appendRels(
+            next["word/glossary/_rels/document.xml.rels"]!,
+            relationship("rIdC", "comments", "../comments.xml"),
+        );
+    if (mainRel) next[SIDECAR] = appendRels(next[SIDECAR]!, relationship("rIdC", "comments", "comments.xml"));
+    return buildDocx(mainRef ? mainWith(next, commentRef("0")) : next);
+};
+/** word/<kind>s.xml (note 1) related by the main document and/or the glossary (as ../<kind>s.xml), each referencing note 1 when its flag says. */
+const notesShared = (kind: Kind, mainRef: boolean, glossRel: boolean, glossRef: boolean) => {
+    const next = glossaryBare(glossRef ? noteRef(kind, "1") : "");
+    next[`word/${kind}s.xml`] = notesXml(kind, "1");
+    next[CT] = overrides(next[CT]!, [`word/${kind}s.xml`, `${WML}.${kind}s+xml`]);
+    next[SIDECAR] = appendRels(next[SIDECAR]!, relationship("rIdN", `${kind}s`, `${kind}s.xml`));
+    if (glossRel)
+        next["word/glossary/_rels/document.xml.rels"] = appendRels(
+            next["word/glossary/_rels/document.xml.rels"]!,
+            relationship("rIdN", `${kind}s`, `../${kind}s.xml`),
+        );
+    return buildDocx(mainRef ? mainWith(next, noteRef(kind, "1")) : next);
+};
+/** A used word/comments.xml (typed comments) whose stored root is mc:AlternateContent with `inner` as its content (Choice and Fallback markup with any text). */
+const rootAlternate = (inner: string) =>
+    usedComments(
+        `${XML_DECL}<mc:AlternateContent xmlns:mc="${MC}" xmlns:w14="${W14}" xmlns:u="${U}">${inner}</mc:AlternateContent>`,
+        COMMENTS,
+    );
+const CHOICE = `<mc:Choice Requires="w14"><w:comments xmlns:w="${W}">${comment("0")}</w:comments></mc:Choice>`;
+const UNKNOWN_CHOICE = `<mc:Choice Requires="u"><w:comments xmlns:w="${W}">${comment("0")}</w:comments></mc:Choice>`;
+/** The main document (which declares mc and w14 already) with a run-level mc:AlternateContent in its paragraph: a w14 Choice run, `between`, then a Fallback run. */
+const bodyAlternate = (between: string) =>
+    buildDocx({
+        ...P,
+        [MAIN]: replaceOnce(
+            P[MAIN]!,
+            "</w:r></w:p>",
+            `</w:r><mc:AlternateContent><mc:Choice Requires="w14"><w:r><w:t>Chosen</w:t></w:r></mc:Choice>${between}<mc:Fallback><w:r><w:t>Fallback</w:t></w:r></mc:Fallback></mc:AlternateContent></w:p>`,
+        ),
+    });
+
+const chunks: Record<string, Row[]> = {
+    s67a: withControls("s67a", [
+        [
+            "comments-both-reaches-repeat",
+            "repeat of s66a: word/comments.xml related and referenced by both the main document and a reached glossary; comment 0 holds only text",
+            () => commentsShared(true, true, true, true),
+        ],
+        [
+            "comments-both-relate-main-references",
+            "the same part related by both, referenced by the main document's body only",
+            () => commentsShared(true, true, true, false),
+        ],
+        [
+            "comments-both-relate-glossary-references",
+            "the same part related by both, referenced by the glossary's docPart only",
+            () => commentsShared(true, false, true, true),
+        ],
+        [
+            "comments-both-relate-neither-references",
+            "the same part related by both, referenced by neither",
+            () => commentsShared(true, false, true, false),
+        ],
+        [
+            "footnotes-shared-both-reaches",
+            "word/footnotes.xml (footnote 1) related by the main document and by the glossary as ../footnotes.xml; the body and the glossary's docPart each reference footnote 1",
+            () => notesShared("footnote", true, true, true),
+        ],
+        [
+            "footnotes-shared-main-references-calibration",
+            "calibration: the same part related by both, referenced by the body only",
+            () => notesShared("footnote", true, true, false),
+        ],
+        [
+            "endnotes-shared-both-reaches",
+            "the endnotes twin: word/endnotes.xml related by both, endnote 1 referenced by both",
+            () => notesShared("endnote", true, true, true),
+        ],
+    ]),
+    s67b: withControls("s67b", [
+        [
+            "comments-alternate-text-before-choice",
+            "word/comments.xml (typed comments), stored root mc:AlternateContent: text, then s63b's w14 Choice holding the w:comments root, then an empty Fallback",
+            () => rootAlternate(`Stray${CHOICE}<mc:Fallback/>`),
+        ],
+        [
+            "comments-alternate-text-after-fallback",
+            "the same root with the text after the empty Fallback",
+            () => rootAlternate(`${CHOICE}<mc:Fallback/>Stray`),
+        ],
+        [
+            "comments-alternate-text-no-fallback",
+            "the w14 Choice holding the root, then text, and no Fallback",
+            () => rootAlternate(`${CHOICE}Stray`),
+        ],
+        [
+            "comments-alternate-no-fallback-calibration",
+            "calibration: the w14 Choice holding the root and no Fallback; no text",
+            () => rootAlternate(CHOICE),
+        ],
+        [
+            "comments-alternate-whitespace-between-calibration",
+            "calibration: a newline and spaces (whitespace only) between the Choice and the empty Fallback",
+            () => rootAlternate(`${CHOICE}\n  <mc:Fallback/>`),
+        ],
+        [
+            "comments-alternate-two-choices-calibration",
+            "calibration: the w14 Choice holding the root, a second Choice requiring an unknown namespace holding the root, then an empty Fallback; no text",
+            () => rootAlternate(`${CHOICE}${UNKNOWN_CHOICE}<mc:Fallback/>`),
+        ],
+        [
+            "comments-alternate-text-between-choices",
+            "the same two Choices with text between them",
+            () => rootAlternate(`${CHOICE}Stray${UNKNOWN_CHOICE}<mc:Fallback/>`),
+        ],
+        [
+            "body-alternate-text-between",
+            "the main document's paragraph holds a run-level mc:AlternateContent: a w14 Choice run, text, then a Fallback run",
+            () => bodyAlternate("Stray"),
+        ],
+        ["body-alternate-calibration", "calibration: the same run-level mc:AlternateContent without the text", () => bodyAlternate("")],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+writeFileSync(path.join(dir, "..", "specimens.jsonl"), "");
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        validatorRevision: REVISION,
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-66 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s67a", "s67b")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s67/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-67 parts of docs/plans/evidence/word-probes-2026-10-24.md into s67/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796).
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s67a", "s67b")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s67/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                                   "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                                   "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+out = [
+    f"### Session 67: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at {at}",
+    "",
+    "The scope of [#850](https://github.com/jandira-tech/docx-validate/issues/850) and [#851](https://github.com/jandira-tech/docx-validate/issues/851). Two chunks, each "
+    "opening and closing with the minimal control. Each ran twice, as two separate driver runs of byte-identical copies, and each "
+    "run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the "
+    "manifest spelling when both runs and both readings agree, and `unknown` otherwise; "
+    f"{agreed} of {len(rows)} rows agree. The two times in Observed are the ends of the first and second runs. Shape is the "
+    f"builder's description of the specimen. The builder recorded the validator revision in every row (`{rev}`).",
+    "",
+    "- **Parts both story roots read (s67a, #850).** Session 66's shared comments part, related and referenced by both the "
+    "main document and a reached glossary, is refused again. Related by both but referenced by only one of them, or by neither, "
+    "it opens clean, so the refusal needs both roots to use the part. A `word/footnotes.xml` that the main document relates "
+    "and the glossary relates as `../footnotes.xml`, each referencing footnote 1, is refused too, and so is its endnotes twin; "
+    "referenced by the body only, the shared footnotes part opens clean. Word-valid accepts all seven rows: three false "
+    "negatives.",
+    "- **Text directly inside `mc:AlternateContent` (s67b, #851).** In a used `word/comments.xml` typed comments whose stored "
+    "root is s63b's AlternateContent, text before the Choice, text after the Fallback, text after a Choice with no Fallback, "
+    "and text between two Choices (the second requiring a namespace Word does not understand) each get the recovery offer; "
+    "the no-Fallback and two-Choice roots without the text open clean here, as s63b's root did in session 63, and so does a "
+    "newline and spaces between the Choice and the Fallback. In the main "
+    "document, a run-level AlternateContent with text between its Choice and its Fallback is refused, and without the text "
+    "it opens clean. Word-valid accepts every row: five false negatives.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 67</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 67 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s67builder.mts", ROOT / "s67builder.mts", "ts"), ("compare.py", ROOT / "s67/compare.py", "python"),
+                         ("section.py", ROOT / "s67/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s67/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>
