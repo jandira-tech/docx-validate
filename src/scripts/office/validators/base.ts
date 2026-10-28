@@ -1216,7 +1216,12 @@ export class BaseSchemaValidator {
      * `headerReference`/`footerReference` mismatch (#616) and on each such
      * `rels-id-missing` (#619), and the same hand-off pairs a dangling
      * `c:chart`/`o:OLEObject` r:id with `word-part-reference-relationship`
-     * (#705) — never through the message prose.
+     * (#705), a `wne:toolbarData` with `word-attached-toolbar-relationship`
+     * (#716) and a refused `w:hyperlink` with `word-hyperlink-relationship`
+     * (#1089). A full non-lenient `PPTXSchemaValidator.validate()` run hands
+     * a slide master's `p:sldLayoutId` to `sldlayout-missing-rid` the same
+     * way (#1093). Each pairing reads the registered identity, never the
+     * message prose.
      */
     async validateAllRelationshipIds(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];

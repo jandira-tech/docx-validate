@@ -199,6 +199,20 @@ a Strict package's ids are judged: `r:id` for its type here, and `r:id`,
 Transitional namespace
 ([#1065](https://github.com/jandira-tech/docx-validate/issues/1065),
 [#1073](https://github.com/jandira-tech/docx-validate/issues/1073)).
+The two codes' severity differs by format under word-valid. For DOCX/DOCM
+they are warnings, because `isWordBlockingIssue` does not list them, so a
+dangling or mistyped id that no Word rule judges leaves the package valid;
+strict reports them as errors. PPTX has no word-valid severity policy, so
+under word-valid and strict they stay errors and the package is invalid
+([#1091](https://github.com/jandira-tech/docx-validate/issues/1091),
+[#1092](https://github.com/jandira-tech/docx-validate/issues/1092)).
+A master's `sldLayoutId` that `sldlayout-missing-rid` reports is one finding
+under word-valid and strict: the run drops the id walk's `rels-id-mismatch`
+or `rels-id-missing` copy of the same element and id, as DOCX hands a story
+reference's copy to its Word rule. That check reads only the Transitional
+`r:id`, so a Strict `rs:id` beside it keeps its own `rels-id-missing`.
+Lenient keeps both findings
+([#1093](https://github.com/jandira-tech/docx-validate/issues/1093)).
 
 The `strict` profile runs the Word rules and applicable XSD schemas. Schema
 conformance is stricter than Word openability. A leading BOM is at most a warning
@@ -1633,7 +1647,11 @@ header's sidecar still receive the hyperlink finding
 glossary's misspelled mode now belongs to the target-mode check (session 57,
 `s57f`; [#775](https://github.com/jandira-tech/docx-validate/issues/775)).
 The finding is an error, and Word-blocking, under word-valid and strict;
-lenient runs no Word rule.
+lenient runs no Word rule. In a full word-valid or strict run a hyperlink
+this rule refuses is reported once, through this rule: the legacy
+`rels-id-mismatch` or `rels-id-missing` copy of its id, or of its id in the
+other relationships namespace, is handed off as the header/footer rule's is
+([#1089](https://github.com/jandira-tech/docx-validate/issues/1089)).
 
 `word-header-footer-relationship` requires every `w:headerReference` and
 `w:footerReference` in a story root's `w:sectPr` to name a relationship whose
@@ -1737,10 +1755,13 @@ namespace, which the `dgm:relIds` shape's `r:dm`, `r:lo`, `r:qs` and
 `r:cs` are not, so that shape's only finding is this rule's; an
 unparseable sidecar is skipped for `xml-syntax` to report. The finding is an
 error, and Word-blocking, under word-valid and strict; lenient runs no Word
-rule. In a full word-valid or strict run, a dangling Transitional `r:id` on a
-`c:chart` or an `o:OLEObject` is reported once, through this rule: every
-legacy `rels-id-missing` copy of the same Id on the same element in the same
-part is handed off — including the unselected twin's copy of the two an
+rule. In a full word-valid or strict run, a dangling id on a `c:chart` or
+an `o:OLEObject`, in either relationships namespace, is reported once,
+through this rule: every legacy `rels-id-missing` copy of that Id, or of the
+element's id in the other relationships namespace
+([#1074](https://github.com/jandira-tech/docx-validate/issues/1074),
+[#1079](https://github.com/jandira-tech/docx-validate/issues/1079)), on the
+same element in the same part is handed off — including the unselected twin's copy of the two an
 element with an `mc:Choice` and an `mc:Fallback` twin yields, which the
 raw-part walk sees twice and this rule once (#727; the key is the same
 element name, namespace and local name, with the same Id in the same
@@ -1854,8 +1875,11 @@ missing `r:id`. The finding is an error under
 strict and Word-blocking under word-valid for DOCX/DOCM; lenient runs no Word
 rule. In a full word-valid or strict run neither `rels-id-mismatch` nor
 `rels-id-missing` repeats an element this check reported — the run drops
-every copy of the same Id on the same element name (namespace URI and
-local name, not the element instance) in the same part for a non-empty id,
+every copy of the same Id, and of the element's id in the other
+relationships namespace
+([#1079](https://github.com/jandira-tech/docx-validate/issues/1079)), on the
+same element name (namespace URI and local name, not the element instance)
+in the same part for a non-empty id,
 including the unselected twin's copy of the two copies an element with an
 `mc:Choice` and an `mc:Fallback` twin yields (#727), pairing the findings
 by the element identity both checks register on the
