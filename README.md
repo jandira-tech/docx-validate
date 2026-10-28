@@ -1938,7 +1938,11 @@ A first comment is refused with an error naming the part, changing nothing,
 when the tree has no `[Content_Types].xml`, or when `_rels/.rels` cannot be
 decoded or parsed, names no `officeDocument` relationship that is not
 External, names a target outside the package, or names a main document that is
-not stored. A later comment reads no `_rels/.rels`.
+not stored. A later comment reads no `_rels/.rels`. A first or later comment
+is refused the same way when a part it would edit is not well-formed XML
+([#905](https://github.com/jandira-tech/docx-validate/issues/905)); before, the
+call wrote some parts and then threw, which could leave relationships naming
+comment parts that do not exist.
 
 ### Drive the CLIs programmatically
 

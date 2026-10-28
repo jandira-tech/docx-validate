@@ -482,12 +482,14 @@ export interface AddCommentResult {
  * Add a comment (or reply) to an unpacked DOCX.
  *
  * On success, returns the generated `paraId` and a human-readable status
- * message. On failure (missing `word/` directory, missing parent comment,
- * or, for a first comment, missing `[Content_Types].xml`, an `_rels/.rels`
- * that cannot be decoded or parsed, an `_rels/.rels` naming no non-External
- * `officeDocument` relationship, an `officeDocument` target that escapes
- * the package root, or a named main document that does not exist, #906),
- * returns `paraId = ""` and a message starting with `Error:`.
+ * message. On failure (missing `word/` directory, missing parent comment, a
+ * part this edit would write that is stored in an encoding this tool cannot
+ * decode (#879) or is not well-formed XML (#905), or, for a first comment,
+ * missing `[Content_Types].xml`, an `_rels/.rels` that cannot be decoded or
+ * parsed, an `_rels/.rels` naming no non-External `officeDocument`
+ * relationship, an `officeDocument` target that escapes the package root, or
+ * a named main document that does not exist, #906), returns `paraId = ""`
+ * and a message starting with `Error:`.
  */
 export async function addComment(opts: AddCommentOptions): Promise<AddCommentResult> {
     const { unpackedDir, commentId, text, parent, author, initials, date } = opts;
@@ -533,12 +535,14 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
     const mainRelsPath = path.join(unpackedDir, ...mainRelsPart.split("/"));
     const commentTargets = COMMENT_PART_NAMES.map((name) => path.posix.relative(mainFolder, path.posix.join("word", name)));
 
-    // Preflight: decode every existing part this edit may write, before any
-    // file is created, copied or changed. The main document's relationships
-    // part and `[Content_Types].xml` are written only for the first comment. A
-    // part whose encoding cannot be decoded is left byte-for-byte untouched
-    // (#866), so an undecodable part found mid-write used to leave earlier
-    // parts already changed, or report success for a wiring it skipped (#879).
+    // Preflight: decode and parse every existing part this edit may write,
+    // before any file is created, copied or changed. The main document's
+    // relationships part and `[Content_Types].xml` are written only for the
+    // first comment. A part whose encoding cannot be decoded is left
+    // byte-for-byte untouched (#866), so an undecodable part found mid-write
+    // used to leave earlier parts already changed, or report success for a
+    // wiring it skipped (#879). A part that decodes but does not parse used
+    // to throw mid-write the same way, so it is refused here too (#905).
     const writtenParts = [comments, ext, ids, extensible];
     if (firstComment) {
         writtenParts.push(mainRelsPath, ctPath);
@@ -551,6 +555,12 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
         const xml = await readXmlPart(part);
         if (xml === undefined) {
             return { paraId: "", message: `Error: ${part} is stored in an encoding this tool cannot decode` };
+        }
+        try {
+            parseXml(xml.text);
+        } catch (err) {
+            const detail = err instanceof Error ? err.message : String(err);
+            return { paraId: "", message: `Error: ${part} is not well-formed XML: ${detail}` };
         }
         decoded.set(part, xml);
     }
