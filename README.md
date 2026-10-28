@@ -1210,9 +1210,18 @@ session 74 opened clean, with the note rendered, `/../footnotes.xml` and
 only in `word/footnotes.xml`
 ([#982](https://github.com/jandira-tech/docx-validate/issues/982)). The
 file-reference walks stop such a climb at the root too since
-[#984](https://github.com/jandira-tech/docx-validate/issues/984). The read
-model's other relationship walks keep dropping an escaping target, though Word
-session 75 read an escaping styles and header target from the root.
+[#984](https://github.com/jandira-tech/docx-validate/issues/984), and every
+other relationship the read model walks, and the main-document checks, since
+[#986](https://github.com/jandira-tech/docx-validate/issues/986): Word
+session 77 opened clean, with "Commented [1]: Note" rendered, a body comment
+reference whose comment sits at `/comments.xml`, named by `../../comments.xml`
+or `/../comments.xml`, and offered recovery when the comment sat only in
+`word/comments.xml`; session 78 opened clean, with the main document rendered,
+a main document named from `_rels/.rels` by `../word/document.xml`,
+`../../word/document.xml` or `/../word/document.xml`. Word-valid rejected each
+of those clean rows, with `comment-marker-missing` or
+`word-main-document-part`; session 75 had read an escaping styles and header
+target from the root.
 
 `word-shared-story-part` rejects a comments, footnotes or endnotes part that
 the read model lists for both a main-document entry and a glossary entry
@@ -2098,7 +2107,13 @@ or parsed, names no `officeDocument` relationship that is not External, names a
 target outside the package, or names a main document that is not stored — the
 conventional `word/document.xml` included; before, a missing `word/document.xml`
 was written to
-([#919](https://github.com/jandira-tech/docx-validate/issues/919)). A later
+([#919](https://github.com/jandira-tech/docx-validate/issues/919)). A target
+climbing past the package root names the part its climb stops at, as `validate`
+reads it, so `../word/document.xml` or `/../word/document.xml` wires the stored
+`word/document.xml`, which Word opened as the main document (session 78), and a
+comments target such as `word/`'s `../../word/comments.xml` counts as relating
+`word/comments.xml`
+([#986](https://github.com/jandira-tech/docx-validate/issues/986)). A later
 comment reads no `_rels/.rels`. A first or later comment is refused the same way
 when a part it would edit is not well-formed XML
 ([#905](https://github.com/jandira-tech/docx-validate/issues/905)); before, the

@@ -261,6 +261,13 @@ export const findEquivalentPart = (names: readonly string[], partName: string): 
 const hasUriScheme = (target: string): boolean => /^[a-z][a-z\d+.-]*:/i.test(target);
 
 /**
+ * `resolved`, a normalized relative path, with the `..` segments that climb
+ * past the package root dropped, a bare `..` reading as the root `.`: the
+ * climb stops at the root, as RFC 3986's remove_dot_segments stops it.
+ */
+const stopClimbAtRoot = (resolved: string): string => resolved.replace(/^(?:\.\.\/)+/, "").replace(/^\.\.$/, ".");
+
+/**
  * The package-relative part name one relationship target references,
  * resolved against `baseDir`, the folder of its source part, as the rest of
  * the codebase does (`\` reads as `/`, a query or fragment is dropped,
@@ -273,14 +280,16 @@ const hasUriScheme = (target: string): boolean => /^[a-z][a-z\d+.-]*:/i.test(tar
  * segment leaves a folder, which keeps the final `/` RFC 3986 gives it and
  * `path.posix.join` would drop: `word/main.xml/.` and `word/main.xml/x/..`
  * name `word/main.xml/`, which Word refused as a part (session 70, #962);
- * the package root keeps its own spelling, `.` or `/`. `clampAtPackageRoot`
- * stops the target's `..` segments at the package root instead of leaving
- * them to climb past it, a package-absolute reference's climb and a final
- * bare `..` included (#962), as RFC 3986's remove_dot_segments stops them,
- * the way Word resolved `word/`'s `../../footnotes.xml` to
- * `/footnotes.xml` (session 64 s64a, #830).
+ * the package root keeps its own spelling, `.` or `/`. The target's `..`
+ * segments stop at the package root instead of climbing past it, a
+ * package-absolute reference's climb and a final bare `..` included (#962),
+ * as RFC 3986's remove_dot_segments stops them and as Word read every such
+ * target it was shown: `word/`'s `../../footnotes.xml` named
+ * `/footnotes.xml` (sessions 63, 64 and 74, #830), and so did the styles,
+ * header, customXml, comments and officeDocument climbs of sessions 75 to
+ * 78 (#984, #986).
  */
-export const relationshipTargetPartName = (baseDir: string, target: string, clampAtPackageRoot = false): string | undefined => {
+export const relationshipTargetPartName = (baseDir: string, target: string): string | undefined => {
     if (hasUriScheme(target)) {
         return undefined;
     }
@@ -293,13 +302,13 @@ export const relationshipTargetPartName = (baseDir: string, target: string, clam
     // the root, then the `/` goes back on (#947).
     const absolute = reference.startsWith("/");
     const belowRoot = path.posix.join(absolute ? "." : baseDir, absolute ? reference.slice(1) : reference);
-    // A climb that ends in a bare `..` stops at the root too (#962).
-    const clamped = clampAtPackageRoot ? belowRoot.replace(/^(?:\.\.\/)+/, "").replace(/^\.\.$/, ".") : belowRoot;
+    // A climb past the package root stops there (#830, #962, #986).
+    const stopped = stopClimbAtRoot(belowRoot);
     // A final `.` or `..` segment leaves a folder, which RFC 3986 spells with
     // the final `/` that path.posix.join drops; Word refuses such a target
     // (session 70, #962). The package root keeps its own spelling.
     const lastSegment = reference.slice(reference.lastIndexOf("/") + 1);
-    const resolved = (lastSegment === "." || lastSegment === "..") && clamped !== "." ? `${clamped}/` : clamped;
+    const resolved = (lastSegment === "." || lastSegment === "..") && stopped !== "." ? `${stopped}/` : stopped;
     if (!absolute) {
         return resolved;
     }
@@ -309,7 +318,7 @@ export const relationshipTargetPartName = (baseDir: string, target: string, clam
 
 /**
  * The folder one relationship target names, resolved against `baseDir` as
- * {@link relationshipTargetPartName} resolves it with its `..` segments
+ * {@link relationshipTargetPartName} resolves it, its `..` segments
  * stopped at the package root: the package-relative folder with its final
  * `/` (`word/styles.xml/` for `styles.xml/.`, `styles.xml/x/..` or
  * `styles.xml/`, `word/` for `.`), or `/` for the package root; `undefined`
@@ -319,7 +328,7 @@ export const relationshipTargetPartName = (baseDir: string, target: string, clam
  * anything used it (sessions 70 to 73; #962, #975).
  */
 export const relationshipTargetFolder = (baseDir: string, target: string): string | undefined => {
-    const reference = relationshipTargetPartName(baseDir, target, true);
+    const reference = relationshipTargetPartName(baseDir, target);
     if (reference === undefined) {
         return undefined;
     }
@@ -338,27 +347,19 @@ export const relationshipTargetFolder = (baseDir: string, target: string): strin
  * final `.` or `..` segment leaves a folder, as
  * {@link relationshipTargetPartName} says (session 70, #962)), then take the
  * OPC-equivalent stored entry (`canonicalPartName` comparison); `undefined`
- * when it names no stored part, resolves to the package root or past it
- * (#970), or names a folder (#962). `clampAtPackageRoot` stops the target's `..` segments at the
- * package root instead of dropping the whole target when they climb past
- * it, a package-absolute target's climb and a final bare `..` included
- * (#962), as RFC 3986's remove_dot_segments stops them, the way Word
- * resolved `word/`'s `../../footnotes.xml` to `/footnotes.xml` (session 64
- * s64a, #830).
+ * when it names no stored part, resolves to the package root (#970), or
+ * names a folder (#962). A climb past the package root stops there, as
+ * {@link relationshipTargetPartName} says, so `word/`'s
+ * `../../comments.xml` names `/comments.xml` (sessions 63, 64 and 74 to 78;
+ * #830, #986).
  */
-export const resolveTarget = (
-    lookup: (partName: string) => string | undefined,
-    baseDir: string,
-    target: string,
-    clampAtPackageRoot = false,
-): string | undefined => {
-    const reference = relationshipTargetPartName(baseDir, target, clampAtPackageRoot);
-    // The package root (`.`, or `/` package-absolute), and a reference still
-    // climbing past it, name no part, even beside a stored `%2e` or
-    // `%2e%2e`, whose OPC-equivalent key the lookup would otherwise match
-    // (#970); nor does any other folder, which a reference ending in `/`
-    // names (session 70, #962).
-    if (reference === undefined || reference === "." || reference.endsWith("/") || /(?:^|\/)\.\.(?:\/|$)/.test(reference)) {
+export const resolveTarget = (lookup: (partName: string) => string | undefined, baseDir: string, target: string): string | undefined => {
+    const reference = relationshipTargetPartName(baseDir, target);
+    // The package root (`.`, or `/` package-absolute) names no part, even
+    // beside a stored `%2e`, whose OPC-equivalent key the lookup would
+    // otherwise match (#970); nor does any other folder, which a reference
+    // ending in `/` names (session 70, #962).
+    if (reference === undefined || reference === "." || reference.endsWith("/")) {
         return undefined;
     }
     return lookup(reference);
@@ -386,20 +387,24 @@ export const equivalentPartLookup = (names: readonly string[]): ((partName: stri
  * The entry in `names` that a package-relative part reference names: a query
  * or fragment is dropped, since only the path names a part (System.IO.Packaging's
  * `ResolvePartUri` keeps only the path, #361), `\` reads as `/`, a leading `/`
- * is dropped and dot segments are resolved, a final `.` or `..` segment
+ * is dropped and dot segments are resolved, a climb past the package root
+ * stopping there (session 78, #986) and a final `.` or `..` segment
  * leaving a folder spelled with a final `/` (session 70, #962), then
  * the OPC-equivalent entry is taken ({@link findEquivalentPart}). Falls back
  * to the normalized name when no entry is equivalent, so a folder names no
- * entry, and is `undefined` for a reference that is empty, names the package
- * root or climbs above it (#356). The main-document checks resolve the
+ * entry, and is `undefined` for a reference that is empty or names the
+ * package root (#356). The main-document checks resolve the
  * `officeDocument` target here, so they agree on which entry it is (#349);
  * the read model resolves it with {@link resolveTarget}, which reads a folder
  * the same way.
  */
 export const resolvePartName = (names: readonly string[], partName: string): string | undefined => {
     const [reference = ""] = partName.replace(/\\/g, "/").split(/[?#]/, 1);
-    const normalized = path.posix.normalize(reference.replace(/^\/+/, ""));
-    if (normalized === "." || normalized === ".." || normalized.startsWith("../")) {
+    // Word read `../word/document.xml`, `../../word/document.xml` and
+    // `/../word/document.xml` from the package root as word/document.xml
+    // (session 78, #986).
+    const normalized = stopClimbAtRoot(path.posix.normalize(reference.replace(/^\/+/, "")));
+    if (normalized === ".") {
         return undefined;
     }
     // A final `.` or `..` segment leaves a folder, spelled with a final `/`

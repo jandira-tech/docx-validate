@@ -269,10 +269,21 @@ describe("resolvePartName (#349)", () => {
         expect(resolvePartName(names, target)).toBeUndefined();
     });
 
-    it.each(["", "/", ".", "word/..", "../word/document.xml", "word/../../word/document.xml"])(
-        "names no part for %j, which is empty or climbs out of the package (#356)",
+    it.each(["", "/", ".", "word/..", "..", "../..", "/../.."])(
+        "names no part for %j, which is empty or names the package root (#356, #986)",
         (target) => {
             expect(resolvePartName(names, target)).toBeUndefined();
+        },
+    );
+
+    // Word opened a main document named from the root by
+    // `../word/document.xml`, `../../word/document.xml` and
+    // `/../word/document.xml` clean (session 78 s78a): a climb past the
+    // package root stops there, as RFC 3986's remove_dot_segments stops it.
+    it.each(["../word/document.xml", "../../word/document.xml", "/../word/document.xml", "word/../../word/document.xml"])(
+        "stops the climb of %j at the package root (#986)",
+        (target) => {
+            expect(resolvePartName(names, target)).toBe("word/document.xml");
         },
     );
 });
@@ -285,30 +296,29 @@ describe("relationshipTargetPartName (#947)", () => {
         expect(relationshipTargetPartName("word", target)).toBe(expected);
     });
 
-    it("keeps a package-absolute climb past the package root, and clamps it only when asked", () => {
-        expect(relationshipTargetPartName(".", "/../word/document.xml")).toBe("/../word/document.xml");
-        expect(relationshipTargetPartName(".", "/../word/document.xml", true)).toBe("/word/document.xml");
+    it("stops a package-absolute climb at the package root (#986)", () => {
+        expect(relationshipTargetPartName(".", "/../word/document.xml")).toBe("/word/document.xml");
+        expect(relationshipTargetPartName("word", "/../../comments.xml")).toBe("/comments.xml");
     });
 
     it.each(["/", "/word/.."])("keeps the package root spelled / when the package-absolute target %s resolves to it", (target) => {
         expect(relationshipTargetPartName("word", target)).toBe("/");
     });
 
-    it("resolves a relative target as it always has (#830)", () => {
+    it("stops a relative climb at the package root (#830, #986)", () => {
         expect(relationshipTargetPartName(".", "word/x/../main.xml")).toBe("word/main.xml");
-        expect(relationshipTargetPartName("word", "../../word/x.xml")).toBe("../word/x.xml");
-        expect(relationshipTargetPartName("word", "../../word/x.xml", true)).toBe("word/x.xml");
+        expect(relationshipTargetPartName("word", "../../word/x.xml")).toBe("word/x.xml");
+        expect(relationshipTargetPartName(".", "../word/document.xml")).toBe("word/document.xml");
     });
 
     it.each([
-        ["word", "../..", ".", "../"],
-        ["word", "../../..", ".", "../../"],
-        [".", "/..", "/", "/../"],
-        ["word", "/word/../..", "/", "/../"],
-        [".", "/../..", "/", "/../../"],
-    ])("clamps a climb that ends in a bare .. at the package root: from %s, %s (#962)", (baseDir, target, clamped, unclamped) => {
-        expect(relationshipTargetPartName(baseDir, target, true)).toBe(clamped);
-        expect(relationshipTargetPartName(baseDir, target)).toBe(unclamped);
+        ["word", "../..", "."],
+        ["word", "../../..", "."],
+        [".", "/..", "/"],
+        ["word", "/word/../..", "/"],
+        [".", "/../..", "/"],
+    ])("stops a climb that ends in a bare .. at the package root: from %s, %s (#962)", (baseDir, target, root) => {
+        expect(relationshipTargetPartName(baseDir, target)).toBe(root);
     });
 
     // Word read the part through each of these (session 70 s70a/s70b/s70c),
@@ -335,26 +345,29 @@ describe("relationshipTargetPartName (#947)", () => {
         [".", "word/main.xml/", "word/main.xml/"],
     ])("keeps the final / of a target naming a folder: from %s, %s (#962)", (baseDir, target, expected) => {
         expect(relationshipTargetPartName(baseDir, target)).toBe(expected);
-        expect(relationshipTargetPartName(baseDir, target, true)).toBe(expected);
     });
 });
 
-describe("resolveTarget: the root and a climb past it name no part (#970)", () => {
+describe("resolveTarget: the root names no part, and a climb stops at it (#970, #986)", () => {
     const lookup = equivalentPartLookup(["word/document.xml", "%2e", "%2e%2e", "%2e%2e/footnotes.xml", "footnotes.xml"]);
 
     it.each([
-        ["word", "../..", true],
-        ["word", "../../..", true],
-        [".", "/..", true],
-        ["word", "../..", false],
-        ["word", "../../footnotes.xml", false],
-        [".", "/../footnotes.xml", false],
-    ] as const)("from %s, %s (clamped: %s) finds no stored encoded-dot spelling", (baseDir, target, clamp) => {
-        expect(resolveTarget(lookup, baseDir, target, clamp)).toBeUndefined();
+        ["word", "../.."],
+        ["word", "../../.."],
+        [".", "/.."],
+        [".", "/"],
+    ])("from %s, %s finds no stored encoded-dot spelling", (baseDir, target) => {
+        expect(resolveTarget(lookup, baseDir, target)).toBeUndefined();
     });
 
-    it("still finds the part a clamped climb stops at", () => {
-        expect(resolveTarget(lookup, "word", "../../footnotes.xml", true)).toBe("footnotes.xml");
+    // Word read each such climb from the root (sessions 63, 64 and 74 to 78).
+    it.each([
+        ["word", "../../footnotes.xml"],
+        ["word", "../../../footnotes.xml"],
+        [".", "/../footnotes.xml"],
+        ["word", "/../../footnotes.xml"],
+    ])("from %s, %s finds the part its climb stops at, not the encoded-dot spelling", (baseDir, target) => {
+        expect(resolveTarget(lookup, baseDir, target)).toBe("footnotes.xml");
     });
 });
 
@@ -370,7 +383,6 @@ describe("resolveTarget: a target naming a folder names no part (#962, session 7
         ["word", "notes/footnotes.xml/x/.."],
     ])("from %s, %s finds no part", (baseDir, target) => {
         expect(resolveTarget(lookup, baseDir, target)).toBeUndefined();
-        expect(resolveTarget(lookup, baseDir, target, true)).toBeUndefined();
     });
 
     it.each([
