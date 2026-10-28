@@ -29942,7 +29942,7 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed,", matches, 
 
 ### Session 83: 13:05Z–13:09Z on 2026-10-28, validator columns at 568d746a
 
-Whether Word judges [#1113](https://github.com/jandira-tech/docx-validate/issues/1113)'s Word-blocking rules in the parts it reads, as session 82 found for the hyperlink relationship. Twenty Word-rule checks judge the parts named like a story wherever stored (`STORY_PART`), not the parts Word reads. Eleven of them have a Word-refused fixture whose finding is only in `word/document.xml` and a clean twin (session 41's pairs; the `-shape` pair for `word-textbox-deleted-text`, whose plain fixture holds its defect in a footer). Each pair gives three rows: `-main` is the broken fixture with its main document stored as `word/main.xml`, with `_rels/.rels`, the content-types Override and the part's own relationships following the name; `-main-calibration` is the clean twin renamed the same way; `-unrelated-header` is the clean twin plus `word/header83.xml`, typed header by its Override, which no relationship names, holding the broken fixture's body under a `w:hdr` root with its `w:sectPr` removed, and the broken main document's relationships as its own. Chunk s83a holds `word-row-without-cell`, `word-cell-ends-with-table` and `word-drawing-arc-radius`; s83b `word-drawing-extent-negative`, `word-empty-drawing` and `word-anchor-missing-attribute`; s83c `word-text-contains-paragraph`, `word-textbox-deleted-text` and `word-move-from-deleted-text`; s83d `word-sdt-id-empty` and `word-choice-requires-undeclared`. Each chunk ends with a minimal control. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 37 of 37 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`568d746adf4aaa478735b82672c3bbd66c858355`). The strict column names only the rule findings beyond the fixtures' own paraId, XSD and unreferenced-part findings.
+Whether Word judges [#1113](https://github.com/jandira-tech/docx-validate/issues/1113)'s Word-blocking rules in the parts it reads, as session 82 found for the hyperlink relationship. Twenty check files, holding 26 Word rules, judge the parts named like a story wherever stored (`STORY_PART`), not the parts Word reads. Eleven of those rules, in eight of the files, have a Word-refused fixture whose finding is only in `word/document.xml` and a clean twin (session 41's pairs; the `-shape` pair for `word-textbox-deleted-text`, whose plain fixture holds its defect in a footer). Each pair gives three rows: `-main` is the broken fixture with its main document stored as `word/main.xml`, with `_rels/.rels`, the content-types Override and the part's own relationships following the name; `-main-calibration` is the clean twin renamed the same way; `-unrelated-header` is the clean twin plus `word/header83.xml`, typed header by its Override, which no relationship names, holding the broken fixture's body under a `w:hdr` root with its `w:sectPr` removed, and the broken main document's relationships as its own. Chunk s83a holds `word-row-without-cell`, `word-cell-ends-with-table` and `word-drawing-arc-radius`; s83b `word-drawing-extent-negative`, `word-empty-drawing` and `word-anchor-missing-attribute`; s83c `word-text-contains-paragraph`, `word-textbox-deleted-text` and `word-move-from-deleted-text`; s83d `word-sdt-id-empty` and `word-choice-requires-undeclared`. Each chunk ends with a minimal control. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 37 of 37 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`568d746adf4aaa478735b82672c3bbd66c858355`). The strict column leaves out the `rels-unreferenced`, `paraid-missing-element`, `xsd-summary` and `xsd-error` findings and names every other strict error, so beside the probed rule it also names fixture findings such as `textid-missing-element` and `style-default-missing` (#1124).
 
 Every calibration and control opened clean. Each unrelated header's PDF holds exactly its calibration's text in both runs (`pdftotext`; the `word-empty-drawing` and `word-choice-requires-undeclared` twins render no text), and each control's holds `Hello`. No refused row left a PDF.
 
@@ -30432,8 +30432,9 @@ def cell(v):
 
 
 def strict_cell(v):
-    # Strict also reports the fixtures' own paraId, XSD and unreferenced-part findings; name only the rule codes that are
-    # not those, with their parts, so the column shows whether strict judged the probed rule.
+    # Strict also reports the fixtures' own paraId, XSD and unreferenced-part findings; leave those out and name every
+    # other code with its part, so the column shows whether strict judged the probed rule. The fixtures' other findings,
+    # such as textid-missing-element, stay in the column (#1124).
     if v["valid"] is None:
         return cell(v)
     noise = ("rels-unreferenced@", "paraid-missing-element@", "xsd-summary@", "xsd-error@")
@@ -30563,8 +30564,9 @@ out = [
     f"### Session 83: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {at}",
     "",
     "Whether Word judges [#1113](https://github.com/jandira-tech/docx-validate/issues/1113)'s Word-blocking rules in the "
-    "parts it reads, as session 82 found for the hyperlink relationship. Twenty Word-rule checks judge the parts named "
-    "like a story wherever stored (`STORY_PART`), not the parts Word reads. Eleven of them have a Word-refused fixture "
+    "parts it reads, as session 82 found for the hyperlink relationship. Twenty check files, holding 26 Word rules, judge "
+    "the parts named like a story wherever stored (`STORY_PART`), not the parts Word reads. Eleven of those rules, in "
+    "eight of the files, have a Word-refused fixture "
     "whose finding is only in `word/document.xml` and a clean twin (session 41's pairs; the `-shape` pair for "
     "`word-textbox-deleted-text`, whose plain fixture holds its defect in a footer). Each pair gives three rows: `-main` is "
     "the broken fixture with its main document stored as `word/main.xml`, with `_rels/.rels`, the content-types Override "
@@ -30579,8 +30581,10 @@ out = [
     "were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the "
     f"manifest spelling when both runs and both readings agree, and `unknown` otherwise; {agreed} of {len(rows)} rows "
     "agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of "
-    f"the specimen. The builder recorded the validator revision in every row (`{rev}`). The strict column names only the "
-    "rule findings beyond the fixtures' own paraId, XSD and unreferenced-part findings.",
+    f"the specimen. The builder recorded the validator revision in every row (`{rev}`). The strict column leaves out the "
+    "`rels-unreferenced`, `paraid-missing-element`, `xsd-summary` and `xsd-error` findings and names every other strict "
+    "error, so beside the probed rule it also names fixture findings such as `textid-missing-element` and "
+    "`style-default-missing` (#1124).",
     "",
     "Every calibration and control opened clean. Each unrelated header's PDF holds exactly its calibration's text in "
     "both runs (`pdftotext`; the `word-empty-drawing` and `word-choice-requires-undeclared` twins render no text), and "
