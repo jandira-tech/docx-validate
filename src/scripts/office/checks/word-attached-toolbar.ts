@@ -23,10 +23,11 @@
  * The walk judges the parts `xmlPartNames` accepts, not only literal
  * `.xml` spellings — a `word/customizations.XML` and its
  * `customizations.XML.rels` get the recovery offer — and reads each
- * part's sidecar by OPC part-name equivalence as `sidecarOf` finds it,
- * so a `customizations.xml.RELS` spelling is read; Word read the same
- * way, refusing the `.XML` specimen and opening the `.RELS` one clean
- * (session 54, s54c; #743). An empty `r:id` is not judged (s54c).
+ * part's sidecar by OPC part-name equivalence. The tool also resolves
+ * escaped and backslash spellings; Word's sidecar observation covers
+ * only `customizations.xml.RELS`, which opened clean (session 54,
+ * s54c; #398, #402, #743). Session 3 recorded Word refusing escaped
+ * part names (#408, #436). An empty `r:id` is not judged (s54c).
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
@@ -37,7 +38,6 @@ import path from "node:path";
 import { registerStoryReferenceIdentity } from "../story-reference-identity";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
 import { xmlPartNames } from "./xml";
-import { sidecarOf } from "../../../lib/word-read-parts";
 
 const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
@@ -61,17 +61,20 @@ type ToolbarReference = {
  * Each `wne:toolbarData r:id` in the package's XML parts — as
  * `xmlPartNames` names them, so a `.XML` spelling is judged (session
  * 54, s54c; #743) — with the relationship its part's own sidecar gives
- * it, the sidecar found by `sidecarOf`'s OPC part-name equivalence,
- * so a `.RELS` spelling is read (s54c). A part with no sidecar
+ * it, the sidecar found through the shared OPC part-name index,
+ * so the tool reads a `.RELS` spelling (s54c). A part with no sidecar
  * resolves every `r:id` to `undefined`; an unparseable sidecar yields
  * nothing, left for `xml-syntax` to report.
  */
-const toolbarReferences = function* (ctx: ValidationContext): Generator<ToolbarReference> {
+const toolbarReferences = function* (
+    ctx: ValidationContext,
+    lookup: (partName: string) => string | undefined,
+): Generator<ToolbarReference> {
     const wordmlNs = "http://schemas.microsoft.com/office/word/2006/wordml";
     const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
     const xmlParts = xmlPartNames(ctx.partNames, (part) => ctx.bytes(part));
-    // Iterating the set itself keeps one pass over the part names total:
-    // a second index read per entry fails the #358 bounded-scan test.
+    // The shared index and this set keep a bounded number of passes over
+    // the part names, including when a sidecar is absent (#358, #758).
     for (const xmlFile of xmlParts) {
         const parsed = ctx.effectiveXml(xmlFile);
         if (!parsed?.ok) {
@@ -81,7 +84,7 @@ const toolbarReferences = function* (ctx: ValidationContext): Generator<ToolbarR
         if (toolbarData.length === 0) {
             continue;
         }
-        const relsFile = sidecarOf(ctx.partNames, xmlFile);
+        const relsFile = lookup(path.posix.join(path.posix.dirname(xmlFile), "_rels", `${path.posix.basename(xmlFile)}.rels`));
         const parsedRels = relsFile === undefined ? undefined : ctx.effectiveXml(relsFile);
         if (parsedRels !== undefined && !parsedRels.ok) {
             continue;
@@ -124,7 +127,7 @@ const resolveToolbarTarget = (relsFile: string, target: string): string | null =
         return null;
     }
     const relsDir = path.posix.dirname(relsFile);
-    const baseDir = path.posix.basename(relsDir) === "_rels" ? path.posix.dirname(relsDir) : relsDir;
+    const baseDir = path.posix.basename(relsDir).toLowerCase() === "_rels" ? path.posix.dirname(relsDir) : relsDir;
     const resolved = path.posix.normalize(name.startsWith("/") ? name.replace(/^\/+/, "") : path.posix.join(baseDir, name));
     return resolved === ".." || resolved.startsWith("../") ? null : resolved;
 };
@@ -139,7 +142,8 @@ export const wordAttachedToolbarRelationshipCheck: CheckDefinition = {
     requires: ["xml-syntax"],
     run: (ctx: ValidationContext): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
-        for (const { xmlFile, elem, rid, ridNamespaceURI, relationship } of toolbarReferences(ctx)) {
+        const lookup = equivalentPartLookup(ctx.partNames);
+        for (const { xmlFile, elem, rid, ridNamespaceURI, relationship } of toolbarReferences(ctx, lookup)) {
             if (relationship !== undefined && (relationship.getAttribute("Type") ?? "") === ATTACHED_TOOLBARS_RELATIONSHIP_TYPE) {
                 continue;
             }
@@ -185,10 +189,10 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
         // seen before its bytes are read, so a clean part named again is not
         // scanned again (Jules on #345).
         const seen = new Set<string>();
-        let lookup: ((partName: string) => string | undefined) | undefined;
+        const lookup = equivalentPartLookup(ctx.partNames);
 
         const needle = Buffer.from([0xef, 0xbf, 0xbd]);
-        for (const { relsFile, relationship } of toolbarReferences(ctx)) {
+        for (const { relsFile, relationship } of toolbarReferences(ctx, lookup)) {
             // The byte scan follows only the exact Microsoft
             // attachedToolbars Type (#716); every other Type — and an `r:id`
             // naming no relationship — is the relationship check's finding.
@@ -208,8 +212,7 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
             // The entry the target names is both the key and the reported
             // path, so two spellings of one part yield one finding under
             // its real name (#350).
-            // One index per run, not a scan of every entry per reference (#358).
-            lookup ??= equivalentPartLookup(ctx.partNames);
+            // One index per run serves sidecars and targets (#358, #758).
             const part = resolved && (lookup(resolved) ?? resolved);
             if (!part || seen.has(part)) {
                 continue;
