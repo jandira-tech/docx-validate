@@ -357,9 +357,11 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
                 if (resolved === undefined || relationshipTargetFolder(folder, target) !== undefined) continue;
                 const partName = resolved.replace(/^\//, "");
                 const key = canonicalPartName(partName);
-                // Python: rels_file.stem (foo.xml.rels → foo.xml) then .replace(".xml", "") → foo
-                const baseStem = path.basename(relsFile, ".rels"); // "foo.xml"
-                const slideName = baseStem.replace(/\.xml$/i, "");
+                // Python: rels_file.stem (foo.xml.rels → foo.xml) then .replace(".xml", "") → foo.
+                // Both strips read ASCII case-insensitively, as the patterns
+                // that judge `foo.xml.RELS` match, and `\` reads as `/` (#1038).
+                const stored = path.posix.basename(this.entryName(relsFile).replaceAll("\\", "/"));
+                const slideName = stored.replace(/\.rels$/i, "").replace(/\.xml$/i, "");
                 const entry = notesReferences.get(key) ?? { partName, references: [] };
                 entry.references.push({ slideName, relsFile });
                 notesReferences.set(key, entry);
