@@ -485,3 +485,62 @@ describe("the AlternateContent character-data finding's citation (#1016)", () =>
         expect(withWordSessionCitation(other)).toBe(other);
     });
 });
+
+// #1137: the processor walks the part with an explicit stack, so a part nested
+// deeper than the call stack allows still returns its view, built in the order
+// the recursive walk built it: each element before its children, a subtree
+// before the next sibling, the unselected branches' directives before the
+// selected branch, and the unwrapping after the content it moves.
+describe("a part nested deeper than the call stack (#1137)", () => {
+    const nest = (depth: number, inner: string): string => `${"<w:n>".repeat(depth)}${inner}${"</w:n>".repeat(depth)}`;
+    const declared = (prefixes: readonly string[]): string => prefixes.map((prefix) => `xmlns:${prefix}="urn:${prefix}"`).join(" ");
+    const understood = (issues: ReturnType<typeof process>["issues"]): string[] =>
+        issues.filter((issue) => issue.code === "mce-must-understand").map((issue) => issue.message.replace(/^.*: /, ""));
+
+    it("processes a part nested 50 000 elements deep", () => {
+        const { document, issues } = process(
+            wrap(
+                nest(
+                    50_000,
+                    `<mc:AlternateContent><mc:Choice Requires="w"><w:chosen mc:MustUnderstand="u"/></mc:Choice><mc:Fallback><w:lost/></mc:Fallback></mc:AlternateContent><wp14:drop><w:gone/></wp14:drop><w:tail/>`,
+                ),
+                `mc:Ignorable="wp14" ${declared(["u"])}`,
+            ),
+        );
+        const names = getElementsByTagNameAll(document).map((node) => node.localName);
+        expect(names).toHaveLength(50_003);
+        expect(names.slice(0, 2)).toEqual(["root", "n"]);
+        expect(names.slice(-3)).toEqual(["n", "chosen", "tail"]);
+        expect(understood(issues)).toEqual(["u"]);
+    });
+
+    it("keeps the recursive walk's issue order: element, its subtree, then the next sibling", () => {
+        const { issues } = process(
+            wrap(
+                `<w:a mc:MustUnderstand="u1"><w:b mc:MustUnderstand="u2"><w:c mc:MustUnderstand="u3"/></w:b><w:d mc:MustUnderstand="u4"/></w:a><w:e mc:MustUnderstand="u5"/>`,
+                declared(["u1", "u2", "u3", "u4", "u5"]),
+            ),
+        );
+        expect(understood(issues)).toEqual(["u1", "u2", "u3", "u4", "u5"]);
+    });
+
+    it("reads an unselected branch's directives before the selected branch, and its content before the next sibling", () => {
+        const { document, issues } = process(
+            wrap(
+                `<w:p mc:MustUnderstand="u1"><mc:AlternateContent><mc:Choice Requires="wp14" mc:MustUnderstand="u2"><w:x mc:MustUnderstand="u9"/></mc:Choice><mc:Choice Requires="w" mc:MustUnderstand="u3"><w:y mc:MustUnderstand="u4"><mc:AlternateContent><mc:Choice Requires="w"><w:z mc:MustUnderstand="u5"/></mc:Choice></mc:AlternateContent></w:y></mc:Choice><mc:Fallback mc:MustUnderstand="u6"><w:f mc:MustUnderstand="u10"/></mc:Fallback></mc:AlternateContent><w:q mc:MustUnderstand="u7"/></w:p><w:t mc:MustUnderstand="u8"/>`,
+                declared(["u1", "u2", "u3", "u4", "u5", "u6", "u7", "u8", "u9", "u10"]),
+            ),
+        );
+        expect(understood(issues)).toEqual(["u1", "u2", "u6", "u3", "u4", "u5", "u7", "u8"]);
+        expect(getElementsByTagNameAll(document).map((node) => node.localName)).toEqual(["root", "p", "y", "z", "q", "t"]);
+    });
+
+    it("unwraps a root AlternateContent after processing its selected content", () => {
+        const { document, issues } = process(
+            `<mc:AlternateContent xmlns:mc="${NS.MC}" xmlns:w="${NS.W}" ${declared(["u"])}><mc:Choice Requires="w"><w:root><w:kept mc:MustUnderstand="u"/></w:root></mc:Choice></mc:AlternateContent>`,
+        );
+        expect(document.documentElement.localName).toBe("root");
+        expect(getElementsByTagNameAll(document).map((node) => node.localName)).toEqual(["root", "kept"]);
+        expect(understood(issues)).toEqual(["u"]);
+    });
+});

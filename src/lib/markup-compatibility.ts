@@ -227,6 +227,12 @@ export const applyMarkupCompatibility = (
     };
     const undeclaredExtensions = new Map<string, Set<string>>();
     let extensionAttributeCount = 0;
+    // The walk keeps its own stack rather than recursing, so a part nested
+    // deeper than the call stack allows still returns its view (#1137). An
+    // entry is an element to visit or the step that finishes one once its
+    // content is processed; visit pushes them last first, so the walk runs in
+    // the recursive order: an element, its subtree, then its next sibling.
+    const pending: ({ element: Element; context: Context } | (() => void))[] = [];
     const visit = (element: Element, inherited: Context, attributesOnly = false): void => {
         // Application extension slots are opaque to MCE, including their directives.
         if (element.localName === "ext" && EXTENSION_NAMESPACES.has(element.namespaceURI || "")) {
@@ -383,35 +389,46 @@ export const applyMarkupCompatibility = (
                     visit(branch, context, true);
                 }
             }
-            if (selected) {
-                visit(selected, context);
-                unwrap(selected);
-            }
-            // Only selected content enters the validation view.
-            for (const branch of children(element)) {
-                if (branches.includes(branch)) {
-                    element.removeChild(branch);
+            pending.push(() => {
+                if (selected) {
+                    unwrap(selected);
                 }
+                // Only selected content enters the validation view.
+                for (const branch of children(element)) {
+                    if (branches.includes(branch)) {
+                        element.removeChild(branch);
+                    }
+                }
+                unwrap(element);
+            });
+            if (selected) {
+                pending.push({ element: selected, context });
             }
-            unwrap(element);
             return;
         }
         if (ignored) {
-            for (const child of children(element)) {
-                visit(child, context);
-            }
-            unwrap(element);
-            return;
+            pending.push(() => unwrap(element));
         }
-        for (const child of children(element)) {
-            visit(child, context);
+        for (const child of children(element).reverse()) {
+            pending.push({ element: child, context });
         }
     };
     if (document.documentElement) {
-        visit(document.documentElement, {
-            ignorable: new Set(),
-            processContent: new Set(),
+        pending.push({
+            element: document.documentElement,
+            context: {
+                ignorable: new Set(),
+                processContent: new Set(),
+            },
         });
+    }
+    while (pending.length > 0) {
+        const next = pending.pop()!;
+        if (typeof next === "function") {
+            next();
+        } else {
+            visit(next.element, next.context);
+        }
     }
     if (source.documentElement && !document.documentElement) {
         // The whole part is ignorable content: there is nothing left for a

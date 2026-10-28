@@ -242,3 +242,37 @@ describe("the main document after a repair (#657)", { timeout: 120_000 }, () => 
         });
     });
 });
+
+/**
+ * #1137: a relationships part nested 5000 elements deep fails the byte-level
+ * XML check under every profile (libxml2 refuses a depth past 256), yet the
+ * DOCX relationship walks read it after markup compatibility, whose recursive
+ * walk exhausted the call stack: word-valid and strict threw a RangeError
+ * instead of returning the verdict.
+ */
+describe("a relationships part nested deeper than the call stack (#1137)", { timeout: 120_000 }, () => {
+    const RELS = "word/_rels/document.xml.rels";
+    const deep = (depth: number): string =>
+        MINIMAL_PARTS[RELS]!.replace("</Relationships>", `${"<n>".repeat(depth)}${"</n>".repeat(depth)}</Relationships>`);
+    const run = async (options: Parameters<typeof validate>[1]): Promise<ValidationIssue[]> =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "deep.docx");
+            await writeFile(file, await buildDocx({ ...MINIMAL_PARTS, [RELS]: deep(5000) }));
+            const result = await validate(file, options);
+            expect(result.valid).toBe(false);
+            return result.issues;
+        });
+
+    it.each(["lenient", "word-valid", "strict"] as const)("%s: a full run returns the part's xml-syntax error", async (profile) => {
+        expect(matching(await run({ profile }), "xml-syntax")).toEqual([
+            expect.objectContaining({ severity: "error", path: RELS, message: expect.stringContaining("Excessive depth") }),
+        ]);
+    });
+
+    // Lenient runs no check of the group (#381), so only word-valid has a partial run.
+    it("word-valid: a --checks run of the relationships group returns it too", async () => {
+        expect(matching(await run({ profile: "word-valid", checks: ["relationships"] }), "xml-syntax")).toEqual([
+            expect.objectContaining({ severity: "error", path: RELS, message: expect.stringContaining("Excessive depth") }),
+        ]);
+    });
+});
