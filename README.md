@@ -1167,9 +1167,12 @@ endnotes twin `../../endnotes.xml` with its note at `/endnotes.xml` — while
 the same escaping target with the note only in `word/footnotes.xml` got the
 recovery offer and stays rejected, and the in-package `../footnotes.xml`
 calibration opened clean
-([#830](https://github.com/jandira-tech/docx-validate/issues/830)). Other
-rules' relationship resolution keeps dropping an escaping target; those
-readings are unprobed.
+([#830](https://github.com/jandira-tech/docx-validate/issues/830)). A
+package-absolute target's climb is stopped at the root the same way since
+[#947](https://github.com/jandira-tech/docx-validate/issues/947), so
+`/../footnotes.xml` reads the note at `/footnotes.xml`; Word has not been probed
+with a package-absolute target. Other rules' relationship resolution keeps
+dropping an escaping target; those readings are unprobed.
 
 `word-shared-story-part` rejects a comments, footnotes or endnotes part that
 the read model lists for both a main-document entry and a glossary entry
@@ -1965,17 +1968,19 @@ added, so the comment's markers named a comment Word does not read
 spelled with a query, a fragment or a backslash was not counted, so a second set
 of relationships was added beside it
 ([#928](https://github.com/jandira-tech/docx-validate/issues/928)). A
-package-absolute target keeps its dot segments, as the read model's resolver
-does, so `/word/../word/comments.xml` names no part
-([#947](https://github.com/jandira-tech/docx-validate/issues/947)). The
-relationships parts are read and written in the package-relationships namespace,
-whatever prefix they bind it to: a prefixed `_rels/.rels` names its main
-document as an unprefixed one does, the new relationships are created under the
-root's prefix, and their ids are numbered past every `rId<N>` id the part holds,
-whatever its namespace, and however many digits its number runs to; before, a
-prefixed `_rels/.rels` was refused as naming no `officeDocument` relationship,
-and a prefixed main-document relationships part got unnamespaced relationships
-with a repeated id
+package-absolute target's dot segments now resolve as a relative target's do;
+before, `/word/../word/main.xml` named no part, so the read model found no main
+document and `addComment` refused it or added a second set of comment
+relationships
+([#947](https://github.com/jandira-tech/docx-validate/issues/947)); Word has not
+been probed with such a target. The relationships parts are read and written in
+the package-relationships namespace, whatever prefix they bind it to: a prefixed
+`_rels/.rels` names its main document as an unprefixed one does, the new
+relationships are created under the root's prefix, and their ids are numbered
+past every `rId<N>` id the part holds, whatever its namespace, and however many
+digits its number runs to; before, a prefixed `_rels/.rels` was refused as
+naming no `officeDocument` relationship, and a prefixed main-document
+relationships part got unnamespaced relationships with a repeated id
 ([#918](https://github.com/jandira-tech/docx-validate/issues/918)), and a part
 holding an `rId<N>` id with N at 2^53 or past it got four relationships sharing
 one id ([#940](https://github.com/jandira-tech/docx-validate/issues/940)). Both
