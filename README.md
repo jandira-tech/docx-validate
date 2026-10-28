@@ -2161,6 +2161,14 @@ opened the repaired output clean for a root with neither declaration, one listin
 `xmlns:w14` on each stamped element (Word probes session 40, `s40a`;
 [#653](https://github.com/jandira-tech/docx-validate/issues/653)).
 
+The durable-id repair gives each over-cap `w16cid:durableId` one new value and
+writes it into every `w16cex:durableId` that named the old one, so
+`commentsExtensible.xml` stays paired with `commentsIds.xml`. Before, each entry
+got its own random value and every extensible entry was left orphaned
+([#892](https://github.com/jandira-tech/docx-validate/issues/892)). The decimal
+durableIds in `numbering.xml`, which no part references, keep their per-element
+renumbering, and it still runs when the hex rewrite is refused.
+
 ## Development
 
 ```bash
