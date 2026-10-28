@@ -123,6 +123,9 @@ describe("isWordBlockingIssue", () => {
         "word-position-offset-and-align",
         "word-sdt-id-empty",
         "word-attached-toolbar-utf8",
+        // A wne:toolbarData r:id naming a relationship of another Type, or
+        // none, gets the recovery offer whatever the target holds (#716, session 48).
+        "word-attached-toolbar-relationship",
         "word-row-without-cell",
         "word-cell-ends-with-table",
         "word-textbox-deleted-text",

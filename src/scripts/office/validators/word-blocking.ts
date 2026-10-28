@@ -247,6 +247,12 @@ export const isWordBlockingIssue = (
         case "word-position-offset-and-align":
         case "word-sdt-id-empty":
         case "word-attached-toolbar-utf8":
+        // Word 16.115 offers recovery when a wne:toolbarData r:id names a
+        // relationship whose Type is not exactly the Microsoft
+        // attachedToolbars Type — custom or foreign suffix types alike —
+        // whatever the target's bytes, or an Id no relationship has (#716;
+        // session 48 in docs/plans/evidence/word-probes-2026-10-24.md).
+        case "word-attached-toolbar-relationship":
         case "word-row-without-cell":
         case "word-cell-ends-with-table":
         case "word-textbox-deleted-text":
