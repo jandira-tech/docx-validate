@@ -56,6 +56,10 @@ const UNKNOWN_NAMESPACE = "urn:unknown";
 const COMMENTS_EXTENDED_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2011/relationships/commentsExtended";
 const COMMENTS_IDS_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2016/09/relationships/commentsIds";
 const COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible";
+const WORD_MAIN_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const W15_NAMESPACE = "http://schemas.microsoft.com/office/word/2012/wordml";
+const W16CID_NAMESPACE = "http://schemas.microsoft.com/office/word/2016/wordml/cid";
+const W16CEX_NAMESPACE = "http://schemas.microsoft.com/office/word/2018/wordml/cex";
 
 const CT_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
@@ -129,6 +133,27 @@ const markedMainDocument = (): string =>
         "<w:r><w:t>Hello</w:t></w:r>",
         '<w:commentRangeStart w:id="0"/><w:r><w:t>Hello</w:t></w:r><w:commentRangeEnd w:id="0"/><w:r><w:commentReference w:id="0"/></w:r>',
     );
+
+/** The minimal main document with a paired marker triple for each of comments 0 and 1. */
+const twiceMarkedMainDocument = (): string =>
+    MINIMAL_PARTS["word/document.xml"]!.replace(
+        "<w:r><w:t>Hello</w:t></w:r>",
+        '<w:commentRangeStart w:id="0"/><w:commentRangeStart w:id="1"/><w:r><w:t>Hello</w:t></w:r>' +
+            '<w:commentRangeEnd w:id="1"/><w:r><w:commentReference w:id="1"/></w:r>' +
+            '<w:commentRangeEnd w:id="0"/><w:r><w:commentReference w:id="0"/></w:r>',
+    );
+
+/**
+ * A part's XML with the namespace `from` prefixes rebound to `to`: the
+ * declaration, the element prefixes and the prefixed attributes alike, so
+ * the part keeps its content and names it under another prefix (#930).
+ */
+function rebindPrefix(text: string, from: string, to: string): string {
+    return text
+        .replaceAll(`xmlns:${from}=`, `xmlns:${to}=`)
+        .replace(new RegExp(`<(\\/?)${from}:`, "g"), `<$1${to}:`)
+        .replace(new RegExp(` ${from}:([A-Za-z]+)=`, "g"), ` ${to}:$1=`);
+}
 
 /** Zip an unpacked tree into a DOCX at `file`. */
 async function packTree(dir: string, file: string): Promise<void> {
@@ -1924,6 +1949,270 @@ describe("addComment", () => {
                 expect(result.message).toMatch(/^Error: /);
                 expect(result.message).toContain(`${part} is not well-formed XML`);
                 expect(await readTree(dir)).toEqual(before);
+            });
+        },
+    );
+
+    it(
+        "appends a second comment to a comments part that binds the WordprocessingML namespace to x:, and the packed tree validates (#930)",
+        { timeout: 30000 },
+        async () => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+                const first = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "first",
+                    author: "Test",
+                    initials: "T",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(first.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                const commentsPath = path.join(dir, "word", "comments.xml");
+                const rebound = rebindPrefix(await fs.readFile(commentsPath, "utf-8"), "w", "x");
+                expect(rebound).not.toContain("w:");
+                await fs.writeFile(commentsPath, rebound, "utf-8");
+
+                // Before #930 the call threw: appendXml looked for a literal
+                // <w:comments> root and found none under the x: binding.
+                const call = addComment({
+                    unpackedDir: dir,
+                    commentId: 1,
+                    text: "second",
+                    author: "Test",
+                    initials: "T",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 5, 0)),
+                });
+                await expect(call).resolves.toMatchObject({ paraId: expect.stringMatching(/^[0-9A-F]{8}$/) });
+                const second = await call;
+                expect(second.message).toBe(`Added comment 1 (para_id=${second.paraId})`);
+
+                // The part holds both comments in the WordprocessingML
+                // namespace, whatever prefix each carries: the appended
+                // subtree declares its own w: beside the root's x:.
+                const dom = parseXml(await fs.readFile(commentsPath, "utf-8"));
+                const ids = getElementsByTagNameNSAll(dom, WORD_MAIN_NAMESPACE, "comment").map((comment) =>
+                    comment.getAttributeNS(WORD_MAIN_NAMESPACE, "id"),
+                );
+                expect(ids).toEqual(["0", "1"]);
+
+                // The read model agrees: with markers for both comments in
+                // the main document, the packed tree validates under word-valid.
+                await fs.writeFile(path.join(dir, "word", "document.xml"), twiceMarkedMainDocument(), "utf-8");
+                const file = path.join(dir, "x-prefix-comments.docx");
+                await packTree(dir, file);
+                const validation = await validate(file, { profile: "word-valid" });
+                expect(validation.issues.filter((issue) => issue.code === "comment-marker-missing")).toEqual([]);
+                expect(validation.valid).toBe(true);
+            });
+        },
+    );
+
+    it("refuses a duplicate id on a comments part bound to x:, changing nothing (#930)", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "first",
+                author: "Test",
+                initials: "T",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            const commentsPath = path.join(dir, "word", "comments.xml");
+            const rebound = rebindPrefix(await fs.readFile(commentsPath, "utf-8"), "w", "x");
+            expect(rebound).not.toContain("w:");
+            await fs.writeFile(commentsPath, rebound, "utf-8");
+
+            // Before #930 the id check read no comment by its literal w:
+            // name, and only the missing literal root made the call throw.
+            const before = await readTree(dir);
+            const call = addComment({ unpackedDir: dir, commentId: 0, text: "duplicate", author: "Test", initials: "T" });
+            await expect(call).resolves.toMatchObject({ paraId: "" });
+            const result = await call;
+            expect(result.message).toBe("Error: Comment id 0 already exists");
+            expect(await readTree(dir)).toEqual(before);
+        });
+    });
+
+    it("answers a reply on a comments part bound to x:, linking the parent by paragraph id (#930)", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            const first = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "first",
+                author: "Test",
+                initials: "T",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(first.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+            const commentsPath = path.join(dir, "word", "comments.xml");
+            const rebound = rebindPrefix(await fs.readFile(commentsPath, "utf-8"), "w", "x");
+            expect(rebound).not.toContain("w:");
+            await fs.writeFile(commentsPath, rebound, "utf-8");
+
+            // Before #930 the reply could not find its parent: findParaId
+            // read no comment by its literal w: name, so it failed with
+            // `Error: Parent comment 0 not found` instead.
+            const reply = await addComment({
+                unpackedDir: dir,
+                commentId: 1,
+                parent: 0,
+                text: "reply",
+                author: "Reviewer",
+                initials: "R",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 5, 0)),
+            });
+            expect(reply.message).toMatch(/^Added reply 1 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The new w15:commentEx names the parent's paragraph id, which
+            // the reply found in the x:-bound comments part.
+            const extDom = parseXml(await fs.readFile(path.join(dir, "word", "commentsExtended.xml"), "utf-8"));
+            const entries = getElementsByTagNameNSAll(extDom, W15_NAMESPACE, "commentEx");
+            expect(entries).toHaveLength(2);
+            expect(entries[1]!.getAttributeNS(W15_NAMESPACE, "paraId")).toBe(reply.paraId);
+            expect(entries[1]!.getAttributeNS(W15_NAMESPACE, "paraIdParent")).toBe(first.paraId);
+        });
+    });
+
+    it.each([
+        ["commentsExtended.xml", "w15", W15_NAMESPACE, "commentEx"],
+        ["commentsIds.xml", "w16cid", W16CID_NAMESPACE, "commentId"],
+        ["commentsExtensible.xml", "w16cex", W16CEX_NAMESPACE, "commentExtensible"],
+    ])(
+        "appends a second comment when word/%s binds its namespace to x:, whatever prefix it carries (#930)",
+        async (name, prefix, namespace, entry) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+                await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "first",
+                    author: "Test",
+                    initials: "T",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+
+                const partPath = path.join(dir, "word", name);
+                const rebound = rebindPrefix(await fs.readFile(partPath, "utf-8"), prefix, "x");
+                expect(rebound).not.toContain(`${prefix}:`);
+                await fs.writeFile(partPath, rebound, "utf-8");
+
+                // Before #930 the call threw: appendXml looked for the
+                // literal <w15:commentsEx> root, or its w16cid / w16cex kin.
+                const call = addComment({
+                    unpackedDir: dir,
+                    commentId: 1,
+                    text: "second",
+                    author: "Test",
+                    initials: "T",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 5, 0)),
+                });
+                await expect(call).resolves.toMatchObject({ paraId: expect.stringMatching(/^[0-9A-F]{8}$/) });
+
+                // The part holds both entries in its namespace, whatever
+                // prefix each carries.
+                const dom = parseXml(await fs.readFile(partPath, "utf-8"));
+                expect(getElementsByTagNameNSAll(dom, namespace, entry)).toHaveLength(2);
+            });
+        },
+    );
+
+    it("refuses a later comment whose comments part holds a root in another namespace, changing nothing (#930)", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "first",
+                author: "Test",
+                initials: "T",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            const commentsPath = path.join(dir, "word", "comments.xml");
+            await fs.writeFile(
+                commentsPath,
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<x:comments xmlns:x="urn:example:other"/>',
+                "utf-8",
+            );
+
+            // Before #930 the call threw instead of returning an error.
+            const before = await readTree(dir);
+            const call = addComment({ unpackedDir: dir, commentId: 1, text: "second", author: "Test", initials: "T" });
+            await expect(call).resolves.toMatchObject({ paraId: "" });
+            const result = await call;
+            expect(result.message).toBe(`Error: ${commentsPath} has no comments element in the ${WORD_MAIN_NAMESPACE} namespace`);
+            expect(await readTree(dir)).toEqual(before);
+        });
+    });
+
+    it.each([
+        ["commentsExtended.xml", "commentsEx", W15_NAMESPACE],
+        ["commentsIds.xml", "commentsIds", W16CID_NAMESPACE],
+        ["commentsExtensible.xml", "commentsExtensible", W16CEX_NAMESPACE],
+    ])(
+        "refuses a first comment when the stored word/%s holds a root in another namespace, changing nothing (#930)",
+        async (name, localName, namespace) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+                const partPath = path.join(dir, "word", name);
+                await fs.writeFile(
+                    partPath,
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<x:${localName} xmlns:x="urn:example:other"/>`,
+                    "utf-8",
+                );
+
+                // A first comment appends to a Microsoft part already stored,
+                // so its root is checked before comments.xml, the
+                // relationships and the content types are written; before,
+                // the call threw after writing them.
+                const before = await readTree(dir);
+                const call = addComment({ unpackedDir: dir, commentId: 0, text: "first", author: "Test", initials: "T" });
+                await expect(call).resolves.toMatchObject({ paraId: "" });
+                const result = await call;
+                expect(result.message).toBe(`Error: ${partPath} has no ${localName} element in the ${namespace} namespace`);
+                expect(await readTree(dir)).toEqual(before);
+            });
+        },
+    );
+
+    it(
+        "adds a first comment beside a stored commentsIds.xml that binds its namespace to x:, and the packed tree validates (#930)",
+        { timeout: 30000 },
+        async () => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+                const idsPath = path.join(dir, "word", "commentsIds.xml");
+                await fs.writeFile(
+                    idsPath,
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<x:commentsIds xmlns:x="${W16CID_NAMESPACE}"/>`,
+                    "utf-8",
+                );
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "first",
+                    author: "Test",
+                    initials: "T",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // The stored part keeps its x: root and gains the one entry,
+                // in its namespace, naming the new comment's paragraph.
+                const dom = parseXml(await fs.readFile(idsPath, "utf-8"));
+                expect(dom.documentElement!.prefix).toBe("x");
+                const entries = getElementsByTagNameNSAll(dom, W16CID_NAMESPACE, "commentId");
+                expect(entries.map((entry) => entry.getAttributeNS(W16CID_NAMESPACE, "paraId"))).toEqual([result.paraId]);
+
+                await fs.writeFile(path.join(dir, "word", "document.xml"), markedMainDocument(), "utf-8");
+                const file = path.join(dir, "x-prefix-ids.docx");
+                await packTree(dir, file);
+                const validation = await validate(file, { profile: "word-valid" });
+                expect(validation.valid).toBe(true);
             });
         },
     );
