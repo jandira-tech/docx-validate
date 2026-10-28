@@ -452,6 +452,26 @@ describe("a relative target that starts with http is resolved as a part (#988, s
     it("keeps lenient's historical prefix scan", async () => {
         expect((await run(withBrokenTarget("http_item.xml", CUSTOM_XML), "lenient")).broken).toEqual([]);
     });
+
+    // #1008: a URI scheme is ASCII case-insensitive (RFC 3986 §3.1), so
+    // word-valid and strict skip an `HTTP:` or `MAILTO:` URI as they skip
+    // its lowercase spelling, where they resolved it as a part.
+    it.each(["HTTP://example.com/x.png", "Http:x", "HTTP://x/.", "MAILTO:a@b.c", "Mailto:a@b.c"])(
+        "skips the URI %s under word-valid and strict, as its lowercase spelling (#1008)",
+        async (target) => {
+            expect((await run(withBrokenTarget(target), "word-valid")).broken).toEqual([]);
+            expect((await run(withBrokenTarget(target), "strict")).broken).toEqual([]);
+        },
+    );
+
+    it.each(["HTTP://example.com/x.png", "Http:x", "HTTP://x/.", "MAILTO:a@b.c", "Mailto:a@b.c"])(
+        "keeps lenient's case-sensitive scan for %s (#665, #1008)",
+        async (target) => {
+            const { valid, broken } = await run(withBrokenTarget(target), "lenient");
+            expect(broken.map((issue) => [issue.severity, issue.message])).toEqual([["error", `Broken reference to ${target}`]]);
+            expect(valid).toBe(false);
+        },
+    );
 });
 
 // #987: Word checks a relationship's target only in the relationships parts
