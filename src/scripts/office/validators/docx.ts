@@ -1024,7 +1024,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * Every `w:val` on a style-reference element (`w:pStyle`, `w:rStyle`,
      * `w:tblStyle`, `w:numStyle`, `w:tblpPr/w:tblStyle`, `w:linkedStyle`)
      * in document/header/footer/footnote/comment XML must resolve to a
-     * `<w:style w:styleId="...">` defined in `word/styles.xml`. Word
+     * `<w:style w:styleId="...">` defined in the styles part the main
+     * document relates (by name in its folder when none does, #688, #699). Word
      * silently substitutes the default style for missing references but
      * pops a "this document needs to be repaired" dialog when opening
      * unfamiliar dangling references.
@@ -1039,7 +1040,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * Word's repaired version injects the canonical definition.
      */
     /**
-     * Verify `word/styles.xml` defines the four "implied default" styles
+     * Verify the styles part the main document relates (by name in its
+     * folder when none does, #688, #699) defines the four "implied default" styles
      * required by ECMA-376 §17.7.4.4 — `Normal` (paragraph), `DefaultParagraphFont`
      * (character), `TableNormal` (table), `NoList` (numbering). Word
      * looks these up by name when an element omits an explicit style and
@@ -1082,7 +1084,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 issues.push({
                     severity,
                     message:
-                        `word/styles.xml is missing the implied-default style '${required.styleId}' ` +
+                        `${this.relPath(stylesPath)} is missing the implied-default style '${required.styleId}' ` +
                         `(type='${required.type}'). ECMA-376 §17.7.4.4 requires a default for each of the ` +
                         `four style types; missing 'TableNormal' in particular triggers Word's ` +
                         `"Document Recovery — Table Properties" dialog on open.`,
@@ -1221,6 +1223,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         }
 
+        // The message names the part it judged; `null` means no styles part
+        // was found, so every reference dangles against none (#695).
+        const stylesLabel = stylesPath === null ? "any styles part" : this.relPath(stylesPath);
         const refTags = ["pStyle", "rStyle", "tblStyle", "numStyle", "linkedStyle"] as const;
         // Track each (file, styleId) pair so we don't spam multiple
         // issues for the same dangling reference repeated 100 times.
@@ -1247,7 +1252,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         issues.push({
                             severity,
                             message:
-                                `<w:${tag} w:val='${val}'/> references a style not defined in word/styles.xml. ` +
+                                `<w:${tag} w:val='${val}'/> references a style not defined in ${stylesLabel}. ` +
                                 `Word substitutes the default style and triggers a repair dialog.`,
                             path: this.relPath(xmlFile),
                             code: "style-reference-undefined",
@@ -1748,7 +1753,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     // ----- Plan 02: Font table retention --------------------------------------
 
     /**
-     * Check `word/fontTable.xml` for empty `<w:fonts>` (no `<w:font>` children).
+     * Check the font-table part the main document relates
+     * (by name in its folder when none does, #690, #699) for empty
+     * `<w:fonts>` (no `<w:font>` children).
      * An empty font table is XSD-valid but almost always indicates a repairer bug
      * that discards all font metadata.
      *
@@ -1777,7 +1784,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             issues.push({
                 severity: "warning",
                 message:
-                    "word/fontTable.xml contains zero <w:font> entries. " +
+                    `${this.relPath(fontTablePath)} contains zero <w:font> entries. ` +
                     "This causes Word to substitute all fonts with its default, " +
                     "silently changing document appearance.",
                 path: this.relPath(fontTablePath),
@@ -1790,7 +1797,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     // ----- Plan 03: Style passthrough -----------------------------------------
 
     /**
-     * Check `word/styles.xml` for the presence of `<w:latentStyles>`.
+     * Check the styles part the main document relates (by name in its
+     * folder when none does, #688, #699) for the presence of `<w:latentStyles>`.
      * Missing latent styles is XSD-valid but unusual for Word-generated files.
      *
      * Reports `latent-styles-missing` at `"info"` severity.
@@ -1817,7 +1825,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             issues.push({
                 severity: "info",
                 message:
-                    "word/styles.xml has no <w:latentStyles> block. " +
+                    `${this.relPath(stylesPath)} has no <w:latentStyles> block. ` +
                     "This is unusual for Word-generated files and indicates " +
                     "the repairer may have regenerated styles from scratch.",
                 path: this.relPath(stylesPath),
@@ -2044,7 +2052,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validateRedundantRunProperties(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
 
-        // Find and parse styles.xml for docDefaults.
+        // Find and parse the main document's styles part for docDefaults.
         const stylesPath = await this.mainStylesPath();
         if (!stylesPath) return { valid: true, issues: [] };
 
@@ -2441,7 +2449,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     }
 
     /**
-     * Inject canonical definitions into `word/styles.xml` for every
+     * Inject canonical definitions into the main document's styles part
+     * (by name in its folder when none is related, #699) for every
      * well-known style ID referenced by document XML but not defined.
      * Only handles the small set of styles writers commonly leak —
      * unknown style IDs are NOT auto-defined (we don't know what they

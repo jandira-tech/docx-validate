@@ -705,7 +705,7 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "textid-missing-element":
             return "stamp missing w14:textId anchors on affected paragraphs or table rows";
         case "style-reference-undefined":
-            return "define the missing styles in word/styles.xml or correct references to existing style IDs";
+            return "define the missing styles in the judged styles part or correct references to existing style IDs";
         case "style-default-missing":
             return "inject canonical implied-default Word style definitions";
         case "comment-thread-commentid-paraid-orphan":
