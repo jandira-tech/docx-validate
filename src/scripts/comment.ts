@@ -85,6 +85,8 @@ const COMMENTS_PART_RELATIONSHIP_TYPES: ReadonlySet<string> = new Set([
 ]);
 /** The conventional main document, whose relationships part is `word/_rels/document.xml.rels` (#906). */
 const CONVENTIONAL_MAIN_DOCUMENT = "word/document.xml";
+/** The conventional main document's relationships part, the wiring #895 established. */
+const CONVENTIONAL_MAIN_RELS_PART = "word/_rels/document.xml.rels";
 /** The comments parts, in the order their relationships are written. */
 const COMMENT_PART_NAMES: readonly string[] = ["comments.xml", "commentsExtended.xml", "commentsIds.xml", "commentsExtensible.xml"];
 /** The relationship type reaching each comments part, in `COMMENT_PART_NAMES` order. */
@@ -408,27 +410,55 @@ async function storedPartNames(unpackedDir: string): Promise<string[]> {
  * stored parts under OPC part-name equivalence, so `word/m%61in.xml` names
  * a stored `word/main.xml`; before, a query, a fragment or an escaped
  * spelling was refused (#919). A missing `_rels/.rels`, or one whose stored
- * part is the conventional `word/document.xml`, keeps the wiring #895
- * established; a package naming another main document wires through that
- * document's own relationships part, under its stored name. The
- * relationships are read on the effective view `effectiveRelationships`
- * returns — the stored DOM after markup compatibility selects a branch —
- * so a relationship a selected `mc:Fallback` or an understood `mc:Choice`
- * holds counts, and one only an unselected branch holds does not (#932); a
- * part whose root binds the package-relationships namespace to a prefix is
- * read too, and an element in another namespace is not read as a
- * relationship (#918).
+ * part is named exactly `word/document.xml`, keeps the wiring #895
+ * established; every other stored spelling of that conventional part —
+ * `word/Document.xml`, `word/docum%65nt.xml` — is wired through its own
+ * stored name like any other renamed main document; before, an
+ * OPC-equivalent spelling dropped it, so the relationships were written to
+ * a second, OPC-equivalent `word/_rels/document.xml.rels` (#946). Either
+ * way, the relationships part is found under OPC equivalence, as the read
+ * model's `sidecarOf` finds it: the stored part equivalent to the sidecar
+ * derived from the main document's stored name when one is stored, and
+ * that derived name when none is, so a sidecar stored under another,
+ * equivalent spelling (`word/main.xml` with `word/_rels/m%61in.xml.rels`)
+ * is written to, never given a second one beside it; before, the derived
+ * name alone was used (#946). The relationships are read on the effective
+ * view `effectiveRelationships` returns — the stored DOM after markup
+ * compatibility selects a branch — so a relationship a selected
+ * `mc:Fallback` or an understood `mc:Choice` holds counts, and one only an
+ * unselected branch holds does not (#932); a part whose root binds the
+ * package-relationships namespace to a prefix is read too, and an element
+ * in another namespace is not read as a relationship (#918).
  * What cannot be resolved — a URI scheme, an empty reference, a target that
  * climbs past the package root, or a named part that is not stored, the
  * conventional `word/document.xml` included — is refused, naming `_rels/.rels`
  * or the missing part, before any write (#919).
  */
-type CommentWiring = { kind: "conventional" } | { kind: "wired"; mainDocument: string } | { kind: "refused"; message: string };
+type CommentWiring =
+    | { kind: "conventional"; mainRelsPart: string }
+    | { kind: "wired"; mainDocument: string; mainRelsPart: string }
+    | { kind: "refused"; message: string };
+
+/**
+ * The relationships part a first comment writes through for the main
+ * document `mainDocument`: the stored part OPC-equivalent to the sidecar
+ * derived from the main document's stored name — `<main folder>/_rels/<main
+ * basename>.rels` — when one is stored, and that derived name when none is
+ * (#946). The lookup is what the read model's `sidecarOf` does, so a
+ * sidecar stored under another, equivalent spelling
+ * (`word/_rels/m%61in.xml.rels` beside `word/main.xml`) is written to under
+ * its own name, never given a second, OPC-equivalent one beside it.
+ */
+function mainDocumentRelsPart(storedNames: readonly string[], mainDocument: string): string {
+    const derived = path.posix.join(path.posix.dirname(mainDocument), "_rels", `${path.posix.basename(mainDocument)}.rels`);
+    return findEquivalentPart(storedNames, derived) ?? derived;
+}
 
 async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring> {
     const packageRelsPath = path.join(unpackedDir, ...PACKAGE_RELS_PART.split("/"));
     if (!(await pathExists(packageRelsPath))) {
-        return { kind: "conventional" };
+        const storedNames = await storedPartNames(unpackedDir);
+        return { kind: "conventional", mainRelsPart: mainDocumentRelsPart(storedNames, CONVENTIONAL_MAIN_DOCUMENT) };
     }
     const part = await readXmlPart(packageRelsPath);
     if (part === undefined) {
@@ -475,16 +505,23 @@ async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring>
     // OPC equivalence, and the wiring goes through that part's own name; a
     // named part that is not stored is refused before any write, the
     // conventional `word/document.xml` included (#919).
-    const storedName = findEquivalentPart(await storedPartNames(unpackedDir), reference);
+    const storedNames = await storedPartNames(unpackedDir);
+    const storedName = findEquivalentPart(storedNames, reference);
     if (storedName === undefined) {
         return { kind: "refused", message: `Error: ${path.join(unpackedDir, ...reference.replace(/^\//, "").split("/"))} not found` };
     }
-    // OPC part names compare ASCII case-insensitively, with unreserved
-    // escapes decoded, so `Word/Document.xml` names the conventional part.
-    if (canonicalPartName(storedName) === canonicalPartName(CONVENTIONAL_MAIN_DOCUMENT)) {
-        return { kind: "conventional" };
+    // The conventional wiring stays only for the conventional spelling
+    // itself: OPC part names compare ASCII case-insensitively, with
+    // unreserved escapes decoded, so `Word/Document.xml` and
+    // `word/docum%65nt.xml` name the conventional part — but wiring them
+    // through it dropped their stored spelling and wrote their
+    // relationships to a second, OPC-equivalent
+    // `word/_rels/document.xml.rels`, so every other stored spelling is
+    // wired through its own name (#946).
+    if (storedName === CONVENTIONAL_MAIN_DOCUMENT) {
+        return { kind: "conventional", mainRelsPart: mainDocumentRelsPart(storedNames, CONVENTIONAL_MAIN_DOCUMENT) };
     }
-    return { kind: "wired", mainDocument: storedName };
+    return { kind: "wired", mainDocument: storedName, mainRelsPart: mainDocumentRelsPart(storedNames, storedName) };
 }
 
 /**
@@ -652,19 +689,23 @@ export interface AddCommentResult {
  * Add a comment (or reply) to an unpacked DOCX.
  *
  * On success, returns the generated `paraId` and a human-readable status
- * message. On failure (missing `word/` directory, missing parent comment, a
- * part this edit would write that is stored in an encoding this tool cannot
- * decode (#879) or is not well-formed XML (#905), a part this edit would write
- * whose path runs through, or ends at, a symbolic link (#939), a stored comment
- * part whose document element is not its expected root element, by namespace
- * and local name — whatever prefix it binds (#930, #953), or, for a first
- * comment, missing `[Content_Types].xml`, an `_rels/.rels` that cannot be
- * decoded or parsed, an `_rels/.rels` naming no non-External `officeDocument`
- * relationship, or an `officeDocument` target that, resolved as the read model
- * resolves it (`\` as `/`, the query and fragment dropped, the stored part
- * matched under OPC part-name equivalence), is a URI, escapes the package root
- * or names no stored part — the conventional `word/document.xml` included
- * (#906, #919)), returns `paraId = ""` and a message starting with `Error:`.
+ * message. A first comment relates the comments parts from the stored main
+ * document's own relationships part — the part `_rels/.rels` names, found under
+ * OPC equivalence like the main document itself, whatever spelling either is
+ * stored under (#906, #946). On failure (missing `word/` directory, missing
+ * parent comment, a part this edit would write that is stored in an encoding
+ * this tool cannot decode (#879) or is not well-formed XML (#905), a part this
+ * edit would write whose path runs through, or ends at, a symbolic link (#939),
+ * a stored comment part whose document element is not its expected root
+ * element, by namespace and local name — whatever prefix it binds (#930, #953),
+ * or, for a first comment, missing `[Content_Types].xml`, an `_rels/.rels` that
+ * cannot be decoded or parsed, an `_rels/.rels` naming no non-External
+ * `officeDocument` relationship, or an `officeDocument` target that, resolved
+ * as the read model resolves it (`\` as `/`, the query and fragment dropped,
+ * the stored part matched under OPC part-name equivalence), is a URI, escapes
+ * the package root or names no stored part — the conventional
+ * `word/document.xml` included (#906, #919)), returns `paraId = ""` and a
+ * message starting with `Error:`.
  */
 export async function addComment(opts: AddCommentOptions): Promise<AddCommentResult> {
     const { unpackedDir, commentId, text, parent, author, initials, date } = opts;
@@ -693,20 +734,23 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
 
     // A first comment relates the comments parts from the main document's
     // relationships part, which belongs to the main document `_rels/.rels`
-    // names — not necessarily `word/document.xml` (#906). A later comment
-    // never touches relationships, so it reads no `_rels/.rels` at all.
+    // names — not necessarily `word/document.xml` (#906) — and is itself
+    // found under OPC equivalence, whatever spelling either is stored
+    // under (#946). A later comment never touches relationships, so it
+    // reads no `_rels/.rels` at all.
     let mainDocument = CONVENTIONAL_MAIN_DOCUMENT;
+    let mainRelsPart = CONVENTIONAL_MAIN_RELS_PART;
     if (firstComment) {
         const wiring = await resolveCommentWiring(unpackedDir);
         if (wiring.kind === "refused") {
             return { paraId: "", message: wiring.message };
         }
+        mainRelsPart = wiring.mainRelsPart;
         if (wiring.kind === "wired") {
             mainDocument = wiring.mainDocument;
         }
     }
     const mainFolder = path.posix.dirname(mainDocument);
-    const mainRelsPart = path.posix.join(mainFolder, "_rels", `${path.posix.basename(mainDocument)}.rels`);
     const mainRelsPath = path.join(unpackedDir, ...mainRelsPart.split("/"));
     const commentTargets = COMMENT_PART_NAMES.map((name) => path.posix.relative(mainFolder, path.posix.join("word", name)));
 
