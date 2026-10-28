@@ -153,10 +153,20 @@ The PPTX slide and master checks judge every slide and slide master the
 presentation relates, wherever it is stored, beside `ppt/slides/` and
 `ppt/slideMasters/`. These are `notes-shared` (a notes slide two slides
 relate), `slide-layout-duplicate` (a slide with more than one `slideLayout`
-relationship) and `sldlayout-missing-rid` / `sldlayout-missing-rels` (a master's
-`sldLayoutId` naming no `slideLayout` relationship). The presentation is the
-part the package's `officeDocument` relationship names
-([#1013](https://github.com/jandira-tech/docx-validate/issues/1013)).
+relationship), `sldlayout-missing-rid` (a master's `sldLayoutId` naming no
+`slideLayout` relationship) and `sldlayout-missing-rels` (a master with no
+relationships part). The presentation is the part the package's
+`officeDocument` relationship names
+([#1013](https://github.com/jandira-tech/docx-validate/issues/1013)). The two
+historical folders match ASCII case-insensitively, and every stored spelling of
+two equivalent part names in them is judged
+([#1017](https://github.com/jandira-tech/docx-validate/issues/1017)). A
+master's relationships part is found under any equivalent spelling
+([#1018](https://github.com/jandira-tech/docx-validate/issues/1018)). Outside
+`ppt/slides/`, a slide's relationships part is judged only when the slide is
+stored. A related slide that is not stored has its own finding, the
+presentation's `rels-broken`
+([#1019](https://github.com/jandira-tech/docx-validate/issues/1019)).
 
 The `strict` profile runs the Word rules and applicable XSD schemas. Schema
 conformance is stricter than Word openability. A leading BOM is at most a warning
