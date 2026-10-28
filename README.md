@@ -1889,9 +1889,14 @@ spelling), never by message text — while `validateAllRelationshipIds()` called
 still reports every `rels-id-mismatch` and `rels-id-missing` (#612, #616,
 #619). Empty/missing-id findings register no such identity, because the
 legacy walk reads only truthy ids and reports neither shape.
-A glossary no main-document relationship reaches keeps its
-`rels-id-mismatch` or `rels-id-missing` under strict (Word does not read it,
-so word-valid stays silent), and lenient keeps every one of them.
+A glossary no main-document relationship reaches is not a story root, so it
+keeps the `rels-id-mismatch` or `rels-id-missing` of each header and footer
+reference under strict (Word does not read it, so word-valid stays silent),
+and lenient keeps every one of them. `word-hyperlink-relationship` judges story
+parts by name, an unreached glossary included, so a `w:hyperlink` it refuses
+there is reported once under word-valid and strict, its copy handed off as
+anywhere else
+([#1102](https://github.com/jandira-tech/docx-validate/issues/1102)).
 Full, quick and named Word-valid runs judge the findings they report alike
 (#381).
 
