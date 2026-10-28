@@ -257,6 +257,51 @@ export const findEquivalentPart = (names: readonly string[], partName: string): 
     return found;
 };
 
+/** An absolute URI names no package part, whatever its TargetMode says. */
+const hasUriScheme = (target: string): boolean => /^[a-z][a-z\d+.-]*:/i.test(target);
+
+/**
+ * The package-relative part name one relationship target references,
+ * resolved against `baseDir`, the folder of its source part, as the rest of
+ * the codebase does (`\` reads as `/`, a query or fragment is dropped,
+ * dot segments resolve): `undefined` for a target with a URI scheme or an
+ * empty reference. `clampAtPackageRoot` stops the target's `..` segments at
+ * the package root instead of leaving them to climb past it — RFC 3986's
+ * remove_dot_segments, the way Word resolved `word/`'s
+ * `../../footnotes.xml` to `/footnotes.xml` (session 64 s64a, #830).
+ */
+export const relationshipTargetPartName = (baseDir: string, target: string, clampAtPackageRoot = false): string | undefined => {
+    if (hasUriScheme(target)) {
+        return undefined;
+    }
+    const [reference = ""] = target.replace(/\\/g, "/").split(/[?#]/, 1);
+    if (reference === "") {
+        return undefined;
+    }
+    const joined = reference.startsWith("/") ? reference : path.posix.join(baseDir, reference);
+    return clampAtPackageRoot ? joined.replace(/^(?:\.\.\/)+/, "") : joined;
+};
+
+/**
+ * Resolve one relationship target against the folder of its source part, as
+ * the rest of the codebase does (`\` reads as `/`, a query or fragment is
+ * dropped, dot segments resolve), then take the OPC-equivalent stored entry
+ * (`canonicalPartName` comparison); `undefined` when it names no stored part.
+ * `clampAtPackageRoot` stops the target's `..` segments at the package root
+ * instead of dropping the whole target when they climb past it — RFC 3986's
+ * remove_dot_segments, the way Word resolved `word/`'s `../../footnotes.xml`
+ * to `/footnotes.xml` (session 64 s64a, #830).
+ */
+export const resolveTarget = (
+    lookup: (partName: string) => string | undefined,
+    baseDir: string,
+    target: string,
+    clampAtPackageRoot = false,
+): string | undefined => {
+    const reference = relationshipTargetPartName(baseDir, target, clampAtPackageRoot);
+    return reference === undefined ? undefined : lookup(reference);
+};
+
 /**
  * A lookup that makes {@link findEquivalentPart}'s choice over `names`, built
  * once, so each lookup costs one canonicalization instead of a scan of every

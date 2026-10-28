@@ -902,7 +902,9 @@ describe("addComment", () => {
 
     it("keeps writing word/_rels/document.xml.rels when the package relationships name word/document.xml (#906)", async () => {
         await withTempDir(async (dir) => {
-            await makePackageFixture(dir, officeDocumentRels("word/document.xml"));
+            // The named conventional main document is stored; before #919 a
+            // missing one was still written to instead of refused.
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
 
             const result = await addComment({
                 unpackedDir: dir,
@@ -951,6 +953,65 @@ describe("addComment", () => {
             });
         },
     );
+
+    it.each([
+        ["word/main.xml?x=1", "word/main.xml", "main.xml.rels"],
+        ["word/main.xml#anchor", "word/main.xml", "main.xml.rels"],
+        ["word/document.xml?x=1", "word/document.xml", "document.xml.rels"],
+        ["word/m%61in.xml", "word/main.xml", "main.xml.rels"],
+    ])(
+        "relates the comments parts through the stored main document when the package relationships name %s (#919)",
+        async (target, mainPart, relsName) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels(target), mainPart);
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // The target is resolved as the read model resolves it — the
+                // query or fragment dropped, the escaped spelling decoded —
+                // and the comments are wired through the stored part's own
+                // name, never through the reference as written.
+                const relsPath = path.join(dir, "word", "_rels", relsName);
+                expect(relationshipRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual(firstCommentRelationships(1));
+                const other = relsName === "document.xml.rels" ? "main.xml.rels" : "document.xml.rels";
+                await expect(fs.access(path.join(dir, "word", "_rels", other))).rejects.toThrow();
+            });
+        },
+    );
+
+    it("validates once the markers are added over a main document named with a query (#919)", { timeout: 30000 }, async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/main.xml?x=1"), "word/main.xml");
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The read model drops the query too, so Word reads the main
+            // document the relationship names and the comment the markers
+            // reference through that document's own relationships part.
+            await fs.writeFile(path.join(dir, "word", "main.xml"), markedMainDocument(), "utf-8");
+            const file = path.join(dir, "query-main.docx");
+            await packTree(dir, file);
+            const validation = await validate(file, { profile: "word-valid" });
+            expect(validation.issues.filter((issue) => issue.code === "comment-marker-missing")).toEqual([]);
+            expect(validation.valid).toBe(true);
+        });
+    });
 
     it("accepts the ISO Strict officeDocument relationship type when finding the main document (#906)", async () => {
         await withTempDir(async (dir) => {
@@ -1430,6 +1491,49 @@ describe("addComment", () => {
             expect(await readTree(dir)).toEqual(before);
         });
     });
+
+    it.each([
+        [
+            "word/document.xml, which is not stored",
+            officeDocumentRels("word/document.xml"),
+            "word/main.xml",
+            (dir: string) => `${path.join(dir, "word", "document.xml")} not found`,
+        ],
+        [
+            "an absolute URI",
+            packageRels(`Type="${OFFICE_DOCUMENT_RELATIONSHIP_TYPE}" Target="http://example.com/document.xml"`),
+            "word/main.xml",
+            (dir: string) => `${path.join(dir, "_rels", ".rels")} names a main document outside the package`,
+        ],
+        [
+            "/../word/document.xml, which climbs past the package root",
+            officeDocumentRels("/../word/document.xml"),
+            "word/main.xml",
+            (dir: string) => `${path.join(dir, "_rels", ".rels")} names a main document outside the package`,
+        ],
+    ])(
+        "refuses a first comment when the package relationships name %s, naming no stored part, changing nothing (#919)",
+        async (_label, relsXml, mainPart, expected) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, relsXml, mainPart);
+
+                const before = await readTree(dir);
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "x",
+                    author: "TestAuthor",
+                    initials: "TA",
+                });
+
+                // A named main document that is not stored is refused like
+                // any other, before any write — the conventional name included.
+                expect(result.paraId).toBe("");
+                expect(result.message).toBe(`Error: ${expected(dir)}`);
+                expect(await readTree(dir)).toEqual(before);
+            });
+        },
+    );
 
     it("refuses a first comment when [Content_Types].xml is missing, changing nothing (#895)", async () => {
         await withTempDir(async (dir) => {

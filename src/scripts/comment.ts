@@ -51,7 +51,9 @@ import {
     canonicalPartName,
     contentTypeMediaType,
     CONTENT_TYPES_NAMESPACE,
+    findEquivalentPart,
     parseContentTypes,
+    relationshipTargetPartName,
     resolveContentType,
 } from "../lib/content-types";
 import { commanderExitCode, runCli } from "../lib/run-cli";
@@ -317,16 +319,50 @@ function resolveTargetFrom(baseDir: string, target: string): string | undefined 
 }
 
 /**
+ * Whether a part reference climbs past the package root, from the root
+ * (`/../x.xml`) or relative (`../x.xml`), once its dot segments resolve.
+ */
+function climbsPastPackageRoot(reference: string): boolean {
+    const normalized = path.posix.normalize(reference.replace(/^\//, ""));
+    return normalized === ".." || normalized.startsWith("../");
+}
+
+/**
+ * Every file under `unpackedDir`, as a forward-slash part name relative to
+ * it — the stored part names a relationship target is looked up among.
+ */
+async function storedPartNames(unpackedDir: string): Promise<string[]> {
+    const names: string[] = [];
+    const walk = async (dir: string, prefix: string): Promise<void> => {
+        for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
+            if (entry.isFile()) {
+                names.push(prefix === "" ? entry.name : `${prefix}/${entry.name}`);
+            } else if (entry.isDirectory()) {
+                await walk(path.join(dir, entry.name), prefix === "" ? entry.name : `${prefix}/${entry.name}`);
+            }
+        }
+    };
+    await walk(unpackedDir, "");
+    return names;
+}
+
+/**
  * Where a first comment's relationships are wired through (#906): the main
- * document `_rels/.rels` names. A missing `_rels/.rels`, or one naming the
- * conventional `word/document.xml` under any OPC-equivalent spelling, keeps
- * the wiring #895 established; a package naming another main document wires
- * through that document's own relationships part. The relationships are
- * read through `getRelationshipChildren`, so a part whose root binds the
- * package-relationships namespace to a prefix is read too, and an element
- * in another namespace is not read as a relationship (#918). What cannot
- * be resolved is refused, naming `_rels/.rels` or the missing part, before
- * any write.
+ * document `_rels/.rels` names, resolved as the read model resolves it
+ * (`\` as `/`, the query and fragment dropped) and looked up among the
+ * stored parts under OPC part-name equivalence, so `word/m%61in.xml` names
+ * a stored `word/main.xml`; before, a query, a fragment or an escaped
+ * spelling was refused (#919). A missing `_rels/.rels`, or one whose stored
+ * part is the conventional `word/document.xml`, keeps the wiring #895
+ * established; a package naming another main document wires through that
+ * document's own relationships part, under its stored name. The
+ * relationships are read through `getRelationshipChildren`, so a part whose
+ * root binds the package-relationships namespace to a prefix is read too,
+ * and an element in another namespace is not read as a relationship (#918).
+ * What cannot be resolved — a URI scheme, an empty reference, a target that
+ * climbs past the package root, or a named part that is not stored, the
+ * conventional `word/document.xml` included — is refused, naming `_rels/.rels`
+ * or the missing part, before any write (#919).
  */
 type CommentWiring = { kind: "conventional" } | { kind: "wired"; mainDocument: string } | { kind: "refused"; message: string };
 
@@ -369,26 +405,27 @@ async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring>
                 : `Error: ${packageRelsPath} names no officeDocument relationship`,
         };
     }
-    const mainDocument = resolveTargetFrom(".", mainRel.getAttribute("Target") ?? "");
-    if (mainDocument === undefined) {
+    // The reference is resolved as the read model resolves it (a URI scheme
+    // or an empty target names no part, the query and fragment are dropped),
+    // and a reference that climbs past the package root names none either.
+    const reference = relationshipTargetPartName(".", mainRel.getAttribute("Target") ?? "");
+    if (reference === undefined || climbsPastPackageRoot(reference)) {
         return { kind: "refused", message: `Error: ${packageRelsPath} names a main document outside the package` };
+    }
+    // The reference names the stored part the read model would find, under
+    // OPC equivalence, and the wiring goes through that part's own name; a
+    // named part that is not stored is refused before any write, the
+    // conventional `word/document.xml` included (#919).
+    const storedName = findEquivalentPart(await storedPartNames(unpackedDir), reference);
+    if (storedName === undefined) {
+        return { kind: "refused", message: `Error: ${path.join(unpackedDir, ...reference.replace(/^\//, "").split("/"))} not found` };
     }
     // OPC part names compare ASCII case-insensitively, with unreserved
     // escapes decoded, so `Word/Document.xml` names the conventional part.
-    if (canonicalPartName(mainDocument) === canonicalPartName(CONVENTIONAL_MAIN_DOCUMENT)) {
+    if (canonicalPartName(storedName) === canonicalPartName(CONVENTIONAL_MAIN_DOCUMENT)) {
         return { kind: "conventional" };
     }
-    const mainPath = path.join(unpackedDir, ...mainDocument.split("/"));
-    let mainIsFile = false;
-    try {
-        mainIsFile = (await fs.stat(mainPath)).isFile();
-    } catch {
-        mainIsFile = false;
-    }
-    if (!mainIsFile) {
-        return { kind: "refused", message: `Error: ${mainPath} not found` };
-    }
-    return { kind: "wired", mainDocument };
+    return { kind: "wired", mainDocument: storedName };
 }
 
 /**
@@ -572,8 +609,11 @@ export interface AddCommentResult {
  * decode (#879) or is not well-formed XML (#905), or, for a first comment,
  * missing `[Content_Types].xml`, an `_rels/.rels` that cannot be decoded or
  * parsed, an `_rels/.rels` naming no non-External `officeDocument`
- * relationship, an `officeDocument` target that escapes the package root, or
- * a named main document that does not exist, #906), returns `paraId = ""`
+ * relationship, or an `officeDocument` target that, resolved as the read
+ * model resolves it (`\` as `/`, the query and fragment dropped, the
+ * stored part matched under OPC part-name equivalence), is a URI, escapes
+ * the package root or names no stored part — the conventional
+ * `word/document.xml` included (#906, #919)), returns `paraId = ""`
  * and a message starting with `Error:`.
  */
 export async function addComment(opts: AddCommentOptions): Promise<AddCommentResult> {
