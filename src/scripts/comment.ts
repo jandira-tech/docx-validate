@@ -503,8 +503,8 @@ async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring>
     const reference = relationshipTargetPartName(".", target);
     if (reference === undefined) {
         // A URI names a part outside the package; a target whose path is
-        // empty — no Target, or only a query or fragment — names no part at
-        // all (#1002).
+        // empty — no Target, an empty Target, or only a query or fragment —
+        // names no part at all (#1002).
         const [targetPath = ""] = target.replace(/\\/g, "/").split(/[?#]/, 1);
         return {
             kind: "refused",
