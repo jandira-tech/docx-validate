@@ -87,7 +87,7 @@ import { CT_OVERRIDE_PARTNAME_WORD_REFUSED, ctOverridePartnameWordRefusedCheck }
 import { CT_OVERRIDE_PARTNAME_INVALID, ctOverridePartnameInvalidCheck } from "../checks/ct-override-partname";
 import { ctDuplicateDeclarationCheck } from "../checks/word-content-types";
 import { isStoryReferenceLocalName, registerStoryReferenceIdentity } from "../story-reference-identity";
-import { registerRelsBrokenTarget } from "../rels-finding-facts";
+import { registerRelsBrokenTarget, registerRelsEmptyElementShape } from "../rels-finding-facts";
 import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
 import { CT_MARKUP_COMPATIBILITY, ctMarkupCompatibilityCheck } from "../checks/ct-markup-compatibility";
 import type JSZip from "jszip";
@@ -1032,14 +1032,18 @@ export class BaseSchemaValidator {
                 const target = rel.getAttribute("Target");
 
                 if (!rid || !type || !target) {
-                    issues.push({
+                    const issue: ValidationIssue = {
                         severity: "error",
                         message:
                             `<Relationship> missing required attribute(s): ` +
                             [!rid && "Id", !type && "Type", !target && "Target"].filter(Boolean).join(", "),
                         path: this.relPath(relsFile),
                         code: "rels-empty-element",
-                    });
+                    };
+                    // The word-valid verdict reads this registered shape,
+                    // never the message (#735).
+                    registerRelsEmptyElementShape(issue, "missing-attribute");
+                    issues.push(issue);
                     continue;
                 }
 
@@ -1059,12 +1063,17 @@ export class BaseSchemaValidator {
                     }
                 }
                 if (hasBodyContent) {
-                    issues.push({
+                    const issue: ValidationIssue = {
                         severity: "error",
                         message: `<Relationship Id="${rid}"> must be a self-closing empty element, not <Relationship>...</Relationship>`,
                         path: this.relPath(relsFile),
                         code: "rels-empty-element",
-                    });
+                    };
+                    // The word-valid verdict reads this registered shape,
+                    // never the message: the Id it embeds is
+                    // package-controlled (#735).
+                    registerRelsEmptyElementShape(issue, "body-content");
+                    issues.push(issue);
                 }
             }
         }
