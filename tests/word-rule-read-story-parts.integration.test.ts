@@ -554,6 +554,103 @@ describe("markup compatibility in a word/ part Word does not read warns under wo
         },
     );
 
+    // #1145 (review 1138 F1, F8): the read model decides whether a root uses
+    // its comments or notes part from the root alone, so a part whose only
+    // reference sits in a used header was dropped and its finding warned.
+    // Whether Word reads it then is unprobed, so the part stays named. An
+    // unused header Word does not read (session 84 s84a) names nothing, and
+    // nor does a footnote: session 16 (s16a) opened clean a malformed
+    // endnotes part only a footnote referenced.
+    const NOTE_KINDS = [
+        ["footnotes", '<w:footnote w:id="1"><w:p/></w:footnote>', '<w:footnoteReference w:id="1"/>'],
+        ["endnotes", '<w:endnote w:id="1"><w:p/></w:endnote>', '<w:endnoteReference w:id="1"/>'],
+        ["comments", '<w:comment w:id="0" w:author="A"><w:p/></w:comment>', '<w:commentReference w:id="0"/>'],
+    ] as const;
+    /** The minimal package plus a related `word/<kind>.xml` requiring `mc:MustUnderstand="foo"`, and word/header83.xml holding `reference`. */
+    const notesWithHeaderReference = (kind: string, body: string, reference: string, used: boolean): Parts => {
+        const parts = relateHeader(minimal(), used);
+        parts.set(UNRELATED, `${DECL}<w:hdr xmlns:w="${W}"><w:p><w:r>${reference}</w:r></w:p></w:hdr>`);
+        parts.set(
+            `word/${kind}.xml`,
+            `${DECL}<w:${kind} xmlns:w="${W}" xmlns:mc="${MC}" xmlns:foo="urn:foo" mc:MustUnderstand="foo">${body}</w:${kind}>`,
+        );
+        parts.set(
+            CT,
+            once(
+                textOf(parts, CT),
+                "</Types>",
+                `<Override PartName="/${UNRELATED}" ContentType="${WML}.header+xml"/><Override PartName="/word/${kind}.xml" ContentType="${WML}.${kind}+xml"/></Types>`,
+            ),
+        );
+        parts.set(
+            MAIN_RELS,
+            once(
+                textOf(parts, MAIN_RELS),
+                "</Relationships>",
+                `<Relationship Id="rIdN" Type="${R}/${kind}" Target="${kind}.xml"/></Relationships>`,
+            ),
+        );
+        return parts;
+    };
+
+    it.each(
+        RUNS.flatMap(([label, checks]) => NOTE_KINDS.map(([kind, body, reference]) => [kind, label, checks, body, reference] as const)),
+    )(
+        "keeps mce-must-understand an error in a related %s part whose only reference is in a used header (%s run, #1145)",
+        async (kind, _label, checks, body, reference) => {
+            expect((await mceRun(notesWithHeaderReference(kind, body, reference, true), "word-valid", checks)).mce).toEqual([
+                `mce-must-understand:error@word/${kind}.xml`,
+            ]);
+        },
+    );
+
+    it.each(
+        RUNS.flatMap(([label, checks]) => NOTE_KINDS.map(([kind, body, reference]) => [kind, label, checks, body, reference] as const)),
+    )(
+        "warns for mce-must-understand in a related %s part only an unused header references (%s run, #1145)",
+        async (kind, _label, checks, body, reference) => {
+            expect((await mceRun(notesWithHeaderReference(kind, body, reference, false), "word-valid", checks)).mce).toEqual([
+                `mce-must-understand:warning@word/${kind}.xml`,
+            ]);
+        },
+    );
+
+    it.each(RUNS)(
+        "%s run warns for mce-must-understand in a related endnotes part only a footnote references (session 16, #1145)",
+        async (_label, checks) => {
+            const parts = minimal();
+            parts.set(
+                MAIN,
+                once(textOf(parts, MAIN), "<w:t>Hello</w:t></w:r>", '<w:t>Hello</w:t></w:r><w:r><w:footnoteReference w:id="1"/></w:r>'),
+            );
+            parts.set(
+                "word/footnotes.xml",
+                `${DECL}<w:footnotes xmlns:w="${W}"><w:footnote w:id="1"><w:p><w:r><w:endnoteReference w:id="1"/></w:r></w:p></w:footnote></w:footnotes>`,
+            );
+            parts.set(
+                "word/endnotes.xml",
+                `${DECL}<w:endnotes xmlns:w="${W}" xmlns:mc="${MC}" xmlns:foo="urn:foo" mc:MustUnderstand="foo"><w:endnote w:id="1"><w:p/></w:endnote></w:endnotes>`,
+            );
+            parts.set(
+                CT,
+                once(
+                    textOf(parts, CT),
+                    "</Types>",
+                    `<Override PartName="/word/footnotes.xml" ContentType="${WML}.footnotes+xml"/><Override PartName="/word/endnotes.xml" ContentType="${WML}.endnotes+xml"/></Types>`,
+                ),
+            );
+            parts.set(
+                MAIN_RELS,
+                once(
+                    textOf(parts, MAIN_RELS),
+                    "</Relationships>",
+                    `<Relationship Id="rIdF" Type="${R}/footnotes" Target="footnotes.xml"/><Relationship Id="rIdE" Type="${R}/endnotes" Target="endnotes.xml"/></Relationships>`,
+                ),
+            );
+            expect((await mceRun(parts, "word-valid", checks)).mce).toEqual(["mce-must-understand:warning@word/endnotes.xml"]);
+        },
+    );
+
     it("strict keeps mce-malformed an error in a header the main document relates but does not use", async () => {
         const choice = relateHeader(withUnrelatedHeader(await load(CHOICE_CLEAN), await load(CHOICE_BROKEN)), false);
         expect((await mceRun(choice, "strict")).mce).toContain(`mce-malformed:error@${UNRELATED}`);

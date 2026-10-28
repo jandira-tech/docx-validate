@@ -2199,6 +2199,67 @@ describe("wordPossiblyReadParts (#1116, #1125)", () => {
         },
     );
 
+    // #1145: the read model decides a root's comments and notes use from the
+    // root alone, so a read header or footer holding a reference of that kind,
+    // or failing the byte-level XML checks, keeps the related part listed.
+    const NOTE_SEGMENTS = ["comments", "footnotes", "endnotes"] as const;
+    const NOTE_REFERENCE: Readonly<Record<(typeof NOTE_SEGMENTS)[number], string>> = {
+        comments: '<w:commentReference w:id="0"/>',
+        footnotes: '<w:footnoteReference w:id="1"/>',
+        endnotes: '<w:endnoteReference w:id="1"/>',
+    };
+    const HOLDER_ROOT = { header: "hdr", footer: "ftr" } as const;
+    /** The main document relating a `segment` part it does not use, and a `holder` part with `content`, used or not. */
+    const withStoryHolding = (
+        segment: (typeof NOTE_SEGMENTS)[number],
+        holder: "header" | "footer",
+        content: string,
+        used: boolean,
+    ): Parts => {
+        const parts = withDocRel(
+            withDocRel(
+                { ...MINIMAL_PARTS, [`word/${STORY_FILE[segment]}`]: WELLFORMED_STORY[segment], [`word/${STORY_FILE[holder]}`]: content },
+                "rIdS",
+                `${R}/${segment}`,
+                STORY_FILE[segment],
+            ),
+            "rIdH",
+            `${R}/${holder}`,
+            STORY_FILE[holder],
+        );
+        if (used) {
+            parts["word/document.xml"] = USING[holder]("rIdH");
+        }
+        return parts;
+    };
+    const holding = (holder: "header" | "footer", inner: string): string =>
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:${HOLDER_ROOT[holder]} xmlns:w="${W}"><w:p><w:r>${inner}</w:r></w:p></w:${HOLDER_ROOT[holder]}>`;
+
+    it.each(NOTE_SEGMENTS.flatMap((segment) => (["header", "footer"] as const).map((holder) => [segment, holder] as const)))(
+        "lists a related %s part the main document does not use when a used %s references it (#1145)",
+        async (segment, holder) => {
+            const story = canonicalPartName(`word/${STORY_FILE[segment]}`);
+            expect(await named(withStoryHolding(segment, holder, holding(holder, NOTE_REFERENCE[segment]), true))).toContain(story);
+            expect(await named(withStoryHolding(segment, holder, holding(holder, NOTE_REFERENCE[segment]), false))).not.toContain(story);
+            expect(await named(withStoryHolding(segment, holder, holding(holder, "<w:t>No reference</w:t>"), true))).not.toContain(story);
+        },
+    );
+
+    it.each(NOTE_SEGMENTS)(
+        "lists a related %s part the main document does not use when a used header fails the byte-level XML checks (#1145)",
+        async (segment) => {
+            const story = canonicalPartName(`word/${STORY_FILE[segment]}`);
+            const unclosed = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:hdr xmlns:w="${W}"><w:p>`;
+            expect(await named(withStoryHolding(segment, "header", unclosed, true))).toContain(story);
+        },
+    );
+
+    it("does not list a related endnotes part when a used header holds only a comment reference (#1145)", async () => {
+        const parts = withStoryHolding("endnotes", "header", holding("header", NOTE_REFERENCE.comments), true);
+        const story = canonicalPartName(`word/${STORY_FILE.endnotes}`);
+        expect(await named(parts)).not.toContain(story);
+    });
+
     it("lists an unused related header another relationships part also names (#1125)", async () => {
         expect(await named(withHeaders({ [STRAY]: relationships(header("rId1", "header1.xml")) }))).toContain(HEADER1);
     });
