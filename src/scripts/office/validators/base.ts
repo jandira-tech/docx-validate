@@ -87,6 +87,7 @@ import { CT_OVERRIDE_PARTNAME_WORD_REFUSED, ctOverridePartnameWordRefusedCheck }
 import { CT_OVERRIDE_PARTNAME_INVALID, ctOverridePartnameInvalidCheck } from "../checks/ct-override-partname";
 import { ctDuplicateDeclarationCheck } from "../checks/word-content-types";
 import { isStoryReferenceLocalName, registerStoryReferenceIdentity } from "../story-reference-identity";
+import { registerRelsBrokenTarget } from "../rels-finding-facts";
 import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
 import { CT_MARKUP_COMPATIBILITY, ctMarkupCompatibilityCheck } from "../checks/ct-markup-compatibility";
 import type JSZip from "jszip";
@@ -932,7 +933,7 @@ export class BaseSchemaValidator {
 
             const relsPath = path.join(this.unpackedDir, relsPart);
             const relsDir = path.dirname(relsPath);
-            const broken: string[] = [];
+            const broken: Array<{ target: string; part: string }> = [];
 
             const rels = this.relationshipElements(dom, relsPart);
             for (let i = 0; i < rels.length; i += 1) {
@@ -958,7 +959,11 @@ export class BaseSchemaValidator {
                 try {
                     targetPath = path.resolve(targetPath);
                     if (containRelationshipTarget(this.unpackedDir, targetPath) === null) {
-                        broken.push(target);
+                        // RFC 3986 dot-segment removal keeps a `..` above the
+                        // package root at the root: Word read
+                        // `../../customXml/item1.xml` from the main document's
+                        // sidecar as `customXml/item1.xml` (session 54).
+                        broken.push({ target, part: this.entryName(targetPath).replace(/^(?:\.\.\/)+/, "") });
                         continue;
                     }
                     // Resolve against stored part names, as the main-part lookup
@@ -969,20 +974,24 @@ export class BaseSchemaValidator {
                     if (file !== undefined && containRelationshipTarget(this.unpackedDir, file) !== null) {
                         allReferenced.add(path.resolve(file));
                     } else {
-                        broken.push(target);
+                        broken.push({ target, part: part ?? this.entryName(targetPath) });
                     }
                 } catch {
-                    broken.push(target);
+                    broken.push({ target, part: this.entryName(targetPath) });
                 }
             }
 
-            for (const ref of broken) {
-                issues.push({
+            for (const { target, part } of broken) {
+                const issue: ValidationIssue = {
                     severity: "error",
-                    message: `Broken reference to ${ref}`,
+                    message: `Broken reference to ${target}`,
                     path: this.relPath(relsFile),
                     code: "rels-broken",
-                });
+                };
+                // The word-valid verdict reads the part the target resolved
+                // to, never the raw Target spelling the message embeds (#734).
+                registerRelsBrokenTarget(issue, part);
+                issues.push(issue);
             }
         }
 

@@ -31,6 +31,7 @@ import {
 } from "../src/scripts/office/validators/base";
 
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { relsBrokenTarget } from "../src/scripts/office/rels-finding-facts";
 
 class HarnessValidator extends BaseSchemaValidator {
     schemaMappingKey(part: string): string | null {
@@ -400,6 +401,42 @@ describe("BaseSchemaValidator", () => {
                 const broken = result.issues.find((i) => i.code === "rels-broken");
                 expect(broken).toBeDefined();
                 expect(broken!.message).toContain("word/styles-missing.xml");
+            });
+        });
+
+        it("registers the resolved part name on each rels-broken finding (#734)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                await writeFile(
+                    path.join(dir, "_rels", ".rels"),
+                    `${RELS_HEADER}
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+              <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+            </Relationships>`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `${RELS_HEADER}
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+              <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/missing.xml"/>
+              <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/_rels/x.png"/>
+              <Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="notes.rels"/>
+              <Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="word/../customXml/x.png"/>
+            </Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateFileReferences();
+                const byMessage = new Map(result.issues.filter((i) => i.code === "rels-broken").map((i) => [i.message, i] as const));
+                expect([...byMessage.keys()]).toEqual([
+                    "Broken reference to ../customXml/missing.xml",
+                    "Broken reference to media/_rels/x.png",
+                    "Broken reference to notes.rels",
+                    "Broken reference to word/../customXml/x.png",
+                ]);
+                expect(relsBrokenTarget(byMessage.get("Broken reference to ../customXml/missing.xml")!)).toBe("customXml/missing.xml");
+                expect(relsBrokenTarget(byMessage.get("Broken reference to media/_rels/x.png")!)).toBe("word/media/_rels/x.png");
+                expect(relsBrokenTarget(byMessage.get("Broken reference to notes.rels")!)).toBe("word/notes.rels");
+                expect(relsBrokenTarget(byMessage.get("Broken reference to word/../customXml/x.png")!)).toBe("word/customXml/x.png");
             });
         });
 

@@ -14,6 +14,7 @@ import { canonicalPartName, isContentTypesStreamName, PART_NAME_FOLDER_SEGMENT_D
 import { sidecarOf } from "../../../lib/word-read-parts";
 import { NS, type ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameAll } from "../../../lib/xml-helpers";
+import { relsBrokenTarget } from "../rels-finding-facts";
 import {
     SCHEMA_DECLARED_ELEMENTS,
     SCHEMA_REFERENCE_ELEMENTS,
@@ -152,6 +153,15 @@ const isWordXmlPart = (partName: string | undefined): boolean =>
  */
 const isDocumentRelationshipsPart = (partName: string | undefined, storyRootParts: ReadonlySet<string>): boolean =>
     partName !== undefined && [...storyRootParts].some((root) => sidecarOf([partName], root) !== undefined);
+
+/**
+ * Whether a part is a relationships part of the OPC `_rels/<owner>.rels`
+ * shape, compared as OPC compares part names: the `_rels` folder holds the
+ * sidecars (`word/_rels/document.xml.rels`), the package's own is
+ * `_rels/.rels`, and a `.rels` basename elsewhere (`word/notes.rels`) is no
+ * relationships part.
+ */
+const isOpcRelationshipsPart = (partName: string): boolean => /^(.*\/)?_rels\/[^/]*\.rels$/.test(canonicalPartName(partName));
 
 /**
  * Whether `issue` stays an error under `word-valid`: `true` when Word 16.115
@@ -467,15 +477,28 @@ export const isWordBlockingIssue = (
                 isPackageRelationshipsPart(issue.path) ||
                 (issue.path !== undefined && isContentTypesStreamName(issue.path))
             );
-        case "rels-broken":
+        case "rels-broken": {
             // NB: a broken media/ rel (image Target absent) is NOT word-blocking:
             // real Word shows a missing-image placeholder and opens cleanly
             // (verified: word-tolerated-broken-media-rel.docx). Broken media alone
             // does not predict rejection — files unreadable "with" a broken media
             // ref fail for a separate, undetected reason. Stays an error in
             // lenient/strict; only the word-valid openability profile tolerates it.
-            // Structural rels (customXml, nested .rels) remain word-blocking.
-            return issue.message.includes("../customXml/") || /\/_rels\/|\.rels$/i.test(issue.message);
+            // Structural rels remain word-blocking, and the verdict reads the part
+            // the target resolved to, registered on the issue by the walk that
+            // reported it (#734) — never the message, whose raw Target spelling is
+            // package-controlled (`media/_rels/x.png`, `notes.rels` and
+            // `word/../customXml/x.png` name none of these parts). Blocking is the
+            // observed set: a relationships part of the `_rels/<owner>.rels` shape
+            // and a `customXml` part outside word/ (vectors.docx, unreadable
+            // content; session 54 refused the same absent package-root part under
+            // its absolute, backslash, escaped and above-the-root spellings, and
+            // opened clean the injected image spellings and a reached glossary's
+            // `../customXml/` target; session 40 opened the External twins clean,
+            // docs/plans/evidence/word-probes-2026-10-24.md).
+            const part = relsBrokenTarget(issue);
+            return part !== undefined && (isOpcRelationshipsPart(part) || canonicalPartName(part).startsWith("customxml/"));
+        }
         case "rels-empty-element":
             return issue.message.includes("missing required attribute");
         case "mce-must-understand":

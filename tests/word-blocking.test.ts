@@ -8,6 +8,7 @@ import { describe, expect, it } from "vitest";
 import { canonicalPartName } from "../src/lib/content-types";
 import type { ValidationIssue } from "../src/lib/types";
 import { parseXml } from "../src/lib/xml-helpers";
+import { registerRelsBrokenTarget } from "../src/scripts/office/rels-finding-facts";
 import {
     hasWordRelationshipReference,
     isWordBlockingIssue,
@@ -434,12 +435,28 @@ describe("isWordBlockingIssue", () => {
     });
 
     it.each([
-        ["Broken reference: ../customXml/item1.xml", true],
-        ["Broken reference in word/_rels/document.xml.rels", true],
-        ["Broken reference in _rels/.rels", true],
-        ["Broken reference: media/image1.png", false],
-    ])("judges rels-broken %j as blocking: %s", (message, blocking) => {
-        expect(isWordBlockingIssue(issue("rels-broken", { message }))).toBe(blocking);
+        // The shapes Word was shown: vectors.docx's broken `../customXml/item1.xml`
+        // (unreadable content) and a nested `.rels` sidecar, the package's own
+        // relationships part included. The registered resolved part decides.
+        ["customXml/item1.xml", true],
+        ["CUSTOMXML/%69tem1.xml", true],
+        ["customXml/_rels/item1.xml.rels", true],
+        ["_rels/.rels", true],
+        ["word/_rels/document.xml.rels", true],
+        // #734's injected spellings: the raw Target carried `../customXml/`,
+        // `/_rels/` or `.rels` while the part it names is none of those.
+        ["word/media/_rels/x.png", false],
+        ["word/notes.rels", false],
+        ["word/customXml/x.png", false],
+        ["media/image1.png", false],
+    ])("judges rels-broken resolving to %j as blocking: %s", (part, blocking) => {
+        const found = issue("rels-broken", { message: `Broken reference to ${part}` });
+        registerRelsBrokenTarget(found, part);
+        expect(isWordBlockingIssue(found)).toBe(blocking);
+    });
+
+    it("leaves an unregistered rels-broken a warning, whatever its message (#734)", () => {
+        expect(isWordBlockingIssue(issue("rels-broken", { message: "Broken reference to ../customXml/item1.xml" }))).toBe(false);
     });
 
     it.each([
