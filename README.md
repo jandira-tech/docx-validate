@@ -1124,12 +1124,19 @@ reaching relationship names through the chart type blocks only when a
 Word-read part's effective XML names one of those relationship Ids
 (`c:chart/@r:id` in a drawing, read in the processed view: a drawing only
 inside an unselected `mc:Choice` opened clean and one inside a selected
-Choice got the recovery offer, session 37 s37b), while a part a second
-relationship type also reaches keeps the reach-based verdict — a known false
-positive for a chart and an image relationship, which s37b opened clean
-([#647](https://github.com/jandira-tech/docx-validate/issues/647))
+Choice got the recovery offer, session 37 s37b). An image relationship
+never counts: session 44 opened clean every part an image relationship
+reaches, under `word/` and outside it, even when a picture's `a:blip r:embed`
+names it, so a part images and charts reach blocks only through a referenced
+chart relationship. Session 44 also opened clean an unreferenced
+`diagramData`, `oleObject` or Microsoft `hdphoto` reach, so those types join
+the rule; Word was never shown their referenced shapes, so any attribute in a
+relationships namespace (or VML's `o:relid`) naming the relationship counts
+as their reference, and a `dgm:relIds r:dm` keeps blocking
+([#647](https://github.com/jandira-tech/docx-validate/issues/647)). A part
+any other relationship type also reaches keeps the reach-based verdict
 ([#645](https://github.com/jandira-tech/docx-validate/issues/645); chunks
-s36b/s36d and s37b in the same evidence file).
+s36b/s36d, s37b and s44a–s44c in the same evidence file).
 Session 39 (s39a, s39c) showed Word the rule beyond the main document's
 sidecar: an unused chart relationship from a referenced header's sidecar or
 from a reached glossary's footnotes part or document, two unused chart

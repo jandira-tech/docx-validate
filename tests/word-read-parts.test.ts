@@ -34,7 +34,7 @@ import {
     wordReadTypedTargets,
     wordTypedRelationshipTargets,
     wordUnobservedRelationshipTargets,
-    wordChartRelationshipSources,
+    wordReferenceLoadedSources,
 } from "../src/lib/word-read-parts";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
@@ -1640,7 +1640,7 @@ describe("a part related by two relationship types keeps every segment (#593)", 
     });
 });
 
-describe("wordChartRelationshipSources (#645)", () => {
+describe("wordReferenceLoadedSources (#645, #647)", () => {
     // Session 36 (s36b/s36d): the `chart` relationship type is observed for
     // `rels-missing-sidecar` — Word loads a chart only when a Word-read
     // part's XML references the relationship's Id. The sources this returns
@@ -1651,13 +1651,13 @@ describe("wordChartRelationshipSources (#645)", () => {
         ["outside word/", "charts/chart1.xml", "../charts/chart1.xml"],
     ] as const)("names the source relationships of a chart reached %s", async (_label, part, target) => {
         const parts = withDocRel({ ...MINIMAL_PARTS, [part]: BARE_CHART_XML }, "rId9", `${R}/chart`, target);
-        expect(await wordChartRelationshipSources(ValidationContext.fromEntries(parts), part)).toEqual([
-            { source: "word/document.xml", id: "rId9" },
+        expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), part)).toEqual([
+            { source: "word/document.xml", id: "rId9", anyAttribute: false },
         ]);
     });
 
     it.each([
-        ["a second non-chart relationship", "image", `${R}/image`],
+        ["an unobserved relationship", "audio", `${R}/audio`],
         ["an observed relationship", "styles", `${R}/styles`],
         ["an unknown-type relationship", "urn:x", "urn:x:unknown"],
     ] as const)("yields undefined when %s also reaches the part", async (_label, _id, type) => {
@@ -1667,18 +1667,18 @@ describe("wordChartRelationshipSources (#645)", () => {
             type,
             "../charts/chart1.xml",
         );
-        expect(await wordChartRelationshipSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toBe(undefined);
+        expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toBe(undefined);
     });
 
     it("yields undefined for a chart named by nothing or by an external relationship", async () => {
         const unrelated = { ...MINIMAL_PARTS, "charts/chart1.xml": BARE_CHART_XML };
-        expect(await wordChartRelationshipSources(ValidationContext.fromEntries(unrelated), "charts/chart1.xml")).toBe(undefined);
+        expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(unrelated), "charts/chart1.xml")).toBe(undefined);
         const parts = withDocRel({ ...MINIMAL_PARTS, "charts/chart1.xml": BARE_CHART_XML }, "rId9", `${R}/chart`, "../charts/chart1.xml");
         parts["word/_rels/document.xml.rels"] = (parts["word/_rels/document.xml.rels"] as string).replace(
             '<Relationship Id="rId9"',
             '<Relationship Id="rId9" TargetMode="External"',
         );
-        expect(await wordChartRelationshipSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toBe(undefined);
+        expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toBe(undefined);
     });
 
     it("names each chart relationship, with the package part sourceless", async () => {
@@ -1699,20 +1699,63 @@ describe("wordChartRelationshipSources (#645)", () => {
             "</Relationships>",
             `<Relationship Id="rId9" Type="${R}/chart" Target="../charts/chart1.xml"/></Relationships>`,
         );
-        expect(await wordChartRelationshipSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toEqual([
-            { source: undefined, id: "rId2" },
-            { source: "word/document.xml", id: "rId9" },
-            { source: "word/styles.xml", id: "rId3" },
+        expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toEqual([
+            { source: undefined, id: "rId2", anyAttribute: false },
+            { source: "word/document.xml", id: "rId9", anyAttribute: false },
+            { source: "word/styles.xml", id: "rId3", anyAttribute: false },
         ]);
     });
 
     it("compares target names as OPC part names, and yields nothing without a package relationships part", async () => {
         const parts = withDocRel({ ...MINIMAL_PARTS, "charts/chart1.xml": BARE_CHART_XML }, "rId9", `${R}/chart`, "../CHARTS/chart1.xml");
-        expect(await wordChartRelationshipSources(ValidationContext.fromEntries(parts), "CHARTS/chart1.xml")).toEqual([
-            { source: "word/document.xml", id: "rId9" },
+        expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "CHARTS/chart1.xml")).toEqual([
+            { source: "word/document.xml", id: "rId9", anyAttribute: false },
         ]);
         const { "_rels/.rels": _dropped, ...noMain } = parts;
-        expect(await wordChartRelationshipSources(ValidationContext.fromEntries(noMain), "charts/chart1.xml")).toBe(undefined);
+        expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(noMain), "charts/chart1.xml")).toBe(undefined);
+    });
+
+    // Session 44 (s44a–s44c, #647): an image relationship never loads its
+    // target's relationships, so it is reached but never a source; an
+    // unreferenced diagramData, oleObject or hdphoto reach opened clean, and
+    // their unobserved referenced shapes are matched on any attribute.
+    it("reaches a part only images reach with no sources, Transitional or Strict", async () => {
+        for (const type of [`${R}/image`, "http://purl.oclc.org/ooxml/officeDocument/relationships/image"]) {
+            const parts = withDocRel({ ...MINIMAL_PARTS, "charts/chart1.xml": BARE_CHART_XML }, "rId8", type, "../charts/chart1.xml");
+            expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toEqual([]);
+        }
+    });
+
+    it("drops the image relationship beside a chart one", async () => {
+        const parts = withDocRel(
+            withDocRel({ ...MINIMAL_PARTS, "charts/chart1.xml": BARE_CHART_XML }, "rId9", `${R}/chart`, "../charts/chart1.xml"),
+            "rId8",
+            `${R}/image`,
+            "../charts/chart1.xml",
+        );
+        expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toEqual([
+            { source: "word/document.xml", id: "rId9", anyAttribute: false },
+        ]);
+    });
+
+    it.each([`${R}/diagramData`, `${R}/oleObject`, "http://schemas.microsoft.com/office/2007/relationships/hdphoto"])(
+        "matches any attribute for a %s reach",
+        async (type) => {
+            const parts = withDocRel({ ...MINIMAL_PARTS, "word/charts/chart1.xml": BARE_CHART_XML }, "rId8", type, "charts/chart1.xml");
+            expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "word/charts/chart1.xml")).toEqual([
+                { source: "word/document.xml", id: "rId8", anyAttribute: true },
+            ]);
+        },
+    );
+
+    it("yields undefined for an image reach beside an unobserved type", async () => {
+        const parts = withDocRel(
+            withDocRel({ ...MINIMAL_PARTS, "charts/chart1.xml": BARE_CHART_XML }, "rId8", `${R}/image`, "../charts/chart1.xml"),
+            "rId7",
+            `${R}/audio`,
+            "../charts/chart1.xml",
+        );
+        expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toBe(undefined);
     });
 });
 

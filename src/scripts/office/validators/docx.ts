@@ -57,13 +57,18 @@ import { mergeResults, NS } from "../../../lib/types";
 import { promoteFullCheckIssue } from "../../../lib/mode-policy";
 import { propertiesParts } from "../../../lib/properties-parts";
 import {
-    wordChartRelationshipSources,
+    wordReferenceLoadedSources,
     wordReadParts,
     wordStoryRootParts,
     wordTypedRelationshipTargets,
     wordUnobservedRelationshipTargets,
 } from "../../../lib/word-read-parts";
-import { hasWordRelationshipReference, isWordBlockingIssue, wordRelationshipReferenceIds } from "./word-blocking";
+import {
+    hasWordRelationshipReference,
+    isWordBlockingIssue,
+    relationshipAttributeValues,
+    wordRelationshipReferenceIds,
+} from "./word-blocking";
 import {
     decodeXmlBytes,
     getElementsByTagNameAll,
@@ -729,24 +734,29 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             : new Set<string>();
         // #645, session 36 s36b/s36d: a part every reaching relationship names
         // through the chart type is loaded by Word only when a Word-read
-        // part's effective XML references one of those relationship Ids.
-        const chartReach = new Map<string, "referenced" | "unreferenced">();
+        // part's effective XML references one of those relationship Ids;
+        // #647, session 44: an image reach never loads it, and diagramData,
+        // oleObject and hdphoto count any attribute naming the Id.
+        const referenceLoadedReach = new Map<string, "referenced" | "unreferenced">();
         for (const path of result.issues.flatMap((issue) => {
             const part = missingSidecarPart(issue);
             return part === undefined ? [] : [part];
         })) {
-            const sources = await wordChartRelationshipSources(context, path, this.profile);
+            const sources = await wordReferenceLoadedSources(context, path, this.profile);
             if (sources === undefined) {
                 continue;
             }
-            const referenced = sources.some(({ source, id }) => {
+            const referenced = sources.some(({ source, id, anyAttribute }) => {
                 if (source === undefined || !read.has(canonicalPartName(source))) {
                     return false;
                 }
                 const xml = context.effectiveXml(source);
-                return xml?.ok === true && wordRelationshipReferenceIds(xml.document).has(id);
+                return (
+                    xml?.ok === true &&
+                    (anyAttribute ? relationshipAttributeValues(xml.document) : wordRelationshipReferenceIds(xml.document)).has(id)
+                );
             });
-            chartReach.set(path, referenced ? "referenced" : "unreferenced");
+            referenceLoadedReach.set(path, referenced ? "referenced" : "unreferenced");
         }
         const issues = result.issues.map((issue): ValidationIssue => {
             if (issue.severity !== "error") return issue;
@@ -758,7 +768,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             const facts = {
                 hasEffectiveRelationshipReference: effective?.ok === true && hasWordRelationshipReference(effective.document),
                 reachedByUnobservedRelationship: part !== undefined && unobserved.has(canonicalPartName(part.replace(/\\/g, "/"))),
-                chartRelationshipReference: part === undefined ? undefined : chartReach.get(part),
+                referenceLoadedReach: part === undefined ? undefined : referenceLoadedReach.get(part),
             };
             if (isWordBlockingIssue(issue, properties, read, storyRoots, facts)) return issue;
             return { ...issue, severity: "warning" };

@@ -178,3 +178,61 @@ export const equivalentTargetChartSpecimenParts = (referenced: boolean): Record<
     parts[SIDECAR] = replaceOnce(parts[SIDECAR]!, 'Target="charts/chart1.xml"', 'Target="CHARTS/%63hart1.xml"');
     return parts;
 };
+
+const PIC = "http://schemas.openxmlformats.org/drawingml/2006/picture";
+
+/** The s44a inline picture whose `a:blip r:embed` names the image relationship `rId8`. */
+export const PICTURE_DRAWING =
+    '<w:p w14:paraId="00000002" w14:textId="00000002"><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="952500" cy="952500"/>' +
+    '<wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="Picture 1"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>' +
+    `<a:graphic><a:graphicData uri="${PIC}"><pic:pic><pic:nvPicPr><pic:cNvPr id="0" name="Picture 1"/><pic:cNvPicPr/></pic:nvPicPr>` +
+    '<pic:blipFill><a:blip r:embed="rId8"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>' +
+    '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="952500" cy="952500"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>' +
+    "</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>";
+
+/** A relationship from the main document's sidecar in a session 44 specimen. */
+export interface ReachingRelationship {
+    readonly id: string;
+    readonly type: string;
+}
+
+/**
+ * Session 44's reach shapes (s44a–s44c, #647): `BARE_CHART_XML` (or, with
+ * `externalData: false`, the same chart with no `c:externalData`) stored at
+ * `part`, a chart Override, and one relationship per entry of `reach` from the
+ * main document's sidecar, each targeting the chart; `drawing`, when given, is
+ * put before the main document's `w:sectPr`. Word 16.115 opened every shape
+ * whose only reference is a picture's `a:blip r:embed`, or that nothing
+ * references, clean, and refused the chart a `c:chart r:id` references.
+ */
+export const reachedChartSpecimenParts = (
+    part: string,
+    reach: readonly ReachingRelationship[],
+    drawing?: string,
+    externalData = true,
+): Record<string, string> => {
+    const target = part.startsWith("word/") ? part.slice("word/".length) : `../${part}`;
+    return {
+        ...MINIMAL_PARTS,
+        [part]: externalData ? BARE_CHART_XML : BARE_CHART_XML.replace('<c:externalData r:id="rId1"/>', ""),
+        [SIDECAR]: replaceOnce(
+            MINIMAL_PARTS[SIDECAR]!,
+            "</Relationships>",
+            `${reach.map(({ id, type }) => `<Relationship Id="${id}" Type="${type}" Target="${target}"/>`).join("")}</Relationships>`,
+        ),
+        [CT]: replaceOnce(MINIMAL_PARTS[CT]!, "</Types>", `<Override PartName="/${part}" ContentType="${CHART_CONTENT_TYPE}"/></Types>`),
+        ...(drawing === undefined
+            ? {}
+            : {
+                  [MAIN]: replaceOnce(
+                      replaceOnce(
+                          MINIMAL_PARTS[MAIN]!,
+                          "<w:document ",
+                          `<w:document xmlns:wp="${WP}" xmlns:a="${A}" xmlns:pic="${PIC}" xmlns:c="${C}" xmlns:r="${R}" `,
+                      ),
+                      "<w:sectPr>",
+                      `${drawing}<w:sectPr>`,
+                  ),
+              }),
+    };
+};
