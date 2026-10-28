@@ -1909,9 +1909,11 @@ instead of editing it, changing nothing in the tree.
 The auto-repair writers then neither count nor report a
 repair for such a part: `writeXmlPart` returns whether it wrote (#880), and a
 part's repairs reach the `repairs` count, and its verbose `Repaired:` lines,
-only after a write — a refused write never reached disk. A repair that
-edits several parts leaves all of them untouched when one cannot be decoded
-(#889).
+only after a write — a refused write never reached disk. A repair that edits
+several parts leaves all of them untouched when one cannot be decoded (#889) or
+written (#909), and a write that fails after that check stops the repair, which
+counts only the parts already written; before, it rejected `repair()` and
+`validate()` with the other part already changed.
 
 For a document's first comment, `addComment` relates the four comments parts
 from the relationships part of the main document `_rels/.rels` names

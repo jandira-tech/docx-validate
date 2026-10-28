@@ -691,6 +691,35 @@ describe("DOCXSchemaValidator", () => {
             },
         );
 
+        it.skipIf(process.getuid?.() === 0).each(["repairParaId", "repair"] as const)(
+            "writes no part of a remap when its second part is non-writable, through %s() (#909)",
+            async (method) => {
+                await withTempDir(async (dir) => {
+                    const docPath = path.join(dir, "word", "document.xml");
+                    const commentsPath = path.join(dir, "word", "comments.xml");
+                    await writeFile(docPath, wrapDocument(`<w:p w14:paraId="FFFFFFFF" w14:textId="11111111"/>`, W14_NS));
+                    await writeFile(
+                        commentsPath,
+                        `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                            `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                            `<w:p w14:paraId="FFFFFFFF" w14:textId="11111111"/></w:comment></w:comments>`,
+                    );
+                    const before = await Promise.all([fs.readFile(docPath), fs.readFile(commentsPath)]);
+                    const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                    expect(v.xmlFiles).toHaveLength(2);
+                    const refused = v.xmlFiles[1]!;
+                    const mode = (await fs.stat(refused)).mode;
+                    await fs.chmod(refused, 0o444);
+                    try {
+                        await expect(v[method]()).resolves.toBe(0);
+                        expect(await Promise.all([fs.readFile(docPath), fs.readFile(commentsPath)])).toEqual(before);
+                    } finally {
+                        await fs.chmod(refused, mode);
+                    }
+                });
+            },
+        );
+
         it("still remaps every part for a decodable twin (#889)", async () => {
             await withTempDir(async (dir) => {
                 const docPath = path.join(dir, "word", "document.xml");
@@ -1037,6 +1066,47 @@ describe("DOCXSchemaValidator", () => {
                 expect(await fs.readFile(cexPath, "utf-8")).toBe(cexBefore);
             });
         });
+
+        it.skipIf(process.getuid?.() === 0).each(["repairDurableId", "repair"] as const)(
+            "refuses the hex remap but still renumbers numbering.xml when commentsExtensible.xml is non-writable, through %s() (#909)",
+            async (method) => {
+                await withTempDir(async (dir) => {
+                    const numberingPath = path.join(dir, "word", "numbering.xml");
+                    const idsPath = path.join(dir, "word", "commentsIds.xml");
+                    const cexPath = path.join(dir, "word", "commentsExtensible.xml");
+                    await writeFile(
+                        numberingPath,
+                        `<?xml version="1.0"?><w:numbering ${W_NS} ${W16CID_NS}>` +
+                            `<w:abstractNum w16cid:durableId="2147483647"/></w:numbering>`,
+                    );
+                    await writeFile(
+                        idsPath,
+                        `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                            `<w16cid:commentId w16cid:paraId="10000000" w16cid:durableId="80000001"/></w16cid:commentsIds>`,
+                    );
+                    await writeFile(
+                        cexPath,
+                        `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                            `<w16cex:commentExtensible w16cex:durableId="80000001"/></w16cex:commentsExtensible>`,
+                    );
+                    const before = await Promise.all([fs.readFile(idsPath), fs.readFile(cexPath)]);
+                    const mode = (await fs.stat(cexPath)).mode;
+                    await fs.chmod(cexPath, 0o444);
+                    try {
+                        const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                        await expect(v[method]()).resolves.toBe(1);
+                        expect(await Promise.all([fs.readFile(idsPath), fs.readFile(cexPath)])).toEqual(before);
+                        const numberingXml = await fs.readFile(numberingPath, "utf-8");
+                        expect(numberingXml).not.toContain('w16cid:durableId="2147483647"');
+                        const newId = /w16cid:durableId="(\d+)"/.exec(numberingXml)?.[1];
+                        expect(newId).toBeDefined();
+                        expect(Number(newId)).toBeLessThan(0x7fffffff);
+                    } finally {
+                        await fs.chmod(cexPath, mode);
+                    }
+                });
+            },
+        );
 
         it("still renumbers an over-cap decimal durableId in numbering.xml when the extensible part is undecodable (#892)", async () => {
             await withTempDir(async (dir) => {
@@ -2408,6 +2478,47 @@ describe("DOCXSchemaValidator", () => {
                 });
             },
         );
+
+        it.skipIf(process.getuid?.() === 0).each([
+            ["repairCommentThreading", "commentsExtensible.xml"],
+            ["repairCommentThreading", "commentsIds.xml"],
+            ["repair", "commentsExtensible.xml"],
+            ["repair", "commentsIds.xml"],
+        ] as const)("leaves both threading parts untouched through %s() when %s is non-writable (#909)", async (method, refused) => {
+            const W16CEX_NS = `xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex"`;
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), wrapDocument(""));
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="11111111" w14:textId="11111111"/></w:comment></w:comments>`,
+                );
+                const idsPath = path.join(dir, "word", "commentsIds.xml");
+                const cexPath = path.join(dir, "word", "commentsExtensible.xml");
+                await writeFile(
+                    idsPath,
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="11111111" w16cid:durableId="22222222"/></w16cid:commentsIds>`,
+                );
+                await writeFile(
+                    cexPath,
+                    `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                        `<w16cex:commentExtensible w16cex:durableId="22222222"/></w16cex:commentsExtensible>`,
+                );
+                const before = await Promise.all([fs.readFile(idsPath), fs.readFile(cexPath)]);
+                const refusedPath = path.join(dir, "word", refused);
+                const mode = (await fs.stat(refusedPath)).mode;
+                await fs.chmod(refusedPath, 0o444);
+                try {
+                    const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                    await expect(v[method]()).resolves.toBe(0);
+                    expect(await Promise.all([fs.readFile(idsPath), fs.readFile(cexPath)])).toEqual(before);
+                } finally {
+                    await fs.chmod(refusedPath, mode);
+                }
+            });
+        });
 
         it("still repairs both threading parts for a decodable twin (#889)", async () => {
             const W16CEX_NS = `xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex"`;

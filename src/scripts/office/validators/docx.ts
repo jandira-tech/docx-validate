@@ -46,7 +46,7 @@
  * see `lib/xml-helpers.ts` for the convention.
  */
 
-import { promises as fs, readFileSync } from "node:fs";
+import { constants as fsConstants, promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
 import { canonicalPartName, isRelationshipsFolderName, isRelationshipsPartName, resolvePartName } from "../../../lib/content-types";
 import { opcNameIssueSeverity } from "../../../lib/mode-policy";
@@ -2435,6 +2435,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         return repairs;
     }
 
+    /**
+     * Align the threaded-comment parts, preflighting the encoding and
+     * writability of every part to be written before changing any of them.
+     * A failed write returns only the repairs already written (#909).
+     */
     async repairCommentThreading(): Promise<number> {
         const commentsXml = await this.mainRelatedPath("comments", "comments.xml");
         if (!commentsXml) return 0;
@@ -2521,7 +2526,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         }
 
-        // Preflight: decode every part the repair would write before mutating
+        // Preflight: decode and check writability of every part before mutating
         // any DOM, so one refused write cannot split references that agreed
         // before it ran. A part the repair would leave alone does not block
         // it (#889).
@@ -2530,6 +2535,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         if (retargetExtensible && commentsExtensibleXml) writeSet.push(commentsExtensibleXml);
         for (const part of writeSet) {
             if (decodeXmlPart(await fs.readFile(part)) === undefined) return 0;
+            try {
+                await fs.access(part, fsConstants.W_OK);
+            } catch {
+                return 0;
+            }
         }
 
         // Counted only after the write: a part whose encoding `writeXmlPart`
@@ -2544,14 +2554,24 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         }
         const idsRepairs = (retargetParaId ? 1 : 0) + (retargetDurableId ? 1 : 0);
-        if (idsRepairs > 0 && (await writeXmlPart(commentsIdsXml, idsDom))) {
-            repairs += idsRepairs;
+        if (idsRepairs > 0) {
+            let written: boolean;
+            try {
+                written = await writeXmlPart(commentsIdsXml, idsDom);
+            } catch {
+                return repairs;
+            }
+            if (written) repairs += idsRepairs;
         }
         if (retargetExtensible && cexDom && cexEntry && commentsExtensibleXml && alignedDurableId !== null) {
             cexEntry.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", alignedDurableId);
-            if (await writeXmlPart(commentsExtensibleXml, cexDom)) {
-                repairs += 1;
+            let written: boolean;
+            try {
+                written = await writeXmlPart(commentsExtensibleXml, cexDom);
+            } catch {
+                return repairs;
             }
+            if (written) repairs += 1;
         }
         return repairs;
     }
@@ -2891,6 +2911,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * `numbering.xml` is unchanged by the remap: its decimal durableIds
      * are self-contained (no part references them), so each keeps its own
      * per-element renumbering, independent of the preflight below.
+     * Every part the hex rewrite would write must be decodable and writable;
+     * otherwise only the decimal renumbering runs. A failed write returns
+     * only the repairs already written (#909).
      */
     async repairDurableId(): Promise<number> {
         let repairs = 0;
@@ -2944,7 +2967,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // Preflight: the same rename must land in every part that
         // references it, so decode every part the hex rewrite would write
         // before mutating any DOM. A part the rewrite would leave alone
-        // does not block it; one it would write but cannot decode refuses
+        // does not block it; one it cannot decode or write refuses
         // the whole hex rewrite — the numbering renumbering below still
         // runs — rather than splitting references that agreed before it
         // ran (#889).
@@ -2968,50 +2991,58 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     hexRefused = true;
                     break;
                 }
+                try {
+                    await fs.access(xmlFile, fsConstants.W_OK);
+                } catch {
+                    hexRefused = true;
+                    break;
+                }
             }
         }
 
         // Pass 2: rewrite all references; numbering.xml keeps its own
         // self-contained decimal renumbering.
         for (const [xmlFile, dom] of parsedDoms) {
-            try {
-                const base = baseName(xmlFile);
-                let modified = false;
-                // Counted only after the write: a part whose encoding
-                // `writeXmlPart` refuses is left untouched (#880).
-                let partRepairs = 0;
-                const all = getElementsByTagNameAll(dom);
-                for (let i = 0; i < all.length; i += 1) {
-                    const elem = all[i];
-                    if (!elem) continue;
-                    const cidDurableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
-                    if (cidDurableId && base === "numbering.xml") {
-                        const v = parseIdValue(cidDurableId, 10);
-                        if (Number.isNaN(v) || v >= MAX_DURABLE_ID) {
-                            // setAttributeNS keeps the prefix binding intact.
-                            elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", String(nextSecureLongHexNumber()));
-                            partRepairs += 1;
-                            modified = true;
-                        }
-                    } else if (cidDurableId && !hexRefused && remap.has(cidDurableId.toUpperCase())) {
+            const base = baseName(xmlFile);
+            let modified = false;
+            // Counted only after the write: a part whose encoding
+            // `writeXmlPart` refuses is left untouched (#880).
+            let partRepairs = 0;
+            const all = getElementsByTagNameAll(dom);
+            for (let i = 0; i < all.length; i += 1) {
+                const elem = all[i];
+                if (!elem) continue;
+                const cidDurableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
+                if (cidDurableId && base === "numbering.xml") {
+                    const v = parseIdValue(cidDurableId, 10);
+                    if (Number.isNaN(v) || v >= MAX_DURABLE_ID) {
                         // setAttributeNS keeps the prefix binding intact.
-                        elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", remap.get(cidDurableId.toUpperCase())!);
+                        elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", String(nextSecureLongHexNumber()));
                         partRepairs += 1;
                         modified = true;
                     }
-                    const cexDurableId = elem.getAttributeNS(W16CEX_NAMESPACE, "durableId");
-                    if (cexDurableId && !hexRefused && remap.has(cexDurableId.toUpperCase())) {
-                        // setAttributeNS keeps the prefix binding intact.
-                        elem.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", remap.get(cexDurableId.toUpperCase())!);
-                        partRepairs += 1;
-                        modified = true;
-                    }
+                } else if (cidDurableId && !hexRefused && remap.has(cidDurableId.toUpperCase())) {
+                    // setAttributeNS keeps the prefix binding intact.
+                    elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", remap.get(cidDurableId.toUpperCase())!);
+                    partRepairs += 1;
+                    modified = true;
                 }
-                if (modified && (await writeXmlPart(xmlFile, dom))) {
-                    repairs += partRepairs;
+                const cexDurableId = elem.getAttributeNS(W16CEX_NAMESPACE, "durableId");
+                if (cexDurableId && !hexRefused && remap.has(cexDurableId.toUpperCase())) {
+                    // setAttributeNS keeps the prefix binding intact.
+                    elem.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", remap.get(cexDurableId.toUpperCase())!);
+                    partRepairs += 1;
+                    modified = true;
                 }
-            } catch {
-                // swallow — mirrors Python bare except
+            }
+            if (modified) {
+                let written: boolean;
+                try {
+                    written = await writeXmlPart(xmlFile, dom);
+                } catch {
+                    return repairs;
+                }
+                if (written) repairs += partRepairs;
             }
         }
         return repairs;
@@ -3037,6 +3068,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      *          and Word's threading view shows no replies — surfaced by
      *          `validateCommentThreading`'s `comment-thread-paraid-orphan`
      *          check.
+     *
+     * Every part to be written must be decodable and writable before any
+     * write starts. A failed write returns only the repairs already written
+     * (#909).
      */
     async repairParaId(): Promise<number> {
         let repairs = 0;
@@ -3143,7 +3178,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // Preflight: the same rename must land in every part that references
         // it, so decode every part pass 2 would rewrite before mutating any
         // DOM. A part the pass would leave alone does not block the repair;
-        // one it would write but cannot decode refuses all of it, rather than
+        // one it cannot decode or write refuses all of it, rather than
         // splitting references that agreed before it ran (#889).
         for (const [xmlFile, dom] of parsedDoms) {
             let wouldWrite = false;
@@ -3163,49 +3198,56 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
             if (!wouldWrite) continue;
             if (decodeXmlPart(await fs.readFile(xmlFile)) === undefined) return 0;
+            try {
+                await fs.access(xmlFile, fsConstants.W_OK);
+            } catch {
+                return 0;
+            }
         }
 
         // Pass 2: rewrite all references.
         for (const [xmlFile, dom] of parsedDoms) {
-            try {
-                let modified = false;
-                // Counted only after the write: a part whose encoding
-                // `writeXmlPart` refuses is left untouched (#880).
-                let partRepairs = 0;
-                const all = getElementsByTagNameAll(dom);
-                for (let i = 0; i < all.length; i += 1) {
-                    const elem = all[i];
-                    if (!elem) continue;
-                    const w14Para = elem.getAttributeNS(W14_NAMESPACE, "paraId");
-                    if (w14Para && remap.has(w14Para)) {
-                        elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", remap.get(w14Para)!);
-                        partRepairs += 1;
-                        modified = true;
-                    }
-                    const w14Text = elem.getAttributeNS(W14_NAMESPACE, "textId");
-                    if (w14Text && textIdRemap.has(w14Text)) {
-                        elem.setAttributeNS(W14_NAMESPACE, "w14:textId", textIdRemap.get(w14Text)!);
-                        partRepairs += 1;
-                        modified = true;
-                    }
-                    const w15Para = elem.getAttributeNS(W15_NAMESPACE, "paraId");
-                    if (w15Para && remap.has(w15Para)) {
-                        elem.setAttributeNS(W15_NAMESPACE, "w15:paraId", remap.get(w15Para)!);
-                        partRepairs += 1;
-                        modified = true;
-                    }
-                    const w15Parent = elem.getAttributeNS(W15_NAMESPACE, "paraIdParent");
-                    if (w15Parent && remap.has(w15Parent)) {
-                        elem.setAttributeNS(W15_NAMESPACE, "w15:paraIdParent", remap.get(w15Parent)!);
-                        partRepairs += 1;
-                        modified = true;
-                    }
+            let modified = false;
+            // Counted only after the write: a part whose encoding
+            // `writeXmlPart` refuses is left untouched (#880).
+            let partRepairs = 0;
+            const all = getElementsByTagNameAll(dom);
+            for (let i = 0; i < all.length; i += 1) {
+                const elem = all[i];
+                if (!elem) continue;
+                const w14Para = elem.getAttributeNS(W14_NAMESPACE, "paraId");
+                if (w14Para && remap.has(w14Para)) {
+                    elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", remap.get(w14Para)!);
+                    partRepairs += 1;
+                    modified = true;
                 }
-                if (modified && (await writeXmlPart(xmlFile, dom))) {
-                    repairs += partRepairs;
+                const w14Text = elem.getAttributeNS(W14_NAMESPACE, "textId");
+                if (w14Text && textIdRemap.has(w14Text)) {
+                    elem.setAttributeNS(W14_NAMESPACE, "w14:textId", textIdRemap.get(w14Text)!);
+                    partRepairs += 1;
+                    modified = true;
                 }
-            } catch {
-                // swallow — mirrors Python bare except in repairDurableId
+                const w15Para = elem.getAttributeNS(W15_NAMESPACE, "paraId");
+                if (w15Para && remap.has(w15Para)) {
+                    elem.setAttributeNS(W15_NAMESPACE, "w15:paraId", remap.get(w15Para)!);
+                    partRepairs += 1;
+                    modified = true;
+                }
+                const w15Parent = elem.getAttributeNS(W15_NAMESPACE, "paraIdParent");
+                if (w15Parent && remap.has(w15Parent)) {
+                    elem.setAttributeNS(W15_NAMESPACE, "w15:paraIdParent", remap.get(w15Parent)!);
+                    partRepairs += 1;
+                    modified = true;
+                }
+            }
+            if (modified) {
+                let written: boolean;
+                try {
+                    written = await writeXmlPart(xmlFile, dom);
+                } catch {
+                    return repairs;
+                }
+                if (written) repairs += partRepairs;
             }
         }
         return repairs;
