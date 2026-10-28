@@ -267,11 +267,15 @@ const hasUriScheme = (target: string): boolean => /^[a-z][a-z\d+.-]*:/i.test(tar
  * dot segments resolve, a package-absolute reference resolving the path
  * below its leading `/` against the package root the same way and keeping
  * the `/` (#947)): `undefined` for a target with a URI scheme or an
- * empty reference. `clampAtPackageRoot` stops the target's `..` segments at
- * the package root instead of leaving them to climb past it, a
- * package-absolute reference's climb included — RFC 3986's
- * remove_dot_segments, the way Word resolved `word/`'s
- * `../../footnotes.xml` to `/footnotes.xml` (session 64 s64a, #830).
+ * empty reference. The path resolves as `path.posix.join` resolves it, so,
+ * unlike RFC 3986, an empty segment collapses and a final `/.` drops its
+ * slash: `word//main.xml` and `word/main.xml/.` both name `word/main.xml`,
+ * a reading Word has not been probed with (#962). `clampAtPackageRoot`
+ * stops the target's `..` segments at the package root instead of leaving
+ * them to climb past it, a package-absolute reference's climb and a final
+ * bare `..` included (#962), as RFC 3986's remove_dot_segments stops them,
+ * the way Word resolved `word/`'s `../../footnotes.xml` to
+ * `/footnotes.xml` (session 64 s64a, #830).
  */
 export const relationshipTargetPartName = (baseDir: string, target: string, clampAtPackageRoot = false): string | undefined => {
     if (hasUriScheme(target)) {
@@ -286,7 +290,8 @@ export const relationshipTargetPartName = (baseDir: string, target: string, clam
     // the root, then the `/` goes back on (#947).
     const absolute = reference.startsWith("/");
     const belowRoot = path.posix.join(absolute ? "." : baseDir, absolute ? reference.slice(1) : reference);
-    const resolved = clampAtPackageRoot ? belowRoot.replace(/^(?:\.\.\/)+/, "") : belowRoot;
+    // A climb that ends in a bare `..` stops at the root too (#962).
+    const resolved = clampAtPackageRoot ? belowRoot.replace(/^(?:\.\.\/)+/, "").replace(/^\.\.$/, ".") : belowRoot;
     if (!absolute) {
         return resolved;
     }
@@ -298,13 +303,16 @@ export const relationshipTargetPartName = (baseDir: string, target: string, clam
  * Resolve one relationship target against the folder of its source part, as
  * the rest of the codebase does (`\` reads as `/`, a query or fragment is
  * dropped, dot segments resolve, a package-absolute target's below its
- * leading `/` too, which it keeps (#947)), then take the OPC-equivalent
- * stored entry (`canonicalPartName` comparison); `undefined` when it names
- * no stored part. `clampAtPackageRoot` stops the target's `..` segments at
- * the package root instead of dropping the whole target when they climb
- * past it, a package-absolute target's climb included — RFC 3986's
- * remove_dot_segments, the way Word resolved `word/`'s `../../footnotes.xml`
- * to `/footnotes.xml` (session 64 s64a, #830).
+ * leading `/` too, which it keeps (#947); an empty segment collapses and a
+ * final `/.` drops its slash, as {@link relationshipTargetPartName} says,
+ * unprobed (#962)), then take the OPC-equivalent stored entry
+ * (`canonicalPartName` comparison); `undefined` when it names no stored
+ * part. `clampAtPackageRoot` stops the target's `..` segments at the
+ * package root instead of dropping the whole target when they climb past
+ * it, a package-absolute target's climb and a final bare `..` included
+ * (#962), as RFC 3986's remove_dot_segments stops them, the way Word
+ * resolved `word/`'s `../../footnotes.xml` to `/footnotes.xml` (session 64
+ * s64a, #830).
  */
 export const resolveTarget = (
     lookup: (partName: string) => string | undefined,
