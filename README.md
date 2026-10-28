@@ -986,8 +986,10 @@ Strict orphan range start or end, now paired too, is unprobed. The ids are
 pooled across the two namespaces, so a reference in one namespace satisfied
 only by a comment in the other passes; mixed-namespace satisfaction, in
 either direction, is unprobed.
-Endnote references inside a footnotes part stay unjudged, matching session 16's
-clean open: Word does not follow those references. The defined notes are read
+No reference inside a notes part is judged, matching session 16's clean
+open, and none inside a comments part either
+([#852](https://github.com/jandira-tech/docx-validate/issues/852), below):
+Word does not follow those references. The defined notes are read
 only from the parts a `footnotes` / `endnotes` relationship of the main
 document or of a reached glossary names, whatever the part is called: session
 60 (s60a in `docs/plans/evidence/word-probes-2026-10-24.md`, two runs, all
@@ -1008,8 +1010,8 @@ same evidence, two runs, all readings agree) repeated that refusal for the
 same row and for `word/notes.xml` and `word/footnotes.xml` alike, so the
 type, not the name, makes Word refuse the part
 ([#829](https://github.com/jandira-tech/docx-validate/issues/829)). References
-read through the main document (the main document and the stories it makes
-Word read) use only the notes parts its own relationships name: session 63
+read through the main document use only the notes parts its own relationships
+name: session 63
 (s63c, same evidence, two runs, all readings agree) offered recovery for a
 body footnote reference whose note only a reached glossary's notes part
 defines, while the main-related matching calibration opened clean
@@ -1019,9 +1021,9 @@ message then names the glossary
 twin is unprobed; generalising from footnotes follows #793's footnote-to-endnote
 reading. References read through a reached glossary keep the union of the main
 document's and reached glossaries' definitions; that reading is unprobed.
-Both note checks read references from the parts Word reads, found by relationship
-wherever stored (the main document, a reached glossary and the stories they
-make Word read), so a story-named part no relationship reaches is judged for
+Both note checks read references only from the story roots — every main document
+and reached glossary, found by relationship wherever stored — so a story-named
+part no relationship reaches is judged for
 none ([#800](https://github.com/jandira-tech/docx-validate/issues/800)):
 session 62 (s62a/s62d, same evidence, two runs, all readings agree) offered
 recovery for a dangling footnote or endnote reference in a main document stored
@@ -1031,9 +1033,24 @@ References in a read header or footer are not judged (session 62 s62d/s62e
 for a header,
 [#806](https://github.com/jandira-tech/docx-validate/issues/806);
 session 63 s63d for a footer,
-[#826](https://github.com/jandira-tech/docx-validate/issues/826)); dangling
-references in comments, nested notes beyond session 16's exclusion
-and reached glossaries stay judged but are unprobed.
+[#826](https://github.com/jandira-tech/docx-validate/issues/826)); nor is a
+reference inside a notes part or a comments part
+([#852](https://github.com/jandira-tech/docx-validate/issues/852)): session 16
+(s16a) had opened an endnote reference inside a footnote clean, and sessions 65
+and 66 (s65a, s66a, s65d, in
+[docs/plans/evidence/word-probes-2026-10-24.md](docs/plans/evidence/word-probes-2026-10-24.md),
+two runs, all readings agree) opened clean every nesting they stored — footnote
+1 holding a footnote reference to 99 and endnote 1 an endnote reference to 99,
+in-package or behind the escaping target (s65a), endnote 1 a footnote reference
+to 99 with no footnotes part anywhere (s66a), and a comment a footnote reference
+to 99 or to 1 only a reached glossary's notes part defines, the comments part
+read by the main document or by a glossary (s66a, s65d) — so session 16's
+special case is subsumed and gone, and a dangling reference in a notes or
+comments part no longer blocks. A comments part both the main document and a
+glossary read is refused, but by the shared reach, not the reference (s66a
+refused it with no note reference at all), which is #850's rule. An endnote
+reference in a comments part, and a note reference in a glossary's own notes
+part, are unprobed.
 Both note checks compare ids by integer value: session 62 (s62b, same
 evidence, two runs, all readings agree) opened clean a footnote or endnote
 reference spelled `01` or `+1` against a note spelled `1`
@@ -1042,7 +1059,8 @@ spelling compares as written, unprobed. When the package view cannot be read, or
 its `officeDocument` relationship names no stored main document, the read model
 and the relationship walks return nothing, so both note checks fall back to the
 reading they used before #800 — references from the name-based story list but
-its headers and footers, which are not judged (#806, #826), definitions from
+its headers, footers, comments and notes parts, which are not judged (#806,
+#826, #852), definitions from
 the parts named `footnotes.xml` / `endnotes.xml` wherever stored — as the
 comment checks fall back to a by-name lookup when no relationship names the
 main document, and a
