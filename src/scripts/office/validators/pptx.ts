@@ -233,8 +233,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
-                const relType = rel.getAttribute("Type") ?? "";
-                if (relType.includes("slideLayout")) {
+                if (this.isSlideRelationship(rel, "slideLayout")) {
                     const id = rel.getAttribute("Id");
                     if (id) validLayoutRids.add(id);
                 }
@@ -288,8 +287,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
-                const relType = rel.getAttribute("Type") ?? "";
-                if (relType.includes("slideLayout")) layoutCount += 1;
+                if (this.isSlideRelationship(rel, "slideLayout")) layoutCount += 1;
             }
 
             if (layoutCount > 1) {
@@ -339,8 +337,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
-                const relType = rel.getAttribute("Type") ?? "";
-                if (!relType.includes("notesSlide")) continue;
+                if (!this.isSlideRelationship(rel, "notesSlide")) continue;
                 const target = rel.getAttribute("Target");
                 if (!target) continue;
                 // The target names the part the read model reads: a climb
@@ -473,6 +470,20 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
         if (presentation === undefined) return [];
         const folder = path.posix.dirname(presentation);
         return this.relatedParts(names, path.posix.join(folder, "_rels", `${path.posix.basename(presentation)}.rels`), folder, segment);
+    }
+
+    /**
+     * Whether the slide checks read `rel` as a `segment` relationship. Outside
+     * lenient that is the relationship the slide walk reads (`relatedParts`,
+     * #1013): exactly that Office type segment, Transitional or Strict, and
+     * internal, as an External target names no part (ECMA-376 Part 2 §9.3).
+     * Lenient keeps the historical reading, any type containing the segment,
+     * External or not, as it keeps nested relationships (#434) (#1051).
+     */
+    private isSlideRelationship(rel: Element, segment: string): boolean {
+        const type = rel.getAttribute("Type") ?? "";
+        if (this.profile === "lenient") return type.includes(segment);
+        return officeRelationshipTypeSegment(type) === segment && rel.getAttribute("TargetMode") !== "External";
     }
 
     /** The stored parts the relationships part `relsPart`, whose targets resolve against `folder`, names by internal `segment` relationships. */

@@ -20,6 +20,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
+import type { ValidationResult } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
 import { PPTXSchemaValidator, PRESENTATIONML_NAMESPACE } from "../src/scripts/office/validators/pptx";
 import { buildPptx, MINIMAL_PPTX_PARTS } from "./support/minimal-pptx";
@@ -864,6 +865,93 @@ describe("a notes-shared message names each relationships part once (#1045)", ()
                 "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced 2 times by ppt/slides/_rels/slide1.xml.rels",
             ]);
             expect(result.valid).toBe(false);
+        });
+    });
+});
+
+// #1051: outside lenient the slide checks read a relationship as the slide
+// walk does (#1013): exactly one Office type segment, Transitional or Strict,
+// and internal, as an External target names no part. Lenient keeps the
+// historical reading, a type containing the segment, External or not, as it
+// keeps nested relationships (#434).
+describe("the slide checks read relationships as the slide walk does outside lenient (#1051)", () => {
+    const STRICT_R_NS = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+    const rel = (id: string, type: string, target: string, extra = "") =>
+        `<Relationship Id="${id}" Type="${type}" Target="${target}"${extra}/>`;
+    const EXTERNAL = ' TargetMode="External"';
+    const validator = (dir: string, profile: "lenient" | "word-valid" | "strict") => new PPTXSchemaValidator({ unpackedDir: dir, profile });
+    const codes = (result: ValidationResult) => result.issues.map((issue) => issue.code);
+
+    // A second reference that names no notesSlide part: External, or a foreign type.
+    const notesSecond = [
+        ["an External notesSlide relationship", `${R_NS}/notesSlide`, EXTERNAL],
+        ["a foreign type containing notesSlide", "http://example.com/relationships/notesSlide", ""],
+    ] as const;
+
+    it.each(notesSecond)("notes-shared counts %s only under lenient", async (_label, type, extra) => {
+        await withTempDir(async (dir) => {
+            await writeFile(
+                path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"),
+                relsXml(rel("rId1", `${R_NS}/notesSlide`, "../notesSlides/notesSlide1.xml")),
+            );
+            await writeFile(
+                path.join(dir, "ppt", "slides", "_rels", "slide2.xml.rels"),
+                relsXml(rel("rId1", type, "../notesSlides/notesSlide1.xml", extra)),
+            );
+            expect(codes(await validator(dir, "lenient").validateNotesSlideReferences())).toContain("notes-shared");
+            expect(codes(await validator(dir, "word-valid").validateNotesSlideReferences())).toEqual([]);
+            expect(codes(await validator(dir, "strict").validateNotesSlideReferences())).toEqual([]);
+        });
+    });
+
+    it.each(["lenient", "word-valid", "strict"] as const)(
+        "notes-shared still counts Strict-namespace notesSlide types under %s",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                for (const slide of ["slide1", "slide2"]) {
+                    await writeFile(
+                        path.join(dir, "ppt", "slides", "_rels", `${slide}.xml.rels`),
+                        relsXml(rel("rId1", `${STRICT_R_NS}/notesSlide`, "../notesSlides/notesSlide1.xml")),
+                    );
+                }
+                expect(codes(await validator(dir, profile).validateNotesSlideReferences())).toContain("notes-shared");
+            });
+        },
+    );
+
+    const layoutSecond = [
+        ["an External slideLayout relationship", `${R_NS}/slideLayout`, EXTERNAL],
+        ["a foreign type containing slideLayout", "http://example.com/relationships/slideLayout", ""],
+    ] as const;
+
+    it.each(layoutSecond)("slide-layout-duplicate counts %s only under lenient", async (_label, type, extra) => {
+        await withTempDir(async (dir) => {
+            await writeFile(
+                path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"),
+                relsXml(
+                    rel("rId1", `${R_NS}/slideLayout`, "../slideLayouts/slideLayout1.xml") +
+                        rel("rId2", type, "../slideLayouts/slideLayout2.xml", extra),
+                ),
+            );
+            expect(codes(await validator(dir, "lenient").validateNoDuplicateSlideLayouts())).toEqual(["slide-layout-duplicate"]);
+            expect(codes(await validator(dir, "word-valid").validateNoDuplicateSlideLayouts())).toEqual([]);
+            expect(codes(await validator(dir, "strict").validateNoDuplicateSlideLayouts())).toEqual([]);
+        });
+    });
+
+    it.each(layoutSecond)("sldlayout-missing-rid accepts a layout id naming %s only under lenient", async (_label, type, extra) => {
+        await withTempDir(async (dir) => {
+            await writeFile(
+                path.join(dir, "ppt", "slideMasters", "slideMaster1.xml"),
+                presentationXml('<p:sldLayoutIdLst><p:sldLayoutId id="2147483649" r:id="rId1"/></p:sldLayoutIdLst>'),
+            );
+            await writeFile(
+                path.join(dir, "ppt", "slideMasters", "_rels", "slideMaster1.xml.rels"),
+                relsXml(rel("rId1", type, "../slideLayouts/slideLayout1.xml", extra)),
+            );
+            expect(codes(await validator(dir, "lenient").validateSlideLayoutIds())).toEqual([]);
+            expect(codes(await validator(dir, "word-valid").validateSlideLayoutIds())).toEqual(["sldlayout-missing-rid"]);
+            expect(codes(await validator(dir, "strict").validateSlideLayoutIds())).toEqual(["sldlayout-missing-rid"]);
         });
     });
 });

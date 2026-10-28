@@ -170,7 +170,14 @@ master's relationships part is found under any equivalent spelling
 `ppt/slides/`, a slide's relationships part is judged only when the slide is
 stored. A related slide that is not stored has its own finding, the
 presentation's `rels-broken`
-([#1019](https://github.com/jandira-tech/docx-validate/issues/1019)).
+([#1019](https://github.com/jandira-tech/docx-validate/issues/1019)). Under
+word-valid and strict, the three checks read a relationship as the slide walk
+does: exactly the Office `notesSlide` or `slideLayout` type, Transitional or
+Strict, and internal. So an External relationship, or a foreign type that
+merely contains the name, neither shares a notes slide, nor adds a layout, nor
+satisfies a `sldLayoutId`. Lenient keeps the historical reading, as it keeps
+nested relationships
+([#1051](https://github.com/jandira-tech/docx-validate/issues/1051)).
 
 The `strict` profile runs the Word rules and applicable XSD schemas. Schema
 conformance is stricter than Word openability. A leading BOM is at most a warning
