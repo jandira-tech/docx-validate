@@ -705,6 +705,41 @@ describe("character data directly inside AlternateContent (#851, sessions 65 and
         60_000,
     );
 
+    // The citation is decided per package, not per finding: another
+    // mce-malformed beside the character data keeps it, and keeps its own
+    // message (#1030).
+    it.each(["word-valid", "lenient"] as const)(
+        "cites sessions 65 and 67 under %s beside another mce-malformed finding (#1030)",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                const parts = {
+                    ...bodyAlternate("Stray"),
+                    "word/styles.xml": MINIMAL_PARTS["word/styles.xml"]!.replace(
+                        "</w:styles>",
+                        `<mc:AlternateContent xmlns:mc="${NS.MC}"><mc:Fallback><w:p/></mc:Fallback></mc:AlternateContent></w:styles>`,
+                    ),
+                };
+                const file = path.join(dir, "specimen.docx");
+                await writeFile(file, await buildDocx(parts));
+                const result = await validate(file, { profile });
+                expect(result.valid).toBe(false);
+                expect(result.issues.filter((issue) => issue.code === "mce-malformed").map((issue) => [issue.path, issue.message])).toEqual(
+                    [
+                        [
+                            "word/document.xml",
+                            "AlternateContent holds character data directly inside it; Word 16.115 offered recovery for every position probed (sessions 65 and 67).",
+                        ],
+                        [
+                            "word/styles.xml",
+                            "AlternateContent requires Choices with declared Requires prefixes, followed by at most one Fallback.",
+                        ],
+                    ],
+                );
+            });
+        },
+        60_000,
+    );
+
     it.each(calibrations)(
         "keeps the used comments part clean with %s",
         async (_shape, inner) => {

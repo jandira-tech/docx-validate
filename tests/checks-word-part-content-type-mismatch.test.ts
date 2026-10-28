@@ -39,14 +39,16 @@ const withStrictApp = (parts: Record<string, string>): Record<string, string> =>
     "docProps/app.xml": '<Properties xmlns="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"/>',
 });
 const strictVariants = (parts: Record<string, string>): Record<string, string>[] => [uniformlyStrict(parts), withStrictApp(parts)];
-/** `parts` with only `word/styles.xml` in the Strict WordprocessingML namespace. */
-const withStrictStyles = (parts: Record<string, string>): Record<string, string> => ({
+/** `parts` with only `name` in the Strict WordprocessingML namespace. */
+const withStrictPart = (parts: Record<string, string>, name: string): Record<string, string> => ({
     ...parts,
-    "word/styles.xml": parts["word/styles.xml"]!.replaceAll(
+    [name]: parts[name]!.replaceAll(
         "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
         "http://purl.oclc.org/ooxml/wordprocessingml/main",
     ),
 });
+/** `parts` with only `word/styles.xml` in the Strict WordprocessingML namespace. */
+const withStrictStyles = (parts: Record<string, string>): Record<string, string> => withStrictPart(parts, "word/styles.xml");
 /** The co-reach finding of `parts`, kept with its verdict but without a citation (#1016). */
 const expectUncited = async (parts: Record<string, string>, path: string): Promise<void> => {
     const found = await diagnose(parts);
@@ -1309,6 +1311,12 @@ describe("observed co-reach (#739, session 53)", () => {
         await expectUncited(withStrictApp(parts), path);
     });
 
+    // The footer co-reach names no shape part, so a Strict root on the judged
+    // part itself drops the citation too (#1030).
+    it.each(CASES)("keeps $label without its session when its own root is Strict (#1030)", async ({ parts, path }) => {
+        await expectUncited(withStrictPart(parts, path), path);
+    });
+
     // Session 56 (s56a): a footer-typed styles part that a second footer
     // relationship also targets gets the recovery offer whether no section
     // references that relationship or the body does; the matching footer
@@ -1690,6 +1698,9 @@ describe("read header/footer co-reach (#778, session 57)", () => {
     ])("keeps $label without its session beside a Strict part (#1016)", async ({ parts, path }) => {
         await expectUncited(withStrictApp(parts), path);
         if (!path.endsWith("styles.xml")) await expectUncited(withStrictStyles(parts), path);
+        // Sessions 53 and 57 stored the judged header or footer Transitional,
+        // so its own Strict root drops the citation too (#1030).
+        await expectUncited(withStrictPart(parts, path), path);
     });
 
     it.each(FALSE_NEGATIVES)(
