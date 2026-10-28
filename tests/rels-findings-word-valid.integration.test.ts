@@ -457,10 +457,12 @@ describe("a relative target that starts with http is resolved as a part (#988, s
 // #987: Word checks a relationship's target only in the relationships parts
 // it reads to reach the stories: `_rels/.rels` and a story root's own sidecar.
 // Sessions 79 and 80 (two runs each, all readings agree) opened clean a folder
-// target and an absent escaping customXml target in the sidecar of an
-// unreferenced part, of a used header (whose text Word rendered), of an
-// unused header and of the styles part, while the same folder target in the
-// main document's sidecar got the recovery offer (s79a, repeating s72a).
+// target in the sidecar of an unreferenced part, of a used header (whose text
+// Word rendered), of an unused header and of the styles part, and an absent
+// escaping customXml target in the sidecar of the unreferenced part and of the
+// used header, while the same folder target in the main document's sidecar got
+// the recovery offer (s79a, repeating s72a). The customXml target in an unused
+// header's or the styles part's sidecar is unprobed (#1006).
 describe("a target in a relationships part Word does not read never blocks word-valid (#987, sessions 79 and 80)", () => {
     const PNG = Uint8Array.from(
         Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64"),
