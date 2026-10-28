@@ -30,6 +30,7 @@ import { withTempDir } from "../src/lib/run-cli";
 import { ValidationContext } from "../src/lib/validation-context";
 import {
     glossaryTypedRelationshipTargets,
+    wordExactTypeTargets,
     wordReadParts,
     wordReadTypedTargets,
     wordTypedRelationshipTargets,
@@ -1756,6 +1757,64 @@ describe("wordReferenceLoadedSources (#645, #647)", () => {
             "../charts/chart1.xml",
         );
         expect(await wordReferenceLoadedSources(ValidationContext.fromEntries(parts), "charts/chart1.xml")).toBe(undefined);
+    });
+});
+
+describe("wordExactTypeTargets (#690)", () => {
+    // The Microsoft comment-thread types carry no Office relationship-type
+    // segment, so the typed walks never reach their targets. This walk reads
+    // the main documents' relationships parts by exact Type, so a reached
+    // glossary's comment-thread parts never stand in for the main document's.
+    const COMMENTS_IDS = "http://schemas.microsoft.com/office/2016/09/relationships/commentsIds";
+    const IDS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w16cid:commentsIds xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid"/>`;
+    const withGlossaryIds = (parts: Parts): Parts => ({
+        ...parts,
+        "word/glossary/document.xml": glossaryWith("", ""),
+        "word/glossary/_rels/document.xml.rels": relsPart(`<Relationship Id="rIdI" Type="${COMMENTS_IDS}" Target="commentsIds.xml"/>`),
+        "word/glossary/commentsIds.xml": IDS_XML,
+        "word/_rels/document.xml.rels": (parts["word/_rels/document.xml.rels"] as string).replace(
+            "</Relationships>",
+            `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/></Relationships>`,
+        ),
+    });
+
+    it("names the main document's target and never a reached glossary's", async () => {
+        const glossaryOnly = withGlossaryIds({ ...MINIMAL_PARTS });
+        expect(await wordExactTypeTargets(ValidationContext.fromEntries(glossaryOnly), COMMENTS_IDS)).toEqual([]);
+        const both = withDocRel(
+            withGlossaryIds({ ...MINIMAL_PARTS, "word/commentsIds.xml": IDS_XML }),
+            "rId9",
+            COMMENTS_IDS,
+            "commentsIds.xml",
+        );
+        expect(await wordExactTypeTargets(ValidationContext.fromEntries(both), COMMENTS_IDS)).toEqual(["word/commentsIds.xml"]);
+    });
+
+    it("resolves against the main document's folder and takes the OPC-equivalent stored entry, once", async () => {
+        const parts = withDocRel(
+            withDocRel({ ...MINIMAL_PARTS, "word/commentsIds.xml": IDS_XML }, "rId9", COMMENTS_IDS, "CommentsIds.xml"),
+            "rId8",
+            COMMENTS_IDS,
+            "/word/commentsIds.xml",
+        );
+        expect(await wordExactTypeTargets(ValidationContext.fromEntries(parts), COMMENTS_IDS)).toEqual(["word/commentsIds.xml"]);
+    });
+
+    it.each([
+        ["an external target", (rel: string) => rel.replace('<Relationship Id="rId9"', '<Relationship Id="rId9" TargetMode="External"')],
+        ["a Type with a trailing slash", (rel: string) => rel.replace(`Type="${COMMENTS_IDS}"`, `Type="${COMMENTS_IDS}/"`)],
+        ["a Type in another case", (rel: string) => rel.replace(`Type="${COMMENTS_IDS}"`, `Type="${COMMENTS_IDS.toUpperCase()}"`)],
+        ["a target that names no stored part", (rel: string) => rel.replace('Target="commentsIds.xml"', 'Target="missing.xml"')],
+    ] as const)("skips %s", async (_label, edit) => {
+        const parts = withDocRel({ ...MINIMAL_PARTS, "word/commentsIds.xml": IDS_XML }, "rId9", COMMENTS_IDS, "commentsIds.xml");
+        parts["word/_rels/document.xml.rels"] = edit(parts["word/_rels/document.xml.rels"] as string);
+        expect(await wordExactTypeTargets(ValidationContext.fromEntries(parts), COMMENTS_IDS)).toEqual([]);
+    });
+
+    it("returns nothing without a package relationships part", async () => {
+        const parts: Parts = withDocRel({ ...MINIMAL_PARTS, "word/commentsIds.xml": IDS_XML }, "rId9", COMMENTS_IDS, "commentsIds.xml");
+        delete parts["_rels/.rels"];
+        expect(await wordExactTypeTargets(ValidationContext.fromEntries(parts), COMMENTS_IDS)).toEqual([]);
     });
 });
 
