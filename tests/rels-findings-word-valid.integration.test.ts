@@ -190,12 +190,12 @@ describe("the rels-empty-element word-valid verdict reads the registered shape (
     });
 });
 
-// Sessions 71 and 72 (docs/plans/evidence/word-probes-2026-10-24.md, s71a/s71b/s72a/s72b; two runs each, all four
+// Sessions 71, 72 and 73 (docs/plans/evidence/word-probes-2026-10-24.md, s71a/s71b/s72a/s72b/s73a; two runs each, all four
 // readings agree): Word offered recovery for every internal relationship target naming a folder — a final `.` or `..`
 // segment, a trailing `/`, or `.` — beside the stored part its path spells, whatever the relationship type and whether
 // anything used it, and opened each plain target clean. The file-reference walk resolved a file-system path, which
 // drops the final `/`, so it found the part and word-valid accepted every refused row.
-describe("a relationship target naming a folder blocks word-valid (#975, sessions 71 and 72)", () => {
+describe("a relationship target naming a folder blocks word-valid (#975, sessions 71, 72 and 73)", () => {
     const PNG = Uint8Array.from(
         Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64"),
     );
@@ -208,6 +208,11 @@ describe("a relationship target naming a folder blocks word-valid (#975, session
     const customXmlAt = (target: string) => ({
         ...withRelationship(`<Relationship Id="rIdX" Type="${CUSTOM_XML}" Target="${target}"/>`),
         "customXml/item1.xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<root xmlns="urn:s71"/>`,
+    });
+    const settingsAt = (target: string) => ({
+        ...withRelationship(`<Relationship Id="rIdS" Type="${RELATIONSHIPS}/settings" Target="${target}"/>`),
+        "word/settings.xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:settings xmlns:w="${W}"><w:zoom w:percent="100"/></w:settings>`,
+        [CT]: override("word/settings.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"),
     });
     const stylesAt = (target: string) => ({
         ...MINIMAL_PARTS,
@@ -254,6 +259,10 @@ describe("a relationship target naming a folder blocks word-valid (#975, session
         ["s72a unused header", SIDECAR, headerAt("header1.xml/.", false)],
         ["s72b core properties", "_rels/.rels", coreAt("docProps/core.xml/.")],
         ["s72b styles", SIDECAR, stylesAt("styles.xml/")],
+        ["s73a settings", SIDECAR, settingsAt("settings.xml/.")],
+        ["s73a settings", SIDECAR, settingsAt("settings.xml/x/..")],
+        ["s73a styles", SIDECAR, stylesAt("styles.xml/x/..")],
+        ["s73a used header", SIDECAR, headerAt("header1.xml/x/..", true)],
     ])("blocks the %s row's folder target, as Word refused it", async (_row, relsPart, parts) => {
         const { valid, broken } = await run(parts, "word-valid");
         expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([[relsPart, "error"]]);
@@ -267,6 +276,7 @@ describe("a relationship target naming a folder blocks word-valid (#975, session
         ["s72a unused image", imageAt("media/image1.png")],
         ["s72a unused header", headerAt("header1.xml", false)],
         ["s72b core properties", coreAt("docProps/core.xml")],
+        ["s73a settings", settingsAt("settings.xml")],
     ])("accepts the %s calibration, which Word opened clean", async (_row, parts) => {
         const { valid, broken } = await run(parts, "word-valid");
         expect(broken).toEqual([]);

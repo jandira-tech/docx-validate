@@ -3107,7 +3107,7 @@ describe("DOCXSchemaValidator", () => {
 
         // #975: a final `.` or `..` segment, or a trailing `/`, names a folder,
         // never the part the path spells, which Word refused whatever the
-        // relationship type (sessions 70, 71 and 72).
+        // relationship type (sessions 70 to 73).
         it.each(["styles.xml/.", "styles.xml/x/..", "styles.xml/", "/word/styles.xml/.", ".", "../.."])(
             "flags %s as naming a folder although word/styles.xml is stored",
             async (target) => {

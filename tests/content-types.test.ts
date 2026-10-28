@@ -392,7 +392,7 @@ describe("resolveTarget: a target naming a folder names no part (#962, session 7
 describe("relationshipTargetFolder: the folder a target names (#975, sessions 70–72)", () => {
     it.each([
         // A final `.` or `..` segment, or a trailing `/`, whatever the type:
-        // Word refused each one (sessions 70, 71 and 72).
+        // Word refused each one (sessions 70 to 73).
         ["word", "styles.xml/.", "word/styles.xml/"],
         ["word", "styles.xml/", "word/styles.xml/"],
         ["word", "styles.xml\\", "word/styles.xml/"],
