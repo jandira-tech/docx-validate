@@ -1134,7 +1134,8 @@ describe("a notes relationship target naming a folder (#962, session 70 s70b/s70
         });
 
     // Word offered recovery for both, in both runs: a final `.` or `..`
-    // segment leaves a folder, so no notes part defines footnote 1.
+    // segment leaves a folder, so no notes part defines footnote 1. The
+    // file-reference walk reads the folder target as broken too (#975).
     it.each(["notes/footnotes.xml/.", "notes/footnotes.xml/x/.."])(
         "rejects the footnote reference whose target %s names a folder",
         async (target) => {
@@ -1144,6 +1145,11 @@ describe("a notes relationship target naming a folder (#962, session 70 s70b/s70
                 const result = await validate(file, { profile: "word-valid" });
                 expect(result.valid).toBe(false);
                 expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([
+                    expect.objectContaining({
+                        code: "rels-broken",
+                        path: "word/_rels/document.xml.rels",
+                        message: `Broken reference to ${target}: it names a folder, not a part`,
+                    }),
                     expect.objectContaining({
                         code: "word-footnote-reference-missing",
                         path: "word/document.xml",

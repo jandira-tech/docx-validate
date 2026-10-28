@@ -520,9 +520,19 @@ export const isWordBlockingIssue = (
             // its absolute, backslash, escaped and above-the-root spellings, and
             // opened clean the injected image spellings and a reached glossary's
             // `../customXml/` target; session 40 opened the External twins clean,
-            // docs/plans/evidence/word-probes-2026-10-24.md).
+            // docs/plans/evidence/word-probes-2026-10-24.md). A target naming
+            // a folder, registered with its final `/` (the package root as
+            // `/`), blocks whatever the relationship type: Word offered
+            // recovery for every one it was shown beside the stored part its
+            // path spells — `officeDocument`, `footnotes`, `customXml`,
+            // `styles`, a used and an unused `header`, an unused `image` and
+            // the core properties — and opened each plain target clean
+            // (sessions 70, 71 and 72, #975).
             const part = relsBrokenTarget(issue);
-            return part !== undefined && (isOpcRelationshipsPart(part) || canonicalPartName(part).startsWith("customxml/"));
+            return (
+                part !== undefined &&
+                (part.endsWith("/") || isOpcRelationshipsPart(part) || canonicalPartName(part).startsWith("customxml/"))
+            );
         }
         case "rels-empty-element":
             // The shape Word was shown distinguishes the two findings the code

@@ -342,6 +342,32 @@ describe("BaseSchemaValidator", () => {
                     parts: { ...MINIMAL_PARTS, "word/orphan.xml": "<extra/>" },
                     expected: [{ code: "rels-unreferenced", path: "word/orphan.xml", message: "Unreferenced file: word/orphan.xml" }],
                 },
+                // A final `.` segment or a trailing `/` names the folder
+                // `word/styles.xml/`, not the stored part, which nothing else
+                // relates (#975; Word refused both, sessions 71 and 72).
+                ...["styles.xml/.", "styles.xml/"].map((target) => ({
+                    name: `target ${target} naming a folder`,
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                            'Target="styles.xml"',
+                            `Target="${target}"`,
+                        ),
+                    },
+                    expected: [
+                        {
+                            code: "rels-broken",
+                            path: "word/_rels/document.xml.rels",
+                            message: `Broken reference to ${target}: it names a folder, not a part`,
+                        },
+                        { code: "rels-unreferenced", path: "word/styles.xml", message: "Unreferenced file: word/styles.xml" },
+                        {
+                            code: "rels-target-missing",
+                            path: "word/_rels/document.xml.rels",
+                            message: `Relationship target '${target}' names a folder, not a part`,
+                        },
+                    ],
+                })),
             ];
 
             // These are filesystem integration tests: exercise the public API
@@ -437,6 +463,60 @@ describe("BaseSchemaValidator", () => {
                 expect(relsBrokenTarget(byMessage.get("Broken reference to media/_rels/x.png")!)).toBe("word/media/_rels/x.png");
                 expect(relsBrokenTarget(byMessage.get("Broken reference to notes.rels")!)).toBe("word/notes.rels");
                 expect(relsBrokenTarget(byMessage.get("Broken reference to word/../customXml/x.png")!)).toBe("word/customXml/x.png");
+            });
+        });
+
+        it("registers the folder a target names, with its final / (#975)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                await writeFile(path.join(dir, "word", "media", "image1.png"), "not really a png");
+                await writeFile(path.join(dir, "docProps", "core.xml"), `<?xml version="1.0"?><x/>`);
+                await writeFile(
+                    path.join(dir, "_rels", ".rels"),
+                    `${RELS_HEADER}
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+              <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+              <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml/."/>
+              <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="/"/>
+            </Relationships>`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `${RELS_HEADER}
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+              <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.png/x/.."/>
+              <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="."/>
+              <Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../.."/>
+              <Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../../../customXml/item1.xml/."/>
+            </Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateFileReferences();
+                const folders = result.issues
+                    .filter((i) => i.code === "rels-broken")
+                    .map((i) => [i.path, i.message, relsBrokenTarget(i)] as const);
+                expect(folders).toEqual([
+                    ["_rels/.rels", "Broken reference to docProps/core.xml/.: it names a folder, not a part", "docProps/core.xml/"],
+                    ["_rels/.rels", "Broken reference to /: it names a folder, not a part", "/"],
+                    [
+                        "word/_rels/document.xml.rels",
+                        "Broken reference to media/image1.png/x/..: it names a folder, not a part",
+                        "word/media/image1.png/",
+                    ],
+                    ["word/_rels/document.xml.rels", "Broken reference to .: it names a folder, not a part", "word/"],
+                    ["word/_rels/document.xml.rels", "Broken reference to ../..: it names a folder, not a part", "/"],
+                    [
+                        "word/_rels/document.xml.rels",
+                        "Broken reference to ../../../customXml/item1.xml/.: it names a folder, not a part",
+                        "customXml/item1.xml/",
+                    ],
+                ]);
+                // A folder target relates no part, so the stored parts it
+                // spells are unreferenced.
+                expect(result.issues.filter((i) => i.code === "rels-unreferenced").map((i) => i.path)).toEqual([
+                    "docProps/core.xml",
+                    "word/media/image1.png",
+                ]);
             });
         });
 

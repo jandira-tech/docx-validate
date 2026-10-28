@@ -27,6 +27,7 @@ import {
     normalizePartName,
     parseContentTypes,
     partExtension,
+    relationshipTargetFolder,
     relationshipTargetPartName,
     resolveContentType,
     resolveTarget,
@@ -385,6 +386,47 @@ describe("resolveTarget: a target naming a folder names no part (#962, session 7
         const folders = equivalentPartLookup(["word/main.xml/"]);
         expect(resolveTarget(folders, ".", "word/main.xml/.")).toBeUndefined();
         expect(resolveTarget(folders, ".", "word/main.xml/")).toBeUndefined();
+    });
+});
+
+describe("relationshipTargetFolder: the folder a target names (#975, sessions 70–72)", () => {
+    it.each([
+        // A final `.` or `..` segment, or a trailing `/`, whatever the type:
+        // Word refused each one (sessions 70, 71 and 72).
+        ["word", "styles.xml/.", "word/styles.xml/"],
+        ["word", "styles.xml/", "word/styles.xml/"],
+        ["word", "styles.xml\\", "word/styles.xml/"],
+        ["word", "styles.xml/#frag", "word/styles.xml/"],
+        ["word", "media/image1.png/x/..", "word/media/image1.png/"],
+        ["word", "../customXml/item1.xml/.", "customXml/item1.xml/"],
+        ["word", "/word/styles.xml/.", "word/styles.xml/"],
+        [".", "docProps/core.xml/.", "docProps/core.xml/"],
+        // `.` names the source part's own folder (s72a's image row).
+        ["word", ".", "word/"],
+        // The package root is a folder too, spelled `/`, however it is reached.
+        ["word", "..", "/"],
+        ["word", "../..", "/"],
+        ["word", "../x/..", "/"],
+        [".", ".", "/"],
+        [".", "/", "/"],
+        [".", "/.", "/"],
+    ])("from %s, %s names the folder %s", (baseDir, target, folder) => {
+        expect(relationshipTargetFolder(baseDir, target)).toBe(folder);
+    });
+
+    it.each([
+        ["word", "styles.xml"],
+        ["word", "./styles.xml"],
+        ["word", "media//image1.png"],
+        ["word", "../customXml/item1.xml"],
+        ["word", "../../customXml/item1.xml"],
+        [".", "/docProps/core.xml"],
+        // No part reference at all: a URI scheme, an empty reference.
+        ["word", "http://example.com/"],
+        ["word", ""],
+        ["word", "#frag"],
+    ])("from %s, %s names no folder", (baseDir, target) => {
+        expect(relationshipTargetFolder(baseDir, target)).toBeUndefined();
     });
 });
 
