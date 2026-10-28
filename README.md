@@ -1172,21 +1172,32 @@ named runs report nothing for that shape.
 
 `word-part-reference-relationship` requires every `c:chart r:id`, `dgm:relIds`
 `r:dm` and `o:OLEObject r:id` in the selected markup-compatibility view of a
-part Word reads to name, in that part's own relationships part and in either
+part Word reads to be present and non-empty and to name, in that part's own
+relationships part and in either
 relationships namespace, a relationship whose Type is exactly the one the
 element reads: an internal `chart` relationship for `c:chart` (an External
-chart relationship is refused too), a `diagramData` relationship for
-`dgm:relIds r:dm`, and a `package` or `oleObject` relationship for
-`o:OLEObject` (a linked object's `oleObject` may be External). Word 16.115
+chart relationship is refused too), an internal `diagramData` relationship
+for `dgm:relIds r:dm`, and a `package` or `oleObject` relationship for
+`o:OLEObject` — internal or External alike for `package`, which session 52
+opened clean as an External (linked) package relationship (B1), and whose
+External `oleObject` spelling was not shown to Word and stays unjudged. Word
+16.115
 offered recovery for every refused shape probed — an `image` relationship to
 a real PNG or to a real chart part, a `diagramData`, `package` or `chart`
-relationship, an External chart relationship with and without a part, and an
-Id no relationship has — on the minimal Transitional package and as
+relationship, an External chart relationship with and without a part, an
+External `hyperlink` relationship, the near-miss Type spellings
+`…/relationships/chart/` and `…/relationships/Chart` naming a real chart, an
+Id no relationship has, and an empty `r:id`/`r:dm` present on the element
+(`dgm:relIds r:dm=""` drew an open error on one specimen and the recovery
+offer on another) — on the minimal Transitional package and as
 one-attribute mutations of the Word-clean ISO Strict `word-clean-strict01.docx`,
 while the matching relationships opened clean
-([#705](https://github.com/jandira-tech/docx-validate/issues/705); sessions 45
-and 46, chunks s45b–s45k and s46a–s46c, in
-[docs/plans/evidence/word-probes-2026-10-24.md](docs/plans/evidence/word-probes-2026-10-24.md)).
+([#705](https://github.com/jandira-tech/docx-validate/issues/705),
+[#728](https://github.com/jandira-tech/docx-validate/issues/728); sessions 45,
+46 and 52, chunks s45b–s45k, s46a–s46c and s52a–s52d, in
+[docs/plans/evidence/word-probes-2026-10-24.md](docs/plans/evidence/word-probes-2026-10-24.md);
+`r:dm` alone naming the real relationship is the s52d confound and opens
+clean). An id the element does not carry at all is still not judged.
 The parts judged are the parts Word reads, found by relationship — every main
 document and reached glossary wherever they are stored, plus the headers and
 footers a section reference names and the comments, footnotes and endnotes
@@ -1234,7 +1245,10 @@ Choice got the recovery offer, session 37 s37b). Session 44 opened clean
 every part an image relationship reaches, under `word/` and outside it,
 unreferenced or named by a picture's `a:blip r:embed`, and session 46 (s46d)
 opened the same chart clean when a VML picture's `v:imagedata r:id` or a
-linked picture's `a:blip r:link` names the relationship: an image reach
+linked picture's `a:blip r:link` names the relationship; session 52 (E1,
+E2) opened the same no-sidecar chart clean again when a `w:name r:id` names
+the reach and when a VML picture's `v:imagedata r:id` inside a selected
+`mc:Fallback` does: an image reach
 never loads the part, so `rels-missing-sidecar` always warns for it, however
 its Id is named
 ([#706](https://github.com/jandira-tech/docx-validate/issues/706); #701's
@@ -1243,7 +1257,9 @@ extension is replaced by #705's rule, which blocks the `c:chart r:id`,
 the reference's Type). Session 44 also opened clean an unreferenced
 `diagramData`, `oleObject` or Microsoft `hdphoto` reach, so those types join
 the rule; session 45 (S1) opened clean a picture's `a:blip r:embed` naming
-one of them, so every other attribute in a relationships namespace (or
+one of them — session 52 (D1) opened the same clean hdphoto reach again, a
+chart part with no sidecar an `hdphoto` relationship a picture's
+`a:blip r:embed` names — so every other attribute in a relationships namespace (or
 VML's `o:relid`) naming the relationship counts as their reference, and a
 `dgm:relIds r:dm` keeps blocking
 ([#647](https://github.com/jandira-tech/docx-validate/issues/647);

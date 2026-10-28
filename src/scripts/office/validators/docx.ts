@@ -838,8 +838,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // part's effective XML references one of those relationship Ids;
         // #647, session 44: diagramData, oleObject and hdphoto match every
         // attribute naming the Id but a picture's `a:blip r:embed`, which
-        // session 45 opened clean (#702 S1); an image relationship is never
-        // a source, so an image reach alone warns (#706).
+        // session 45 opened clean (#702 S1; the hdphoto reach again in
+        // session 52 D1); an image relationship is never
+        // a source, so an image reach alone warns (#706) — session 52's E1
+        // and E2 rows opened the same no-sidecar chart clean when a
+        // `w:name r:id` names the reach and when a VML `v:imagedata r:id`
+        // inside a selected `mc:Fallback` does.
         const referenceLoadedReach = new Map<string, "referenced" | "unreferenced">();
         for (const path of result.issues.flatMap((issue) => {
             const part = missingSidecarPart(issue);

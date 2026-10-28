@@ -6,7 +6,11 @@
 /**
  * Two theme relationships in a story root's relationships part make
  * Word offer recovery. Either theme alone opens clean; rewriting an
- * absolute target still warns.
+ * absolute target still warns. Session 52 (F1/F2, #728) pinned the count
+ * to exact Types the theme rule always used: a
+ * `…/relationships/custom/theme` relationship beside the real theme opens
+ * clean, two real theme relationships get the recovery offer, and the
+ * one-theme control opens clean.
  * Fixture: tests/fixtures/broken/package.word-duplicate-theme.docx.
  *
  * Two `fontTable` relationships in a story root's relationships part

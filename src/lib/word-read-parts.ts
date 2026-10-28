@@ -740,12 +740,17 @@ const HDPHOTO_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2007/rela
  *  - `"unobserved-reference"`: a `diagramData`, `oleObject` or `hdphoto`
  *    reach nothing references opened clean, under `word/` and outside it
  *    (session 44 s44b/s44c), and so did a picture's `a:blip r:embed` naming
- *    one (session 45 s45b/s45d, #702 S1); every other reference shape was
- *    never shown to Word;
+ *    one (session 45 s45b/s45d, #702 S1) — session 52's D1 row opened the
+ *    same clean reach again, a chart part with no sidecar an `hdphoto`
+ *    relationship a picture's `a:blip r:embed` names; every other
+ *    reference shape was never shown to Word;
  *  - `"never"`: an `image` reach opened clean unreferenced and when a
  *    picture's `a:blip r:embed` names it (session 44 s44a/s44b), a VML
  *    picture's `v:imagedata r:id` and a linked picture's `a:blip r:link`
- *    (session 46 s46d) — Word reads the bytes as an image and never loads
+ *    (session 46 s46d) — session 52's E1 and E2 rows opened the same
+ *    no-sidecar chart clean when a `w:name r:id` names the reach and when
+ *    a VML picture's `v:imagedata r:id` inside a selected `mc:Fallback`
+ *    does — Word reads the bytes as an image and never loads
  *    the target's relationships; the shapes Word refuses (`c:chart r:id`,
  *    `dgm:relIds`, `o:OLEObject r:id` naming the relationship) are refused
  *    for the reference's Type, whatever the target (#705, sessions 45 and
@@ -781,7 +786,8 @@ const referenceLoad = (type: string): "chart" | "unobserved-reference" | "never"
  *    (`wordRelationshipReferenceIds`);
  *  - `"non-picture"` (`diagramData`, `oleObject`, `hdphoto`): any attribute
  *    naming the Id but a picture's `a:blip r:embed`, the one reference Word
- *    was shown clean (#702 S1, session 45); their other reference shapes
+ *    was shown clean (#702 S1, session 45; the hdphoto reach again in
+ *    session 52 D1); their other reference shapes
  *    (`dgm:relIds r:dm`, …) are unobserved, so they keep blocking (#647).
  * An `image` relationship is never returned: Word never loads the part
  * through it, however its Id is named (#706, sessions 44 and 46).

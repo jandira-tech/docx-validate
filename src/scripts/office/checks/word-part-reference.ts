@@ -18,17 +18,38 @@
  * - `c:chart r:id` must name an internal `chart` relationship. An `image`
  *   relationship (to a real PNG or to a real chart part), a `diagramData`
  *   or `package` relationship, an External `chart` relationship (with or
- *   without a part), or an Id no relationship has is refused.
- * - `dgm:relIds r:dm` must name a `diagramData` relationship; an `image`
- *   or `chart` relationship, or an Id no relationship has, is refused.
+ *   without a part), an External `hyperlink` relationship, or an Id no
+ *   relationship has is refused.
+ * - `dgm:relIds r:dm` must name an internal `diagramData` relationship; an
+ *   `image` or `chart` relationship, an External `diagramData`
+ *   relationship, or an Id no relationship has, is refused.
  *   `r:lo`, `r:qs` and `r:cs` are deliberately not checked: session 46
  *   opened them clean naming the image and the chart relationship, with
  *   the part's cached diagramDrawing rendered, so Word tolerates them.
  * - `o:OLEObject r:id` must name a `package` or an `oleObject`
- *   relationship. `package` is the type the Strict fixture itself carries;
- *   `oleObject`, internal or External (a linked object), is the spec's and
- *   was not shown to Word, so it is accepted unjudged. An `image` or
- *   `chart` relationship, or an Id no relationship has, is refused.
+ *   relationship. `package` is the type the Strict fixture itself carries,
+ *   internal or External — session 52's B1 row opened an External
+ *   `package` relationship (a linked package) clean; `oleObject`, internal
+ *   or External (a linked object), is the spec's and was not shown to
+ *   Word, so it is accepted unjudged. An `image` or `chart` relationship,
+ *   or an Id no relationship has, is refused.
+ *
+ * Session 52 (#728; chunks s52a–s52d in the same evidence file, two runs,
+ * all readings agree) filled the gaps those bullets left: Word refused
+ * every Type shape tried under a reference it reads — an `o:OLEObject`
+ * naming a `diagramData` relationship (A1), a `c:chart` naming an External
+ * `hyperlink` relationship (A2), and `…/relationships/chart/` (A3) and
+ * `…/relationships/Chart` (A4) naming a real chart that the exact Type
+ * opens clean — so the exact-membership rule stands on Word rows. It also
+ * refused an empty id present on the element — the recovery offer for
+ * `c:chart r:id=""` (C1) and `o:OLEObject r:id=""` (C2), an open error
+ * for `dgm:relIds r:dm=""` on the review's `r:dm`-only element and the
+ * recovery offer for it on the SmartArt whose `r:lo`, `r:qs` and `r:cs`
+ * stay intact (C3) — and an External `diagramData` relationship a
+ * `dgm:relIds r:dm` names, in both shapes (B2). An id the element does
+ * not carry at all is still not judged, and `dgm:relIds r:dm="rId35"`
+ * alone, naming the real relationship, opens clean (the s52d confound),
+ * as an `o:OLEObject` naming an External `package` relationship does (B1).
  *
  * Word reads the selected markup-compatibility view, so this check judges
  * `ctx.effectiveXml` and each part's own sidecar: an unparseable one is
@@ -38,8 +59,9 @@
  * (#726). The accepted Types are exact membership, byte for byte — the
  * Transitional `…/officeDocument/2006/relationships/<segment>` URI or its
  * ISO Strict `purl.oclc.org` counterpart — like the hyperlink rule's two
- * (#614), and the `r:` attribute may sit in either relationships
- * namespace. `a:blip r:embed` and `v:imagedata o:relid` are not judged:
+ * (#614); session 52 refused every other Type shape tried under these
+ * references (A1–A4), and the `r:` attribute may sit in either
+ * relationships namespace. `a:blip r:embed` and `v:imagedata o:relid` are not judged:
  * session 45 opened both naming a relationship of another type clean.
  *
  * The parts judged are the parts Word reads (#726; session 51, chunk s51a,
@@ -59,8 +81,10 @@
  * `c:chart` or an `o:OLEObject` would also be `rels-id-missing`'s finding;
  * the run keeps this rule's copy and drops that one
  * (`withoutRepeatedHeaderFooterFindings` in validators/docx.ts), as the
- * header/footer rule's hand-off does (#612, #619). `dgm:relIds r:dm` never
- * collides: the legacy walk reads only `r:id`, `r:embed` and `r:link`.
+ * header/footer rule's hand-off does (#612, #619), dropping every copy of
+ * the same Id on the same element, twins included (#727). `dgm:relIds
+ * r:dm` never collides: the legacy walk reads only `r:id`, `r:embed` and
+ * `r:link`, and an empty id is below its truthy read too (#728).
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
@@ -137,15 +161,26 @@ const relationshipIndex = (ctx: ValidationContext, xmlFile: string): Map<string,
     return out;
 };
 
-/** The id in the first relationships namespace the element carries `attribute` in; `null` for none or an empty one. */
+/**
+ * The id the element carries `attribute` in, from the first relationships
+ * namespace that has it: `null` only when neither namespace has the
+ * attribute — an empty value present on the element is returned as an
+ * empty id and judged (#728), with a non-empty id in either namespace
+ * winning over an empty one, as the header/footer rule reads ids.
+ */
 const relationshipId = (elem: Element, attribute: string, namespaces: readonly string[]): { rid: string; namespaceURI: string } | null => {
+    let empty: { rid: string; namespaceURI: string } | null = null;
     for (const relNs of namespaces) {
+        if (!elem.hasAttributeNS(relNs, attribute)) {
+            continue;
+        }
         const value = elem.getAttributeNS(relNs, attribute);
         if (value) {
             return { rid: value, namespaceURI: relNs };
         }
+        empty ??= { rid: "", namespaceURI: relNs };
     }
-    return null;
+    return empty;
 };
 
 export const WORD_PART_REFERENCE_RELATIONSHIP = "word-part-reference-relationship";
@@ -187,7 +222,11 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
             }
             const dom = parsed.document;
             const rels = relationshipIndex(ctx, xmlFile);
-            if (!rels) {
+            // An unparseable sidecar is xml-syntax's to report. An absent
+            // one still judges the empty ids below (#728) — an empty id is
+            // wrong before any lookup — while a non-empty id it strands is
+            // rels-missing-sidecar's alone.
+            if (rels === null) {
                 continue;
             }
             for (const ns of CHART_NAMESPACES) {
@@ -196,17 +235,26 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
                     if (!id) {
                         continue;
                     }
-                    const rel = rels.get(id.rid);
+                    // #726: a non-empty id stranded by an absent sidecar is
+                    // rels-missing-sidecar's finding alone; #728 judges an
+                    // empty one — wrong before any lookup — without one too.
+                    if (id.rid !== "" && !rels) {
+                        continue;
+                    }
+                    const rel = rels?.get(id.rid);
                     // Session 45's External chart rows: the Type alone is not
                     // enough, the relationship must also be internal.
                     if (rel && ACCEPTED_CHART_RELATIONSHIP_TYPES.includes(rel.type) && rel.targetMode !== "External") {
                         continue;
                     }
-                    const why = !rel
-                        ? `no Relationship with Id '${id.rid}'`
-                        : ACCEPTED_CHART_RELATIONSHIP_TYPES.includes(rel.type)
-                          ? `Relationship '${id.rid}' has TargetMode '${rel.targetMode || "(none)"}'`
-                          : `Relationship '${id.rid}' has Type '${rel.type || "(none)"}'`;
+                    const why =
+                        id.rid === ""
+                            ? "the id is empty"
+                            : !rel
+                              ? `no Relationship with Id '${id.rid}'`
+                              : ACCEPTED_CHART_RELATIONSHIP_TYPES.includes(rel.type)
+                                ? `Relationship '${id.rid}' has TargetMode '${rel.targetMode || "(none)"}'`
+                                : `Relationship '${id.rid}' has Type '${rel.type || "(none)"}'`;
                     const issue: ValidationIssue = {
                         severity: "error",
                         message:
@@ -238,20 +286,31 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
                     if (!id) {
                         continue;
                     }
-                    const rel = rels.get(id.rid);
-                    if (rel && ACCEPTED_DIAGRAM_DATA_RELATIONSHIP_TYPES.includes(rel.type)) {
+                    if (id.rid !== "" && !rels) {
                         continue;
                     }
-                    const why = !rel
-                        ? `no Relationship with Id '${id.rid}'`
-                        : `Relationship '${id.rid}' has Type '${rel.type || "(none)"}'`;
+                    const rel = rels?.get(id.rid);
+                    // Session 52's B2 rows: like the chart rule, the Type
+                    // alone is not enough — an External diagramData
+                    // relationship is refused too.
+                    if (rel && ACCEPTED_DIAGRAM_DATA_RELATIONSHIP_TYPES.includes(rel.type) && rel.targetMode !== "External") {
+                        continue;
+                    }
+                    const why =
+                        id.rid === ""
+                            ? "the id is empty"
+                            : !rel
+                              ? `no Relationship with Id '${id.rid}'`
+                              : ACCEPTED_DIAGRAM_DATA_RELATIONSHIP_TYPES.includes(rel.type)
+                                ? `Relationship '${id.rid}' has TargetMode '${rel.targetMode || "(none)"}'`
+                                : `Relationship '${id.rid}' has Type '${rel.type || "(none)"}'`;
                     issues.push({
                         severity: "error",
                         message:
-                            `<dgm:relIds> r:dm="${id.rid}" does not reference a diagramData relationship (${why}). ` +
+                            `<dgm:relIds> r:dm="${id.rid}" does not reference an internal diagramData relationship (${why}). ` +
                             "Microsoft Word offers to recover the file. " +
                             `Use a Relationship of Type ${ACCEPTED_DIAGRAM_DATA_RELATIONSHIP_TYPES[0]} ` +
-                            `(or the ISO Strict ${ACCEPTED_DIAGRAM_DATA_RELATIONSHIP_TYPES[1]}), or point the r:dm at one.`,
+                            `(or the ISO Strict ${ACCEPTED_DIAGRAM_DATA_RELATIONSHIP_TYPES[1]}) internal to the package, or point the r:dm at one.`,
                         path: xmlFile,
                         code: WORD_PART_REFERENCE_RELATIONSHIP,
                     });
@@ -262,13 +321,22 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
                 if (!id) {
                     continue;
                 }
-                const rel = rels.get(id.rid);
-                // A linked object names an External oleObject relationship;
-                // Word was never shown one, so the TargetMode is not judged.
+                if (id.rid !== "" && !rels) {
+                    continue;
+                }
+                const rel = rels?.get(id.rid);
+                // A linked object names an External oleObject relationship
+                // and session 52's B1 opened an External `package` one clean,
+                // so the TargetMode is not judged.
                 if (rel && ACCEPTED_OLE_RELATIONSHIP_TYPES.includes(rel.type)) {
                     continue;
                 }
-                const why = !rel ? `no Relationship with Id '${id.rid}'` : `Relationship '${id.rid}' has Type '${rel.type || "(none)"}'`;
+                const why =
+                    id.rid === ""
+                        ? "the id is empty"
+                        : !rel
+                          ? `no Relationship with Id '${id.rid}'`
+                          : `Relationship '${id.rid}' has Type '${rel.type || "(none)"}'`;
                 const issue: ValidationIssue = {
                     severity: "error",
                     message:

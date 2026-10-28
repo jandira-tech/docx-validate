@@ -14422,3 +14422,546 @@ print(len(rows), "rows,", len(raw), "raw records")
 `````
 
 </details>
+
+### Session 52: 12:04Z–12:13Z on 2026-10-26, validator columns at 01e4e684
+
+The reference shapes layers 147–150 judge, or explain with a Word sentence, that no earlier session showed Word ([#728](https://github.com/jandira-tech/docx-validate/issues/728): the review of layers 147–150, finding 5, finding 7 and suspected 8, and the first reviewer run's empty ids, hdphoto and theme items). Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; all 28 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen.
+
+- A typed reference naming a relationship of a Type it does not read gets the recovery offer for every shape tried: an `o:OLEObject r:id` naming a `diagramData` relationship, a `c:chart r:id` naming an External `hyperlink` relationship, and a `c:chart r:id` naming `…/relationships/chart/` or `…/relationships/Chart` to a real bar chart that opens clean when the same reference names `…/relationships/chart` (the calibration). Word-valid already rejects all four through `word-part-reference-relationship`.
+- An `o:OLEObject r:id` naming an External `package` relationship opens clean; word-valid accepts it.
+- An empty id gets the recovery offer in each typed reference: `c:chart r:id=""` and `o:OLEObject r:id=""` (recovery offer), and `dgm:relIds r:dm=""` (an open error with the review's `r:dm`-only element; the recovery offer on session 46's `word-clean-strict01` SmartArt, whose `r:lo`, `r:qs` and `r:cs` stay intact). A `dgm:relIds r:dm` naming an External `diagramData` relationship gets the recovery offer in both shapes. Word-valid accepts all six: false negatives. The `r:dm`-only element is not the cause: `word-clean-strict01` with `dgm:relIds r:dm="rId35"` alone opens clean.
+- A chart part with no relationships part, reached only by a Microsoft `hdphoto` relationship that a picture's `a:blip r:embed` names, opens clean, as do the same chart reached only by an image relationship that a `w:name r:id` names or that a VML `v:imagedata r:id` inside a selected `mc:Fallback` names. Word-valid accepts all three.
+- A `…/relationships/custom/theme` relationship beside the real theme relationship opens clean, as does one theme; two real theme relationships get the recovery offer. Word-valid agrees on all three: the theme rule's exact-Type count (layer 149) now has its Word row.
+
+| Run    | Observed             | Specimen                                   | Shape                                                                                                         | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at 01e4e684                       | strict at 01e4e684                                                                                               |
+| ------ | -------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `s52a` | 12:04:32Z, 12:05:01Z | `s52a-control-minimal`                     | control                                                                                                       | `f35b837835c3f7b5` | clean-open     | clean-open     | clean-open                 | valid                                        | valid                                                                                                            |
+| `s52a` | 12:04:32Z, 12:05:01Z | `oleobject-names-diagramdata`              | #728 A1: o:OLEObject r:id names a diagramData relationship                                                    | `5b1163d000de8e51` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-reference-relationship`  | invalid: `paraid-missing-element`, `word-part-reference-relationship`                                            |
+| `s52a` | 12:04:32Z, 12:05:01Z | `chart-names-external-hyperlink`           | #728 A2: c:chart r:id names an External hyperlink relationship                                                | `200f91f2a7398140` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-reference-relationship`  | invalid: `rels-unreferenced`, `paraid-missing-element`, `word-part-reference-relationship`                       |
+| `s52a` | 12:04:32Z, 12:05:01Z | `chart-type-trailing-slash`                | #728 A3: c:chart r:id names …/relationships/chart/ to a real chart                                            | `68cb4a3155075e75` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-reference-relationship`  | invalid: `rels-unreferenced`, `paraid-missing-element`, `word-part-reference-relationship`                       |
+| `s52a` | 12:04:32Z, 12:05:01Z | `chart-type-upper-case`                    | #728 A4: c:chart r:id names …/relationships/Chart to a real chart                                             | `a050397a5ac044b4` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-reference-relationship`  | invalid: `rels-unreferenced`, `paraid-missing-element`, `word-part-reference-relationship`                       |
+| `s52a` | 12:04:32Z, 12:05:01Z | `chart-type-exact-calibration`             | calibration: c:chart r:id names …/relationships/chart to the same real chart                                  | `e0bde76cbf79fbd2` | clean-open     | clean-open     | clean-open                 | valid                                        | invalid: `rels-unreferenced`, `paraid-missing-element`                                                           |
+| `s52a` | 12:04:32Z, 12:05:01Z | `oleobject-names-external-package`         | #728 B1: o:OLEObject r:id names an External package relationship                                              | `42b7c8aca543cded` | clean-open     | clean-open     | clean-open                 | valid                                        | invalid: `rels-unreferenced`, `paraid-missing-element`                                                           |
+| `s52a` | 12:04:32Z, 12:05:01Z | `s52a-control-minimal-end`                 | control                                                                                                       | `f35b837835c3f7b5` | clean-open     | clean-open     | clean-open                 | valid                                        | valid                                                                                                            |
+| `s52b` | 12:06:02Z, 12:08:53Z | `s52b-control-minimal`                     | control                                                                                                       | `366bde7ba4f140c4` | clean-open     | clean-open     | clean-open                 | valid                                        | valid                                                                                                            |
+| `s52b` | 12:06:02Z, 12:08:53Z | `relids-names-external-diagramdata`        | #728 B2: dgm:relIds r:dm names an External diagramData relationship                                           | `3fef9b9f552516c6` | repair-warning | repair-warning | unreadable-content-warning | valid                                        | invalid: `rels-unreferenced`, `paraid-missing-element`, `xsd-summary`, `xsd-error`                               |
+| `s52b` | 12:06:02Z, 12:08:53Z | `chart-empty-id`                           | #728 C1: c:chart r:id=""                                                                                      | `8812e6ada5e1942f` | repair-warning | repair-warning | unreadable-content-warning | valid                                        | invalid: `rels-unreferenced`, `paraid-missing-element`                                                           |
+| `s52b` | 12:06:02Z, 12:08:53Z | `oleobject-empty-id`                       | #728 C2: o:OLEObject r:id=""                                                                                  | `5deba87fd0cb1ee3` | repair-warning | repair-warning | unreadable-content-warning | valid                                        | invalid: `rels-unreferenced`, `paraid-missing-element`                                                           |
+| `s52b` | 12:06:02Z, 12:08:53Z | `relids-empty-id`                          | #728 C3: dgm:relIds r:dm=""                                                                                   | `9f8ffa8cc45c8707` | open-error     | open-error     | open-error                 | valid                                        | invalid: `rels-unreferenced`, `paraid-missing-element`, `xsd-summary`, `xsd-error`                               |
+| `s52b` | 12:06:02Z, 12:08:53Z | `chart-hdphoto-reach-blip-reference`       | #728 D1: word/charts/chart1.xml, no sidecar, reached only by hdphoto rId8 a picture's a:blip r:embed names    | `c962bed520952d95` | clean-open     | clean-open     | clean-open                 | valid                                        | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error`                                                      |
+| `s52b` | 12:06:02Z, 12:08:53Z | `chart-image-reach-name-reference`         | #728 E1: the same chart reached only by image rId8 a w:name r:id names                                        | `e7baca2a64f19926` | clean-open     | clean-open     | clean-open                 | valid                                        | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`                          |
+| `s52b` | 12:06:02Z, 12:08:53Z | `s52b-control-minimal-end`                 | control                                                                                                       | `b2ca6e36f03ceb29` | clean-open     | clean-open     | clean-open                 | valid                                        | valid                                                                                                            |
+| `s52c` | 12:09:33Z, 12:09:44Z | `s52c-control-minimal`                     | control                                                                                                       | `b2ca6e36f03ceb29` | clean-open     | clean-open     | clean-open                 | valid                                        | valid                                                                                                            |
+| `s52c` | 12:09:33Z, 12:09:44Z | `chart-image-reach-fallback-vml-reference` | #728 E2: the same chart reached only by image rId8 a VML v:imagedata r:id inside a selected mc:Fallback names | `fa2b8cd3fa51e759` | clean-open     | clean-open     | clean-open                 | valid                                        | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error`                                                      |
+| `s52c` | 12:09:33Z, 12:09:44Z | `theme-one-calibration`                    | calibration: one real theme relationship                                                                      | `132433d2fb230e3e` | clean-open     | clean-open     | clean-open                 | valid                                        | valid                                                                                                            |
+| `s52c` | 12:09:33Z, 12:09:44Z | `theme-suffix-only-beside-real`            | #728 F1: …/relationships/custom/theme beside the real theme relationship                                      | `fd4990ea869bf5cc` | clean-open     | clean-open     | clean-open                 | valid                                        | valid                                                                                                            |
+| `s52c` | 12:09:33Z, 12:09:44Z | `theme-two-real-calibration`               | #728 F2 calibration: two real theme relationships                                                             | `67529d6209f12d48` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-duplicate-theme-relationship` | invalid: `word-duplicate-theme-relationship`                                                                     |
+| `s52c` | 12:09:33Z, 12:09:44Z | `s52c-control-minimal-end`                 | control                                                                                                       | `b2ca6e36f03ceb29` | clean-open     | clean-open     | clean-open                 | valid                                        | valid                                                                                                            |
+| `s52d` | 12:12:42Z, 12:13:35Z | `s52d-control-minimal`                     | control                                                                                                       | `0b77d12fae8479c1` | clean-open     | clean-open     | clean-open                 | valid                                        | valid                                                                                                            |
+| `s52d` | 12:12:42Z, 12:13:35Z | `strict01-relids-calibration`              | calibration: word-clean-strict01 unmodified (its dgm:relIds names rId35–rId38)                                | `1ba1a977195cf1a1` | clean-open     | clean-open     | clean-open                 | valid                                        | invalid: `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`                      |
+| `s52d` | 12:12:42Z, 12:13:35Z | `strict01-relids-dm-empty`                 | #728 C3 calibrated: word-clean-strict01 with r:dm="" (r:lo, r:qs, r:cs intact)                                | `21263d4829abb864` | repair-warning | repair-warning | unreadable-content-warning | valid                                        | invalid: `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`                      |
+| `s52d` | 12:12:42Z, 12:13:35Z | `strict01-relids-dm-external`              | #728 B2 calibrated: word-clean-strict01 with diagramData rId35 External (http://example.com/data1.xml)        | `5363c635fae2f8d8` | repair-warning | repair-warning | unreadable-content-warning | valid                                        | invalid: `rels-unreferenced`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error` |
+| `s52d` | 12:12:42Z, 12:13:35Z | `strict01-relids-dm-only`                  | confound: word-clean-strict01 with dgm:relIds r:dm="rId35" alone (no r:lo, r:qs, r:cs)                        | `f1d4859ce527c6c6` | clean-open     | clean-open     | clean-open                 | valid                                        | invalid: `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`                      |
+| `s52d` | 12:12:42Z, 12:13:35Z | `s52d-control-minimal-end`                 | control                                                                                                       | `16c76b594ef97d0f` | clean-open     | clean-open     | clean-open                 | valid                                        | valid                                                                                                            |
+
+<details><summary>Raw records, session 52</summary>
+
+```jsonl
+{"run": "s52a", "pass": 1, "name": "s52a-control-minimal", "sha256": "f35b837835c3f7b59bca271144bd4ce6374dc77e03b08a4960e95279a941341f", "observedAt": "2026-10-26T12:04:32+00:00", "staged": "00007__wfv__s52a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s52a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52a", "pass": 2, "name": "s52a-control-minimal", "sha256": "f35b837835c3f7b59bca271144bd4ce6374dc77e03b08a4960e95279a941341f", "observedAt": "2026-10-26T12:05:01+00:00", "staged": "00007__wfv__s52a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s52a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52a", "pass": 1, "name": "oleobject-names-diagramdata", "sha256": "5b1163d000de8e51358b26808b1ed7f13c319e99165809ccc21b2937823422c2", "observedAt": "2026-10-26T12:04:32+00:00", "staged": "00004__wfv__oleobject-names-diagramdata.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:04:30.430 'Word found unreadable content in 00004__wfv__oleobject-names-diagramdata.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 08:04:31.216 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__oleobject-names-diagramda...)\""]}
+{"run": "s52a", "pass": 2, "name": "oleobject-names-diagramdata", "sha256": "5b1163d000de8e51358b26808b1ed7f13c319e99165809ccc21b2937823422c2", "observedAt": "2026-10-26T12:05:01+00:00", "staged": "00004__wfv__oleobject-names-diagramdata.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:04:59.311 'Word found unreadable content in 00004__wfv__oleobject-names-diagramdata.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 08:05:00.120 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__oleobject-names-diagramda...)\""]}
+{"run": "s52a", "pass": 1, "name": "chart-names-external-hyperlink", "sha256": "200f91f2a73981403daab69f08959a0bc4f65b435e6a8f5303e0eeec57193385", "observedAt": "2026-10-26T12:04:32+00:00", "staged": "00000__wfv__chart-names-external-hyperlink.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:04:17.613 'Word found unreadable content in 00000__wfv__chart-names-external-hyperlink.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 08:04:18.444 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__chart-names-external-hype...)\""]}
+{"run": "s52a", "pass": 2, "name": "chart-names-external-hyperlink", "sha256": "200f91f2a73981403daab69f08959a0bc4f65b435e6a8f5303e0eeec57193385", "observedAt": "2026-10-26T12:05:01+00:00", "staged": "00000__wfv__chart-names-external-hyperlink.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:04:46.778 'Word found unreadable content in 00000__wfv__chart-names-external-hyperlink.docx. Do you want to re … ? If you trust the source of this document, click Yes.'", "2026-10-26 08:04:47.287 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__chart-names-external-hype...)\""]}
+{"run": "s52a", "pass": 1, "name": "chart-type-trailing-slash", "sha256": "68cb4a3155075e7534fe501362fe6955d3ac0b82eeeb911cec8b9d9096439208", "observedAt": "2026-10-26T12:04:32+00:00", "staged": "00002__wfv__chart-type-trailing-slash.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:04:22.095 'Word found unreadable content in 00002__wfv__chart-type-trailing-slash.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 08:04:22.894 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__chart-type-trailing-slash...)\""]}
+{"run": "s52a", "pass": 2, "name": "chart-type-trailing-slash", "sha256": "68cb4a3155075e7534fe501362fe6955d3ac0b82eeeb911cec8b9d9096439208", "observedAt": "2026-10-26T12:05:01+00:00", "staged": "00002__wfv__chart-type-trailing-slash.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:04:50.995 'Word found unreadable content in 00002__wfv__chart-type-trailing-slash.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 08:04:51.746 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__chart-type-trailing-slash...)\""]}
+{"run": "s52a", "pass": 1, "name": "chart-type-upper-case", "sha256": "a050397a5ac044b4f26a2dd2b64a549263c1fc7e4064ee41345ce07425873110", "observedAt": "2026-10-26T12:04:32+00:00", "staged": "00003__wfv__chart-type-upper-case.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:04:26.260 'Word found unreadable content in 00003__wfv__chart-type-upper-case.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.'", "2026-10-26 08:04:27.029 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00003__wfv__chart-type-upper-case.docx)\""]}
+{"run": "s52a", "pass": 2, "name": "chart-type-upper-case", "sha256": "a050397a5ac044b4f26a2dd2b64a549263c1fc7e4064ee41345ce07425873110", "observedAt": "2026-10-26T12:05:01+00:00", "staged": "00003__wfv__chart-type-upper-case.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:04:55.161 'Word found unreadable content in 00003__wfv__chart-type-upper-case.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.'", "2026-10-26 08:04:55.931 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00003__wfv__chart-type-upper-case.docx)\""]}
+{"run": "s52a", "pass": 1, "name": "chart-type-exact-calibration", "sha256": "e0bde76cbf79fbd223ace7aae4ec2f2f9facc7503c2589f32936f67fb260e028", "observedAt": "2026-10-26T12:04:32+00:00", "staged": "00001__wfv__chart-type-exact-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-type-exact-calibration_byword.pdf (19390 bytes), no dialog named the file"]}
+{"run": "s52a", "pass": 2, "name": "chart-type-exact-calibration", "sha256": "e0bde76cbf79fbd223ace7aae4ec2f2f9facc7503c2589f32936f67fb260e028", "observedAt": "2026-10-26T12:05:01+00:00", "staged": "00001__wfv__chart-type-exact-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-type-exact-calibration_byword.pdf (19390 bytes), no dialog named the file"]}
+{"run": "s52a", "pass": 1, "name": "oleobject-names-external-package", "sha256": "42b7c8aca543cded09a3289211992bb3a5f97089ce0186a6e95ae7aded8067ce", "observedAt": "2026-10-26T12:04:32+00:00", "staged": "00005__wfv__oleobject-names-external-package.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF oleobject-names-external-package_byword.pdf (13390 bytes), no dialog named the file"]}
+{"run": "s52a", "pass": 2, "name": "oleobject-names-external-package", "sha256": "42b7c8aca543cded09a3289211992bb3a5f97089ce0186a6e95ae7aded8067ce", "observedAt": "2026-10-26T12:05:01+00:00", "staged": "00005__wfv__oleobject-names-external-package.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF oleobject-names-external-package_byword.pdf (13390 bytes), no dialog named the file"]}
+{"run": "s52a", "pass": 1, "name": "s52a-control-minimal-end", "sha256": "f35b837835c3f7b59bca271144bd4ce6374dc77e03b08a4960e95279a941341f", "observedAt": "2026-10-26T12:04:32+00:00", "staged": "00006__wfv__s52a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s52a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52a", "pass": 2, "name": "s52a-control-minimal-end", "sha256": "f35b837835c3f7b59bca271144bd4ce6374dc77e03b08a4960e95279a941341f", "observedAt": "2026-10-26T12:05:01+00:00", "staged": "00006__wfv__s52a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s52a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52b", "pass": 1, "name": "s52b-control-minimal", "sha256": "366bde7ba4f140c473140de90a7bf2cdc3a709fb6b37030c3dd8249df590f1e2", "observedAt": "2026-10-26T12:06:02+00:00", "staged": "00007__wfv__s52b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s52b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52b", "pass": 2, "name": "s52b-control-minimal", "sha256": "366bde7ba4f140c473140de90a7bf2cdc3a709fb6b37030c3dd8249df590f1e2", "observedAt": "2026-10-26T12:08:53+00:00", "staged": "00007__wfv__s52b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s52b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52b", "pass": 1, "name": "relids-names-external-diagramdata", "sha256": "3fef9b9f552516c62fd435156feffba31b22f67b6c5eba4889b513d48fcd9d90", "observedAt": "2026-10-26T12:06:02+00:00", "staged": "00005__wfv__relids-names-external-diagramdata.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:05:30.127 'Word found unreadable content in 00005__wfv__relids-names-external-diagramdata.docx. Do you want to … ? If you trust the source of this document, click Yes.'", "2026-10-26 08:05:30.905 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__relids-names-external-dia...)\""]}
+{"run": "s52b", "pass": 2, "name": "relids-names-external-diagramdata", "sha256": "3fef9b9f552516c62fd435156feffba31b22f67b6c5eba4889b513d48fcd9d90", "observedAt": "2026-10-26T12:08:53+00:00", "staged": "00005__wfv__relids-names-external-diagramdata.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:08:36.023 \"Word found unreadable content in 00005__wfv__relids-names-external-diagramdata.docx. Do you want to … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s52b", "pass": 1, "name": "chart-empty-id", "sha256": "8812e6ada5e1942f8469f0b6928536948f87c44584460c0a7985c2620d2e48c5", "observedAt": "2026-10-26T12:06:02+00:00", "staged": "00000__wfv__chart-empty-id.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:05:17.461 'Word found unreadable content in 00000__wfv__chart-empty-id.docx. Do you want to recover the conten … ? If you trust the source of this document, click Yes.'", "2026-10-26 08:05:18.237 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  Recovery converter. (00000__wfv__chart-empty-id.docx)\""]}
+{"run": "s52b", "pass": 2, "name": "chart-empty-id", "sha256": "8812e6ada5e1942f8469f0b6928536948f87c44584460c0a7985c2620d2e48c5", "observedAt": "2026-10-26T12:08:53+00:00", "staged": "00000__wfv__chart-empty-id.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:06:11.200 'Word found unreadable content in 00000__wfv__chart-empty-id.docx. Do you want to recover the conten … ? If you trust the source of this document, click Yes.'", "2026-10-26 08:06:11.880 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  Recovery converter. (00000__wfv__chart-empty-id.docx)\""]}
+{"run": "s52b", "pass": 1, "name": "oleobject-empty-id", "sha256": "5deba87fd0cb1ee36883ce30eb9cda5b97664b8193efd8280744dc345bb2827b", "observedAt": "2026-10-26T12:06:02+00:00", "staged": "00003__wfv__oleobject-empty-id.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:05:21.796 'Word found unreadable content in 00003__wfv__oleobject-empty-id.docx. Do you want to recover the co … ? If you trust the source of this document, click Yes.'", "2026-10-26 08:05:22.562 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … overy converter. (00003__wfv__oleobject-empty-id.docx)\""]}
+{"run": "s52b", "pass": 2, "name": "oleobject-empty-id", "sha256": "5deba87fd0cb1ee36883ce30eb9cda5b97664b8193efd8280744dc345bb2827b", "observedAt": "2026-10-26T12:08:53+00:00", "staged": "00003__wfv__oleobject-empty-id.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:06:28.940 \"Word found unreadable content in 00003__wfv__oleobject-empty-id.docx. Do you want to recover the co … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s52b", "pass": 1, "name": "relids-empty-id", "sha256": "9f8ffa8cc45c87073222486d02d277f28d8fb216a0fc4312b401b720bac4b0d1", "observedAt": "2026-10-26T12:06:02+00:00", "staged": "00004__wfv__relids-empty-id.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-26 08:05:25.946 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … ecovery converter.\\n(00004__wfv__relids-empty-id.docx)'"]}
+{"run": "s52b", "pass": 2, "name": "relids-empty-id", "sha256": "9f8ffa8cc45c87073222486d02d277f28d8fb216a0fc4312b401b720bac4b0d1", "observedAt": "2026-10-26T12:08:53+00:00", "staged": "00004__wfv__relids-empty-id.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-26 08:07:16.002 Microsoft Word, Word experienced an error trying to open the file. Try these suggestions. * Check th …  Recovery converter. (00004__wfv__relids-empty-id.docx)"]}
+{"run": "s52b", "pass": 1, "name": "chart-hdphoto-reach-blip-reference", "sha256": "c962bed520952d95d59c8adaa6e6bc26f496583ac1ca10dfb05c4d9a6ad63e4f", "observedAt": "2026-10-26T12:06:02+00:00", "staged": "00001__wfv__chart-hdphoto-reach-blip-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-hdphoto-reach-blip-reference_byword.pdf (21332 bytes), no dialog named the file"]}
+{"run": "s52b", "pass": 2, "name": "chart-hdphoto-reach-blip-reference", "sha256": "c962bed520952d95d59c8adaa6e6bc26f496583ac1ca10dfb05c4d9a6ad63e4f", "observedAt": "2026-10-26T12:08:53+00:00", "staged": "00001__wfv__chart-hdphoto-reach-blip-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-hdphoto-reach-blip-reference_byword.pdf (21332 bytes), no dialog named the file"]}
+{"run": "s52b", "pass": 1, "name": "chart-image-reach-name-reference", "sha256": "e7baca2a64f1992678d9a036512a51eceb2ee03431f252c19f516346a7133f1f", "observedAt": "2026-10-26T12:06:02+00:00", "staged": "00002__wfv__chart-image-reach-name-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-image-reach-name-reference_byword.pdf (14410 bytes), no dialog named the file"]}
+{"run": "s52b", "pass": 2, "name": "chart-image-reach-name-reference", "sha256": "e7baca2a64f1992678d9a036512a51eceb2ee03431f252c19f516346a7133f1f", "observedAt": "2026-10-26T12:08:53+00:00", "staged": "00002__wfv__chart-image-reach-name-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-image-reach-name-reference_byword.pdf (14410 bytes), no dialog named the file"]}
+{"run": "s52b", "pass": 1, "name": "s52b-control-minimal-end", "sha256": "b2ca6e36f03ceb296a6c1fa41c31182241c6fe6c77a89153031850f1629161c5", "observedAt": "2026-10-26T12:06:02+00:00", "staged": "00006__wfv__s52b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s52b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52b", "pass": 2, "name": "s52b-control-minimal-end", "sha256": "b2ca6e36f03ceb296a6c1fa41c31182241c6fe6c77a89153031850f1629161c5", "observedAt": "2026-10-26T12:08:53+00:00", "staged": "00006__wfv__s52b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s52b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52c", "pass": 1, "name": "s52c-control-minimal", "sha256": "b2ca6e36f03ceb296a6c1fa41c31182241c6fe6c77a89153031850f1629161c5", "observedAt": "2026-10-26T12:09:33+00:00", "staged": "00002__wfv__s52c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s52c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52c", "pass": 2, "name": "s52c-control-minimal", "sha256": "b2ca6e36f03ceb296a6c1fa41c31182241c6fe6c77a89153031850f1629161c5", "observedAt": "2026-10-26T12:09:44+00:00", "staged": "00002__wfv__s52c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s52c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52c", "pass": 1, "name": "chart-image-reach-fallback-vml-reference", "sha256": "fa2b8cd3fa51e759b222f5c11cb4f97dbb9c8109c02f2bd8ae2e0624477d99c8", "observedAt": "2026-10-26T12:09:33+00:00", "staged": "00000__wfv__chart-image-reach-fallback-vml-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-image-reach-fallback-vml-reference_byword.pdf (21462 bytes), no dialog named the file"]}
+{"run": "s52c", "pass": 2, "name": "chart-image-reach-fallback-vml-reference", "sha256": "fa2b8cd3fa51e759b222f5c11cb4f97dbb9c8109c02f2bd8ae2e0624477d99c8", "observedAt": "2026-10-26T12:09:44+00:00", "staged": "00000__wfv__chart-image-reach-fallback-vml-reference.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-image-reach-fallback-vml-reference_byword.pdf (21462 bytes), no dialog named the file"]}
+{"run": "s52c", "pass": 1, "name": "theme-one-calibration", "sha256": "132433d2fb230e3e198ba04015fcb92191fcf487ea23d606dae2ae4d7cba80b6", "observedAt": "2026-10-26T12:09:33+00:00", "staged": "00003__wfv__theme-one-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF theme-one-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52c", "pass": 2, "name": "theme-one-calibration", "sha256": "132433d2fb230e3e198ba04015fcb92191fcf487ea23d606dae2ae4d7cba80b6", "observedAt": "2026-10-26T12:09:44+00:00", "staged": "00003__wfv__theme-one-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF theme-one-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52c", "pass": 1, "name": "theme-suffix-only-beside-real", "sha256": "fd4990ea869bf5cc33f0e7658db4f46e05cfbad4916cf406050b748159e4a63a", "observedAt": "2026-10-26T12:09:33+00:00", "staged": "00004__wfv__theme-suffix-only-beside-real.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF theme-suffix-only-beside-real_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52c", "pass": 2, "name": "theme-suffix-only-beside-real", "sha256": "fd4990ea869bf5cc33f0e7658db4f46e05cfbad4916cf406050b748159e4a63a", "observedAt": "2026-10-26T12:09:44+00:00", "staged": "00004__wfv__theme-suffix-only-beside-real.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF theme-suffix-only-beside-real_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52c", "pass": 1, "name": "theme-two-real-calibration", "sha256": "67529d6209f12d48345cfa657eadd2214afa0a14dcb308eb6f5a7d6c61376f21", "observedAt": "2026-10-26T12:09:33+00:00", "staged": "00005__wfv__theme-two-real-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:09:32.179 'Word found unreadable content in 00005__wfv__theme-two-real-calibration.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 08:09:33.057 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__theme-two-real-calibratio...)\""]}
+{"run": "s52c", "pass": 2, "name": "theme-two-real-calibration", "sha256": "67529d6209f12d48345cfa657eadd2214afa0a14dcb308eb6f5a7d6c61376f21", "observedAt": "2026-10-26T12:09:44+00:00", "staged": "00005__wfv__theme-two-real-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:09:43.812 'Word found unreadable content in 00005__wfv__theme-two-real-calibration.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 08:09:44.699 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__theme-two-real-calibratio...)\""]}
+{"run": "s52c", "pass": 1, "name": "s52c-control-minimal-end", "sha256": "b2ca6e36f03ceb296a6c1fa41c31182241c6fe6c77a89153031850f1629161c5", "observedAt": "2026-10-26T12:09:33+00:00", "staged": "00001__wfv__s52c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s52c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52c", "pass": 2, "name": "s52c-control-minimal-end", "sha256": "b2ca6e36f03ceb296a6c1fa41c31182241c6fe6c77a89153031850f1629161c5", "observedAt": "2026-10-26T12:09:44+00:00", "staged": "00001__wfv__s52c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s52c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52d", "pass": 1, "name": "s52d-control-minimal", "sha256": "0b77d12fae8479c1f9506fe69bc750416b18068b0f4366654a5bbb6944df5e8b", "observedAt": "2026-10-26T12:12:42+00:00", "staged": "00001__wfv__s52d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s52d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52d", "pass": 2, "name": "s52d-control-minimal", "sha256": "0b77d12fae8479c1f9506fe69bc750416b18068b0f4366654a5bbb6944df5e8b", "observedAt": "2026-10-26T12:13:35+00:00", "staged": "00001__wfv__s52d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s52d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52d", "pass": 1, "name": "strict01-relids-calibration", "sha256": "1ba1a977195cf1a1ab83b7037e782b7a4be4323086035f2bd5c503953ca6e1ac", "observedAt": "2026-10-26T12:12:42+00:00", "staged": "00002__wfv__strict01-relids-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF strict01-relids-calibration_byword.pdf (1168917 bytes), no dialog named the file"]}
+{"run": "s52d", "pass": 2, "name": "strict01-relids-calibration", "sha256": "1ba1a977195cf1a1ab83b7037e782b7a4be4323086035f2bd5c503953ca6e1ac", "observedAt": "2026-10-26T12:13:35+00:00", "staged": "00002__wfv__strict01-relids-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF strict01-relids-calibration_byword.pdf (1168917 bytes), no dialog named the file"]}
+{"run": "s52d", "pass": 1, "name": "strict01-relids-dm-empty", "sha256": "21263d4829abb86458142dd23539a8cf928c6b8396e811b3bf2def32480d4109", "observedAt": "2026-10-26T12:12:42+00:00", "staged": "00003__wfv__strict01-relids-dm-empty.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:11:07.037 'Word found unreadable content in 00003__wfv__strict01-relids-dm-empty.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 08:11:12.956 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__strict01-relids-dm-empty....)\""]}
+{"run": "s52d", "pass": 2, "name": "strict01-relids-dm-empty", "sha256": "21263d4829abb86458142dd23539a8cf928c6b8396e811b3bf2def32480d4109", "observedAt": "2026-10-26T12:13:35+00:00", "staged": "00003__wfv__strict01-relids-dm-empty.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:12:59.914 'Word found unreadable content in 00003__wfv__strict01-relids-dm-empty.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 08:13:00.863 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__strict01-relids-dm-empty....)\""]}
+{"run": "s52d", "pass": 1, "name": "strict01-relids-dm-external", "sha256": "5363c635fae2f8d875eeed56ebda44bb14e26b4e3459e079b6e940a86bac7520", "observedAt": "2026-10-26T12:12:42+00:00", "staged": "00004__wfv__strict01-relids-dm-external.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:12:07.337 Microsoft Word, Word found unreadable content in 00004__wfv__strict01-relids-dm-external.docx. Do yo … t? If you trust the source of this document, click Yes."]}
+{"run": "s52d", "pass": 2, "name": "strict01-relids-dm-external", "sha256": "5363c635fae2f8d875eeed56ebda44bb14e26b4e3459e079b6e940a86bac7520", "observedAt": "2026-10-26T12:13:35+00:00", "staged": "00004__wfv__strict01-relids-dm-external.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 08:13:22.165 \"Word found unreadable content in 00004__wfv__strict01-relids-dm-external.docx. Do you want to recov … ? If you trust the source of this document, click Yes.\"", "2026-10-26 08:13:34.994 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__strict01-relids-dm-extern...)\""]}
+{"run": "s52d", "pass": 1, "name": "strict01-relids-dm-only", "sha256": "f1d4859ce527c6c69e5d09de3581c6f29017e6d716f80a77f08b089437d11733", "observedAt": "2026-10-26T12:12:42+00:00", "staged": "00005__wfv__strict01-relids-dm-only.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF strict01-relids-dm-only_byword.pdf (1168917 bytes), no dialog named the file"]}
+{"run": "s52d", "pass": 2, "name": "strict01-relids-dm-only", "sha256": "f1d4859ce527c6c69e5d09de3581c6f29017e6d716f80a77f08b089437d11733", "observedAt": "2026-10-26T12:13:35+00:00", "staged": "00005__wfv__strict01-relids-dm-only.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF strict01-relids-dm-only_byword.pdf (1168917 bytes), no dialog named the file"]}
+{"run": "s52d", "pass": 1, "name": "s52d-control-minimal-end", "sha256": "16c76b594ef97d0f584342e0a1ef30ef4229fcb34a00ed5bc719cba56cba885d", "observedAt": "2026-10-26T12:12:42+00:00", "staged": "00000__wfv__s52d-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s52d-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s52d", "pass": 2, "name": "s52d-control-minimal-end", "sha256": "16c76b594ef97d0f584342e0a1ef30ef4229fcb34a00ed5bc719cba56cba885d", "observedAt": "2026-10-26T12:13:35+00:00", "staged": "00000__wfv__s52d-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s52d-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 52 builder, cross-check and section scripts</summary>
+
+Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s52builder.mts`:
+
+```ts
+// Session 52 (2026-10-26): the shapes #728 asks Word about — reference shapes layers 147–150 judge, or explain with a
+// Word sentence, that no session showed Word (the review of layers 147–150: finding 5, finding 7, suspected 8, and
+// the first reviewer run's empty ids, hdphoto and theme items).
+// - s52a: a typed reference naming a relationship Word was never shown under it (A1–A4), the exact-Type chart
+//   calibration, and an External `package` relationship an `o:OLEObject` names (B1);
+// - s52b: an External `diagramData` relationship `dgm:relIds r:dm` names (B2), empty ids (C1–C3), an `hdphoto` reach
+//   a picture's `a:blip r:embed` names (D1), and an image reach a `w:name r:id` names (E1);
+// - s52c: an image reach a VML picture inside a selected `mc:Fallback` names (E2), and theme duplicates counted by
+//   exact Type (F1, with one theme and two real themes as calibrations).
+// - s52d: s52b's `dgm:relIds` carried only `r:dm` (the review's shape), which the schema refuses on its own, so Word's
+//   refusal of B2 and C3 was confounded. s52d asks again on session 46's word-clean-strict01 SmartArt, whose
+//   `dgm:relIds` names all four parts: unmodified, with `r:dm=""`, with `rId35` made External, and with `r:dm` alone.
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s52a pnpm exec tsx s52builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import JSZip from "jszip";
+import { barChartXml, CHART_CONTENT_TYPE, PICTURE_DRAWING, reachedChartSpecimenParts } from "./tests/support/chart-specimens";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const C = "http://schemas.openxmlformats.org/drawingml/2006/chart";
+const A = "http://schemas.openxmlformats.org/drawingml/2006/main";
+const WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
+const DGM = "http://schemas.openxmlformats.org/drawingml/2006/diagram";
+const O = "urn:schemas-microsoft-com:office:office";
+const HDPHOTO = "http://schemas.microsoft.com/office/2007/relationships/hdphoto";
+const THEME_CT = "application/vnd.openxmlformats-officedocument.theme+xml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const CHART = "word/charts/chart1.xml";
+const P = MINIMAL_PARTS as Record<string, string>;
+const PNG = Uint8Array.from(
+    Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64"),
+);
+const DRAWING_NS = `xmlns:wp="${WP}" xmlns:a="${A}" xmlns:c="${C}" xmlns:dgm="${DGM}" xmlns:o="${O}" xmlns:r="${R}"`;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, type: string, target: string, external = false) =>
+    `<Relationship Id="${id}" Type="${type}" Target="${target}"${external ? ' TargetMode="External"' : ""}/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const withTypes = (types: string, defaults: Array<[string, string]>, overrides: Array<[string, string]>) =>
+    replaceOnce(
+        replaceOnce(
+            types,
+            '<Default Extension="rels"',
+            `${defaults.map(([ext, type]) => `<Default Extension="${ext}" ContentType="${type}"/>`).join("")}<Default Extension="rels"`,
+        ),
+        "</Types>",
+        `${overrides.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+
+/** The review's drawings (`review-147-150/specimens.ts`), each in its own paragraph. */
+const chartDrawing = (id: string) =>
+    '<w:p><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="5486400" cy="3200400"/>' +
+    `<wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="Chart 1"/><wp:cNvGraphicFramePr/><a:graphic><a:graphicData uri="${C}">` +
+    `<c:chart r:id="${id}"/></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+const diagramDrawing = (id: string) =>
+    '<w:p><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="952500" cy="952500"/>' +
+    `<wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="Diagram 1"/><a:graphic><a:graphicData uri="${DGM}">` +
+    `<dgm:relIds r:dm="${id}"/></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+const oleObject = (id: string) =>
+    '<w:p><w:r><w:object><o:OLEObject Type="Embed" ProgID="Package" ShapeID="_x0000_i1025" DrawAspect="Icon" ObjectID="_1" ' +
+    `r:id="${id}"/></w:object></w:r></w:p>`;
+/** The minimal package plus a PNG, `body` before the main document's `w:sectPr`, `relationships` on its sidecar. */
+const withBody = (body: string, relationships: string[], extra: Record<string, string> = {}, overrides: Array<[string, string]> = []) =>
+    buildDocx({
+        ...P,
+        "word/media/image1.png": PNG,
+        ...extra,
+        [MAIN]: replaceOnce(replaceOnce(P[MAIN]!, "<w:document ", `<w:document ${DRAWING_NS} `), "<w:sectPr>", `${body}<w:sectPr>`),
+        [SIDECAR]: appendRels(P[SIDECAR]!, relationships.join("")),
+        [CT]: withTypes(P[CT]!, [["png", "image/png"]], overrides),
+    });
+/** A clustered bar chart (no `c:externalData`, so no sidecar) at word/charts/chart1.xml that `c:chart r:id="rId9"` names as `type`. */
+const barChartNamedAs = (type: string) =>
+    withBody(chartDrawing("rId9"), [relationship("rId9", type, "charts/chart1.xml")], { [CHART]: barChartXml(false) }, [
+        [CHART, CHART_CONTENT_TYPE],
+    ]);
+
+const W14_PARAGRAPH = '<w:p w14:paraId="00000002" w14:textId="00000002">';
+const VML_PICTURE =
+    `${W14_PARAGRAPH}<w:r><w:pict><v:shape xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="${O}" id="s1" style="width:10pt;height:10pt">` +
+    '<v:imagedata r:id="rId8" o:title=""/></v:shape></w:pict></w:r></w:p>';
+const NAME_REFERENCE = `${W14_PARAGRAPH}<w:name r:id="rId8"/><w:r><w:t>x</w:t></w:r></w:p>`;
+/** The review's attack150 reach: the bare chart (dangling `c:externalData`, no sidecar) reached only as `type` `rId8`. */
+const reach = (type: string, drawing: string) => buildDocx(reachedChartSpecimenParts(CHART, [{ id: "rId8", type }], drawing));
+const fallbackVml = () => {
+    const parts = reachedChartSpecimenParts(
+        CHART,
+        [{ id: "rId8", type: `${R}/image` }],
+        `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>${VML_PICTURE}</mc:Fallback></mc:AlternateContent>`,
+    );
+    parts[MAIN] = replaceOnce(parts[MAIN]!, "<w:document ", '<w:document xmlns:foo="urn:foo" ');
+    return buildDocx(parts);
+};
+
+/** The theme part of the repository's duplicate-theme fixture, read once. */
+let themeXml: string | undefined;
+const theme = async () =>
+    (themeXml ??= await (
+        await JSZip.loadAsync(readFileSync("tests/fixtures/broken/package.word-duplicate-theme.docx"))
+    )
+        .file("word/theme/theme1.xml")!
+        .async("string"));
+/** The minimal package plus word/theme/theme1.xml as a real theme and, when `second` is given, word/theme/theme2.xml as `second`. */
+const themes = async (second?: string) =>
+    buildDocx({
+        ...P,
+        "word/theme/theme1.xml": await theme(),
+        ...(second === undefined ? {} : { "word/theme/theme2.xml": await theme() }),
+        [SIDECAR]: appendRels(
+            P[SIDECAR]!,
+            relationship("rIdT1", `${R}/theme`, "theme/theme1.xml") +
+                (second === undefined ? "" : relationship("rIdT2", second, "theme/theme2.xml")),
+        ),
+        [CT]: withTypes(
+            P[CT]!,
+            [],
+            [
+                ["word/theme/theme1.xml", THEME_CT],
+                ...(second === undefined ? [] : [["word/theme/theme2.xml", THEME_CT] as [string, string]]),
+            ],
+        ),
+    });
+const control = () => buildDocx({ ...P });
+
+/** Session 46's word-clean-strict01 package with `edit` applied to its parts (part name → text). */
+const STRICT01 = "tests/fixtures/working/word-clean-strict01.docx";
+const strict01 = async (edit: (parts: Record<string, string | Uint8Array>, text: (name: string) => string) => void = () => {}) => {
+    const zip = await JSZip.loadAsync(readFileSync(STRICT01));
+    const parts: Record<string, string | Uint8Array> = {};
+    for (const [name, entry] of Object.entries(zip.files)) if (!entry.dir) parts[name] = await entry.async("uint8array");
+    edit(parts, (name) => Buffer.from(parts[name] as Uint8Array).toString("utf8"));
+    return buildDocx(parts);
+};
+const RELIDS = 'r:dm="rId35" r:lo="rId36" r:qs="rId37" r:cs="rId38"';
+const relIdsAs = (to: string) => strict01((parts, text) => void (parts[MAIN] = replaceOnce(text(MAIN), RELIDS, to)));
+const DATA_REL =
+    '<Relationship Id="rId35" Type="http://purl.oclc.org/ooxml/officeDocument/relationships/diagramData" Target="diagrams/data1.xml"/>';
+const externalData = () =>
+    strict01(
+        (parts, text) =>
+            void (parts[SIDECAR] = replaceOnce(
+                text(SIDECAR),
+                DATA_REL,
+                DATA_REL.replace('Target="diagrams/data1.xml"/>', 'Target="http://example.com/data1.xml" TargetMode="External"/>'),
+            )),
+    );
+
+const chunks: Record<string, Array<[string, string, () => Promise<Uint8Array>]>> = {
+    s52a: [
+        ["s52a-control-minimal", "control", control],
+        [
+            "oleobject-names-diagramdata",
+            "#728 A1: o:OLEObject r:id names a diagramData relationship",
+            () => withBody(oleObject("rId9"), [relationship("rId9", `${R}/diagramData`, "media/image1.png")]),
+        ],
+        [
+            "chart-names-external-hyperlink",
+            "#728 A2: c:chart r:id names an External hyperlink relationship",
+            () => withBody(chartDrawing("rId9"), [relationship("rId9", `${R}/hyperlink`, "http://example.com/", true)]),
+        ],
+        [
+            "chart-type-trailing-slash",
+            "#728 A3: c:chart r:id names …/relationships/chart/ to a real chart",
+            () => barChartNamedAs(`${R}/chart/`),
+        ],
+        ["chart-type-upper-case", "#728 A4: c:chart r:id names …/relationships/Chart to a real chart", () => barChartNamedAs(`${R}/Chart`)],
+        [
+            "chart-type-exact-calibration",
+            "calibration: c:chart r:id names …/relationships/chart to the same real chart",
+            () => barChartNamedAs(`${R}/chart`),
+        ],
+        [
+            "oleobject-names-external-package",
+            "#728 B1: o:OLEObject r:id names an External package relationship",
+            () => withBody(oleObject("rId9"), [relationship("rId9", `${R}/package`, "http://example.com/o.xlsx", true)]),
+        ],
+        ["s52a-control-minimal-end", "control", control],
+    ],
+    s52b: [
+        ["s52b-control-minimal", "control", control],
+        [
+            "relids-names-external-diagramdata",
+            "#728 B2: dgm:relIds r:dm names an External diagramData relationship",
+            () => withBody(diagramDrawing("rId9"), [relationship("rId9", `${R}/diagramData`, "http://example.com/data1.xml", true)]),
+        ],
+        ["chart-empty-id", '#728 C1: c:chart r:id=""', () => withBody(chartDrawing(""), [])],
+        ["oleobject-empty-id", '#728 C2: o:OLEObject r:id=""', () => withBody(oleObject(""), [])],
+        ["relids-empty-id", '#728 C3: dgm:relIds r:dm=""', () => withBody(diagramDrawing(""), [])],
+        [
+            "chart-hdphoto-reach-blip-reference",
+            "#728 D1: word/charts/chart1.xml, no sidecar, reached only by hdphoto rId8 a picture's a:blip r:embed names",
+            () => reach(HDPHOTO, PICTURE_DRAWING),
+        ],
+        [
+            "chart-image-reach-name-reference",
+            "#728 E1: the same chart reached only by image rId8 a w:name r:id names",
+            () => reach(`${R}/image`, NAME_REFERENCE),
+        ],
+        ["s52b-control-minimal-end", "control", control],
+    ],
+    s52c: [
+        ["s52c-control-minimal", "control", control],
+        [
+            "chart-image-reach-fallback-vml-reference",
+            "#728 E2: the same chart reached only by image rId8 a VML v:imagedata r:id inside a selected mc:Fallback names",
+            fallbackVml,
+        ],
+        ["theme-one-calibration", "calibration: one real theme relationship", () => themes()],
+        [
+            "theme-suffix-only-beside-real",
+            "#728 F1: …/relationships/custom/theme beside the real theme relationship",
+            () => themes(`${R}/custom/theme`),
+        ],
+        ["theme-two-real-calibration", "#728 F2 calibration: two real theme relationships", () => themes(`${R}/theme`)],
+        ["s52c-control-minimal-end", "control", control],
+    ],
+    s52d: [
+        ["s52d-control-minimal", "control", control],
+        ["strict01-relids-calibration", "calibration: word-clean-strict01 unmodified (its dgm:relIds names rId35–rId38)", () => strict01()],
+        [
+            "strict01-relids-dm-empty",
+            '#728 C3 calibrated: word-clean-strict01 with r:dm="" (r:lo, r:qs, r:cs intact)',
+            () => relIdsAs(RELIDS.replace('r:dm="rId35"', 'r:dm=""')),
+        ],
+        [
+            "strict01-relids-dm-external",
+            "#728 B2 calibrated: word-clean-strict01 with diagramData rId35 External (http://example.com/data1.xml)",
+            externalData,
+        ],
+        [
+            "strict01-relids-dm-only",
+            'confound: word-clean-strict01 with dgm:relIds r:dm="rId35" alone (no r:lo, r:qs, r:cs)',
+            () => relIdsAs('r:dm="rId35"'),
+        ],
+        ["s52d-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-52 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s52a", "s52b", "s52c", "s52d")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s52/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-52 parts of docs/plans/evidence/word-probes-2026-10-24.md into s52/section.md.
+
+Reads the chunk's specimens.jsonl (validator columns at 01e4e684, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s52/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s52a", "s52b", "s52c", "s52d")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s52/results.json").read_text())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends = [], [], [], []
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    f"### Session 52: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at 01e4e684",
+    "",
+    "The reference shapes layers 147–150 judge, or explain with a Word sentence, that no earlier session showed Word "
+    "([#728](https://github.com/jandira-tech/docx-validate/issues/728): the review of layers 147–150, finding 5, finding 7 and suspected 8, "
+    "and the first reviewer run's empty ids, hdphoto and theme items). Each chunk ran twice, as two separate driver runs of byte-identical "
+    "copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome "
+    "is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; all 28 rows agree. The two times in Observed "
+    "are the ends of the first and second runs. Shape is the builder's description of the specimen.",
+    "",
+    "- A typed reference naming a relationship of a Type it does not read gets the recovery offer for every shape tried: an `o:OLEObject r:id` "
+    "naming a `diagramData` relationship, a `c:chart r:id` naming an External `hyperlink` relationship, and a `c:chart r:id` naming "
+    "`…/relationships/chart/` or `…/relationships/Chart` to a real bar chart that opens clean when the same reference names "
+    "`…/relationships/chart` (the calibration). Word-valid already rejects all four through `word-part-reference-relationship`.",
+    "- An `o:OLEObject r:id` naming an External `package` relationship opens clean; word-valid accepts it.",
+    "- An empty id gets the recovery offer in each typed reference: `c:chart r:id=\"\"` and `o:OLEObject r:id=\"\"` (recovery offer), "
+    "and `dgm:relIds r:dm=\"\"` (an open error with the review's `r:dm`-only element; the recovery offer on session 46's "
+    "`word-clean-strict01` SmartArt, whose `r:lo`, `r:qs` and `r:cs` stay intact). A `dgm:relIds r:dm` naming an External `diagramData` "
+    "relationship gets the recovery offer in both shapes. Word-valid accepts all six: false negatives. The `r:dm`-only element is not "
+    "the cause: `word-clean-strict01` with `dgm:relIds r:dm=\"rId35\"` alone opens clean.",
+    "- A chart part with no relationships part, reached only by a Microsoft `hdphoto` relationship that a picture's `a:blip r:embed` "
+    "names, opens clean, as do the same chart reached only by an image relationship that a `w:name r:id` names or that a VML "
+    "`v:imagedata r:id` inside a selected `mc:Fallback` names. Word-valid accepts all three.",
+    "- A `…/relationships/custom/theme` relationship beside the real theme relationship opens clean, as does one theme; two real theme "
+    "relationships get the recovery offer. Word-valid agrees on all three: the theme rule's exact-Type count (layer 149) now has its "
+    "Word row.",
+    "",
+    "| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at 01e4e684 | strict at 01e4e684 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 52</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 52 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s52builder.mts", ROOT / "s52builder.mts", "ts"), ("compare.py", ROOT / "s52/compare.py", "python"),
+                         ("section.py", ROOT / "s52/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s52/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records")
+`````
+
+</details>
