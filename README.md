@@ -1115,7 +1115,11 @@ readings are unprobed.
 
 `word-shared-story-part` rejects a comments, footnotes or endnotes part that
 the read model lists for both a main-document entry and a glossary entry
-(`wordReadTypedTargets`, so the usage gate is the model's own): Word session 66
+(`wordReadTypedTargets`) when each of the two roots is known to use it — a
+reference in its readable effective XML; the model also keeps a reach whose
+use it cannot decide, so a root whose XML fails the byte-level checks reports
+no shared part, and its own XML diagnostics block the run
+([#858](https://github.com/jandira-tech/docx-validate/issues/858)): Word session 66
 (s66a in `docs/plans/evidence/word-probes-2026-10-24.md`, two runs, all four
 readings agree) offered recovery for a `word/comments.xml` the main document
 and a reached glossary both relate and reference — its comment holding

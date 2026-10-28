@@ -201,6 +201,21 @@ describe("word-shared-story-part (#850)", () => {
         expect(await diagnose(notesShared("footnote", true, true, false))).toEqual([]);
     });
 
+    // The read model keeps a lazy target whose usage it cannot decide
+    // (#437), so a reach alone does not show that root uses the part; the
+    // rule needs both roots' use known (#858).
+    it("reports no shared part when one root's usage is unknown", async () => {
+        const unknownGlossary = commentsShared(true, true, true, false);
+        unknownGlossary[GLOSSARY] = replaceOnce(unknownGlossary[GLOSSARY]!, 'encoding="UTF-8"', 'encoding="bogus"');
+        expect(await diagnose(unknownGlossary)).toEqual([]);
+        const unknownMain = commentsShared(true, false, true, true);
+        unknownMain[MAIN] = replaceOnce(unknownMain[MAIN]!, 'encoding="UTF-8"', 'encoding="bogus"');
+        expect(await diagnose(unknownMain)).toEqual([]);
+        const unknownNotes = notesShared("footnote", true, true, false);
+        unknownNotes[GLOSSARY] = replaceOnce(unknownNotes[GLOSSARY]!, 'encoding="UTF-8"', 'encoding="bogus"');
+        expect(await diagnose(unknownNotes)).toEqual([]);
+    });
+
     it("keeps the unprobed shares silent: a shared header, two glossaries, a cross-segment pair", async () => {
         expect(await diagnose(sharedHeader())).toEqual([]);
         expect(await diagnose(twoGlossariesSharedComments())).toEqual([]);
@@ -246,6 +261,13 @@ describe("full word-valid runs on the session 66 and 67 specimens", { timeout: 3
             ] as const) {
                 expect((await wordValid(parts, name)).valid).toBe(true);
             }
+            // A glossary whose usage is unknown is rejected for its own
+            // XML, never as a shared part (#858).
+            const unknownGlossary = commentsShared(true, true, true, false);
+            unknownGlossary[GLOSSARY] = replaceOnce(unknownGlossary[GLOSSARY]!, 'encoding="UTF-8"', 'encoding="bogus"');
+            const result = await wordValid(unknownGlossary, "comments-unknown-glossary-usage");
+            expect(result.valid).toBe(false);
+            expect(result.issues.map((issue) => issue.code)).not.toContain("word-shared-story-part");
         });
     });
 });
