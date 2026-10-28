@@ -89,6 +89,11 @@ export default defineConfig({
         // their own deps and must not be picked up by vitest here.
         include: ["tests/**/*.test.ts"],
         exclude: ["node_modules/**", "dist/**", "docx/**", "docx-templates/**", "dotgithubtoport/**"],
+        // Integration rows run whole validations. On a loaded machine the full
+        // suite's contention pushed the slowest past vitest's 5 s default
+        // while each passed alone in under 2 s (#1142), so a test gets 30 s
+        // unless its describe or row sets its own timeout.
+        testTimeout: 30_000,
         // The summary reporter prints `Coverage: N% lines, M% branches` on
         // every --coverage run, failed ones included; `reportOnFailure` below
         // keeps the provider's own reports on failed runs too.
