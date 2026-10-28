@@ -1959,10 +1959,13 @@ relationships parts are read and written in the package-relationships namespace,
 whatever prefix they bind it to: a prefixed `_rels/.rels` names its main
 document as an unprefixed one does, the new relationships are created under the
 root's prefix, and their ids are numbered past every `rId<N>` id the part holds,
-whatever its namespace; before, a prefixed `_rels/.rels` was refused as naming
-no `officeDocument` relationship, and a prefixed main-document relationships
-part got unnamespaced relationships with a repeated id
-([#918](https://github.com/jandira-tech/docx-validate/issues/918)). Both
+whatever its namespace, and however many digits its number runs to; before, a
+prefixed `_rels/.rels` was refused as naming no `officeDocument` relationship,
+and a prefixed main-document relationships part got unnamespaced relationships
+with a repeated id
+([#918](https://github.com/jandira-tech/docx-validate/issues/918)), and a part
+holding an `rId<N>` id with N at 2^53 or past it got four relationships sharing
+one id ([#940](https://github.com/jandira-tech/docx-validate/issues/940)). Both
 relationships parts are read as the checks read them, after markup compatibility
 selects a branch: a relationship a selected `mc:Fallback` or an understood
 `mc:Choice` holds counts, one only an unselected branch holds does not; before,
