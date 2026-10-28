@@ -46,6 +46,7 @@ import { withTempDir } from "../src/lib/run-cli";
 import { RunDeadline } from "../src/lib/run-deadline";
 import type { Profile } from "../src/lib/types";
 import * as xmlHelpers from "../src/lib/xml-helpers";
+import type { XsdValidator } from "../src/lib/xsd-validator";
 import { schemaGlobals } from "../src/scripts/office/schema-globals";
 import { validate } from "../src/scripts/office/validate";
 import { BaseSchemaValidator, defaultSchemasDir } from "../src/scripts/office/validators/base";
@@ -1201,6 +1202,300 @@ describe("schema routing of the parts directly in ppt/ by their root (#887)", { 
             expect(validator.xsdWalk.parts.indexOf("ppt/aaa.xml")).toBeGreaterThan(-1);
             expect(first?.valid).toBe(null);
             expect(first?.errors.size).toBe(0);
+        });
+    });
+    // Each walk owns its trace, even when an override awaits a second walk
+    // on this validator. The outer walk finishes last and leaves its trace
+    // and engine-failure count on the instance (#943).
+    it.each([false, true])("keeps a nested walk's parts out of the outer trace (extra: %s) (#943)", async (extra) => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PPTX_PARTS,
+                ...(extra ? { "ppt/extra.xml": MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]! } : {}),
+            };
+            for (const [part, xml] of Object.entries(parts)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const lone = new PPTXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+            expect((await lone.validateAgainstXsd()).valid).toBe(true);
+            let entered = false;
+            let outerTrace: PPTXSchemaValidator["xsdWalk"] | undefined;
+            let inner: Awaited<ReturnType<PPTXSchemaValidator["validateAgainstXsd"]>> | undefined;
+            const validator = new (class extends PPTXSchemaValidator {
+                override async validateFileAgainstXsd(file: string) {
+                    if (!entered) {
+                        entered = true;
+                        outerTrace = this.xsdWalk;
+                        inner = await this.validateAgainstXsd();
+                    }
+                    return super.validateFileAgainstXsd(file);
+                }
+            })({ unpackedDir: dir, profile: "strict" });
+            expect((await validator.validateAgainstXsd()).valid).toBe(true);
+            expect(inner?.valid).toBe(true);
+            expect(validator.xsdWalk).toEqual(lone.xsdWalk);
+            expect(validator.xsdWalk.eligible).toBe(lone.xsdWalk.eligible);
+            expect(new Set(validator.xsdWalk.parts).size).toBe(validator.xsdWalk.parts.length);
+            expect(validator.xsdWalk).toBe(outerTrace);
+        });
+    });
+
+    it.each(["throw", "schema-load"] as const)(
+        "keeps the outer walk's engine failure after a clean inner walk: %s (#943)",
+        async (kind) => {
+            await withTempDir(async (dir) => {
+                const marker = "outer-engine-failure";
+                const parts = {
+                    ...MINIMAL_PPTX_PARTS,
+                    "ppt/aaa.xml": MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!.replace('name=""', `name="${marker}"`),
+                    "ppt/extra.xml": MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!,
+                };
+                for (const [part, xml] of Object.entries(parts)) {
+                    await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                    await fs.writeFile(path.join(dir, part), xml, "utf-8");
+                }
+                let fail = true;
+                let entered = false;
+                let innerFailures: number | undefined;
+                let inner: Awaited<ReturnType<PPTXSchemaValidator["validateAgainstXsd"]>> | undefined;
+                const validator = new (class extends PPTXSchemaValidator {
+                    protected override async _getXsdValidator(): Promise<XsdValidator> {
+                        return {
+                            validate: async (xml) => {
+                                if (!fail || !xml.includes(marker)) return [];
+                                if (kind === "throw") throw new Error(marker);
+                                return [{ severity: "error", code: "xsd-schema-load-failed", message: marker }];
+                            },
+                        };
+                    }
+
+                    override async validateFileAgainstXsd(file: string) {
+                        if (file === path.join(dir, "ppt/extra.xml") && !entered) {
+                            entered = true;
+                            fail = false;
+                            inner = await this.validateAgainstXsd();
+                            innerFailures = this.xsdEngineFailures;
+                        }
+                        return super.validateFileAgainstXsd(file);
+                    }
+                })({ unpackedDir: dir, profile: "strict" });
+                const result = await validator.validateAgainstXsd();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((issue) => issue.path === "ppt/aaa.xml" && issue.message.includes(marker))).toBe(true);
+                expect(inner?.valid).toBe(true);
+                expect(innerFailures).toBe(0);
+                expect(validator.xsdEngineFailures).toBe(1);
+            });
+        },
+    );
+
+    it("keeps concurrent validators' traces equal to a lone walk's (#943)", async () => {
+        await withTempDir(async (dir) => {
+            for (const [part, xml] of Object.entries(MINIMAL_PPTX_PARTS)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const lone = new PPTXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+            expect((await lone.validateAgainstXsd()).valid).toBe(true);
+            const validators = [0, 1].map(() => new PPTXSchemaValidator({ unpackedDir: dir, profile: "strict" }));
+            const results = await Promise.all(validators.map((validator) => validator.validateAgainstXsd()));
+            expect(results.map((result) => result.valid)).toEqual([true, true]);
+            for (const validator of validators) expect(validator.xsdWalk).toEqual(lone.xsdWalk);
+        });
+    });
+
+    it("publishes a lone walk's trace while it runs without changing its parts (#943)", async () => {
+        await withTempDir(async (dir) => {
+            for (const [part, xml] of Object.entries(MINIMAL_PPTX_PARTS)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const lone = new PPTXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+            expect((await lone.validateAgainstXsd()).valid).toBe(true);
+            const seen: string[] = [];
+            const validator = new (class extends PPTXSchemaValidator {
+                override async validateFileAgainstXsd(file: string) {
+                    expect(this.xsdWalk).toEqual({ started: true, parts: seen, eligible: seen.length + 1 });
+                    const outcome = await super.validateFileAgainstXsd(file);
+                    seen.push(this.relPath(file));
+                    return outcome;
+                }
+            })({ unpackedDir: dir, profile: "strict" });
+            expect((await validator.validateAgainstXsd()).valid).toBe(true);
+            expect(seen).toEqual(lone.xsdWalk.parts);
+            expect(validator.xsdWalk).toEqual(lone.xsdWalk);
+            expect(validator.xsdWalk.eligible).toBe(10);
+        });
+    });
+
+    // A call to another validator inherits the token but owns no part of
+    // that walk. Its engine failure still belongs to its instance (#943).
+    it("counts another validator's direct engine failure on that validator (#943)", async () => {
+        await withTempDir(async (dir) => {
+            for (const [part, xml] of Object.entries(MINIMAL_PPTX_PARTS)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const other = new (class extends PPTXSchemaValidator {
+                protected override async _getXsdValidator(): Promise<XsdValidator> {
+                    return {
+                        validate: async () => {
+                            throw new Error("other engine failed");
+                        },
+                    };
+                }
+            })({ unpackedDir: dir, profile: "strict" });
+            let entered = false;
+            const validator = new (class extends PPTXSchemaValidator {
+                override async validateFileAgainstXsd(file: string) {
+                    if (!entered) {
+                        entered = true;
+                        expect((await other.validateFileAgainstXsd(file)).valid).toBe(false);
+                    }
+                    return super.validateFileAgainstXsd(file);
+                }
+            })({ unpackedDir: dir, profile: "strict" });
+            expect((await validator.validateAgainstXsd()).valid).toBe(true);
+            expect(validator.xsdEngineFailures).toBe(0);
+            expect(other.xsdEngineFailures).toBe(1);
+        });
+    });
+
+    it("publishes the outer walk's reached trace and failures even when its override throws (#943)", async () => {
+        await withTempDir(async (dir) => {
+            for (const [part, xml] of Object.entries(MINIMAL_PPTX_PARTS)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const failure = new Error("outer call rejected");
+            let entered = false;
+            const validator = new (class extends PPTXSchemaValidator {
+                override async validateFileAgainstXsd(file: string) {
+                    if (!entered) {
+                        entered = true;
+                        expect((await this.validateAgainstXsd()).valid).toBe(true);
+                        throw failure;
+                    }
+                    return super.validateFileAgainstXsd(file);
+                }
+            })({ unpackedDir: dir, profile: "strict" });
+            await expect(validator.validateAgainstXsd()).rejects.toBe(failure);
+            expect(validator.xsdWalk).toEqual({ started: true, parts: [], eligible: 1 });
+            expect(validator.xsdEngineFailures).toBe(0);
+        });
+    });
+    it.each(["settled", "outliving"] as const)(
+        "counts an engine failure after the walk's call settled on the instance: %s (#943)",
+        async (kind) => {
+            await withTempDir(async (dir) => {
+                for (const [part, xml] of Object.entries(MINIMAL_PPTX_PARTS)) {
+                    await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                    await fs.writeFile(path.join(dir, part), xml, "utf-8");
+                }
+                let release!: () => void;
+                const gate = new Promise<void>((resolve) => {
+                    release = resolve;
+                });
+                let started!: () => void;
+                const starting = new Promise<void>((resolve) => {
+                    started = resolve;
+                });
+                let entered = false;
+                let delayed = false;
+                let released = false;
+                let later: ReturnType<PPTXSchemaValidator["validateFileAgainstXsd"]> | undefined;
+                const validator = new (class extends PPTXSchemaValidator {
+                    protected override async _getXsdValidator(): Promise<XsdValidator> {
+                        return {
+                            validate: async () => {
+                                if (kind === "outliving" && !delayed) {
+                                    delayed = true;
+                                    started();
+                                    await gate;
+                                    throw new Error("late engine failure");
+                                }
+                                if (released) throw new Error("late engine failure");
+                                return [];
+                            },
+                        };
+                    }
+
+                    override async validateFileAgainstXsd(file: string) {
+                        if (!entered) {
+                            entered = true;
+                            later = (async () => {
+                                if (kind === "settled") await gate;
+                                return super.validateFileAgainstXsd(file);
+                            })();
+                            if (kind === "outliving") await starting;
+                        }
+                        return super.validateFileAgainstXsd(file);
+                    }
+                })({ unpackedDir: dir, profile: "strict" });
+                expect((await validator.validateAgainstXsd()).valid).toBe(true);
+                expect(validator.xsdEngineFailures).toBe(0);
+                expect(later).toBeDefined();
+                released = true;
+                release();
+                expect((await later!).valid).toBe(false);
+                expect(validator.xsdEngineFailures).toBe(1);
+            });
+        },
+    );
+
+    it("leaves a late task's engine failure out of a walk still running (#943)", async () => {
+        await withTempDir(async (dir) => {
+            for (const [part, xml] of Object.entries(MINIMAL_PPTX_PARTS)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            let release!: () => void;
+            const gate = new Promise<void>((resolve) => {
+                release = resolve;
+            });
+            let calls = 0;
+            let failNext = false;
+            let later: ReturnType<PPTXSchemaValidator["validateFileAgainstXsd"]> | undefined;
+            const validator = new (class extends PPTXSchemaValidator {
+                protected override async _getXsdValidator(): Promise<XsdValidator> {
+                    return {
+                        validate: async () => {
+                            if (failNext) {
+                                failNext = false;
+                                throw new Error("late engine failure");
+                            }
+                            return [];
+                        },
+                    };
+                }
+
+                override async validateFileAgainstXsd(file: string) {
+                    calls += 1;
+                    if (calls === 1) {
+                        // A task the walk's first call starts, run after that
+                        // call settled but before the walk ends.
+                        later = (async () => {
+                            await gate;
+                            failNext = true;
+                            return super.validateFileAgainstXsd(file);
+                        })();
+                    } else if (calls === 2) {
+                        release();
+                        await later;
+                    }
+                    return super.validateFileAgainstXsd(file);
+                }
+            })({ unpackedDir: dir, profile: "strict" });
+
+            // Before #943 the late failure counted in the walk's own count,
+            // so a walk that offered every part and got every answer did not
+            // complete. The late call's own outcome reports it.
+            expect((await validator.validateAgainstXsd()).valid).toBe(true);
+            expect(calls).toBeGreaterThan(2);
+            expect((await later!).valid).toBe(false);
+            expect(validator.xsdWalk.parts).toHaveLength(validator.xsdWalk.eligible);
+            expect(validator.xsdEngineFailures).toBe(0);
         });
     });
 });
