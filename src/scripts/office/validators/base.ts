@@ -1382,7 +1382,7 @@ export class BaseSchemaValidator {
                         if (expectedType) {
                             const fullType = ridToType.get(ridAttr) ?? "";
                             const actualType = relationshipTypeName(fullType);
-                            if (!this.relationshipTypeSatisfies(fullType, expectedType)) {
+                            if (!this.relationshipTypeSatisfies(fullType, expectedType, elem.namespaceURI ?? "")) {
                                 const issue: ValidationIssue = {
                                     severity: "error",
                                     message:
@@ -1443,12 +1443,13 @@ export class BaseSchemaValidator {
     }
 
     /**
-     * Whether a relationship of `type` satisfies an element expecting the
-     * lower-case type name `expected`: the type's last path segment,
-     * lower-cased, contains it — the historical reading of the Python
-     * validator. The PPTX validator reads exact types outside lenient (#1058).
+     * Whether a relationship of `type` satisfies an element, in the namespace
+     * `_elementNamespace`, expecting the lower-case type name `expected`: the
+     * type's last path segment, lower-cased, contains it — the historical
+     * reading of the Python validator. The PPTX validator reads exact types
+     * for PresentationML's own elements outside lenient (#1058, #1061).
      */
-    protected relationshipTypeSatisfies(type: string, expected: string): boolean {
+    protected relationshipTypeSatisfies(type: string, expected: string, _elementNamespace: string): boolean {
         return relationshipTypeName(type).toLowerCase().includes(expected);
     }
 

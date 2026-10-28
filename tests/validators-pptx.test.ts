@@ -1066,6 +1066,58 @@ describe("rels-id-mismatch reads PPTX relationship types exactly outside lenient
     });
 });
 
+// #1061: `p:ext` holds any foreign element (pml.xsd's lax CT_Extension), and
+// one sharing a PresentationML element's local name is not that element, so
+// only PresentationML's own elements, Transitional or Strict, are read
+// exactly; a foreign one keeps the historical reading under every profile.
+describe("rels-id-mismatch reads only PresentationML elements exactly (#1061)", () => {
+    const STRICT_PRESENTATIONML_NAMESPACE = "http://purl.oclc.org/ooxml/presentationml/main";
+    const findings = async (dir: string, profile: "lenient" | "word-valid" | "strict") =>
+        (await new PPTXSchemaValidator({ unpackedDir: dir, profile }).validateAllRelationshipIds()).issues
+            .filter((issue) => issue.code === "rels-id-mismatch")
+            .map((issue) => issue.message);
+    const writeDeck = async (dir: string, root: string) => {
+        await writeFile(path.join(dir, "ppt", "presentation.xml"), root);
+        await writeFile(
+            path.join(dir, "ppt", "_rels", "presentation.xml.rels"),
+            relsXml(`<Relationship Id="rId1" Type="${R_NS}/slideLayout" Target="slideLayouts/slideLayout1.xml"/>`),
+        );
+    };
+
+    it.each(["lenient", "word-valid", "strict"] as const)(
+        "accepts a foreign x:sldId under p:ext naming a slideLayout relationship under %s",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                await writeDeck(
+                    dir,
+                    presentationXml(
+                        '<p:extLst><p:ext uri="{EFAFB233-063F-42B5-8137-9DF3F51BA10A}">' +
+                            '<x:sldId xmlns:x="urn:example:extension" id="999" r:id="rId1"/>' +
+                            "</p:ext></p:extLst>",
+                    ),
+                );
+                expect(await findings(dir, profile)).toEqual([]);
+            });
+        },
+    );
+
+    it("reports a Strict PresentationML p:sldId naming a slideLayout relationship only outside lenient", async () => {
+        await withTempDir(async (dir) => {
+            await writeDeck(
+                dir,
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                    `<p:presentation xmlns:p="${STRICT_PRESENTATIONML_NAMESPACE}" xmlns:r="${R_NS}">` +
+                    '<p:sldIdLst><p:sldId id="256" r:id="rId1"/></p:sldIdLst></p:presentation>',
+            );
+            expect(await findings(dir, "lenient")).toEqual([]);
+            expect(await findings(dir, "word-valid")).toEqual([
+                "<sldId> references 'rId1' which points to 'slideLayout' but should point to a 'slide' relationship",
+            ]);
+            expect(await findings(dir, "strict")).toHaveLength(1);
+        });
+    });
+});
+
 // #1018: a master's relationships part is found by OPC part-name
 // equivalence, as the slide checks find a slide's, so a sidecar stored under
 // an escaped spelling is read, not reported missing.
