@@ -49,7 +49,8 @@ import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import { commanderExitCode, runCli } from "../lib/run-cli";
 import { nextSecureLongHexNumber } from "../lib/secure-id";
-import { parseXml, serializeXml } from "../lib/xml-helpers";
+import { readXmlPart, writeXmlPart, writeXmlText } from "../lib/xml-part-io";
+import { parseXml, serializeXml, xmlDeclarationEncoding } from "../lib/xml-helpers";
 
 const TEMPLATE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "templates");
 
@@ -143,9 +144,14 @@ async function pathExists(p: string): Promise<boolean> {
     }
 }
 
-async function appendXml(xmlPath: string, rootTag: string, content: string): Promise<void> {
-    const text = await fs.readFile(xmlPath, "utf-8");
-    const dom = parseXml(text);
+/** Append `content` under the part's root element, in the part's own encoding. */
+async function appendXml(xmlPath: string, rootTag: string, content: string): Promise<boolean> {
+    const part = await readXmlPart(xmlPath);
+    if (part === undefined) {
+        // An encoding we cannot decode: leave the part's bytes untouched.
+        return false;
+    }
+    const dom = parseXml(part.text);
     const roots = dom.getElementsByTagName(rootTag);
     if (roots.length === 0) {
         throw new Error(`Root tag <${rootTag}> not found in ${xmlPath}`);
@@ -162,13 +168,17 @@ async function appendXml(xmlPath: string, rootTag: string, content: string): Pro
             root.appendChild(dom.importNode(child, true));
         }
     }
-    const output = encodeSmartQuotes(serializeXml(dom, "UTF-8"));
-    await fs.writeFile(xmlPath, output, "utf-8");
+    const output = encodeSmartQuotes(serializeXml(dom, xmlDeclarationEncoding(part.encoding)));
+    await writeXmlText(xmlPath, output, part);
+    return true;
 }
 
 async function findParaId(commentsPath: string, commentId: number): Promise<string | null> {
-    const text = await fs.readFile(commentsPath, "utf-8");
-    const dom = parseXml(text);
+    const part = await readXmlPart(commentsPath);
+    if (part === undefined) {
+        return null;
+    }
+    const dom = parseXml(part.text);
     const comments = dom.getElementsByTagName("w:comment");
     for (let i = 0; i < comments.length; i += 1) {
         const c = comments.item(i)!;
@@ -189,8 +199,11 @@ async function findParaId(commentsPath: string, commentId: number): Promise<stri
 /** Return true if `commentsPath` already contains a `<w:comment>` with the
  * given `w:id`. Used to preflight `addComment()` before mutating any part. */
 async function commentIdExists(commentsPath: string, commentId: number): Promise<boolean> {
-    const text = await fs.readFile(commentsPath, "utf-8");
-    const dom = parseXml(text);
+    const part = await readXmlPart(commentsPath);
+    if (part === undefined) {
+        return false;
+    }
+    const dom = parseXml(part.text);
     const comments = dom.getElementsByTagName("w:comment");
     for (let i = 0; i < comments.length; i += 1) {
         const c = comments.item(i)!;
@@ -202,8 +215,11 @@ async function commentIdExists(commentsPath: string, commentId: number): Promise
 }
 
 async function getNextRid(relsPath: string): Promise<number> {
-    const text = await fs.readFile(relsPath, "utf-8");
-    const dom = parseXml(text);
+    const part = await readXmlPart(relsPath);
+    if (part === undefined) {
+        return 1;
+    }
+    const dom = parseXml(part.text);
     let maxRid = 0;
     const rels = dom.getElementsByTagName("Relationship");
     for (let i = 0; i < rels.length; i += 1) {
@@ -220,8 +236,11 @@ async function getNextRid(relsPath: string): Promise<number> {
 }
 
 async function hasRelationship(relsPath: string, target: string): Promise<boolean> {
-    const text = await fs.readFile(relsPath, "utf-8");
-    const dom = parseXml(text);
+    const part = await readXmlPart(relsPath);
+    if (part === undefined) {
+        return false;
+    }
+    const dom = parseXml(part.text);
     const rels = dom.getElementsByTagName("Relationship");
     for (let i = 0; i < rels.length; i += 1) {
         const rel = rels.item(i)!;
@@ -233,8 +252,11 @@ async function hasRelationship(relsPath: string, target: string): Promise<boolea
 }
 
 async function hasContentType(ctPath: string, partName: string): Promise<boolean> {
-    const text = await fs.readFile(ctPath, "utf-8");
-    const dom = parseXml(text);
+    const part = await readXmlPart(ctPath);
+    if (part === undefined) {
+        return false;
+    }
+    const dom = parseXml(part.text);
     const overrides = dom.getElementsByTagName("Override");
     for (let i = 0; i < overrides.length; i += 1) {
         const override = overrides.item(i)!;
@@ -255,8 +277,12 @@ async function ensureCommentRelationships(unpackedDir: string): Promise<void> {
         return;
     }
 
-    const text = await fs.readFile(relsPath, "utf-8");
-    const dom = parseXml(text);
+    const part = await readXmlPart(relsPath);
+    if (part === undefined) {
+        // An encoding we cannot decode: leave the part's bytes untouched.
+        return;
+    }
+    const dom = parseXml(part.text);
     const root = dom.documentElement;
     let nextRid = await getNextRid(relsPath);
 
@@ -276,7 +302,7 @@ async function ensureCommentRelationships(unpackedDir: string): Promise<void> {
         nextRid += 1;
     }
 
-    await fs.writeFile(relsPath, serializeXml(dom, "UTF-8"), "utf-8");
+    await writeXmlPart(relsPath, dom, part);
 }
 
 async function ensureCommentContentTypes(unpackedDir: string): Promise<void> {
@@ -289,8 +315,12 @@ async function ensureCommentContentTypes(unpackedDir: string): Promise<void> {
         return;
     }
 
-    const text = await fs.readFile(ctPath, "utf-8");
-    const dom = parseXml(text);
+    const part = await readXmlPart(ctPath);
+    if (part === undefined) {
+        // An encoding we cannot decode: leave the part's bytes untouched.
+        return;
+    }
+    const dom = parseXml(part.text);
     const root = dom.documentElement;
 
     const overrides: Array<[string, string]> = [
@@ -307,7 +337,7 @@ async function ensureCommentContentTypes(unpackedDir: string): Promise<void> {
         root.appendChild(override);
     }
 
-    await fs.writeFile(ctPath, serializeXml(dom, "UTF-8"), "utf-8");
+    await writeXmlPart(ctPath, dom, part);
 }
 
 export interface AddCommentOptions {
@@ -381,23 +411,29 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
         await ensureCommentRelationships(unpackedDir);
         await ensureCommentContentTypes(unpackedDir);
     }
-    await appendXml(
-        comments,
-        "w:comments",
-        formatTemplate(COMMENT_XML, {
-            id: commentId,
-            author: escapeXml(author),
-            date: ts,
-            initials: escapeXml(initials),
-            para_id: paraId,
-            text: escapeXml(text),
-        }),
-    );
+    if (
+        !(await appendXml(
+            comments,
+            "w:comments",
+            formatTemplate(COMMENT_XML, {
+                id: commentId,
+                author: escapeXml(author),
+                date: ts,
+                initials: escapeXml(initials),
+                para_id: paraId,
+                text: escapeXml(text),
+            }),
+        ))
+    ) {
+        return { paraId: "", message: `Error: ${comments} is stored in an encoding this tool cannot decode` };
+    }
 
     const ext = path.join(word, "commentsExtended.xml");
     if (!(await pathExists(ext))) {
         await fs.copyFile(path.join(TEMPLATE_DIR, "commentsExtended.xml"), ext);
     }
+
+    let commentEx = `<w15:commentEx w15:paraId="${paraId}" w15:done="0"/>`;
     if (parent !== undefined) {
         // Already preflighted above; resolve the actual paraId here for the link.
         const parentPara = await findParaId(comments, parent);
@@ -409,26 +445,30 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
                 message: `Error: Parent comment ${parent} not found`,
             };
         }
-        await appendXml(ext, "w15:commentsEx", `<w15:commentEx w15:paraId="${paraId}" w15:paraIdParent="${parentPara}" w15:done="0"/>`);
-    } else {
-        await appendXml(ext, "w15:commentsEx", `<w15:commentEx w15:paraId="${paraId}" w15:done="0"/>`);
+        commentEx = `<w15:commentEx w15:paraId="${paraId}" w15:paraIdParent="${parentPara}" w15:done="0"/>`;
     }
 
     const ids = path.join(word, "commentsIds.xml");
     if (!(await pathExists(ids))) {
         await fs.copyFile(path.join(TEMPLATE_DIR, "commentsIds.xml"), ids);
     }
-    await appendXml(ids, "w16cid:commentsIds", `<w16cid:commentId w16cid:paraId="${paraId}" w16cid:durableId="${durableId}"/>`);
 
     const extensible = path.join(word, "commentsExtensible.xml");
     if (!(await pathExists(extensible))) {
         await fs.copyFile(path.join(TEMPLATE_DIR, "commentsExtensible.xml"), extensible);
     }
-    await appendXml(
-        extensible,
-        "w16cex:commentsExtensible",
-        `<w16cex:commentExtensible w16cex:durableId="${durableId}" w16cex:dateUtc="${ts}"/>`,
-    );
+
+    const appended =
+        (await appendXml(ext, "w15:commentsEx", commentEx)) &&
+        (await appendXml(ids, "w16cid:commentsIds", `<w16cid:commentId w16cid:paraId="${paraId}" w16cid:durableId="${durableId}"/>`)) &&
+        (await appendXml(
+            extensible,
+            "w16cex:commentsExtensible",
+            `<w16cex:commentExtensible w16cex:durableId="${durableId}" w16cex:dateUtc="${ts}"/>`,
+        ));
+    if (!appended) {
+        return { paraId: "", message: `Error: ${word} holds a part stored in an encoding this tool cannot decode` };
+    }
 
     const action = parent !== undefined ? "reply" : "comment";
     return {

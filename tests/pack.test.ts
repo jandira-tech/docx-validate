@@ -23,8 +23,17 @@ import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { pack } from "../src/scripts/office/pack";
 import { unpack } from "../src/scripts/office/unpack";
+import { validate } from "../src/scripts/office/validate";
+import { buildDocx as buildMinimalDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+
+/** A part stored in UTF-16, with the byte order mark that says which way round it is. */
+function utf16Part(text: string, endian: "le" | "be"): Buffer {
+    const body = Buffer.from(text, "utf16le");
+    if (endian === "be") body.swap16();
+    return Buffer.concat([Buffer.from(endian === "le" ? [0xff, 0xfe] : [0xfe, 0xff]), body]);
+}
 
 interface DocxParts {
     document: string;
@@ -263,6 +272,28 @@ describe("pack", () => {
             expect(callCount).toBe(1);
             expect(capturedUnpackedDir).toBe(path.resolve(inputDir));
             expect(capturedOriginalDocx).toBe(path.resolve(originalFile));
+        });
+    });
+
+    it.each(["le", "be"] as const)("round-trips a UTF-16%s package through unpack and pack (#866)", async (endian) => {
+        await withTempDir(async (dir) => {
+            const original = path.join(dir, "utf16.docx");
+            const unpackedDir = path.join(dir, "unpacked");
+            const packed = path.join(dir, "packed.docx");
+            const document = MINIMAL_PARTS["word/document.xml"]!.replace('encoding="UTF-8"', 'encoding="UTF-16"');
+            await fs.writeFile(original, await buildMinimalDocx({ ...MINIMAL_PARTS, "word/document.xml": utf16Part(document, endian) }));
+
+            expect((await unpack(original, unpackedDir)).ok).toBe(true);
+            expect((await pack(unpackedDir, packed)).ok).toBe(true);
+
+            expect((await validate(packed, { profile: "word-valid" })).valid).toBe(true);
+
+            const zip = await JSZip.loadAsync(await fs.readFile(packed));
+            const bytes = Buffer.from(await zip.file("word/document.xml")!.async("uint8array"));
+            expect([...bytes.subarray(0, 2)]).toEqual(endian === "le" ? [0xff, 0xfe] : [0xfe, 0xff]);
+            const body = Buffer.from(bytes.subarray(2));
+            if (endian === "be") body.swap16();
+            expect(body.toString("utf16le")).toContain("Hello");
         });
     });
 });

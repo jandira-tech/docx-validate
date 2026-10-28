@@ -27,9 +27,9 @@
  * - Removes proofErr elements (spell/grammar markers that block merging)
  */
 
-import { promises as fs } from "node:fs";
 import path from "node:path";
 
+import { readXmlPart, writeXmlPart, type DecodedXmlPart } from "../../../lib/xml-part-io";
 import { parseXml, serializeXml } from "../../../lib/xml-helpers";
 
 export interface MergeRunsResult {
@@ -44,15 +44,19 @@ export interface MergeRunsResult {
 export async function mergeRuns(inputDir: string): Promise<MergeRunsResult> {
     const docXml = path.join(inputDir, "word", "document.xml");
 
-    let text: string;
+    let part: DecodedXmlPart | undefined;
     try {
-        text = await fs.readFile(docXml, "utf8");
+        part = await readXmlPart(docXml);
     } catch {
         return { count: 0, message: `Error: ${docXml} not found` };
     }
+    if (part === undefined) {
+        // An encoding we cannot decode: leave the part's bytes untouched.
+        return { count: 0, message: "Merged 0 runs" };
+    }
 
     try {
-        const dom = parseXml(text);
+        const dom = parseXml(part.text);
         const root = dom.documentElement;
         if (!root) {
             return { count: 0, message: "Error: empty document" };
@@ -74,7 +78,7 @@ export async function mergeRuns(inputDir: string): Promise<MergeRunsResult> {
             mergeCount += mergeRunsIn(container);
         }
 
-        await fs.writeFile(docXml, serializeXml(dom, "UTF-8"), "utf8");
+        await writeXmlPart(docXml, dom, part);
         return { count: mergeCount, message: `Merged ${mergeCount} runs` };
     } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);

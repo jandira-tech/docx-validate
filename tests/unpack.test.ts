@@ -22,10 +22,36 @@ import { describe, expect, it } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
 import { unpack } from "../src/scripts/office/unpack";
-import { MINIMAL_PARTS } from "./support/minimal-docx";
+import { buildDocx as buildMinimalDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildRawZip } from "./support/raw-zip";
 
 const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+
+const MINIMAL_DOCUMENT = MINIMAL_PARTS["word/document.xml"]!;
+
+/** The minimal main part with its declaration naming the encoding it is stored in. */
+function minimalDocument(encoding: string): string {
+    return MINIMAL_DOCUMENT.replace('encoding="UTF-8"', `encoding="${encoding}"`);
+}
+
+/** A part stored in UTF-16, with the byte order mark that says which way round it is. */
+function utf16Part(text: string, endian: "le" | "be"): Buffer {
+    const body = Buffer.from(text, "utf16le");
+    if (endian === "be") body.swap16();
+    return Buffer.concat([Buffer.from(endian === "le" ? [0xff, 0xfe] : [0xfe, 0xff]), body]);
+}
+
+/** The text of a UTF-16 part, decoded in the byte order it was stored in. */
+function decodeUtf16(bytes: Buffer, endian: "le" | "be"): string {
+    const body = Buffer.from(bytes.subarray(2));
+    if (endian === "be") body.swap16();
+    return body.toString("utf16le");
+}
+
+/** A part's document, without the XML declaration that names its encoding. */
+function documentBody(text: string): string {
+    return text.slice(text.indexOf("<w:document"));
+}
 
 interface DocxParts {
     document: string;
@@ -290,6 +316,110 @@ describe("unpack", () => {
 
             expect((await unpack(inputFile, out)).ok).toBe(false);
             await expect(fs.access(out)).rejects.toThrow();
+        });
+    });
+
+    it.each(["le", "be"] as const)("keeps a UTF-16%s main part in its own encoding (#866)", async (endian) => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "utf16.docx");
+            const outputDir = path.join(dir, "out");
+            const utf8File = path.join(dir, "utf8.docx");
+            const utf8Out = path.join(dir, "utf8-out");
+            await fs.writeFile(
+                inputFile,
+                await buildMinimalDocx({ ...MINIMAL_PARTS, "word/document.xml": utf16Part(minimalDocument("UTF-16"), endian) }),
+            );
+            await fs.writeFile(utf8File, await buildMinimalDocx({ ...MINIMAL_PARTS, "word/document.xml": MINIMAL_DOCUMENT }));
+
+            const result = await unpack(inputFile, outputDir);
+            expect(result.ok).toBe(true);
+            expect((await unpack(utf8File, utf8Out)).ok).toBe(true);
+
+            const bytes = await fs.readFile(path.join(outputDir, "word", "document.xml"));
+            expect([...bytes.subarray(0, 2)]).toEqual(endian === "le" ? [0xff, 0xfe] : [0xfe, 0xff]);
+            const decoded = decodeUtf16(bytes, endian);
+            expect(decoded).not.toContain("\uFFFD");
+            // The part reads exactly as the same package stored in UTF-8 does.
+            const utf8Text = await fs.readFile(path.join(utf8Out, "word", "document.xml"), "utf8");
+            expect(documentBody(decoded)).toBe(documentBody(utf8Text));
+        });
+    });
+
+    it.each(["le", "be"] as const)("keeps a UTF-16%s main part's text when both helpers are off (#866)", async (endian) => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "utf16.docx");
+            const outputDir = path.join(dir, "out");
+            const utf8File = path.join(dir, "utf8.docx");
+            const utf8Out = path.join(dir, "utf8-out");
+            await fs.writeFile(
+                inputFile,
+                await buildMinimalDocx({
+                    ...MINIMAL_PARTS,
+                    "word/document.xml": utf16Part(minimalDocument("UTF-16"), endian),
+                }),
+            );
+            await fs.writeFile(utf8File, await buildMinimalDocx({ ...MINIMAL_PARTS, "word/document.xml": MINIMAL_DOCUMENT }));
+
+            const result = await unpack(inputFile, outputDir, { mergeRuns: false, simplifyRedlines: false });
+            expect(result.ok).toBe(true);
+            expect((await unpack(utf8File, utf8Out, { mergeRuns: false, simplifyRedlines: false })).ok).toBe(true);
+
+            const bytes = await fs.readFile(path.join(outputDir, "word", "document.xml"));
+            expect([...bytes.subarray(0, 2)]).toEqual(endian === "le" ? [0xff, 0xfe] : [0xfe, 0xff]);
+            const decoded = decodeUtf16(bytes, endian);
+            expect(decoded).not.toContain("\uFFFD");
+            const utf8Text = await fs.readFile(path.join(utf8Out, "word", "document.xml"), "utf8");
+            expect(documentBody(decoded)).toBe(documentBody(utf8Text));
+        });
+    });
+
+    it("escapes a smart quote inside a UTF-16 part exactly as in a UTF-8 part (#866)", async () => {
+        await withTempDir(async (dir) => {
+            const body = "<w:t>“hi” ‘there’</w:t>";
+            const utf16File = path.join(dir, "utf16.docx");
+            const utf8File = path.join(dir, "utf8.docx");
+            await fs.writeFile(
+                utf16File,
+                await buildMinimalDocx({
+                    ...MINIMAL_PARTS,
+                    "word/document.xml": utf16Part(minimalDocument("UTF-16").replace("<w:t>Hello</w:t>", body), "le"),
+                }),
+            );
+            await fs.writeFile(
+                utf8File,
+                await buildMinimalDocx({
+                    ...MINIMAL_PARTS,
+                    "word/document.xml": MINIMAL_DOCUMENT.replace("<w:t>Hello</w:t>", body),
+                }),
+            );
+
+            const utf16Out = path.join(dir, "utf16-out");
+            const utf8Out = path.join(dir, "utf8-out");
+            expect((await unpack(utf16File, utf16Out, { mergeRuns: false, simplifyRedlines: false })).ok).toBe(true);
+            expect((await unpack(utf8File, utf8Out, { mergeRuns: false, simplifyRedlines: false })).ok).toBe(true);
+
+            const utf16Text = decodeUtf16(await fs.readFile(path.join(utf16Out, "word", "document.xml")), "le");
+            const utf8Text = await fs.readFile(path.join(utf8Out, "word", "document.xml"), "utf8");
+            // The declarations name the encoding each part is stored in; the
+            // bodies must read the same.
+            expect(utf16Text.slice(utf16Text.indexOf("<w:document"))).toBe(utf8Text.slice(utf8Text.indexOf("<w:document")));
+            expect(utf16Text).toContain("&#x201C;hi&#x201D; &#x2018;there&#x2019;");
+            expect(utf16Text).not.toMatch(/[“”‘’]/);
+        });
+    });
+
+    it("leaves a part in an encoding it cannot decode byte-for-byte (#866)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "macintosh.docx");
+            const outputDir = path.join(dir, "out");
+            const document = minimalDocument("macintosh");
+            await fs.writeFile(inputFile, await buildMinimalDocx({ ...MINIMAL_PARTS, "word/document.xml": document }));
+
+            const result = await unpack(inputFile, outputDir);
+            expect(result.ok).toBe(true);
+
+            const bytes = await fs.readFile(path.join(outputDir, "word", "document.xml"));
+            expect(bytes.equals(Buffer.from(document, "utf8"))).toBe(true);
         });
     });
 });

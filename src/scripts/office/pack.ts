@@ -34,7 +34,8 @@ import JSZip from "jszip";
 
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
 import type { ValidationResult } from "../../lib/types";
-import { getElementsByTagNameAll, parseXml, serializeXml } from "../../lib/xml-helpers";
+import { readXmlPart, writeXmlPart, type DecodedXmlPart } from "../../lib/xml-part-io";
+import { getElementsByTagNameAll, parseXml } from "../../lib/xml-helpers";
 import { inferAuthor } from "./helpers/simplify-redlines";
 import { DOCXSchemaValidator } from "./validators/docx";
 import { PPTXSchemaValidator } from "./validators/pptx";
@@ -306,9 +307,15 @@ async function collectAllFiles(root: string): Promise<string[]> {
 
 async function condenseXml(xmlFile: string): Promise<void> {
     let dom: Document;
+    let part: DecodedXmlPart;
     try {
-        const content = await fs.readFile(xmlFile, "utf8");
-        dom = parseXml(content);
+        const decoded = await readXmlPart(xmlFile);
+        if (decoded === undefined) {
+            // An encoding we cannot decode: leave the part's bytes untouched.
+            return;
+        }
+        part = decoded;
+        dom = parseXml(part.text);
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         process.stderr.write(`ERROR: Failed to parse ${path.basename(xmlFile)}: ${message}\n`);
@@ -341,7 +348,7 @@ async function condenseXml(xmlFile: string): Promise<void> {
         }
     }
 
-    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf8");
+    await writeXmlPart(xmlFile, dom, part);
 }
 
 function parseBoolFlag(value: string): boolean {
