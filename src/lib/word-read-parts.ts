@@ -199,8 +199,17 @@ const relationshipsBaseDir = (relsPart: string): string => {
  * the rest of the codebase does (`\` reads as `/`, a query or fragment is
  * dropped, dot segments resolve), then take the OPC-equivalent stored entry
  * (`canonicalPartName` comparison); `undefined` when it names no stored part.
+ * `clampAtPackageRoot` stops the target's `..` segments at the package root
+ * instead of dropping the whole target when they climb past it — RFC 3986's
+ * remove_dot_segments, the way Word resolved `word/`'s `../../footnotes.xml`
+ * to `/footnotes.xml` (session 64 s64a, #830).
  */
-const resolveTarget = (lookup: (partName: string) => string | undefined, baseDir: string, target: string): string | undefined => {
+const resolveTarget = (
+    lookup: (partName: string) => string | undefined,
+    baseDir: string,
+    target: string,
+    clampAtPackageRoot = false,
+): string | undefined => {
     if (hasUriScheme(target)) {
         return undefined;
     }
@@ -209,7 +218,7 @@ const resolveTarget = (lookup: (partName: string) => string | undefined, baseDir
         return undefined;
     }
     const joined = reference.startsWith("/") ? reference : path.posix.join(baseDir, reference);
-    return lookup(joined);
+    return lookup(clampAtPackageRoot ? joined.replace(/^(?:\.\.\/)+/, "") : joined);
 };
 
 /** The relationships part of a source part, found by OPC part-name equivalence. */
@@ -333,6 +342,21 @@ export type WordTypedTarget = {
 };
 
 /**
+ * Options the typed relationship walks take. `clampAtPackageRoot` resolves
+ * a relationship target whose `..` segments climb past the package root by
+ * stopping them there, as RFC 3986's remove_dot_segments does: Word
+ * session 64 (s64a, two runs, all readings agree) opened `word/`'s
+ * `../../footnotes.xml` and `../../../footnotes.xml` clean with the note at
+ * `/footnotes.xml`, and offered recovery when only `word/footnotes.xml`
+ * held it, so the note definitions read the clamped target (#830). A walk
+ * without the option keeps the dropping resolution, and every other
+ * consumer's reading of an escaping target is unprobed.
+ */
+export type TypedWalkOptions = {
+    readonly clampAtPackageRoot?: boolean;
+};
+
+/**
  * The parts the named relationship segments reach (#432): every main document
  * (`officeDocument`), and the target of every main-document relationship of
  * one of the other segments, Transitional or Strict. One entry per
@@ -340,12 +364,15 @@ export type WordTypedTarget = {
  * same type keeps the entry that reached it first, while a part reached
  * through two types keeps both, so the order of the relationships in the
  * relationships part cannot decide which type a consumer judges the part
- * against (#593).
+ * against (#593). `options` clamps the requested segments' escaping targets
+ * at the package root (`TypedWalkOptions`, #830); the main documents the
+ * `officeDocument` segment adds keep the package walk's dropping resolution.
  */
 export const wordTypedRelationshipTargets = async (
     context: ValidationContext,
     segments: ReadonlySet<string>,
     profile?: Profile,
+    options?: TypedWalkOptions,
 ): Promise<readonly WordTypedTarget[]> => {
     const reach = await packageReach(context, profile);
     if (reach === undefined) {
@@ -382,7 +409,12 @@ export const wordTypedRelationshipTargets = async (
             if (segment === undefined || !wanted.has(segment)) {
                 continue;
             }
-            const target = resolveTarget(reach.lookup, path.posix.dirname(mainPart), relationship.getAttribute("Target") ?? "");
+            const target = resolveTarget(
+                reach.lookup,
+                path.posix.dirname(mainPart),
+                relationship.getAttribute("Target") ?? "",
+                options?.clampAtPackageRoot ?? false,
+            );
             if (target !== undefined) {
                 add(target, segment);
             }
@@ -480,12 +512,15 @@ export const wordExactTypeTargets = async (context: ValidationContext, type: str
  * glossary's relationship of that segment would misattribute the package
  * root. A part the main document also names by the same segment keeps
  * both entries, so a caller can judge it through whichever root reads it
- * (#593).
+ * (#593). `options` clamps the requested segments' escaping targets at the
+ * package root (`TypedWalkOptions`, #830); the walk's own glossary
+ * discovery keeps the dropping resolution, unprobed.
  */
 export const glossaryTypedRelationshipTargets = async (
     context: ValidationContext,
     segments: ReadonlySet<string>,
     profile?: Profile,
+    options?: TypedWalkOptions,
 ): Promise<readonly WordTypedTarget[]> => {
     const reach = await packageReach(context, profile);
     if (reach === undefined) {
@@ -523,7 +558,12 @@ export const glossaryTypedRelationshipTargets = async (
             if (segment === undefined || !wanted.has(segment)) {
                 continue;
             }
-            const target = resolveTarget(reach.lookup, path.posix.dirname(glossary), relationship.getAttribute("Target") ?? "");
+            const target = resolveTarget(
+                reach.lookup,
+                path.posix.dirname(glossary),
+                relationship.getAttribute("Target") ?? "",
+                options?.clampAtPackageRoot ?? false,
+            );
             if (target === undefined) {
                 continue;
             }

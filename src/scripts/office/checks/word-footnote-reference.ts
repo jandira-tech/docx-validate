@@ -25,7 +25,20 @@
  * the parts their relationships name, so the former basename reading is
  * gone (#797). The relationship walks are ungated by usage, so a
  * related-but-unused part defines its ids too — this set only adds
- * definitions, never a rejection. References read through the main document
+ * definitions, never a rejection. A `<kind>s` relationship target that
+ * escapes the package resolves by stopping its `..` segments at the
+ * package root, as RFC 3986's remove_dot_segments does: session 63 (s63c)
+ * opened `word/`'s `../../footnotes.xml` clean with the note at
+ * `/footnotes.xml` while word-valid rejected it, and session 64 (s64a)
+ * confirmed the reading — the `../../../footnotes.xml` twin and the
+ * endnotes twin `../../endnotes.xml` opened clean with their notes at the
+ * root, while the same escaping target with the note only in
+ * `word/footnotes.xml` got the recovery offer and stays rejected (#830).
+ * An External `<kind>s` relationship names no part, so a body reference
+ * whose note sits in an unreferenced `word/footnotes.xml` blocks, matching
+ * session 63 (s63c)'s recovery offer. Other rules' relationship resolution
+ * keeps dropping an escaping target; those readings are unprobed.
+ * References read through the main document
  * use only its own relationships' definitions: session 63 (s63c) offered
  * recovery for a body footnote reference whose note only a reached glossary's
  * notes part defines, while the main-related matching calibration opened
@@ -67,7 +80,12 @@ import { canonicalPartName } from "../../../lib/content-types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
-import { glossaryTypedRelationshipTargets, wordReadTypedTargets, wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
+import {
+    glossaryTypedRelationshipTargets,
+    wordReadTypedTargets,
+    wordTypedRelationshipTargets,
+    type TypedWalkOptions,
+} from "../../../lib/word-read-parts";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
 
 /**
@@ -182,16 +200,21 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
         // relationship names defines nothing, even under the standard
         // names (session 61 s61a, s61b, #797). The walks are ungated by
         // usage, so a related-but-unused part defines its ids too, as this
-        // set only adds definitions, never a rejection.
+        // set only adds definitions, never a rejection. The definitions
+        // resolve a relationship target that escapes the package by
+        // stopping its `..` segments at the package root, as RFC 3986's
+        // remove_dot_segments does (sessions 63 s63c and 64 s64a, #830);
+        // every other walk keeps the dropping resolution, unprobed.
+        const definitions: TypedWalkOptions = { clampAtPackageRoot: true };
         const segment = `${kind}s`;
-        for (const target of await wordTypedRelationshipTargets(ctx, new Set([segment]), profile)) {
+        for (const target of await wordTypedRelationshipTargets(ctx, new Set([segment]), profile, definitions)) {
             collect(target.part);
         }
         // Main-document references cannot use a glossary's definitions
         // (session 63 s63c, #828). Glossary references keep the union,
         // whose reading remains unprobed.
         const mainDefined = new Set(defined);
-        for (const target of await glossaryTypedRelationshipTargets(ctx, new Set([segment]), profile)) {
+        for (const target of await glossaryTypedRelationshipTargets(ctx, new Set([segment]), profile, definitions)) {
             collect(target.part);
         }
         // The references are read from the parts Word reads, as the read

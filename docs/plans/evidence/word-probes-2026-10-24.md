@@ -20593,3 +20593,541 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
 `````
 
 </details>
+
+### Session 64: 21:32Z–21:38Z on 2026-10-26, validator columns at b89c9534
+
+Two confirmations session 63's fixes waited on: how Word resolves a notes relationship target that escapes the package ([#830](https://github.com/jandira-tech/docx-validate/issues/830)), and whether a notes part typed `application/octet-stream` defines nothing whatever its name ([#829](https://github.com/jandira-tech/docx-validate/issues/829)). Two chunks, each opening and closing with the minimal control. Each ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 12 of 12 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen. The builder recorded the validator revision in every row (`b89c953441eff860c3c46a790e4a12b472468a01`).
+
+- **Escaping targets (s64a).** With the only `footnotes` relationship targeting `../../footnotes.xml` from `word/`, Word opens the file clean when footnote 1 sits in `/footnotes.xml` (session 63's row, repeated) and offers recovery when it sits only in `word/footnotes.xml`. `../../../footnotes.xml` with the note in `/footnotes.xml`, and the endnotes twin of `../../endnotes.xml`, open clean too, as does the in-package `../footnotes.xml` calibration. Word resolves the target as RFC 3986 does, stopping `..` segments at the package root. Word-valid rejects the three clean escaping rows: three false positives.
+- **Octet-stream notes parts (s64b).** With the only `footnotes` relationship naming a part typed `application/octet-stream` that holds footnote 1, Word offers recovery whether the part is `word/notes.xml`, `word/footnotes.xml` or `word/notes.bin` (session 63's row, repeated). The type, not the name, makes the part define nothing. Word-valid accepts all three: three false negatives.
+
+| Run    | Observed             | Specimen                                            | Shape                                                                                                                         | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at b89c9534                     | strict at b89c9534                                                                                                              |
+| ------ | -------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `s64a` | 21:32:06Z, 21:32:36Z | `s64a-control-minimal`                              | control                                                                                                                       | `47c631aec06a1108` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                                                                                                           |
+| `s64a` | 21:32:06Z, 21:32:36Z | `footnotes-escaping-two-levels-note-at-root-repeat` | repeat of s63c: the only footnotes relationship targets ../../footnotes.xml from word/; footnote 1 sits in /footnotes.xml     | `70737a72dbf294e5` | clean-open     | clean-open     | clean-open                 | invalid: `word-footnote-reference-missing` | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing`, `word-footnote-reference-missing` |
+| `s64a` | 21:32:06Z, 21:32:36Z | `footnotes-escaping-two-levels-note-in-word-folder` | the only footnotes relationship targets ../../footnotes.xml; footnote 1 sits only in word/footnotes.xml (no /footnotes.xml)   | `cf81e016549c8464` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-footnote-reference-missing` | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing`, `word-footnote-reference-missing` |
+| `s64a` | 21:32:06Z, 21:32:36Z | `footnotes-escaping-three-levels-note-at-root`      | the only footnotes relationship targets ../../../footnotes.xml; footnote 1 sits in /footnotes.xml                             | `1f5154fb3f9bc690` | clean-open     | clean-open     | clean-open                 | invalid: `word-footnote-reference-missing` | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing`, `word-footnote-reference-missing` |
+| `s64a` | 21:32:06Z, 21:32:36Z | `endnotes-escaping-two-levels-note-at-root`         | endnotes twin of s63c: the only endnotes relationship targets ../../endnotes.xml; endnote 1 sits in /endnotes.xml             | `31b1b6eb37f5397f` | clean-open     | clean-open     | clean-open                 | invalid: `word-endnote-reference-missing`  | invalid: `rels-broken`, `rels-unreferenced`, `paraid-missing-element`, `rels-target-missing`, `word-endnote-reference-missing`  |
+| `s64a` | 21:32:06Z, 21:32:36Z | `footnotes-one-level-note-at-root-calibration`      | calibration: the only footnotes relationship targets ../footnotes.xml (inside the package); footnote 1 sits in /footnotes.xml | `3475e289ba44b4c8` | clean-open     | clean-open     | clean-open                 | valid                                      | invalid: `paraid-missing-element`                                                                                               |
+| `s64a` | 21:32:06Z, 21:32:36Z | `s64a-control-minimal-end`                          | control                                                                                                                       | `5f5c123817450144` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                                                                                                           |
+| `s64b` | 21:34:35Z, 21:38:54Z | `s64b-control-minimal`                              | control                                                                                                                       | `5f5c123817450144` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                                                                                                           |
+| `s64b` | 21:34:35Z, 21:38:54Z | `footnotes-octet-stream-xml-name`                   | the only footnotes relationship names word/notes.xml, Override application/octet-stream, holding footnote 1                   | `7698b0b7bec17f71` | repair-warning | repair-warning | unreadable-content-warning | valid                                      | invalid: `word-part-content-type-unrecognized`                                                                                  |
+| `s64b` | 21:34:35Z, 21:38:54Z | `footnotes-octet-stream-standard-name`              | the only footnotes relationship names word/footnotes.xml, Override application/octet-stream, holding footnote 1               | `04c21d147ff2e848` | repair-warning | repair-warning | unreadable-content-warning | valid                                      | invalid: `word-part-content-type-unrecognized`, `paraid-missing-element`                                                        |
+| `s64b` | 21:34:35Z, 21:38:54Z | `footnotes-octet-stream-bin-repeat`                 | repeat of s63c: the only footnotes relationship names word/notes.bin, Override application/octet-stream, holding footnote 1   | `c229e9f48a63c925` | repair-warning | repair-warning | unreadable-content-warning | valid                                      | invalid: `word-part-content-type-unrecognized`                                                                                  |
+| `s64b` | 21:34:35Z, 21:38:54Z | `s64b-control-minimal-end`                          | control                                                                                                                       | `5f5c123817450144` | clean-open     | clean-open     | clean-open                 | valid                                      | valid                                                                                                                           |
+
+<details><summary>Raw records, session 64</summary>
+
+```jsonl
+{"run": "s64a", "pass": 1, "name": "s64a-control-minimal", "sha256": "47c631aec06a11086c6e84f292920be22e5852c840b6b5094feabfb3b7e76767", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:32:06+00:00", "staged": "00006__wfv__s64a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s64a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s64a", "pass": 2, "name": "s64a-control-minimal", "sha256": "47c631aec06a11086c6e84f292920be22e5852c840b6b5094feabfb3b7e76767", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:32:36+00:00", "staged": "00006__wfv__s64a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s64a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s64a", "pass": 1, "name": "footnotes-escaping-two-levels-note-at-root-repeat", "sha256": "70737a72dbf294e535f6ae26086b817dea6c9f27b61b5e4e1d239a8fbcb8347d", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:32:06+00:00", "staged": "00002__wfv__footnotes-escaping-two-levels-note-at-root-repeat.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-escaping-two-levels-note-at-root-repeat_byword.pdf (15513 bytes), no dialog named the file"]}
+{"run": "s64a", "pass": 2, "name": "footnotes-escaping-two-levels-note-at-root-repeat", "sha256": "70737a72dbf294e535f6ae26086b817dea6c9f27b61b5e4e1d239a8fbcb8347d", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:32:36+00:00", "staged": "00002__wfv__footnotes-escaping-two-levels-note-at-root-repeat.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-escaping-two-levels-note-at-root-repeat_byword.pdf (15513 bytes), no dialog named the file"]}
+{"run": "s64a", "pass": 1, "name": "footnotes-escaping-two-levels-note-in-word-folder", "sha256": "cf81e016549c846408b621c1feb4f30a0c9ca0e74b3f8ce5b05c9fd67d2bff8e", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:32:06+00:00", "staged": "00003__wfv__footnotes-escaping-two-levels-note-in-word-folder.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 17:31:34.901 \"Word found unreadable content in 00003__wfv__footnotes-escaping-two-levels-note-in-word-folde.... D … ? If you trust the source of this document, click Yes.\"", "2026-10-26 17:32:06.327 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__footnotes-escaping-two-le...)\""]}
+{"run": "s64a", "pass": 2, "name": "footnotes-escaping-two-levels-note-in-word-folder", "sha256": "cf81e016549c846408b621c1feb4f30a0c9ca0e74b3f8ce5b05c9fd67d2bff8e", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:32:36+00:00", "staged": "00003__wfv__footnotes-escaping-two-levels-note-in-word-folder.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 17:32:21.873 'Word found unreadable content in 00003__wfv__footnotes-escaping-two-levels-note-in-word-folde.... D … ? If you trust the source of this document, click Yes.'", "2026-10-26 17:32:22.731 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__footnotes-escaping-two-le...)\""]}
+{"run": "s64a", "pass": 1, "name": "footnotes-escaping-three-levels-note-at-root", "sha256": "1f5154fb3f9bc690621363c75f9aad94abe4a8a4d559b17226f36d6bc770918d", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:32:06+00:00", "staged": "00001__wfv__footnotes-escaping-three-levels-note-at-root.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-escaping-three-levels-note-at-root_byword.pdf (15513 bytes), no dialog named the file"]}
+{"run": "s64a", "pass": 2, "name": "footnotes-escaping-three-levels-note-at-root", "sha256": "1f5154fb3f9bc690621363c75f9aad94abe4a8a4d559b17226f36d6bc770918d", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:32:36+00:00", "staged": "00001__wfv__footnotes-escaping-three-levels-note-at-root.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-escaping-three-levels-note-at-root_byword.pdf (15513 bytes), no dialog named the file"]}
+{"run": "s64a", "pass": 1, "name": "endnotes-escaping-two-levels-note-at-root", "sha256": "31b1b6eb37f5397fa86deddec46ac8158b4aed0cd71c92c407fd9ad8720a7c25", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:32:06+00:00", "staged": "00000__wfv__endnotes-escaping-two-levels-note-at-root.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-escaping-two-levels-note-at-root_byword.pdf (15783 bytes), no dialog named the file"]}
+{"run": "s64a", "pass": 2, "name": "endnotes-escaping-two-levels-note-at-root", "sha256": "31b1b6eb37f5397fa86deddec46ac8158b4aed0cd71c92c407fd9ad8720a7c25", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:32:36+00:00", "staged": "00000__wfv__endnotes-escaping-two-levels-note-at-root.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-escaping-two-levels-note-at-root_byword.pdf (15783 bytes), no dialog named the file"]}
+{"run": "s64a", "pass": 1, "name": "footnotes-one-level-note-at-root-calibration", "sha256": "3475e289ba44b4c832621ff8002c9b10a1747461b9ce4c070e444cc12f8125f4", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:32:06+00:00", "staged": "00004__wfv__footnotes-one-level-note-at-root-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-one-level-note-at-root-calibration_byword.pdf (15513 bytes), no dialog named the file"]}
+{"run": "s64a", "pass": 2, "name": "footnotes-one-level-note-at-root-calibration", "sha256": "3475e289ba44b4c832621ff8002c9b10a1747461b9ce4c070e444cc12f8125f4", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:32:36+00:00", "staged": "00004__wfv__footnotes-one-level-note-at-root-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-one-level-note-at-root-calibration_byword.pdf (15513 bytes), no dialog named the file"]}
+{"run": "s64a", "pass": 1, "name": "s64a-control-minimal-end", "sha256": "5f5c12381745014425b37f497834bb11d92a86da307ccfbccb78d97c3c8826fe", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:32:06+00:00", "staged": "00005__wfv__s64a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s64a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s64a", "pass": 2, "name": "s64a-control-minimal-end", "sha256": "5f5c12381745014425b37f497834bb11d92a86da307ccfbccb78d97c3c8826fe", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:32:36+00:00", "staged": "00005__wfv__s64a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s64a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s64b", "pass": 1, "name": "s64b-control-minimal", "sha256": "5f5c12381745014425b37f497834bb11d92a86da307ccfbccb78d97c3c8826fe", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:34:35+00:00", "staged": "00004__wfv__s64b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s64b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s64b", "pass": 2, "name": "s64b-control-minimal", "sha256": "5f5c12381745014425b37f497834bb11d92a86da307ccfbccb78d97c3c8826fe", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:38:54+00:00", "staged": "00004__wfv__s64b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s64b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s64b", "pass": 1, "name": "footnotes-octet-stream-xml-name", "sha256": "7698b0b7bec17f712aba035bffda8d7b2b85835455525b49479a11ea6c8c9edc", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:34:35+00:00", "staged": "00002__wfv__footnotes-octet-stream-xml-name.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 17:34:32.430 Microsoft Word, Word found unreadable content in 00002__wfv__footnotes-octet-stream-xml-name.docx. D … t? If you trust the source of this document, click Yes.", "2026-10-26 17:34:33.128 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__footnotes-octet-stream-xm...)\""]}
+{"run": "s64b", "pass": 2, "name": "footnotes-octet-stream-xml-name", "sha256": "7698b0b7bec17f712aba035bffda8d7b2b85835455525b49479a11ea6c8c9edc", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:38:54+00:00", "staged": "00002__wfv__footnotes-octet-stream-xml-name.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 17:38:51.701 'Word found unreadable content in 00002__wfv__footnotes-octet-stream-xml-name.docx. Do you want to r … ? If you trust the source of this document, click Yes.'", "2026-10-26 17:38:52.837 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__footnotes-octet-stream-xm...)\""]}
+{"run": "s64b", "pass": 1, "name": "footnotes-octet-stream-standard-name", "sha256": "04c21d147ff2e84831d246ce7ce84b0b2efa2dd6ef27d78d67344db1db4915cf", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:34:35+00:00", "staged": "00001__wfv__footnotes-octet-stream-standard-name.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 17:33:43.515 Microsoft Word, Word found unreadable content in 00001__wfv__footnotes-octet-stream-standard-name.do … t? If you trust the source of this document, click Yes."]}
+{"run": "s64b", "pass": 2, "name": "footnotes-octet-stream-standard-name", "sha256": "04c21d147ff2e84831d246ce7ce84b0b2efa2dd6ef27d78d67344db1db4915cf", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:38:54+00:00", "staged": "00001__wfv__footnotes-octet-stream-standard-name.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 17:35:58.417 Microsoft Word, Word found unreadable content in 00001__wfv__footnotes-octet-stream-standard-name.do … t? If you trust the source of this document, click Yes."]}
+{"run": "s64b", "pass": 1, "name": "footnotes-octet-stream-bin-repeat", "sha256": "c229e9f48a63c925868434b61722d6ce1b83a3b24673454764117cafc0e56276", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:34:35+00:00", "staged": "00000__wfv__footnotes-octet-stream-bin-repeat.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 17:32:50.806 'Word found unreadable content in 00000__wfv__footnotes-octet-stream-bin-repeat.docx. Do you want to … ? If you trust the source of this document, click Yes.'", "2026-10-26 17:32:51.344 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__footnotes-octet-stream-bi...)\""]}
+{"run": "s64b", "pass": 2, "name": "footnotes-octet-stream-bin-repeat", "sha256": "c229e9f48a63c925868434b61722d6ce1b83a3b24673454764117cafc0e56276", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:38:54+00:00", "staged": "00000__wfv__footnotes-octet-stream-bin-repeat.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 17:34:57.919 'Word found unreadable content in 00000__wfv__footnotes-octet-stream-bin-repeat.docx. Do you want to … ? If you trust the source of this document, click Yes.'", "2026-10-26 17:34:58.440 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__footnotes-octet-stream-bi...)\""]}
+{"run": "s64b", "pass": 1, "name": "s64b-control-minimal-end", "sha256": "5f5c12381745014425b37f497834bb11d92a86da307ccfbccb78d97c3c8826fe", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:34:35+00:00", "staged": "00003__wfv__s64b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s64b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s64b", "pass": 2, "name": "s64b-control-minimal-end", "sha256": "5f5c12381745014425b37f497834bb11d92a86da307ccfbccb78d97c3c8826fe", "validatorRevision": "b89c953441eff860c3c46a790e4a12b472468a01", "observedAt": "2026-10-26T21:38:54+00:00", "staged": "00003__wfv__s64b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s64b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 64 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s64builder.mts`:
+
+```ts
+// Session 64 (2026-10-26): confirmations two session-63 fixes wait on.
+// s64a: a notes relationship whose target escapes the package (s63c opened `../../footnotes.xml` with the note at
+//       /footnotes.xml clean). Does Word stop the `..` segments at the package root?
+// s64b: a notes part typed application/octet-stream (s63c refused `word/notes.bin`). Does the part's name matter?
+// Every row records the validator revision it was judged at (`validatorRevision`). Helpers are copied from s62builder.mts.
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s64a pnpm exec node --import tsx s64builder.tmp.mts
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import JSZip from "jszip";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const W14 = "http://schemas.microsoft.com/office/word/2010/wordml";
+const U = "urn:example:unknown";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+const TEXT_P = "<w:p><w:r><w:t>Text</w:t></w:r></w:p>";
+const REVISION = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string, extra = "") =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"${extra}/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+const control = () => buildDocx({ ...P });
+
+/**
+ * `parts` with the main document's `r:` and `u:` prefixes declared (`u` is bound to a namespace Word does not
+ * understand and appears only in `Requires`), `sect` first in its `w:sectPr` and `run` appended inside its only paragraph.
+ */
+const mainWith = (parts: Record<string, string>, run: string, sect = ""): Record<string, string> => ({
+    ...parts,
+    [MAIN]: replaceOnce(
+        replaceOnce(
+            replaceOnce(parts[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}" xmlns:u="${U}"`),
+            "<w:sectPr>",
+            `<w:sectPr>${sect}`,
+        ),
+        "</w:r></w:p>",
+        `</w:r>${run}</w:p>`,
+    ),
+});
+/** `parts` with the main document stored as `word/<name>`: the part, its sidecar, the officeDocument target and its Override. */
+const renameMain = (parts: Record<string, string>, name: string): Record<string, string> => {
+    const next: Record<string, string> = { ...parts, [`word/${name}`]: parts[MAIN]!, [`word/_rels/${name}.rels`]: parts[SIDECAR]! };
+    delete next[MAIN];
+    delete next[SIDECAR];
+    next["_rels/.rels"] = replaceOnce(parts["_rels/.rels"]!, 'Target="word/document.xml"', `Target="word/${name}"`);
+    next[CT] = replaceOnce(parts[CT]!, 'PartName="/word/document.xml"', `PartName="/word/${name}"`);
+    return next;
+};
+
+type Kind = "footnote" | "endnote";
+const notesXml = (kind: Kind, held: string) =>
+    `${XML_DECL}<w:${kind}s xmlns:w="${W}"><w:${kind} w:id="${held}">${TEXT_P}</w:${kind}></w:${kind}s>`;
+const noteRef = (kind: Kind, id: string) => `<w:r><w:${kind}Reference w:id="${id}"/></w:r>`;
+/** The minimal parts with `word/<kind>s.xml` holding note `held`, related by the main document and typed by `type`. */
+const withNotes = (kind: Kind, held: string, type = `${WML}.${kind}s+xml`): Record<string, string> => ({
+    ...P,
+    [`word/${kind}s.xml`]: notesXml(kind, held),
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", `${kind}s`, `${kind}s.xml`)),
+    [CT]: overrides(P[CT]!, [`word/${kind}s.xml`, type]),
+});
+
+const comment = (id: string) => `<w:comment w:id="${id}" w:author="a">${TEXT_P}</w:comment>`;
+const commentsRoot = (body: string) =>
+    `${XML_DECL}<w:comments xmlns:w="${W}" xmlns:mc="${MC}" xmlns:w14="${W14}" xmlns:u="${U}">${body}</w:comments>`;
+/** The minimal parts with `word/comments.xml` holding `body`, related by the main document and typed by `type`. */
+const withComments = (body: string, type = `${WML}.comments+xml`): Record<string, string> => ({
+    ...P,
+    "word/comments.xml": commentsRoot(body),
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdC", "comments", "comments.xml")),
+    [CT]: overrides(P[CT]!, ["word/comments.xml", type]),
+});
+const commentRef = (id: string) => `<w:r><w:commentReference w:id="${id}"/></w:r>`;
+const alternate = (requires: string, choice: string, fallback: string) =>
+    `<mc:AlternateContent><mc:Choice Requires="${requires}">${choice}</mc:Choice><mc:Fallback>${fallback}</mc:Fallback></mc:AlternateContent>`;
+
+/** A read header (`word/header1.xml`, referenced by the section) holding `run` in its paragraph. */
+const withReadHeader = (parts: Record<string, string>, run: string): Record<string, string> =>
+    mainWith(
+        {
+            ...parts,
+            "word/header1.xml": `${XML_DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r>${run}</w:p></w:hdr>`,
+            [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
+            [CT]: overrides(parts[CT]!, ["word/header1.xml", `${WML}.header+xml`]),
+        },
+        "",
+        `<w:headerReference w:type="default" r:id="rIdH"/>`,
+    );
+
+/** Two endnotes relationships in document order: word/endnotes.xml holding `first`, then word/notes2.xml (endnotes+xml) holding `second`. */
+const twoEndnotes = (first: string, second: string, referenced: boolean) => {
+    const parts = withNotes("endnote", first);
+    const both = {
+        ...parts,
+        "word/notes2.xml": notesXml("endnote", second),
+        [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdN2", "endnotes", "notes2.xml")),
+        [CT]: overrides(parts[CT]!, ["word/notes2.xml", `${WML}.endnotes+xml`]),
+    };
+    return buildDocx(referenced ? mainWith(both, noteRef("endnote", "1")) : both);
+};
+
+/** The minimal parts with `word/footer1.xml` read through the section's default footer reference, holding `run`. */
+const withReadFooter = (parts: Record<string, string>, run: string): Record<string, string> =>
+    mainWith(
+        {
+            ...parts,
+            "word/footer1.xml": `${XML_DECL}<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Footer</w:t></w:r>${run}</w:p></w:ftr>`,
+            [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdF", "footer", "footer1.xml")),
+            [CT]: overrides(parts[CT]!, ["word/footer1.xml", `${WML}.footer+xml`]),
+        },
+        "",
+        `<w:footerReference w:type="default" r:id="rIdF"/>`,
+    );
+
+/** Two footnotes relationships in document order: word/footnotes.xml holding `first`, then word/notes2.xml (footnotes+xml) holding `second`; the body references footnote 1. */
+const twoFootnotes = (first: string, second: string) => {
+    const parts = withNotes("footnote", first);
+    return buildDocx(
+        mainWith(
+            {
+                ...parts,
+                "word/notes2.xml": notesXml("footnote", second),
+                [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdN2", "footnotes", "notes2.xml")),
+                [CT]: overrides(parts[CT]!, ["word/notes2.xml", `${WML}.footnotes+xml`]),
+            },
+            noteRef("footnote", "1"),
+        ),
+    );
+};
+
+/** Session 46's Word-saved ISO Strict fixture (pinned clean-open), with `edit` applied to its main document. */
+const STRICT01 = "tests/fixtures/working/word-clean-strict01.docx";
+const strict01 = async (edit: (main: string) => string = (main) => main) => {
+    const zip = await JSZip.loadAsync(readFileSync(STRICT01));
+    const parts: Record<string, string | Uint8Array> = {};
+    for (const [name, entry] of Object.entries(zip.files)) if (!entry.dir) parts[name] = await entry.async("uint8array");
+    parts[MAIN] = edit(Buffer.from(parts[MAIN] as Uint8Array).toString("utf8"));
+    return buildDocx(parts);
+};
+
+/** A used `word/comments.xml` whose stored root is mc:AlternateContent; its w14 Choice holds the w:comments root with comment 0. */
+const rootAlternateComments = (type: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                "word/comments.xml":
+                    `${XML_DECL}<mc:AlternateContent xmlns:mc="${MC}" xmlns:w14="${W14}"><mc:Choice Requires="w14">` +
+                    `<w:comments xmlns:w="${W}">${comment("0")}</w:comments></mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdC", "comments", "comments.xml")),
+                [CT]: overrides(P[CT]!, ["word/comments.xml", type]),
+            },
+            commentRef("0"),
+        ),
+    );
+/** Comment 0 (own root) with its range start inside an mc:Choice requiring `requires` (empty Fallback), the end and the reference outside. */
+const splitRange = (requires: string) =>
+    buildDocx(
+        mainWith(
+            withComments(comment("0")),
+            alternate(requires, `<w:commentRangeStart w:id="0"/>`, "") +
+                `<w:r><w:t>ranged</w:t></w:r><w:commentRangeEnd w:id="0"/>` +
+                commentRef("0"),
+        ),
+    );
+
+/** The minimal package with a reached glossary whose own sidecar relates word/glossary/footnotes.xml holding footnote `held`. */
+const glossaryWithFootnotes = (held: string): Record<string, string> => ({
+    ...P,
+    "word/glossary/document.xml":
+        `${XML_DECL}<w:glossaryDocument xmlns:w="${W}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+        `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+        `<w:docPartBody>${TEXT_P}</w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`,
+    "word/glossary/_rels/document.xml.rels": `${XML_DECL}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${relationship("rId1", "footnotes", "footnotes.xml")}</Relationships>`,
+    "word/glossary/footnotes.xml": notesXml("footnote", held),
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdG", "glossaryDocument", "glossary/document.xml")),
+    [CT]: overrides(
+        P[CT]!,
+        ["word/glossary/document.xml", `${WML}.document.glossary+xml`],
+        ["word/glossary/footnotes.xml", `${WML}.footnotes+xml`],
+    ),
+});
+/** Footnote 1 stored at `stored`, typed `type`, named only by a footnotes relationship with `target` and `extra`; the body references footnote 1. */
+const footnotesAt = (stored: string, type: string, target: string, extra = "") =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [stored]: notesXml("footnote", "1"),
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", "footnotes", target, extra)),
+                [CT]: overrides(P[CT]!, [stored, type]),
+            },
+            noteRef("footnote", "1"),
+        ),
+    );
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+const FOOTNOTES = `${WML}.footnotes+xml`;
+const OCTET = "application/octet-stream";
+/** Note 1 of `kind` stored at `stored`, typed `type`, named only by a `<kind>s` relationship with `target`; the body references it. */
+const notesAt = (kind: Kind, stored: string, type: string, target: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [stored]: notesXml(kind, "1"),
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", `${kind}s`, target)),
+                [CT]: overrides(P[CT]!, [stored, `${WML}.${kind}s+xml`]),
+            },
+            noteRef(kind, "1"),
+        ),
+    );
+
+const chunks: Record<string, Row[]> = {
+    s64a: withControls("s64a", [
+        [
+            "footnotes-escaping-two-levels-note-at-root-repeat",
+            "repeat of s63c: the only footnotes relationship targets ../../footnotes.xml from word/; footnote 1 sits in /footnotes.xml",
+            () => notesAt("footnote", "footnotes.xml", FOOTNOTES, "../../footnotes.xml"),
+        ],
+        [
+            "footnotes-escaping-two-levels-note-in-word-folder",
+            "the only footnotes relationship targets ../../footnotes.xml; footnote 1 sits only in word/footnotes.xml (no /footnotes.xml)",
+            () => notesAt("footnote", "word/footnotes.xml", FOOTNOTES, "../../footnotes.xml"),
+        ],
+        [
+            "footnotes-escaping-three-levels-note-at-root",
+            "the only footnotes relationship targets ../../../footnotes.xml; footnote 1 sits in /footnotes.xml",
+            () => notesAt("footnote", "footnotes.xml", FOOTNOTES, "../../../footnotes.xml"),
+        ],
+        [
+            "endnotes-escaping-two-levels-note-at-root",
+            "endnotes twin of s63c: the only endnotes relationship targets ../../endnotes.xml; endnote 1 sits in /endnotes.xml",
+            () => notesAt("endnote", "endnotes.xml", `${WML}.endnotes+xml`, "../../endnotes.xml"),
+        ],
+        [
+            "footnotes-one-level-note-at-root-calibration",
+            "calibration: the only footnotes relationship targets ../footnotes.xml (inside the package); footnote 1 sits in /footnotes.xml",
+            () => notesAt("footnote", "footnotes.xml", FOOTNOTES, "../footnotes.xml"),
+        ],
+    ]),
+    s64b: withControls("s64b", [
+        [
+            "footnotes-octet-stream-xml-name",
+            "the only footnotes relationship names word/notes.xml, Override application/octet-stream, holding footnote 1",
+            () => footnotesAt("word/notes.xml", OCTET, "notes.xml"),
+        ],
+        [
+            "footnotes-octet-stream-standard-name",
+            "the only footnotes relationship names word/footnotes.xml, Override application/octet-stream, holding footnote 1",
+            () => footnotesAt("word/footnotes.xml", OCTET, "footnotes.xml"),
+        ],
+        [
+            "footnotes-octet-stream-bin-repeat",
+            "repeat of s63c: the only footnotes relationship names word/notes.bin, Override application/octet-stream, holding footnote 1",
+            () => footnotesAt("word/notes.bin", OCTET, "notes.bin"),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        validatorRevision: REVISION,
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-64 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s64a", "s64b")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s64/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-64 parts of docs/plans/evidence/word-probes-2026-10-24.md into s64/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+both runs' logcheck.jsonl and pdf/manifest.jsonl, and s64/results.json from compare.py. The validator label comes from
+the rows' `validatorRevision`, never from this script (CodeRabbit on #796).
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s64a", "s64b")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s64/results.json").read_text())}
+
+
+def cell(v):
+    # A builder records valid: null when validate() threw; render that as the exception, not as a rejection.
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        revisions.add(s.get("validatorRevision", "unknown"))
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "validatorRevision": s.get("validatorRevision"), "observedAt": t.isoformat(),
+                                   "staged": row["staged"], "logVerdict": row["logVerdict"], "tableVerdict": row["outcomesVerdict"],
+                                   "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+at = rev[:8] if rev != "unknown" else "an unrecorded revision"
+out = [
+    f"### Session 64: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at {at}",
+    "",
+    "Two confirmations session 63's fixes waited on: how Word resolves a notes relationship target that escapes the package "
+    "([#830](https://github.com/jandira-tech/docx-validate/issues/830)), and whether a notes part typed `application/octet-stream` "
+    "defines nothing whatever its name ([#829](https://github.com/jandira-tech/docx-validate/issues/829)). Two chunks, each "
+    "opening and closing with the minimal control. Each ran twice, as two separate driver runs of byte-identical copies, and each "
+    "run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the "
+    "manifest spelling when both runs and both readings agree, and `unknown` otherwise; "
+    f"{agreed} of {len(rows)} rows agree. The two times in Observed are the ends of the first and second runs. Shape is the "
+    f"builder's description of the specimen. The builder recorded the validator revision in every row (`{rev}`).",
+    "",
+    "- **Escaping targets (s64a).** With the only `footnotes` relationship targeting `../../footnotes.xml` from `word/`, Word "
+    "opens the file clean when footnote 1 sits in `/footnotes.xml` (session 63's row, repeated) and offers recovery when it sits "
+    "only in `word/footnotes.xml`. `../../../footnotes.xml` with the note in `/footnotes.xml`, and the endnotes twin of "
+    "`../../endnotes.xml`, open clean too, as does the in-package `../footnotes.xml` calibration. Word resolves the target as "
+    "RFC 3986 does, stopping `..` segments at the package root. Word-valid rejects the three clean escaping rows: three false "
+    "positives.",
+    "- **Octet-stream notes parts (s64b).** With the only `footnotes` relationship naming a part typed `application/octet-stream` "
+    "that holds footnote 1, Word offers recovery whether the part is `word/notes.xml`, `word/footnotes.xml` or `word/notes.bin` "
+    "(session 63's row, repeated). The type, not the name, makes the part define nothing. Word-valid accepts all three: three "
+    "false negatives.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {at} | strict at {at} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 64</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 64 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s64builder.mts", ROOT / "s64builder.mts", "ts"), ("compare.py", ROOT / "s64/compare.py", "python"),
+                         ("section.py", ROOT / "s64/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s64/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>
