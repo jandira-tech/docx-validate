@@ -530,11 +530,13 @@ export const isWordBlockingIssue = (
             // clean (sessions 70 to 73, #975). Each shape blocks only in a
             // relationships part Word reads to reach the stories: `_rels/.rels`
             // and a story root's own sidecar, the set the read model lists.
-            // Word opened clean a folder target and an absent escaping
-            // customXml target in the sidecar of an unreferenced part (session
-            // 79), of a used header whose text it rendered, of an unused
-            // header and of the styles part (session 80), two runs each, all
-            // readings agreeing (#987).
+            // Word opened clean a folder target in the sidecar of an
+            // unreferenced part (session 79), of a used header whose text it
+            // rendered, of an unused header and of the styles part (session
+            // 80), and an absent escaping customXml target in the sidecar of
+            // the unreferenced part and of the used header, two runs each, all
+            // readings agreeing (#987); the customXml shape in an unused
+            // header's or the styles part's sidecar is unprobed (#1006).
             const part = relsBrokenTarget(issue);
             return (
                 part !== undefined &&
