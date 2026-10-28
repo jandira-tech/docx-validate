@@ -770,7 +770,10 @@ directly between the branches was refused typed comments too, so it supports
 no content-type citation; #851 owns its `mce-malformed` finding. Other
 Requires namespaces, a Strict root in the Fallback, text elsewhere inside the Choice or Fallback, or combinations of these edits, the endnotes and footnotes twins, and other spellings of
 the new shapes are unprobed and keep their previous verdicts without
-borrowing a citation. Other stored roots that the effective view unwraps to
+borrowing a citation, as do CDATA anywhere in the AlternateContent, its
+Choice or its Fallback, between the branches included, and a Strict comments
+root in a package whose main document is not Transitional
+([#857](https://github.com/jandira-tech/docx-validate/issues/857)). Other stored roots that the effective view unwraps to
 the story's root, including a selected Fallback and a Choice with no Fallback
 or beside another Choice, remain unprobed for this type mismatch
 ([#837](https://github.com/jandira-tech/docx-validate/issues/837),

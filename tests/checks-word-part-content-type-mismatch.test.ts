@@ -857,6 +857,19 @@ describe("a story part whose stored root is an AlternateContent (#818, session 6
             "an AlternateContent whose Choice and Fallback both hold text",
             alternateContent(`NOT-A-ROOT${STORIES.comments.root("0")}`).replace("<mc:Fallback/>", "<mc:Fallback>NOT-EMPTY</mc:Fallback>"),
         ],
+        // No session stored CDATA; session 65 stored ordinary text (#857).
+        [
+            "an AlternateContent with CDATA between the Choice and the Fallback",
+            alternateContent(STORIES.comments.root("0")).replace("</mc:Choice>", "</mc:Choice><![CDATA[NOT-A-BRANCH]]>"),
+        ],
+        [
+            "an AlternateContent whose Choice has CDATA before the root",
+            alternateContent(`<![CDATA[NOT-A-ROOT]]>${STORIES.comments.root("0")}`),
+        ],
+        [
+            "an AlternateContent whose Fallback holds CDATA",
+            alternateContent(STORIES.comments.root("0")).replace("<mc:Fallback/>", "<mc:Fallback><![CDATA[NOT-EMPTY]]></mc:Fallback>"),
+        ],
     ])(
         "keeps the verdict without a citation for %s",
         async (_shape, stored, type = storyContentType("styles")) => {
@@ -870,6 +883,57 @@ describe("a story part whose stored root is an AlternateContent (#818, session 6
                     expect(found, mode).toEqual([expect.objectContaining({ severity: "error", path: "word/comments.xml" })]);
                     expect(found[0]?.message, mode).not.toContain("session");
                     if (mode === "strict") expect(found[0]?.message).toContain("ECMA-376 Part 1 (4th edition), clause 11.3");
+                }
+            });
+        },
+        60_000,
+    );
+
+    // Session 65 stored its Strict comments roots in a Transitional package
+    // (s65c, s65d); a uniformly Strict package is unprobed (#857).
+    const STRICT_R = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+    /** `parts` with a Strict main document and styles part, and Strict relationship types. */
+    const uniformlyStrict = (parts: Record<string, string>): Record<string, string> => ({
+        ...parts,
+        "word/document.xml": parts["word/document.xml"]!.replaceAll(W, STRICT_W),
+        "word/styles.xml": parts["word/styles.xml"]!.replaceAll(W, STRICT_W),
+        "_rels/.rels": parts["_rels/.rels"]!.replaceAll(R, STRICT_R),
+        "word/_rels/document.xml.rels": parts["word/_rels/document.xml.rels"]!.replaceAll(R, STRICT_R),
+    });
+    const UNIFORMLY_STRICT_ROOTS = [
+        ["stored directly", STORIES.comments.root("0").replace(W, STRICT_W)],
+        ["in the Choice", alternateContent(STORIES.comments.root("0").replace(W, STRICT_W))],
+    ] as const;
+    it.each(UNIFORMLY_STRICT_ROOTS)(
+        "keeps the verdict without a citation for a Strict root %s in a uniformly Strict package",
+        async (_shape, stored) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "uniformly-strict.docx");
+                writeFileSync(file, await buildDocx(uniformlyStrict(usedStoryParts("comments", storyContentType("styles"), stored))));
+                for (const [mode, options] of RUNS) {
+                    const result = await validate(file, options);
+                    expect(result.valid, mode).toBe(false);
+                    const found = result.issues.filter((issue) => issue.code === ID);
+                    expect(found, mode).toEqual([expect.objectContaining({ severity: "error", path: "word/comments.xml" })]);
+                    expect(found[0]?.message, mode).not.toContain("session");
+                }
+            });
+        },
+        60_000,
+    );
+    it.each(UNIFORMLY_STRICT_ROOTS)(
+        "keeps the comments-typed calibration for a Strict root %s in a uniformly Strict package without a mismatch",
+        async (_shape, stored) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "uniformly-strict-calibration.docx");
+                writeFileSync(file, await buildDocx(uniformlyStrict(usedStoryParts("comments", storyContentType("comments"), stored))));
+                for (const [mode, options] of RUNS) {
+                    const result = await validate(file, options);
+                    expect(
+                        result.issues.filter((issue) => issue.code === ID),
+                        mode,
+                    ).toEqual([]);
+                    if (mode !== "strict") expect(result.valid, mode).toBe(true);
                 }
             });
         },
