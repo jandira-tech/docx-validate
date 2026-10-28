@@ -1171,8 +1171,8 @@ legacy relationship walk that reports it runs only in full runs, so quick and
 named runs report nothing for that shape.
 
 `word-part-reference-relationship` requires every `c:chart r:id`, `dgm:relIds`
-`r:dm` and `o:OLEObject r:id` in a story part's selected markup-compatibility
-view to name, in that part's own relationships part and in either
+`r:dm` and `o:OLEObject r:id` in the selected markup-compatibility view of a
+part Word reads to name, in that part's own relationships part and in either
 relationships namespace, a relationship whose Type is exactly the one the
 element reads: an internal `chart` relationship for `c:chart` (an External
 chart relationship is refused too), a `diagramData` relationship for
@@ -1187,13 +1187,25 @@ while the matching relationships opened clean
 ([#705](https://github.com/jandira-tech/docx-validate/issues/705); sessions 45
 and 46, chunks s45b–s45k and s46a–s46c, in
 [docs/plans/evidence/word-probes-2026-10-24.md](docs/plans/evidence/word-probes-2026-10-24.md)).
+The parts judged are the parts Word reads, found by relationship — every main
+document and reached glossary wherever they are stored, plus the headers and
+footers a section reference names and the comments, footnotes and endnotes
+parts the document uses — not the parts whose name looks like a story: a
+header the main document relates but no `w:headerReference` names, with its
+relationships part and without one, and a glossary no relationship reaches,
+all open clean, while the same chart reference in `word/headerFirst.xml` or in
+the main document stored as `word/main.xml` gets the recovery offer
+([#726](https://github.com/jandira-tech/docx-validate/issues/726); session 51,
+chunk s51a, in the same evidence file). Partial named-check runs walk the same
+read set, so their verdict is the full run's (#381).
 The target part never matters: the relationship's Type decides, as the
 header/footer rule's does. `r:lo`, `r:qs` and `r:cs` are deliberately not
 checked — Word opened them clean naming the image and the chart relationship,
 with the part's cached diagramDrawing rendered — and neither are `a:blip
 r:embed` nor `v:imagedata o:relid`, which Word opened clean naming a
-relationship of another type. An absent sidecar leaves every id unresolved;
-an unparseable one is skipped for `xml-syntax` to report. The finding is an
+relationship of another type. A part with no relationships part is left to
+`rels-missing-sidecar`, as the header/footer rule leaves it; an unparseable
+one is skipped for `xml-syntax` to report. The finding is an
 error, and Word-blocking, under word-valid and strict; lenient runs no Word
 rule. In a full word-valid or strict run, a dangling Transitional `r:id` on a
 `c:chart` or an `o:OLEObject` is reported once, through this rule: the

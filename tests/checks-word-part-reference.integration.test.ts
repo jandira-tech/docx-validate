@@ -244,6 +244,109 @@ const CLEAN_STRICT: Record<string, () => Promise<Buffer>> = {
     "strict01-relids-lo-chart": () => relIds("lo", "rId8"),
 };
 
+/** The story namespaces the session 51 drawings sit under, declared on a story root the minimal main does not provide. */
+const STORY_ROOT_NS = `xmlns:wp="${WP}" xmlns:a="${A}" xmlns:c="${C}" xmlns:r="${R}"`;
+
+/**
+ * Session 51's scope specimens (s51builder.mts in the evidence appendix):
+ * the same chart reference — a `c:chart r:id` naming an image relationship
+ * to a real PNG — in the parts Word reads and in the parts it does not
+ * (#726; session 51, chunk s51a).
+ */
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const W14 = "http://schemas.microsoft.com/office/word/2010/wordml";
+const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const HEADER_CT = `${WML}.header+xml`;
+const GLOSSARY_CT = `${WML}.document.glossary+xml`;
+const relsPart = (body: string): string =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${body}</Relationships>`;
+/** A header whose only paragraph holds the chart drawing, its `rId1` an image relationship to the PNG. */
+const headerWithChart = (): string =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:hdr xmlns:w="${W}" xmlns:w14="${W14}" xmlns:mc="${MC}" mc:Ignorable="w14" ${STORY_ROOT_NS}>${CHART_DRAWING("rId1")}</w:hdr>`;
+const headerImageSidecar = (): string => relsPart(relationship("rId1", OFFICE("image"), "media/image1.png"));
+/** A header the body references through `w:headerReference r:id="rIdH"`, stored as `word/<file>`. */
+const referencedHeaderParts = (file: string): Record<string, string | Uint8Array> =>
+    extended(
+        {
+            "word/media/image1.png": PNG,
+            [`word/${file}`]: headerWithChart(),
+            [`word/_rels/${file}.rels`]: headerImageSidecar(),
+            [MAIN]: replaceOnce(
+                replaceOnce(MINIMAL_PARTS[MAIN]!, "<w:document ", `<w:document xmlns:r="${R}" `),
+                "<w:sectPr>",
+                '<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>',
+            ),
+        },
+        [relationship("rIdH", OFFICE("header"), file)],
+        [[`word/${file}`, HEADER_CT]],
+        true,
+    );
+/** The main document stored as `word/main.xml`, its body holding the same chart reference (`rIdI` an image relationship). */
+const renamedMainParts = (): Record<string, string | Uint8Array> => {
+    const parts: Record<string, string | Uint8Array> = {
+        ...MINIMAL_PARTS,
+        "word/media/image1.png": PNG,
+        "word/main.xml": replaceOnce(
+            replaceOnce(MINIMAL_PARTS[MAIN]!, "<w:document ", `<w:document ${STORY_ROOT_NS} `),
+            "<w:sectPr>",
+            `${CHART_DRAWING("rIdI")}<w:sectPr>`,
+        ),
+        "word/_rels/main.xml.rels": replaceOnce(
+            MINIMAL_PARTS[SIDECAR]!,
+            "</Relationships>",
+            `${relationship("rIdI", OFFICE("image"), "media/image1.png")}</Relationships>`,
+        ),
+        "_rels/.rels": replaceOnce(MINIMAL_PARTS["_rels/.rels"]!, 'Target="word/document.xml"', 'Target="word/main.xml"'),
+        [CT]: replaceOnce(
+            replaceOnce(
+                MINIMAL_PARTS[CT]!,
+                '<Default Extension="rels"',
+                '<Default Extension="png" ContentType="image/png"/><Default Extension="rels"',
+            ),
+            '<Override PartName="/word/document.xml"',
+            '<Override PartName="/word/main.xml"',
+        ),
+    };
+    delete parts[MAIN];
+    delete parts[SIDECAR];
+    return parts;
+};
+/** A header the main document relates but no `w:headerReference` names, with its sidecar and without one. */
+const unusedHeaderParts = (withSidecar: boolean): Record<string, string | Uint8Array> =>
+    extended(
+        {
+            "word/media/image1.png": PNG,
+            "word/header1.xml": headerWithChart(),
+            ...(withSidecar ? { "word/_rels/header1.xml.rels": headerImageSidecar() } : {}),
+        },
+        [relationship("rIdH", OFFICE("header"), "header1.xml")],
+        [["word/header1.xml", HEADER_CT]],
+        true,
+    );
+/** A glossary document no relationship reaches, its docPartBody holding the same chart reference. */
+const unreachedGlossaryParts = (): Record<string, string | Uint8Array> =>
+    extended(
+        {
+            "word/media/image1.png": PNG,
+            "word/glossary/document.xml":
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:glossaryDocument xmlns:w="${W}" xmlns:w14="${W14}" xmlns:mc="${MC}" mc:Ignorable="w14" ${STORY_ROOT_NS}>` +
+                '<w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/><w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category>' +
+                '<w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>' +
+                `<w:docPartBody>${CHART_DRAWING("rId1")}</w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`,
+            "word/glossary/_rels/document.xml.rels": relsPart(relationship("rId1", OFFICE("image"), "../media/image1.png")),
+        },
+        [],
+        [["word/glossary/document.xml", GLOSSARY_CT]],
+        true,
+    );
+/** The main document's chart drawing with the document sidecar deleted: a story root with no relationships part. */
+const noSidecarMainParts = (): Record<string, string | Uint8Array> => {
+    const parts = withDrawing({ ...MINIMAL_PARTS }, CHART_DRAWING("rId9"));
+    delete parts[SIDECAR];
+    return parts;
+};
+
 /** The check under test, resolved through the registry so these rows fail on assertions first. */
 const check = () => {
     const found = WORD_RULE_CHECKS.find((def) => def.id === CODE);
@@ -258,12 +361,16 @@ const relIdsReference = (dm: string, others = ""): string =>
 const oleObjectReference = (id: string): string =>
     `<w:p><w:r><w:object><o:OLEObject xmlns:o="${O}" Type="Embed" ProgID="Package" ShapeID="_x0000_i1025" DrawAspect="Icon" ObjectID="_1" r:id="${id}"/></w:object></w:r></w:p>`;
 
+/** A package whose main document is `word/document.xml`, with the given body and sidecar relationships (#726's read set). */
+const mainPackage = (body: string, docRels: string): Record<string, string> => ({
+    "_rels/.rels": rels(`<Relationship Id="rId1" Type="${R}/officeDocument" Target="word/document.xml"/>`),
+    "word/document.xml": document(body),
+    "word/_rels/document.xml.rels": rels(docRels),
+});
+
 describe(`${CODE} (unit rows)`, () => {
     it("reports the Word-rejected chart shape with unchanged issue details", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/document.xml": document(chartReference("rId1")),
-            "word/_rels/document.xml.rels": rels(relation("rId1", "image")),
-        });
+        const ctx = ValidationContext.fromEntries(mainPackage(chartReference("rId1"), relation("rId1", "image")));
         expect(await check().run(ctx)).toEqual([
             {
                 severity: "error",
@@ -278,12 +385,10 @@ describe(`${CODE} (unit rows)`, () => {
     });
 
     it("accepts an internal chart relationship in either chart and relationships namespace", async () => {
-        const transitional = ValidationContext.fromEntries({
-            "word/document.xml": document(chartReference("rId1")),
-            "word/_rels/document.xml.rels": rels(relation("rId1", "chart")),
-        });
+        const transitional = ValidationContext.fromEntries(mainPackage(chartReference("rId1"), relation("rId1", "chart")));
         expect(await check().run(transitional)).toEqual([]);
         const strict = ValidationContext.fromEntries({
+            "_rels/.rels": rels(`<Relationship Id="rId1" Type="${R}/officeDocument" Target="word/document.xml"/>`),
             "word/document.xml": document(
                 `<w:p><w:r><w:drawing><a:graphic><a:graphicData uri="${CS}"><c:chart xmlns:c="${CS}" rs:id="rId1"/></a:graphicData></a:graphic></w:drawing></w:r></w:p>`,
             ),
@@ -297,10 +402,7 @@ describe(`${CODE} (unit rows)`, () => {
         ["wrong type", "rId1", relation("rId1", "image"), `Relationship 'rId1' has Type '${R}/image'`],
         ["external", "rId1", relation("rId1", "chart", "External"), "Relationship 'rId1' has TargetMode 'External'"],
     ])("explains why a chart reference is refused: %s", async (_name, rid, relationshipElement, why) => {
-        const ctx = ValidationContext.fromEntries({
-            "word/document.xml": document(chartReference(rid)),
-            "word/_rels/document.xml.rels": rels(relationshipElement ?? ""),
-        });
+        const ctx = ValidationContext.fromEntries(mainPackage(chartReference(rid), relationshipElement ?? ""));
         const found = await check().run(ctx);
         expect(found).toHaveLength(1);
         expect(found[0]?.message).toContain(`(${why})`);
@@ -309,10 +411,9 @@ describe(`${CODE} (unit rows)`, () => {
 
     it("reports dgm:relIds r:dm alone, not r:lo, r:qs or r:cs (#705, session 46)", async () => {
         const others = ' r:lo="rId2" r:qs="rId2" r:cs="rId2"';
-        const mismatched = ValidationContext.fromEntries({
-            "word/document.xml": document(relIdsReference("rId2", others)),
-            "word/_rels/document.xml.rels": rels(`${relation("rId1", "diagramData")}${relation("rId2", "image")}`),
-        });
+        const mismatched = ValidationContext.fromEntries(
+            mainPackage(relIdsReference("rId2", others), `${relation("rId1", "diagramData")}${relation("rId2", "image")}`),
+        );
         expect(await check().run(mismatched)).toEqual([
             expect.objectContaining({
                 code: CODE,
@@ -321,20 +422,22 @@ describe(`${CODE} (unit rows)`, () => {
                 message: expect.stringContaining('r:dm="rId2"'),
             }),
         ]);
-        const tolerated = ValidationContext.fromEntries({
-            "word/document.xml": document(relIdsReference("rId1", ' r:lo="rId2" r:qs="rId2" r:cs="rId2"')),
-            "word/_rels/document.xml.rels": rels(`${relation("rId1", "diagramData")}${relation("rId2", "image")}`),
-        });
+        const tolerated = ValidationContext.fromEntries(
+            mainPackage(
+                relIdsReference("rId1", ' r:lo="rId2" r:qs="rId2" r:cs="rId2"'),
+                `${relation("rId1", "diagramData")}${relation("rId2", "image")}`,
+            ),
+        );
         expect(await check().run(tolerated)).toEqual([]);
     });
 
     it("judges the ISO Strict dgm:relIds spelling too", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/document.xml": document(
+        const ctx = ValidationContext.fromEntries(
+            mainPackage(
                 `<w:p><w:r><w:drawing><a:graphic><a:graphicData uri="${DGMS}"><dgm:relIds xmlns:dgm="${DGMS}" rs:dm="rId1"/></a:graphicData></a:graphic></w:drawing></w:r></w:p>`,
+                `<Relationship Id="rId1" Type="${RS}/chart" Target="charts/chart1.xml"/>`,
             ),
-            "word/_rels/document.xml.rels": rels(`<Relationship Id="rId1" Type="${RS}/chart" Target="charts/chart1.xml"/>`),
-        });
+        );
         expect(await check().run(ctx)).toEqual([expect.objectContaining({ code: CODE, severity: "error" })]);
     });
 
@@ -343,10 +446,7 @@ describe(`${CODE} (unit rows)`, () => {
         ["oleObject", ""],
         ["oleObject", "External"],
     ])("accepts an o:OLEObject naming a %s relationship%s", async (type, mode) => {
-        const ctx = ValidationContext.fromEntries({
-            "word/document.xml": document(oleObjectReference("rId1")),
-            "word/_rels/document.xml.rels": rels(relation("rId1", type, mode)),
-        });
+        const ctx = ValidationContext.fromEntries(mainPackage(oleObjectReference("rId1"), relation("rId1", type, mode)));
         expect(await check().run(ctx)).toEqual([]);
     });
 
@@ -355,41 +455,43 @@ describe(`${CODE} (unit rows)`, () => {
         ["chart", `Relationship 'rId1' has Type '${R}/chart'`],
         ["dangling", "no Relationship with Id 'rId9'"],
     ])("refuses an o:OLEObject naming a %s relationship", async (kind, why) => {
-        const ctx = ValidationContext.fromEntries({
-            "word/document.xml": document(oleObjectReference(kind === "dangling" ? "rId9" : "rId1")),
-            "word/_rels/document.xml.rels": rels(kind === "dangling" ? "" : relation("rId1", kind)),
-        });
+        const ctx = ValidationContext.fromEntries(
+            mainPackage(oleObjectReference(kind === "dangling" ? "rId9" : "rId1"), kind === "dangling" ? "" : relation("rId1", kind)),
+        );
         const found = await check().run(ctx);
         expect(found).toHaveLength(1);
         expect(found[0]?.message).toContain(`(${why})`);
     });
 
-    it("an absent sidecar leaves every id unresolved; an unparseable one is skipped", async () => {
-        const absent = ValidationContext.fromEntries({ "word/document.xml": document(chartReference("rId1")) });
-        expect(await check().run(absent)).toEqual([expect.objectContaining({ code: CODE, severity: "error" })]);
-        const unparseable = ValidationContext.fromEntries({
+    it("a part with no relationships part is left to rels-missing-sidecar; an unparseable one is skipped (#726)", async () => {
+        const absent = ValidationContext.fromEntries({
+            "_rels/.rels": rels(`<Relationship Id="rId1" Type="${R}/officeDocument" Target="word/document.xml"/>`),
             "word/document.xml": document(chartReference("rId1")),
-            "word/_rels/document.xml.rels": "<Relationships",
         });
+        expect(await check().run(absent)).toEqual([]);
+        const unparseable = ValidationContext.fromEntries(mainPackage(chartReference("rId1"), "<Relationships"));
         expect(await check().run(unparseable)).toEqual([]);
     });
 
     it("leaves a chart reference with no r:id alone", async () => {
-        const ctx = ValidationContext.fromEntries({
-            "word/document.xml": document(
+        const ctx = ValidationContext.fromEntries(
+            mainPackage(
                 `<w:p><w:r><w:drawing><a:graphic><a:graphicData uri="${C}"><c:chart xmlns:c="${C}"/><c:chart xmlns:c="${C}" r:id=""/></a:graphicData></a:graphic></w:drawing></w:r></w:p>`,
+                relation("rId1", "chart"),
             ),
-            "word/_rels/document.xml.rels": rels(relation("rId1", "chart")),
-        });
+        );
         expect(await check().run(ctx)).toEqual([]);
     });
 
     it("skips absent and unparseable story parts, and resolves an OPC-equivalent sidecar", async () => {
         expect(await check().run(ValidationContext.fromEntries({}))).toEqual([]);
-        expect(
-            await check().run(ValidationContext.fromEntries({ "word/document.xml": "<broken", "customXml/item.xml": document("") })),
-        ).toEqual([]);
+        const unparseableRoot = ValidationContext.fromEntries({
+            "_rels/.rels": rels(`<Relationship Id="rId1" Type="${R}/officeDocument" Target="word/document.xml"/>`),
+            "word/document.xml": "<broken",
+        });
+        expect(await check().run(unparseableRoot)).toEqual([]);
         const equivalent = ValidationContext.fromEntries({
+            "_rels/.rels": rels(`<Relationship Id="rId1" Type="${R}/officeDocument" Target="word/document.xml"/>`),
             "word/document.xml": document(chartReference("rId1")),
             "word/_rels/document.xml.%72els": rels(relation("rId1", "chart")),
         });
@@ -489,6 +591,88 @@ describe(`${CODE} (session 46 Strict specimens, Word 16.115)`, { timeout: 240_00
                 expect(result.valid).toBe(true);
                 expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([]);
             });
+        });
+    });
+});
+
+describe(`${CODE} (session 51 scope specimens, Word 16.115)`, { timeout: 240_000 }, () => {
+    it.each([
+        ["word/header1.xml", () => referencedHeaderParts("header1.xml")],
+        ["word/headerFirst.xml", () => referencedHeaderParts("headerFirst.xml")],
+    ])("reports the chart reference in a header the body references, stored as %s", async (part, make) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "referenced-header.docx");
+            writeFileSync(file, await buildDocx(make()));
+            const result = await validate(file, { profile: "word-valid" });
+            const found = result.issues.filter((issue) => issue.code === CODE);
+            expect(result.valid).toBe(false);
+            expect(found).toHaveLength(1);
+            expect(found[0]?.path).toBe(part);
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.issues.some((issue) => issue.code === CODE && issue.path === part)).toBe(true);
+        });
+    });
+
+    it("reports the chart reference in the main document stored as word/main.xml", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "main-renamed-chart-image.docx");
+            writeFileSync(file, await buildDocx(renamedMainParts()));
+            const result = await validate(file, { profile: "word-valid" });
+            const found = result.issues.filter((issue) => issue.code === CODE);
+            expect(result.valid).toBe(false);
+            expect(found).toHaveLength(1);
+            expect(found[0]?.path).toBe("word/main.xml");
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.issues.some((issue) => issue.code === CODE && issue.path === "word/main.xml")).toBe(true);
+        });
+    });
+
+    // Session 51: Word 16.115 opened all three clean — Word reads neither an
+    // unused header (sessions 15 and 51) nor an unreached glossary (sessions
+    // 35 and 51), whatever their part names look like.
+    it.each([
+        ["a related header no w:headerReference names", () => unusedHeaderParts(true)],
+        ["the same unused header with no relationships part", () => unusedHeaderParts(false)],
+        ["a glossary document no relationship reaches", () => unreachedGlossaryParts()],
+    ])("draws no finding for %s", async (_shape, make) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "unread-part.docx");
+            writeFileSync(file, await buildDocx(make()));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+        });
+    });
+
+    it("a partial --checks word-part-reference-relationship run reaches the full run's verdict (#381)", async () => {
+        await withTempDir(async (dir) => {
+            const read = path.join(dir, "referenced-header.docx");
+            writeFileSync(read, await buildDocx(referencedHeaderParts("headerFirst.xml")));
+            const unread = path.join(dir, "unread-header.docx");
+            writeFileSync(unread, await buildDocx(unusedHeaderParts(true)));
+            for (const [file, expected] of [
+                [read, true],
+                [unread, false],
+            ] as const) {
+                const partial = await validate(file, { checks: [CODE] });
+                expect(
+                    partial.issues.some((issue) => issue.code === CODE),
+                    file,
+                ).toBe(expected);
+            }
+        });
+    });
+
+    it("leaves a read part with no relationships part to rels-missing-sidecar (#726)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "main-no-sidecar.docx");
+            writeFileSync(file, await buildDocx(noSidecarMainParts()));
+            const result = await validate(file, { profile: "word-valid" });
+            // One defect, one code: the absent sidecar is
+            // rels-missing-sidecar's finding, not this rule's.
+            expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+            expect(result.issues.some((issue) => issue.code === "rels-missing-sidecar" && issue.path === "word/document.xml")).toBe(true);
         });
     });
 });

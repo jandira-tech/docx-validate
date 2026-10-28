@@ -31,14 +31,29 @@
  *   `chart` relationship, or an Id no relationship has, is refused.
  *
  * Word reads the selected markup-compatibility view, so this check judges
- * `ctx.effectiveXml` and each part's own sidecar: an absent sidecar leaves
- * every id unresolved, and an unparseable one is skipped for xml-syntax to
- * report. The accepted Types are exact membership, byte for byte — the
+ * `ctx.effectiveXml` and each part's own sidecar: an unparseable one is
+ * skipped for xml-syntax to report, and a part with no relationships part
+ * at all is left to `rels-missing-sidecar`, as the header/footer rule
+ * leaves it — the defect is the absent sidecar, not the ids it strands
+ * (#726). The accepted Types are exact membership, byte for byte — the
  * Transitional `…/officeDocument/2006/relationships/<segment>` URI or its
  * ISO Strict `purl.oclc.org` counterpart — like the hyperlink rule's two
  * (#614), and the `r:` attribute may sit in either relationships
  * namespace. `a:blip r:embed` and `v:imagedata o:relid` are not judged:
  * session 45 opened both naming a relationship of another type clean.
+ *
+ * The parts judged are the parts Word reads (#726; session 51, chunk s51a,
+ * two runs), found by relationship as `wordReadTypedTargets` models them:
+ * the main document and every reached glossary wherever they are stored
+ * (`word/headerFirst.xml` and `word/main.xml` get the recovery offer), plus
+ * the stories their references make Word read — headers and footers a
+ * section reference names, the comments, footnotes and endnotes parts the
+ * document uses. A part Word does not read is not judged however its name
+ * looks: a header the main document relates but no `w:headerReference`
+ * names, with its sidecar and without one, and a glossary no relationship
+ * reaches, all open clean (session 51; as sessions 15 and 35 predicted).
+ * A partial `--checks word-part-reference-relationship` run walks the same
+ * read set, so its verdict is the full run's (#381).
  *
  * In a full word-valid or strict run, a dangling Transitional `r:id` on a
  * `c:chart` or an `o:OLEObject` would also be `rels-id-missing`'s finding;
@@ -48,11 +63,11 @@
  * collides: the legacy walk reads only `r:id`, `r:embed` and `r:link`.
  */
 
-import path from "node:path";
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { equivalentPartLookup } from "../../../lib/content-types";
-import type { ValidationIssue } from "../../../lib/types";
+import { canonicalPartName } from "../../../lib/content-types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
+import { sidecarOf, wordReadTypedTargets } from "../../../lib/word-read-parts";
 import { registerStoryReferenceIdentity } from "../story-reference-identity";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
 
@@ -86,28 +101,32 @@ const ACCEPTED_CHART_RELATIONSHIP_TYPES = relationshipTypes("chart");
 const ACCEPTED_DIAGRAM_DATA_RELATIONSHIP_TYPES = relationshipTypes("diagramData");
 const ACCEPTED_OLE_RELATIONSHIP_TYPES: readonly string[] = [...relationshipTypes("package"), ...relationshipTypes("oleObject")];
 
+/**
+ * The story segments whose parts Word reads because a story root's
+ * references make it read them (#726): used headers, footers, comments,
+ * footnotes and endnotes. A story root itself is typed `officeDocument`.
+ */
+const STORY_SEGMENTS: ReadonlySet<string> = new Set(["header", "footer", "comments", "footnotes", "endnotes"]);
+
 /** One relationship of the part's own sidecar, as a reference reads it. */
 type Relationship = { readonly type: string; readonly targetMode: string };
 
 /**
  * Each relationship id the part's own sidecar names, with its Type and
- * TargetMode. An absent sidecar returns an empty map (every id unresolved);
- * an unparseable one returns `null` and is diagnosed by xml-syntax.
+ * TargetMode. An absent sidecar returns `undefined` (`rels-missing-sidecar`'s
+ * business, #726); an unparseable one returns `null` and is diagnosed by
+ * xml-syntax.
  */
-const relationshipIndex = (
-    ctx: ValidationContext,
-    xmlFile: string,
-    findPart: (partName: string) => string | undefined,
-): Map<string, Relationship> | null => {
-    const relsFile = findPart(path.posix.join(path.posix.dirname(xmlFile), "_rels", `${path.posix.basename(xmlFile)}.rels`));
-    const parsed = relsFile === undefined ? undefined : ctx.effectiveXml(relsFile);
-    if (parsed && !parsed.ok) {
+const relationshipIndex = (ctx: ValidationContext, xmlFile: string): Map<string, Relationship> | null | undefined => {
+    const relsFile = sidecarOf(ctx.partNames, xmlFile);
+    if (relsFile === undefined) {
+        return undefined;
+    }
+    const parsed = ctx.effectiveXml(relsFile);
+    if (!parsed?.ok) {
         return null;
     }
     const out = new Map<string, Relationship>();
-    if (!parsed) {
-        return out;
-    }
     for (const rel of getRelationshipChildren(parsed.document)) {
         const id = rel.getAttribute("Id");
         if (!id) {
@@ -137,18 +156,37 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
     groups: ["relationships", "drawings"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
+    /**
+     * #726 (session 51): judge the parts Word reads — every main document
+     * and reached glossary wherever stored, plus the stories their
+     * references make Word read — not the parts whose name looks like a
+     * story. `wordReadTypedTargets` gates the lazy segments by use, so an
+     * unused header and an unreached glossary are absent from the walk.
+     */
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
-        const findPart = equivalentPartLookup(ctx.partNames);
 
         const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, OFFICE_RELATIONSHIPS_STRICT_NAMESPACE];
-        for (const xmlFile of ctx.storyParts()) {
+        const seen = new Set<string>();
+        for (const target of await wordReadTypedTargets(ctx, profile)) {
+            if (target.segment !== "officeDocument" && !STORY_SEGMENTS.has(target.segment)) {
+                continue;
+            }
+            const xmlFile = target.part;
+            // A part read through two segments is judged once, through
+            // whichever reached it first, as the header/footer rule judges
+            // a root two types reach once.
+            const canonical = canonicalPartName(xmlFile);
+            if (seen.has(canonical)) {
+                continue;
+            }
+            seen.add(canonical);
             const parsed = ctx.effectiveXml(xmlFile);
             if (!parsed?.ok) {
                 continue;
             }
             const dom = parsed.document;
-            const rels = relationshipIndex(ctx, xmlFile, findPart);
+            const rels = relationshipIndex(ctx, xmlFile);
             if (!rels) {
                 continue;
             }
