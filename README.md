@@ -181,13 +181,21 @@ Strict, and internal. So an External relationship, or a foreign type that
 merely contains the name, neither shares a notes slide, nor adds a layout, nor
 satisfies a `sldLayoutId`. Lenient keeps the historical reading, as it keeps
 nested relationships
-([#1051](https://github.com/jandira-tech/docx-validate/issues/1051)). The
-same exact reading decides `rels-id-mismatch` for a PresentationML element's
-`r:id` under word-valid and strict. Before, it passed when the lower-cased
-last segment of the type merely contained the expected name, so a `p:sldId`
-naming a `slideLayout` relationship passed as `slide`. Lenient and DOCX keep
-that reading
-([#1058](https://github.com/jandira-tech/docx-validate/issues/1058)).
+([#1051](https://github.com/jandira-tech/docx-validate/issues/1051)).
+Under word-valid and strict, `rels-id-mismatch` reads a PresentationML
+element's relationship type exactly too: the type, spelled Transitional or
+Strict, must be the Office segment the element expects in its real casing
+(`slide`, `slideMaster`, `notesMaster`, `handoutMaster`, `slideLayout`).
+Unlike the slide checks it does not read `TargetMode`. Before, it passed when
+the lower-cased last segment of the type merely contained the expected name,
+so a `p:sldId` naming a `slideLayout` relationship passed as `slide`. An
+element in another namespace, such as a foreign element in a `p:ext` sharing
+a PresentationML local name, keeps that reading, as lenient and DOCX do
+([#1058](https://github.com/jandira-tech/docx-validate/issues/1058),
+[#1061](https://github.com/jandira-tech/docx-validate/issues/1061)). The
+check reads `r:id` only in the Transitional relationships namespace, so a
+Strict package's ids are not judged yet
+([#1065](https://github.com/jandira-tech/docx-validate/issues/1065)).
 
 The `strict` profile runs the Word rules and applicable XSD schemas. Schema
 conformance is stricter than Word openability. A leading BOM is at most a warning

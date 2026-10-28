@@ -1095,19 +1095,24 @@ describe("rels-id-mismatch reads PPTX relationship types exactly outside lenient
         });
     });
 
-    it.each(["word-valid", "strict"] as const)("accepts Strict-namespace types under %s", async (profile) => {
-        await withTempDir(async (dir) => {
-            await writeFile(
-                path.join(dir, "ppt", "presentation.xml"),
-                presentationXml('<p:sldIdLst><p:sldId id="256" r:id="rId1"/></p:sldIdLst>'),
-            );
-            await writeFile(
-                path.join(dir, "ppt", "_rels", "presentation.xml.rels"),
-                relsXml(rel("rId1", "http://purl.oclc.org/ooxml/officeDocument/relationships/slide", "slides/slide1.xml")),
-            );
-            expect(await findings(dir, profile)).toEqual([]);
-        });
-    });
+    // #1064: the r:id stays Transitional, the only namespace the check reads
+    // (#1065), so this pins the type's Strict spelling, not a Strict package.
+    it.each(["word-valid", "strict"] as const)(
+        "accepts a Strict-spelled slide type under a Transitional r:id under %s",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "ppt", "presentation.xml"),
+                    presentationXml('<p:sldIdLst><p:sldId id="256" r:id="rId1"/></p:sldIdLst>'),
+                );
+                await writeFile(
+                    path.join(dir, "ppt", "_rels", "presentation.xml.rels"),
+                    relsXml(rel("rId1", "http://purl.oclc.org/ooxml/officeDocument/relationships/slide", "slides/slide1.xml")),
+                );
+                expect(await findings(dir, profile)).toEqual([]);
+            });
+        },
+    );
 });
 
 // #1061: `p:ext` holds any foreign element (pml.xsd's lax CT_Extension), and
