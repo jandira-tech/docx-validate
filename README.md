@@ -1902,23 +1902,26 @@ its byte order mark if it had one. An `encoding` pseudo-attribute a helper
 writes or rewrites in the declaration names UTF-16 beside a mark, and UTF-16LE
 or UTF-16BE without one, since XML requires the mark of a part declared plain
 UTF-16 (#878). A declaration with no `encoding` pseudo-attribute keeps none, as
-XML then reads the encoding from the mark, or UTF-8 when there is none (#888).
-A UTF-8 part is written without a byte order mark, as before. A part whose declaration
-names an encoding this package cannot decode (`windows-1252`, `macintosh`, …)
-is left byte-for-byte untouched, and `addComment` returns an error naming it
-instead of editing it, changing nothing in the tree.
-The auto-repair writers then neither count nor report a
-repair for such a part: `writeXmlPart` returns whether it wrote (#880), and a
-part's repairs reach the `repairs` count, and its verbose `Repaired:` lines,
-only after a write — a refused write never reached disk. Three repairs rename
-one value in several parts: `repairCommentThreading`, `repairParaId` and
-`repairDurableId`'s hex rewrite. Each leaves every part it would write untouched
-when one cannot be decoded (#889) or written (#909); `repairDurableId`'s
-independent `numbering.xml` renumbering still runs when its hex rewrite is
-refused ([#911](https://github.com/jandira-tech/docx-validate/issues/911)). A
-write that fails after that check stops the repair, which counts only the parts
-already written; before, it rejected `repair()` and `validate()` with the other
-part already changed. No other repair renames a value across parts.
+XML then reads the encoding from the mark, or UTF-8 when there is none (#888). A
+UTF-8 part is written without a byte order mark, as before. A part whose
+declaration names an encoding this package cannot decode (`windows-1252`,
+`macintosh`, …) is left byte-for-byte untouched, and `addComment` returns an
+error naming it instead of editing it, changing nothing in the tree. The
+auto-repair writers then neither count nor report a repair for such a part:
+`writeXmlPart` returns whether it wrote (#880), and a part's repairs reach the
+`repairs` count, and its verbose `Repaired:` lines, only after a write — a
+refused write never reached disk. Three repairs rename one value in several
+parts: `repairCommentThreading`, `repairParaId` and `repairDurableId`'s hex
+rewrite. Each leaves every part it would write untouched when one cannot be
+decoded (#889) or written (#909); `repairDurableId`'s independent
+`numbering.xml` renumbering still runs when its hex rewrite is refused
+([#911](https://github.com/jandira-tech/docx-validate/issues/911)). A write that
+fails after that check stops the repair, which counts only the parts already
+written; before, it rejected `repair()` and `validate()` with the other part
+already changed. So does a write `writeXmlPart` refuses after the check; before,
+the repair went on writing the later parts with the new value, splitting the
+rename ([#920](https://github.com/jandira-tech/docx-validate/issues/920)). No
+other repair renames a value across parts.
 
 For a document's first comment, `addComment` relates the four comments parts
 from the relationships part of the main document `_rels/.rels` names

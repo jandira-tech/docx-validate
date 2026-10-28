@@ -27,50 +27,56 @@ const W14_NS = `xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"
 const W16CID_NS = `xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid"`;
 const W16CEX_NS = `xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex"`;
 
+const writeFailureCases = [
+    ["repairCommentThreading", "direct", 1],
+    ["repairCommentThreading", "direct", 2],
+    ["repairCommentThreading", "repair", 1],
+    ["repairCommentThreading", "repair", 2],
+    ["repairParaId", "direct", 1],
+    ["repairParaId", "direct", 2],
+    ["repairParaId", "repair", 1],
+    ["repairParaId", "repair", 2],
+    ["repairDurableId", "direct", 1],
+    ["repairDurableId", "direct", 2],
+    ["repairDurableId", "repair", 1],
+    ["repairDurableId", "repair", 2],
+] as const;
+
+const writeRepairParts = async (dir: string, method: (typeof writeFailureCases)[number][0]): Promise<string[]> => {
+    const wordDir = path.join(dir, "word");
+    await fs.mkdir(wordDir);
+    if (method === "repairCommentThreading") {
+        await fs.writeFile(
+            path.join(wordDir, "comments.xml"),
+            `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                `<w:p w14:paraId="11111111" w14:textId="11111111"/></w:comment></w:comments>`,
+        );
+        await fs.writeFile(
+            path.join(wordDir, "commentsIds.xml"),
+            `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                `<w16cid:commentId w16cid:paraId="11111111" w16cid:durableId="22222222"/></w16cid:commentsIds>`,
+        );
+        await fs.writeFile(
+            path.join(wordDir, "commentsExtensible.xml"),
+            `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                `<w16cex:commentExtensible w16cex:durableId="22222222"/></w16cex:commentsExtensible>`,
+        );
+        return ["commentsIds.xml", "commentsExtensible.xml"].map((name) => path.join(wordDir, name));
+    } else {
+        const parts = ["a.xml", "b.xml", "c.xml"].map((name) => path.join(wordDir, name));
+        const attribute = method === "repairParaId" ? 'w14:paraId="FFFFFFFF" w14:textId="11111111"' : 'w16cid:durableId="FFFFFFFF"';
+        for (const part of parts) {
+            await fs.writeFile(part, `<?xml version="1.0"?><root ${W14_NS} ${W16CID_NS} ${attribute}/>`);
+        }
+        return parts;
+    }
+};
+
 describe("DOCX repair write failures after preflight (#909)", () => {
-    it.each([
-        ["repairCommentThreading", "direct", 1],
-        ["repairCommentThreading", "direct", 2],
-        ["repairCommentThreading", "repair", 1],
-        ["repairCommentThreading", "repair", 2],
-        ["repairParaId", "direct", 1],
-        ["repairParaId", "direct", 2],
-        ["repairParaId", "repair", 1],
-        ["repairParaId", "repair", 2],
-        ["repairDurableId", "direct", 1],
-        ["repairDurableId", "direct", 2],
-        ["repairDurableId", "repair", 1],
-        ["repairDurableId", "repair", 2],
-    ] as const)("%s through %s returns only written repairs when write %i throws", async (method, entry, failedWrite) => {
+    it.each(writeFailureCases)("%s through %s returns only written repairs when write %i throws", async (method, entry, failedWrite) => {
         await withTempDir(async (dir) => {
-            const wordDir = path.join(dir, "word");
-            await fs.mkdir(wordDir);
-            let parts: string[];
-            if (method === "repairCommentThreading") {
-                await fs.writeFile(
-                    path.join(wordDir, "comments.xml"),
-                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
-                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
-                        `<w:p w14:paraId="11111111" w14:textId="11111111"/></w:comment></w:comments>`,
-                );
-                await fs.writeFile(
-                    path.join(wordDir, "commentsIds.xml"),
-                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
-                        `<w16cid:commentId w16cid:paraId="11111111" w16cid:durableId="22222222"/></w16cid:commentsIds>`,
-                );
-                await fs.writeFile(
-                    path.join(wordDir, "commentsExtensible.xml"),
-                    `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
-                        `<w16cex:commentExtensible w16cex:durableId="22222222"/></w16cex:commentsExtensible>`,
-                );
-                parts = ["commentsIds.xml", "commentsExtensible.xml"].map((name) => path.join(wordDir, name));
-            } else {
-                parts = ["a.xml", "b.xml", "c.xml"].map((name) => path.join(wordDir, name));
-                const attribute = method === "repairParaId" ? 'w14:paraId="FFFFFFFF" w14:textId="11111111"' : 'w16cid:durableId="FFFFFFFF"';
-                for (const part of parts) {
-                    await fs.writeFile(part, `<?xml version="1.0"?><root ${W14_NS} ${W16CID_NS} ${attribute}/>`);
-                }
-            }
+            const parts = await writeRepairParts(dir, method);
             const before = await Promise.all(parts.map((part) => fs.readFile(part)));
             const v = new DOCXSchemaValidator({ unpackedDir: dir });
             if (method !== "repairCommentThreading") expect(v.xmlFiles).toEqual(parts);
@@ -92,4 +98,32 @@ describe("DOCX repair write failures after preflight (#909)", () => {
             }
         });
     });
+
+    it.each(writeFailureCases)(
+        "%s through %s returns only written repairs when write %i is refused (#920)",
+        async (method, entry, failedWrite) => {
+            await withTempDir(async (dir) => {
+                const parts = await writeRepairParts(dir, method);
+                const before = await Promise.all(parts.map((part) => fs.readFile(part)));
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                if (method !== "repairCommentThreading") expect(v.xmlFiles).toEqual(parts);
+                const writeXmlPart = xmlPartIo.writeXmlPart;
+                let writes = 0;
+                const spy = vi.spyOn(xmlPartIo, "writeXmlPart").mockImplementation(async (...args) => {
+                    writes += 1;
+                    if (writes === failedWrite) return false;
+                    return writeXmlPart(...args);
+                });
+                try {
+                    await expect(v[entry === "repair" ? "repair" : method]()).resolves.toBe(failedWrite - 1);
+                    expect(spy).toHaveBeenCalledTimes(failedWrite);
+                    const after = await Promise.all(parts.map((part) => fs.readFile(part)));
+                    expect(after.slice(failedWrite - 1)).toEqual(before.slice(failedWrite - 1));
+                    if (failedWrite === 2) expect(after[0]).not.toEqual(before[0]);
+                } finally {
+                    spy.mockRestore();
+                }
+            });
+        },
+    );
 });
