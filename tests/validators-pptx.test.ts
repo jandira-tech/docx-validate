@@ -1443,20 +1443,29 @@ describe("a sldLayoutId naming no slideLayout relationship is one report outside
 
 // #1100: the #1093 hand-off covers every master validateSlideLayoutIds
 // judges, including one the presentation relates from outside
-// ppt/slideMasters/ (#1013).
+// ppt/slideMasters/ (#1013). #1111: the rows move it to ppt/masters/ and to a
+// folder neither name suggests, two levels down, so a registration limited to
+// the folders a developer would guess fails.
 describe("a related master outside ppt/slideMasters/ hands its sldLayoutId copy off too (#1100)", () => {
-    const MASTER = "ppt/masters/slideMaster1.xml";
-    /** The minimal deck with its master moved to `ppt/masters/` and its `sldLayoutId` naming `rid`. */
-    const movedMasterDeck = (rid: string) => {
+    const FOLDERS = ["masters", "theme/masters"] as const;
+    const masterIn = (folder: string) => `ppt/${folder}/slideMaster1.xml`;
+    /** The minimal deck with its master moved to `ppt/<folder>/` and its `sldLayoutId` naming `rid`. */
+    const movedMasterDeck = (rid: string, folder: string) => {
+        const master = masterIn(folder);
         const parts: Record<string, string> = {};
         for (const [name, xml] of Object.entries(MINIMAL_PPTX_PARTS)) {
-            const moved = name.replace("ppt/slideMasters/", "ppt/masters/");
-            parts[moved] = xml
-                .replace("/ppt/slideMasters/slideMaster1.xml", `/${MASTER}`)
-                .replace('Target="slideMasters/slideMaster1.xml"', 'Target="masters/slideMaster1.xml"')
-                .replace('Target="../slideMasters/slideMaster1.xml"', 'Target="../masters/slideMaster1.xml"');
+            const moved = name.replace("ppt/slideMasters/", `ppt/${folder}/`);
+            let content = xml
+                .replace("/ppt/slideMasters/slideMaster1.xml", `/${master}`)
+                .replace('Target="slideMasters/slideMaster1.xml"', `Target="${folder}/slideMaster1.xml"`)
+                .replace('Target="../slideMasters/slideMaster1.xml"', `Target="../${folder}/slideMaster1.xml"`);
+            // The master's own targets climb as many folders as it moved down.
+            if (name === "ppt/slideMasters/_rels/slideMaster1.xml.rels") {
+                content = content.replace('Target="../slideLayouts/', `Target="${"../".repeat(folder.split("/").length)}slideLayouts/`);
+            }
+            parts[moved] = content;
         }
-        parts[MASTER] = parts[MASTER]!.replace('r:id="rId1"/></p:sldLayoutIdLst>', `r:id="${rid}"/></p:sldLayoutIdLst>`);
+        parts[master] = parts[master]!.replace('r:id="rId1"/></p:sldLayoutIdLst>', `r:id="${rid}"/></p:sldLayoutIdLst>`);
         return buildPptx(parts);
     };
     /** The run's sldLayoutId findings as `code path`, in report order. */
@@ -1469,21 +1478,26 @@ describe("a related master outside ppt/slideMasters/ hands its sldLayoutId copy 
                 .map((issue) => `${issue.code} ${issue.path}`);
         });
 
-    it.each(["lenient", "word-valid", "strict"] as const)("the moved master naming its layout draws neither under %s", async (profile) => {
-        expect(await layoutFindings(await movedMasterDeck("rId1"), profile)).toEqual([]);
-    });
-
-    it.each(["word-valid", "strict"] as const)(
-        "a moved master's sldLayoutId naming nothing draws only sldlayout-missing-rid under %s",
-        async (profile) => {
-            expect(await layoutFindings(await movedMasterDeck("rId9"), profile)).toEqual([`sldlayout-missing-rid ${MASTER}`]);
+    it.each(FOLDERS.flatMap((folder) => (["lenient", "word-valid", "strict"] as const).map((profile) => [folder, profile] as const)))(
+        "the master moved to ppt/%s/ naming its layout draws neither under %s",
+        async (folder, profile) => {
+            expect(await layoutFindings(await movedMasterDeck("rId1", folder), profile)).toEqual([]);
         },
     );
 
-    it("lenient keeps both findings", async () => {
-        expect(await layoutFindings(await movedMasterDeck("rId9"), "lenient")).toEqual([
-            `sldlayout-missing-rid ${MASTER}`,
-            `rels-id-missing ${MASTER}`,
+    it.each(FOLDERS.flatMap((folder) => (["word-valid", "strict"] as const).map((profile) => [folder, profile] as const)))(
+        "a master moved to ppt/%s/ whose sldLayoutId names nothing draws only sldlayout-missing-rid under %s",
+        async (folder, profile) => {
+            expect(await layoutFindings(await movedMasterDeck("rId9", folder), profile)).toEqual([
+                `sldlayout-missing-rid ${masterIn(folder)}`,
+            ]);
+        },
+    );
+
+    it.each(FOLDERS)("lenient keeps both findings for a master moved to ppt/%s/", async (folder) => {
+        expect(await layoutFindings(await movedMasterDeck("rId9", folder), "lenient")).toEqual([
+            `sldlayout-missing-rid ${masterIn(folder)}`,
+            `rels-id-missing ${masterIn(folder)}`,
         ]);
     });
 });
