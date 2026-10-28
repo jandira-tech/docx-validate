@@ -998,6 +998,13 @@ reference spelled `01` or `+1` against a note spelled `1`
 ([#801](https://github.com/jandira-tech/docx-validate/issues/801)); any other
 spelling compares as written, unprobed.
 
+Comment range markers only an unselected `mc:Choice` holds (a range split
+across one, or an unmatched start), and a body footnote reference whose note
+sits in `word/footnotes.xml` while the main document's only `footnotes`
+relationship is External or targets outside the package (`../../footnotes.xml`
+from `word/`), are judged by rule and unprobed
+([#820](https://github.com/jandira-tech/docx-validate/issues/820)).
+
 Named `word-math-parse` runs and full runs that cannot stage the archive retain
 the positioned XML diagnostics without repeating `word-math-parse` for the same
 malformed part ([#500](https://github.com/jandira-tech/docx-validate/issues/500)).
