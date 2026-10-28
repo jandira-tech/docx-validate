@@ -9,6 +9,8 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import type { ValidationIssue } from "../src/lib/types";
+import { ValidationContext } from "../src/lib/validation-context";
+import { commentThreadingCheck } from "../src/scripts/office/checks/comments";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
@@ -347,6 +349,193 @@ describe("comment markers read the effective view (#799)", { timeout: 30000 }, (
             ]);
         });
     });
+});
+
+describe("comment threading reads the effective view (#808)", { timeout: 30000 }, () => {
+    const alternate = (requires: string, choice: string): string =>
+        `<mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" ` +
+        `xmlns:u="urn:example:unknown" xmlns:w14="${W14_NS}">` +
+        `<mc:Choice Requires="${requires}">${choice}</mc:Choice><mc:Fallback/></mc:AlternateContent>`;
+    const countFindings = (issues: readonly ValidationIssue[]) => issues.filter((issue) => issue.code === "comment-thread-count-mismatch");
+    const mismatches = (markers: readonly string[], count: number, severity: "error" | "warning"): ValidationIssue[] =>
+        markers.map((marker) => ({
+            code: "comment-thread-count-mismatch",
+            severity,
+            path: "word/document.xml",
+            message: `${marker} count (1) does not match comment count in comments.xml (${count})`,
+        }));
+
+    for (const requires of ["u", "w14"]) {
+        it.each(["word-valid", "strict", "lenient"] as const)(
+            `an extra reference in a Choice requiring ${requires} counts only when selected (%s)`,
+            async (profile) => {
+                await withTempDir(async (dir) => {
+                    // Unprobed: no Word session has shown this extra-reference shape.
+                    const parts = alternateContentPackage(
+                        markedDocument(alternate(requires, '<w:r><w:commentReference w:id="0"/></w:r>')),
+                        commentsPart("0", "0000AAAA"),
+                    );
+                    const file = path.join(dir, "extra-choice-reference.docx");
+                    await writeFile(file, await buildDocx(parts));
+                    const expected: ValidationIssue[] =
+                        requires === "u"
+                            ? []
+                            : [
+                                  {
+                                      code: "comment-thread-count-mismatch",
+                                      severity: profile === "word-valid" ? "warning" : "error",
+                                      path: "word/document.xml",
+                                      message: "commentReference count (2) does not match comment count in comments.xml (1)",
+                                  },
+                              ];
+                    const full = await validate(file, { profile });
+                    expect(countFindings(full.issues)).toEqual(expected);
+                    expect(full.valid).toBe(profile === "word-valid" || requires === "u");
+                    if (profile === "word-valid") {
+                        const selected = await validate(file, { profile, checks: ["comment-threading"] });
+                        expect(countFindings(selected.issues)).toEqual(expected);
+                        expect(selected.valid).toBe(true);
+                    } else {
+                        // Strict refuses API selections; exercise the named check directly too,
+                        // and under lenient alike.
+                        expect(countFindings(await commentThreadingCheck.run(ValidationContext.fromEntries(parts), profile))).toEqual(
+                            expected,
+                        );
+                    }
+                });
+            },
+        );
+
+        it.each(["word-valid", "strict", "lenient"] as const)(
+            `an extra comment in a Choice requiring ${requires} counts only when selected (%s)`,
+            async (profile) => {
+                await withTempDir(async (dir) => {
+                    // Unprobed: no Word session has shown this extra-definition shape.
+                    const comments = commentsPart("0", "0000AAAA").replace(
+                        "</w:comments>",
+                        `${alternate(requires, '<w:comment w:id="7" w:author="A"><w:p w14:paraId="0000BBBB" w14:textId="0000BBBB"/></w:comment>')}</w:comments>`,
+                    );
+                    const parts = alternateContentPackage(markedDocument(), comments);
+                    const file = path.join(dir, "extra-choice-comment.docx");
+                    await writeFile(file, await buildDocx(parts));
+                    const expected =
+                        requires === "u"
+                            ? []
+                            : mismatches(
+                                  ["commentRangeStart", "commentRangeEnd", "commentReference"],
+                                  2,
+                                  profile === "word-valid" ? "warning" : "error",
+                              );
+                    const full = await validate(file, { profile });
+                    expect(countFindings(full.issues)).toEqual(expected);
+                    expect(full.valid).toBe(profile === "word-valid" || requires === "u");
+                    if (profile === "word-valid") {
+                        const selected = await validate(file, { profile, checks: ["comment-threading"] });
+                        expect(countFindings(selected.issues)).toEqual(expected);
+                        expect(selected.valid).toBe(true);
+                    } else {
+                        expect(countFindings(await commentThreadingCheck.run(ValidationContext.fromEntries(parts), profile))).toEqual(
+                            expected,
+                        );
+                    }
+                });
+            },
+        );
+    }
+
+    it("keeps three advisory mismatches for session 62 (s62a)'s discarded reference", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "choice-reference.docx");
+            await writeFile(
+                file,
+                await buildDocx(alternateContentPackage(REFERENCE_ONLY_AN_UNSELECTED_CHOICE_HOLDS, COMMENTS_HOLDING_FIVE)),
+            );
+            // Comment 5 has no markers at all, so the effective view still mismatches
+            // all three counts. Word opened this shape clean in session 62 (s62a);
+            // the count rule remains a warning under word-valid.
+            const expected = ["commentRangeStart", "commentRangeEnd", "commentReference"].map((marker) => ({
+                code: "comment-thread-count-mismatch",
+                severity: "warning",
+                path: "word/document.xml",
+                message: `${marker} count (0) does not match comment count in comments.xml (1)`,
+            }));
+            const full = await validate(file, { profile: "word-valid" });
+            expect(full.valid).toBe(true);
+            expect(countFindings(full.issues)).toEqual(expected);
+            const selected = await validate(file, { profile: "word-valid", checks: ["comment-threading"] });
+            expect(selected.valid).toBe(true);
+            expect(countFindings(selected.issues)).toEqual(expected);
+        });
+    });
+
+    it("preserves the malformed comments part's exact threading diagnostic", async () => {
+        const parts = alternateContentPackage(markedDocument(), "<broken");
+        const ctx = ValidationContext.fromEntries(parts);
+        const parsed = ctx.xml("word/comments.xml");
+        expect(parsed?.ok).toBe(false);
+        if (!parsed || parsed.ok) throw new Error("Expected the malformed comments part to fail parsing");
+        expect(await commentThreadingCheck.run(ctx)).toEqual([
+            {
+                code: "comment-thread-parse",
+                severity: "error",
+                path: "word/comments.xml",
+                message: `Error parsing XML: ${parsed.message}`,
+            },
+        ]);
+    });
+
+    for (const [part, root, ns, child, code] of [
+        [
+            "commentsIds.xml",
+            "w16cid:commentsIds",
+            W16CID_NS,
+            '<w16cid:commentId w16cid:paraId="0000BBBB" w16cid:durableId="00000007"/>',
+            "comment-thread-commentid-paraid-orphan",
+        ],
+        [
+            "commentsExtensible.xml",
+            "w16cex:commentsExtensible",
+            "http://schemas.microsoft.com/office/word/2018/wordml/cex",
+            '<w16cex:commentExtensible w16cex:durableId="00000007"/>',
+            "comment-thread-durableid-orphan",
+        ],
+        [
+            "commentsExtended.xml",
+            "w15:commentsEx",
+            "http://schemas.microsoft.com/office/word/2012/wordml",
+            '<w15:commentEx w15:paraId="0000BBBB"/>',
+            "comment-thread-paraid-orphan",
+        ],
+    ] as const) {
+        it.each(["u", "w14"])(`${part} judges only a selected Choice requiring %s`, async (requires) => {
+            await withTempDir(async (dir) => {
+                // Unprobed: the schema's child sequence is read after branch selection.
+                const file = path.join(dir, "thread-choice.docx");
+                const prefix = root.split(":")[0];
+                const matching = part === "commentsExtended.xml" ? '<w15:commentEx w15:paraId="0000AAAA"/>' : "";
+                await writeFile(
+                    file,
+                    await buildDocx({
+                        ...alternateContentPackage(markedDocument(), commentsPart("0", "0000AAAA")),
+                        [`word/${part}`]: `<${root} xmlns:${prefix}="${ns}">${matching}${alternate(requires, child)}</${root}>`,
+                    }),
+                );
+                const result = await validate(file, { profile: "word-valid", checks: ["comment-threading"] });
+                expect(commentIssues(result.issues)).toEqual(
+                    requires === "u"
+                        ? []
+                        : [
+                              expect.objectContaining({
+                                  code,
+                                  path: `word/${part}`,
+                                  severity: part === "commentsExtended.xml" ? "warning" : "error",
+                              }),
+                          ],
+                );
+                expect(result.valid).toBe(requires === "u" || part === "commentsExtended.xml");
+            });
+        });
+    }
 });
 
 describe("named comment validation (#384)", { timeout: 120_000 }, () => {

@@ -943,7 +943,10 @@ named runs agree.
 The `schema` group contains structural checks, not an XSD walk. The `comments`
 group runs `comment-markers` (range pairing and references to existing comments)
 and `comment-threading` (marker counts, paragraph ids, parent ids, and durable ids
-across comment extension parts). Both apply to DOCX/DOCM under every profile,
+across comment extension parts). Threading reads the main document, the
+comments part and all three extension parts after markup compatibility's
+branch selection, as `comment-markers` reads its parts (#799, #808). Both
+apply to DOCX/DOCM under every profile,
 including lenient; they are separate from `WORD_RULE_CHECKS`. They retain their
 own `comment-marker-parse` / `comment-thread-parse` diagnostics rather than
 requiring `xml-syntax`. A named run that selects them also runs `xml-syntax`
