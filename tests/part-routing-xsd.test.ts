@@ -987,6 +987,108 @@ describe("schema routing of the parts directly in ppt/ by their root (#887)", { 
             }
         });
     });
+
+    // An async descendant keeps the walk's store after its call settles,
+    // but not its right to reuse the root read for that call (#926).
+    it.each([false, true])("re-reads a rewritten part in a task started by a settled walk call (rejected: %s) (#926)", async (reject) => {
+        await withTempDir(async (dir) => {
+            const parts = { ...MINIMAL_PPTX_PARTS, "ppt/extra.xml": MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]! };
+            for (const [part, xml] of Object.entries(parts)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const extra = path.join(dir, "ppt/extra.xml");
+            let release!: () => void;
+            const gate = new Promise<void>((resolve) => {
+                release = resolve;
+            });
+            let later: ReturnType<PPTXSchemaValidator["validateFileAgainstXsd"]> | undefined;
+            const failure = new Error("walk call rejected");
+            const validator = new (class extends PPTXSchemaValidator {
+                override async validateFileAgainstXsd(file: string) {
+                    if (file === extra && !later) {
+                        later = (async () => {
+                            await gate;
+                            return super.validateFileAgainstXsd(file);
+                        })();
+                        if (reject) throw failure;
+                    }
+                    return super.validateFileAgainstXsd(file);
+                }
+            })({ unpackedDir: dir, profile: "strict" });
+            if (reject) await expect(validator.validateAgainstXsd()).rejects.toBe(failure);
+            else expect((await validator.validateAgainstXsd()).valid).toBe(true);
+
+            await fs.writeFile(extra, `${HEAD}<p:unknown xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>`, "utf-8");
+            expect(later).toBeDefined();
+            release();
+            const inherited = await later!;
+            const direct = await validator.validateFileAgainstXsd(extra);
+            expect(direct.valid).toBe(null);
+            expect(inherited).toEqual(direct);
+        });
+    });
+
+    // Only the part the walk called for keeps its memo: a direct call for
+    // another part reads its root again, even inside the override (#926).
+    it("routes another part rewritten between two direct calls inside a walk by its new root (#926)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PPTX_PARTS,
+                "ppt/extra.xml": MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!,
+                "ppt/zzz.xml": `${HEAD}<p:unknown xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>`,
+            };
+            for (const [part, xml] of Object.entries(parts)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const extra = path.join(dir, "ppt/extra.xml");
+            const other = path.join(dir, "ppt/zzz.xml");
+            let second: Awaited<ReturnType<PPTXSchemaValidator["validateFileAgainstXsd"]>> | undefined;
+            const validator = new (class extends PPTXSchemaValidator {
+                override async validateFileAgainstXsd(file: string) {
+                    if (file === extra) {
+                        expect((await super.validateFileAgainstXsd(other)).valid).toBe(null);
+                        await fs.writeFile(other, withBogusDefect(MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!), "utf-8");
+                        second = await super.validateFileAgainstXsd(other);
+                    }
+                    return super.validateFileAgainstXsd(file);
+                }
+            })({ unpackedDir: dir, profile: "strict" });
+            await validator.validateAgainstXsd();
+            expect(second?.valid).toBe(false);
+            expect([...second!.errors].some((error) => error.includes("bogusDefect"))).toBe(true);
+        });
+    });
+
+    // A second validator may read the same path during the first one's
+    // walk; that call still drops its own old root memo (#926).
+    it("re-reads a rewritten part in another validator called inside a walk (#926)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PPTX_PARTS,
+                "ppt/extra.xml": `${HEAD}<p:unknown xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>`,
+            };
+            for (const [part, xml] of Object.entries(parts)) {
+                await fs.mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await fs.writeFile(path.join(dir, part), xml, "utf-8");
+            }
+            const extra = path.join(dir, "ppt/extra.xml");
+            const other = new PPTXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+            expect((await other.validateFileAgainstXsd(extra)).valid).toBe(null);
+            await fs.writeFile(extra, withBogusDefect(MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"]!), "utf-8");
+            let direct: Awaited<ReturnType<PPTXSchemaValidator["validateFileAgainstXsd"]>> | undefined;
+            const validator = new (class extends PPTXSchemaValidator {
+                override async validateFileAgainstXsd(file: string) {
+                    if (file === extra) direct = await other.validateFileAgainstXsd(file);
+                    return super.validateFileAgainstXsd(file);
+                }
+            })({ unpackedDir: dir, profile: "strict" });
+            await validator.validateAgainstXsd();
+            expect(direct?.valid).toBe(false);
+            expect([...direct!.errors].some((error) => error.includes("bogusDefect"))).toBe(true);
+        });
+    });
 });
 
 describe("the global element declarations the ppt/ root route reads (#887)", () => {
