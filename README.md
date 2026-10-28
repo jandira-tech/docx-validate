@@ -208,6 +208,8 @@ issue naming it, so the parts the walk skipped can be audited; validity,
 `xsdWalk` and `metadata.schemaCompleted` do not change, lenient's
 `--original` comparison never removes it, and a malformed part, a Strict part
 lenient skips and a part the run's deadline never reached draw none (#628).
+A direct `validateAgainstXsd()` call on a validator parses each unmapped part
+before auditing it, so a malformed one draws none there either (#867).
 In a PPTX the slides, slide layouts and slide masters are among these parts:
 no rule maps a PresentationML part below `ppt/` yet (#864). The CLI prints
 the finding with `--json`; its human output lists errors only.
