@@ -882,7 +882,7 @@ check's spec-set walk reaches — a related webSettings or theme part, a
 header, footer, footnotes, endnotes, comments or glossaryDocument part, and
 the parts a reached glossary's own relationships relate, its styles
 included — cites the content type ECMA-376 Part 1 (4th edition), clause
-11.3 assigns it (14.2.7 for theme, 11.3.10 for the Main Document) as an
+11.3 assigns it (14.2.7 for theme) as an
 error under strict and a warning under word-valid. An undeclared type stays
 with `ct-undeclared-part`, and an empty one with `word-content-type-invalid`
 on the main document and on the styles, settings, fontTable and numbering
