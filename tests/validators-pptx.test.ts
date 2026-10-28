@@ -749,13 +749,16 @@ describe("the relationships parts a notes-shared message names (#1041)", () => {
         await withTempDir(async (dir) => {
             await writeFile(path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"), notesSidecar());
             await writeFile(path.join(dir, "ppt", "slides", "%5Frels", "slide1.xml.rels"), notesSidecar());
-            expect((await makeValidator(dir).validateNotesSlideReferences()).issues.map((issue) => [issue.code, issue.message])).toEqual([
+            expect(
+                (await makeValidator(dir).validateNotesSlideReferences()).issues.map((issue) => [issue.code, issue.message, issue.path]),
+            ).toEqual([
                 [
                     "notes-shared",
                     "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: ppt/slides/%5Frels/slide1.xml.rels, ppt/slides/_rels/slide1.xml.rels",
+                    undefined,
                 ],
-                ["notes-shared-detail", "    - ppt/slides/%5Frels/slide1.xml.rels"],
-                ["notes-shared-detail", "    - ppt/slides/_rels/slide1.xml.rels"],
+                ["notes-shared-detail", "    - ppt/slides/%5Frels/slide1.xml.rels", "ppt/slides/%5Frels/slide1.xml.rels"],
+                ["notes-shared-detail", "    - ppt/slides/_rels/slide1.xml.rels", "ppt/slides/_rels/slide1.xml.rels"],
             ]);
         });
     });
@@ -774,7 +777,12 @@ describe("a notes-shared message names each relationships part once (#1045)", ()
                 relationship("rId2", "notesSlide", `../notesSlides/${second}`),
         );
     const reported = async (dir: string) =>
-        (await makeValidator(dir).validateNotesSlideReferences()).issues.map((issue) => [issue.severity, issue.code, issue.message]);
+        (await makeValidator(dir).validateNotesSlideReferences()).issues.map((issue) => [
+            issue.severity,
+            issue.code,
+            issue.message,
+            issue.path,
+        ]);
 
     it.each(["notesSlide1.xml", "notesSlide%31.xml"])(
         "says how often one sidecar relates its notes slide, targets notesSlide1.xml and %s",
@@ -786,8 +794,9 @@ describe("a notes-shared message names each relationships part once (#1045)", ()
                         "error",
                         "notes-shared",
                         "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced 2 times by ppt/slides/_rels/slide1.xml.rels",
+                        undefined,
                     ],
-                    ["error", "notes-shared-detail", "    - ppt/slides/_rels/slide1.xml.rels"],
+                    ["error", "notes-shared-detail", "    - ppt/slides/_rels/slide1.xml.rels", "ppt/slides/_rels/slide1.xml.rels"],
                 ]);
             });
         },
@@ -798,9 +807,14 @@ describe("a notes-shared message names each relationships part once (#1045)", ()
             await writeFile(path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"), twiceSidecar("notesSlide1.xml"));
             await writeFile(path.join(dir, "ppt", "slides", "_rels", "slide2.xml.rels"), notesSidecar());
             expect(await reported(dir)).toEqual([
-                ["error", "notes-shared", "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: slide1, slide2"],
-                ["error", "notes-shared-detail", "    - ppt/slides/_rels/slide1.xml.rels"],
-                ["error", "notes-shared-detail", "    - ppt/slides/_rels/slide2.xml.rels"],
+                [
+                    "error",
+                    "notes-shared",
+                    "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: slide1, slide2",
+                    undefined,
+                ],
+                ["error", "notes-shared-detail", "    - ppt/slides/_rels/slide1.xml.rels", "ppt/slides/_rels/slide1.xml.rels"],
+                ["error", "notes-shared-detail", "    - ppt/slides/_rels/slide2.xml.rels", "ppt/slides/_rels/slide2.xml.rels"],
             ]);
         });
     });
@@ -814,9 +828,10 @@ describe("a notes-shared message names each relationships part once (#1045)", ()
                     "error",
                     "notes-shared",
                     "Notes slide 'ppt/notesSlides/notesSlide1.xml' is referenced by multiple slides: ppt/slides/%5Frels/slide1.xml.rels, ppt/slides/_rels/slide1.xml.rels",
+                    undefined,
                 ],
-                ["error", "notes-shared-detail", "    - ppt/slides/%5Frels/slide1.xml.rels"],
-                ["error", "notes-shared-detail", "    - ppt/slides/_rels/slide1.xml.rels"],
+                ["error", "notes-shared-detail", "    - ppt/slides/%5Frels/slide1.xml.rels", "ppt/slides/%5Frels/slide1.xml.rels"],
+                ["error", "notes-shared-detail", "    - ppt/slides/_rels/slide1.xml.rels", "ppt/slides/_rels/slide1.xml.rels"],
             ]);
         });
     });
