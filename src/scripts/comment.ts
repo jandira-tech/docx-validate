@@ -326,17 +326,25 @@ function effectiveRelationships(dom: Document): Element[] {
 /**
  * Whether a relationship in `dom` relates `partName`: an internal
  * relationship of the comments type, Transitional or Strict, whose target
- * resolves to `partName` under OPC part-name equivalence (#906). The
- * relationships are read on the effective view `effectiveRelationships`
- * returns — the stored DOM after markup compatibility selects a branch —
- * so a relationship a selected `mc:Fallback` or an understood `mc:Choice`
- * holds counts, and one only an unselected branch holds does not (#932,
- * #927); a part whose root binds the package-relationships namespace to a
- * prefix is read too, and an element in another namespace is not read as a
- * relationship, even one named `Relationship` (#918). An External
- * relationship, or one of another type, does not count; before, it stopped
- * addComment adding the comments relationships, so it reported success with
- * the comments parts related to nothing (#917).
+ * names `partName` under OPC part-name equivalence once resolved as the
+ * read model resolves it: `\` read as `/`, the query and fragment dropped,
+ * a URI scheme or an empty reference naming no part (#906, #928). A target
+ * that climbs past the package root keeps its `../` and names no part, as
+ * the read model leaves it unclamped; a package-absolute target keeps its
+ * dot segments, so `/word/../word/comments.xml` names no part either
+ * (#947). The relationships are read on the effective view
+ * `effectiveRelationships` returns — the stored DOM after markup
+ * compatibility selects a branch — so a relationship a selected
+ * `mc:Fallback` or an understood `mc:Choice` holds counts, and one only an
+ * unselected branch holds does not (#932, #927); a part whose root binds
+ * the package-relationships namespace to a prefix is read too, and an
+ * element in another namespace is not read as a relationship, even one
+ * named `Relationship` (#918). An External relationship, or one of another
+ * type, does not count; before, it stopped addComment adding the comments
+ * relationships, so it reported success with the comments parts related to
+ * nothing (#917); and a target spelled with a query, a fragment or a
+ * backslash was not counted, so a second set of relationships was added
+ * beside it (#928).
  */
 function relatesCommentsPart(dom: Document, baseDir: string, partName: string): boolean {
     const key = canonicalPartName(partName);
@@ -349,31 +357,12 @@ function relatesCommentsPart(dom: Document, baseDir: string, partName: string): 
         if (rel.getAttribute("TargetMode") === "External") {
             continue;
         }
-        const resolved = resolveTargetFrom(baseDir, rel.getAttribute("Target") ?? "");
+        const resolved = relationshipTargetPartName(baseDir, rel.getAttribute("Target") ?? "");
         if (resolved !== undefined && canonicalPartName(resolved) === key) {
             return true;
         }
     }
     return false;
-}
-
-/**
- * Resolve a relationship target against `baseDir`, the folder of the part
- * whose relationships part holds it: a leading `/` is absolute from the
- * package root, anything else is relative to the folder, and `.` and `..`
- * segments normalize. `undefined` when the target is empty or climbs past
- * the package root.
- */
-function resolveTargetFrom(baseDir: string, target: string): string | undefined {
-    if (target === "") {
-        return undefined;
-    }
-    const reference = target.startsWith("/") ? target.slice(1) : path.posix.join(baseDir, target);
-    const normalized = path.posix.normalize(reference);
-    if (normalized === ".." || normalized.startsWith("../")) {
-        return undefined;
-    }
-    return normalized;
 }
 
 /**

@@ -1742,6 +1742,112 @@ describe("addComment", () => {
     );
 
     it.each([
+        ["comments.xml?q=1", "word/document.xml"],
+        ["comments.xml#frag", "word/document.xml"],
+        ["..\\word\\comments.xml", "main/doc.xml"],
+        ["../word/comments.xml", "main/doc.xml"],
+    ])(
+        "adds no second set of relationships when the main document already relates word/comments.xml as %s (#928)",
+        async (target, mainPart) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels(mainPart), mainPart);
+                const relsPath = path.join(
+                    dir,
+                    ...path.posix.dirname(mainPart).split("/"),
+                    "_rels",
+                    `${path.posix.basename(mainPart)}.rels`,
+                );
+                await fs.mkdir(path.dirname(relsPath), { recursive: true });
+                await fs.writeFile(relsPath, packageRels(`Type="${COMMENTS_RELATIONSHIP_TYPE}" Target="${target}"`), "utf-8");
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // The target is resolved as the read model resolves it — the
+                // query or fragment dropped, `\` read as `/` — so it names
+                // word/comments.xml and the part keeps exactly the one
+                // comments relationship it stored.
+                expect(relationshipRows(parseXml(await fs.readFile(relsPath, "utf-8")))).toEqual([
+                    ["rId1", COMMENTS_RELATIONSHIP_TYPE, target, ""],
+                ]);
+            });
+        },
+    );
+
+    it("validates once the markers are added over a comments relationship named with a query (#928)", { timeout: 30000 }, async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+            await fs.writeFile(
+                path.join(dir, "word", "_rels", "document.xml.rels"),
+                packageRels(`Type="${COMMENTS_RELATIONSHIP_TYPE}" Target="comments.xml?q=1"`),
+                "utf-8",
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "Hello world",
+                author: "Test",
+                initials: "C",
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // The read model drops the query too, so Word reads the comments
+            // part through the stored relationship and the comment's markers
+            // name a comment Word reads.
+            await fs.writeFile(path.join(dir, "word", "document.xml"), markedMainDocument(), "utf-8");
+            const file = path.join(dir, "query-comments-rel.docx");
+            await packTree(dir, file);
+            const validation = await validate(file, { profile: "word-valid" });
+            expect(validation.issues.filter((issue) => issue.code === "comment-marker-missing")).toEqual([]);
+            expect(validation.valid).toBe(true);
+        });
+    });
+
+    it.each(["http://example.com/comments.xml", "../../word/comments.xml"])(
+        "adds the four relationships beside a comments relationship whose target %s names no part (#928)",
+        async (target) => {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+                await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+                await fs.writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    packageRels(`Type="${COMMENTS_RELATIONSHIP_TYPE}" Target="${target}"`),
+                    "utf-8",
+                );
+
+                const result = await addComment({
+                    unpackedDir: dir,
+                    commentId: 0,
+                    text: "Hello world",
+                    author: "Test",
+                    initials: "C",
+                    date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+                });
+                expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+                // A URI names no package part, whatever its TargetMode says,
+                // and a target that climbs past the package root keeps its
+                // `../`, as the read model leaves it unclamped: the stored
+                // relationship relates nothing, so the four relationships are
+                // added beside it.
+                expect(
+                    relationshipRows(parseXml(await fs.readFile(path.join(dir, "word", "_rels", "document.xml.rels"), "utf-8"))),
+                ).toEqual([["rId1", COMMENTS_RELATIONSHIP_TYPE, target, ""], ...firstCommentRelationships(2)]);
+            });
+        },
+    );
+
+    it.each([
         [
             "the package relationships declare an encoding it cannot decode",
             officeDocumentRels("word/main.xml"),
