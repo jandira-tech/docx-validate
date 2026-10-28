@@ -35,7 +35,7 @@ import {
     wordReadParts,
     wordReadStoryParts,
     wordReadTypedTargets,
-    wordRelationshipNamedParts,
+    wordPossiblyReadParts,
     wordStoryRootParts,
     wordTypedRelationshipTargets,
     wordUnobservedRelationshipTargets,
@@ -2099,7 +2099,7 @@ describe("wordReadStoryParts (#1106, #1113)", () => {
     });
 });
 
-describe("wordRelationshipNamedParts (#1116)", () => {
+describe("wordPossiblyReadParts (#1116, #1125)", () => {
     const HEADER_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml";
     const HEADER = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:hdr xmlns:w="${W}"><w:p/></w:hdr>`;
     const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
@@ -2130,15 +2130,141 @@ describe("wordRelationshipNamedParts (#1116)", () => {
     });
 
     const named = async (parts: Parts): Promise<readonly string[] | undefined> => {
-        const set = await wordRelationshipNamedParts(ValidationContext.fromEntries(parts), "word-valid");
+        const set = await wordPossiblyReadParts(ValidationContext.fromEntries(parts), "word-valid");
         return set === undefined ? undefined : [...set].sort();
     };
+    const HEADER1 = canonicalPartName("word/header1.xml");
     const HEADER9 = canonicalPartName("word/header9.xml");
+    const READ = ["word/_rels/document.xml.rels", "word/document.xml", "word/styles.xml"];
 
-    it("lists every part a relationship names, canonically, and no part nothing names", async () => {
-        expect(await named(withHeaders())).toEqual(
-            ["word/document.xml", "word/header1.xml", "word/styles.xml"].map(canonicalPartName).sort(),
+    it("lists every part Word reads or a relationship names, canonically, and no part nothing names", async () => {
+        expect(await named(withHeaders({ "word/document.xml": documentUsingHeader("rIdH") }))).toEqual(
+            [...READ, "word/header1.xml"].map(canonicalPartName).sort(),
         );
+    });
+
+    // #1125 (session 84 s84a mu-unused-header): Word does not read a header
+    // the main document relates but no section references, and opened an
+    // undeclared mc:MustUnderstand there clean.
+    it("does not list a header the main document relates but does not use (#1125)", async () => {
+        expect(await named(withHeaders())).toEqual(READ.map(canonicalPartName).sort());
+    });
+
+    const USING: Readonly<Record<StorySegment, (id: string) => string>> = {
+        header: documentUsingHeader,
+        footer: documentUsingFooter,
+        comments: documentUsingComment,
+        footnotes: documentUsingFootnote,
+        endnotes: documentUsingEndnote,
+    };
+
+    it.each(STORY_SEGMENTS.flatMap((segment) => [true, false].map((used) => [segment, used] as const)))(
+        "lists a %s part the main document relates only when it uses it (used: %s) (#1125)",
+        async (segment, used) => {
+            const story = canonicalPartName(`word/${STORY_FILE[segment]}`);
+            const parts = withDocRel(
+                { ...MINIMAL_PARTS, [`word/${STORY_FILE[segment]}`]: WELLFORMED_STORY[segment] },
+                "rIdS",
+                `${R}/${segment}`,
+                STORY_FILE[segment],
+            );
+            if (used) {
+                parts["word/document.xml"] = USING[segment]("rIdS");
+            }
+            const list = await named(parts);
+            if (used) {
+                expect(list).toContain(story);
+            } else {
+                expect(list).not.toContain(story);
+            }
+        },
+    );
+
+    it("lists an unused related header another relationships part also names (#1125)", async () => {
+        expect(await named(withHeaders({ [STRAY]: relationships(header("rId1", "header1.xml")) }))).toContain(HEADER1);
+    });
+
+    it("lists an unused related header whose relationship is not a direct child of the sidecar (#1125)", async () => {
+        const parts = withHeaders();
+        parts["word/_rels/document.xml.rels"] = MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<mc:AlternateContent xmlns:mc="${MC}"><mc:Choice xmlns:foo="urn:foo" Requires="foo">${header("rIdH", "header1.xml")}</mc:Choice></mc:AlternateContent></Relationships>`,
+        );
+        expect(await named(parts)).toContain(HEADER1);
+    });
+
+    it.each([
+        ["reads eagerly", "styles"],
+        ["does not read at open", "image"],
+    ])("lists a header the main document relates through a type Word %s (#1125)", async (_label, type) => {
+        const parts = withDocRel(withHeaders(), "rIdI", `${R}/${type}`, "header9.xml");
+        expect(await named(parts)).toContain(HEADER9);
+    });
+
+    it.each(BYTE_REJECTED_MAIN_PARTS)(
+        "lists an unused related $segment part when the main fails the byte-level XML checks (#1125)",
+        async ({ part, parts }) => {
+            expect(await named(parts)).toContain(canonicalPartName(part));
+        },
+    );
+
+    it("does not list a header a reached glossary relates but does not use, and lists it when the glossary is unreached (#1125)", async () => {
+        const story = canonicalPartName("word/glossary/header9.xml");
+        const reached = storyViaGlossary("header", WELLFORMED_STORY.header, glossaryWith("", ""));
+        expect(await named(reached)).toContain(canonicalPartName("word/glossary/document.xml"));
+        expect(await named(reached)).not.toContain(story);
+        expect(await named({ ...reached, "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]! })).toContain(
+            story,
+        );
+        expect(await named(storyViaGlossary("header", WELLFORMED_STORY.header))).toContain(story);
+    });
+
+    // The read model reaches the main document through the Fallback Word
+    // selects in the package relationships part (#634), so the main
+    // document's sidecar is a root's.
+    it("does not list an unused related header when the officeDocument relationship sits in a selected Fallback (#634, #1125)", async () => {
+        const parts = wrapRelationship(withHeaders() as Record<string, string>, PACKAGE_RELS, "rId1", fallback);
+        expect(await named(parts)).toEqual(READ.map(canonicalPartName).sort());
+    });
+
+    it("lists an unused related header a relationships part names that the main document reads as another type (#1125)", async () => {
+        const parts = withDocRel(
+            withHeaders({ [STRAY]: relationships(header("rId1", "header1.xml")) }),
+            "rIdS",
+            `${R}/styles`,
+            "_rels/stray.xml.rels",
+        );
+        expect(await named(parts)).toContain(HEADER1);
+    });
+
+    // Word-valid's file-reference walk resolves every internal scheme but
+    // http:, https: and mailto: as a part (#988, #1008); the read model
+    // follows none, so a story root's own relationship to one still counts.
+    it.each(["ftp:header9.xml", "httpfoo:header9.xml", "FTP:header9.xml"])(
+        "lists the part a scheme-like target %s names",
+        async (target) => {
+            const stored = `word/${target}`;
+            const list = await named(withHeaders({ [stored]: HEADER, [STRAY]: relationships(header("rId9", target)) }));
+            expect(list).toContain(canonicalPartName(stored));
+        },
+    );
+
+    it.each(["http:header9.xml", "HTTPS:header9.xml", "mailto:header9.xml"])(
+        "does not list the part a target %s spells",
+        async (target) => {
+            const stored = `word/${target}`;
+            const list = await named(withHeaders({ [stored]: HEADER, [STRAY]: relationships(header("rId9", target)) }));
+            expect(list).not.toContain(canonicalPartName(stored));
+        },
+    );
+
+    it("lists an unused header the main document relates through a scheme-like target the read model does not follow", async () => {
+        const parts = withHeaders({ "word/ftp:header1.xml": HEADER });
+        parts["word/_rels/document.xml.rels"] = (parts["word/_rels/document.xml.rels"] as string).replace(
+            'Target="header1.xml"',
+            'Target="ftp:header1.xml"',
+        );
+        expect(await named(parts)).toContain(canonicalPartName("word/ftp:header1.xml"));
     });
 
     it("lists a part only a relationships part with no stored source names", async () => {

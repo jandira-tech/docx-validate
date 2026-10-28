@@ -20,9 +20,17 @@ describe("word error explanations", () => {
     });
     it.each(["mce-malformed", "mce-must-understand"])("explains %s as a warning in a word/ part no relationship names (#1116)", (code) => {
         expect(explainWordError(code)).toContain(
-            "In an XML part under word/ that no relationship names, Word opened an undeclared Choice Requires (session 83) and a root MustUnderstand (session 84) clean, so word-valid warns there",
+            "In an XML part under word/ that no relationship names, Word opened an undeclared Choice Requires (session 83) and a root MustUnderstand (session 84) clean,",
         );
     });
+    it.each(["mce-malformed", "mce-must-understand"])(
+        "explains %s as a warning in a story part a root relates but does not use (#1125)",
+        (code) => {
+            expect(explainWordError(code)).toContain(
+                "and both in a header the main document relates but does not use (session 84), so word-valid warns there (#1116, #1125)",
+            );
+        },
+    );
     it("explains a package root that unwraps to the Relationships element as accepted (#646)", () => {
         const explanation = explainWordError("mce-malformed");
         expect(explanation).not.toContain("still rejects");

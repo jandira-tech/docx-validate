@@ -258,7 +258,7 @@ export const findEquivalentPart = (names: readonly string[], partName: string): 
 };
 
 /** An absolute URI names no package part, whatever its TargetMode says. */
-const hasUriScheme = (target: string): boolean => /^[a-z][a-z\d+.-]*:/i.test(target);
+export const hasUriScheme = (target: string): boolean => /^[a-z][a-z\d+.-]*:/i.test(target);
 
 /**
  * `resolved`, a normalized relative path, with the `..` segments that climb

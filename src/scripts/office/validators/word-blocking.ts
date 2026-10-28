@@ -38,19 +38,27 @@ export type WordBlockingFacts = {
      */
     referenceLoadedReach?: "referenced" | "unreferenced";
     /**
-     * `true` only when the caller read every relationships part and none
-     * names the issue's part ({@link namedByNoRelationship}, #1116).
+     * `true` only when the caller knows Word reads no part OPC-equivalent
+     * to the issue's ({@link isUnreadByWord}, #1116, #1125).
      */
-    namedByNoRelationship?: boolean;
+    unreadByWord?: boolean;
 };
 
 /**
- * Whether `named`, the parts `wordRelationshipNamedParts` lists, is known
- * and holds no part OPC-equivalent to the issue's (#1116). An unknown list,
- * or a finding with no part, gives `false`.
+ * Whether `possiblyRead`, the parts `wordPossiblyReadParts` lists, is known
+ * and holds no part OPC-equivalent to the issue's (#1116, #1125). An unknown
+ * list, or a finding with no part, gives `false`.
  */
-export const namedByNoRelationship = (issue: ValidationIssue, named: ReadonlySet<string> | undefined): boolean =>
-    named !== undefined && issue.path !== undefined && !named.has(canonicalPartName(issue.path.replace(/\\/g, "/")));
+export const isUnreadByWord = (issue: ValidationIssue, possiblyRead: ReadonlySet<string> | undefined): boolean =>
+    possiblyRead !== undefined && issue.path !== undefined && !possiblyRead.has(canonicalPartName(issue.path.replace(/\\/g, "/")));
+
+/**
+ * Whether any of `issues` reads the `unreadByWord` fact: only the two
+ * markup-compatibility codes do, so a run without one skips the
+ * relationships scan `wordPossiblyReadParts` costs (#1116).
+ */
+export const needsPossiblyReadParts = (issues: readonly ValidationIssue[]): boolean =>
+    issues.some((issue) => issue.code === "mce-malformed" || issue.code === "mce-must-understand");
 
 /**
  * Count non-empty id/embed/link in either relationships namespace in the
@@ -579,16 +587,16 @@ export const isWordBlockingIssue = (
             // styles/footer (37) sidecars. Other sidecars/shapes are
             // unobserved and keep their warning. Relationship identity,
             // rather than the stored default path, determines a story's
-            // sidecar. An XML part under word/ blocks unless no relationship
-            // names it: session 83 (s83d) opened clean an undeclared
+            // sidecar. An XML part under word/ blocks unless Word does not
+            // read it: session 83 (s83d) opened clean an undeclared
             // Requires in a word/header83.xml no relationship names, and
             // refused it in a main document stored as word/main.xml; session
-            // 84 (s84a) did the same for an unknown MustUnderstand (#1116). A
-            // related header Word does not use still blocks, though session
-            // 84 opened both findings clean there (#1125).
+            // 84 (s84a) did the same for an unknown MustUnderstand (#1116),
+            // and opened both clean in a header the main document relates
+            // but does not use (#1125).
             const path = issue.path?.replace(/\\/g, "/");
             return (
-                (isWordXmlPart(path) && facts.namedByNoRelationship !== true) ||
+                (isWordXmlPart(path) && facts.unreadByWord !== true) ||
                 isPackageRelationshipsPart(path) ||
                 isDocumentRelationshipsPart(path, storyRootParts)
             );

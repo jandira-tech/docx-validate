@@ -68,7 +68,7 @@ import {
     wordExactTypeTargets,
     wordReferenceLoadedSources,
     wordReadParts,
-    wordRelationshipNamedParts,
+    wordPossiblyReadParts,
     wordStoryRootParts,
     wordTypedRelationshipTargets,
     wordUnobservedRelationshipTargets,
@@ -78,7 +78,8 @@ import {
 import {
     hasWordRelationshipReference,
     isWordBlockingIssue,
-    namedByNoRelationship,
+    isUnreadByWord,
+    needsPossiblyReadParts,
     unobservedReferenceAttributeValues,
     wordRelationshipReferenceIds,
 } from "./word-blocking";
@@ -853,12 +854,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const context = this.context();
         // Resolve each part set once per run and share the blocking predicate
         // with partial validation (#381, #615, #617, #718, #1116).
-        const [properties, read, storyRoots, observedContentTypes, named] = await Promise.all([
+        const [properties, read, storyRoots, observedContentTypes, possiblyRead] = await Promise.all([
             propertiesParts(context, this.profile),
             wordReadParts(context, this.profile),
             wordStoryRootParts(context, this.profile),
             wordObservedContentTypeParts(context, this.profile),
-            wordRelationshipNamedParts(context, this.profile),
+            needsPossiblyReadParts(result.issues) ? wordPossiblyReadParts(context, this.profile) : undefined,
         ]);
         const missingSidecarPart = (issue: ValidationIssue): string | undefined =>
             issue.severity === "error" && issue.code === "rels-missing-sidecar" ? issue.path : undefined;
@@ -912,7 +913,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 hasEffectiveRelationshipReference: effective?.ok === true && hasWordRelationshipReference(effective.document),
                 reachedByUnobservedRelationship: part !== undefined && unobserved.has(canonicalPartName(part.replace(/\\/g, "/"))),
                 referenceLoadedReach: part === undefined ? undefined : referenceLoadedReach.get(part),
-                namedByNoRelationship: namedByNoRelationship(issue, named),
+                unreadByWord: isUnreadByWord(issue, possiblyRead),
             };
             if (isWordBlockingIssue(issue, properties, read, storyRoots, observedContentTypes, facts)) return issue;
             return { ...issue, severity: "warning" };

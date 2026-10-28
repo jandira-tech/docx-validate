@@ -390,10 +390,9 @@ const RUNS = [
 
 // #1116: Word opened clean the undeclared-Requires Choice (session 83 s83d) and
 // an unknown MustUnderstand (session 84 s84a) in a word/header83.xml no
-// relationship names, and refused each where it reads it. A related header Word
-// does not use keeps its verdict, though session 84 opened both clean there
-// (#1125).
-describe("markup compatibility in a word/ part no relationship names warns under word-valid (#1116)", { timeout: 120_000 }, () => {
+// relationship names, and refused each where it reads it. #1125: session 84
+// opened both clean in a header the main document relates but does not use.
+describe("markup compatibility in a word/ part Word does not read warns under word-valid (#1116, #1125)", { timeout: 120_000 }, () => {
     it.each(RUNS)("%s run passes s83d's unrelated header, its mce-malformed a warning, as Word opened it clean", async (_label, checks) => {
         const parts = withUnrelatedHeader(await load(CHOICE_CLEAN), await load(CHOICE_BROKEN));
         expect(await mceRun(parts, "word-valid", checks)).toEqual({ valid: true, mce: [`mce-malformed:warning@${UNRELATED}`] });
@@ -419,7 +418,6 @@ describe("markup compatibility in a word/ part no relationship names warns under
             ([label, checks]) =>
                 [
                     ["a used header the main document relates", label, checks, (parts: Parts) => relateHeader(parts, true)],
-                    ["an unused header the main document relates", label, checks, (parts: Parts) => relateHeader(parts, false)],
                     [
                         "a part only a relationships part with no stored source names",
                         label,
@@ -470,5 +468,24 @@ describe("markup compatibility in a word/ part no relationship names warns under
         expect((await mceRun(relateHeader(mustUnderstandHeader(), true), "word-valid", checks)).mce).toEqual([
             `mce-must-understand:error@${UNRELATED}`,
         ]);
+    });
+
+    // Session 84 (s84a mu-unused-header, choice-unused-header): Word opened both
+    // clean in a header the main document relates but no section references.
+    it.each(RUNS)(
+        "%s run warns in a header the main document relates but does not use, as Word opened it clean (#1125)",
+        async (_label, checks) => {
+            expect(await mceRun(relateHeader(mustUnderstandHeader(), false), "word-valid", checks)).toEqual({
+                valid: true,
+                mce: [`mce-must-understand:warning@${UNRELATED}`],
+            });
+            const choice = relateHeader(withUnrelatedHeader(await load(CHOICE_CLEAN), await load(CHOICE_BROKEN)), false);
+            expect(await mceRun(choice, "word-valid", checks)).toEqual({ valid: true, mce: [`mce-malformed:warning@${UNRELATED}`] });
+        },
+    );
+
+    it("strict keeps mce-malformed an error in a header the main document relates but does not use", async () => {
+        const choice = relateHeader(withUnrelatedHeader(await load(CHOICE_CLEAN), await load(CHOICE_BROKEN)), false);
+        expect((await mceRun(choice, "strict")).mce).toContain(`mce-malformed:error@${UNRELATED}`);
     });
 });

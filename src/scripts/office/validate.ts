@@ -98,9 +98,9 @@ import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanti
 import { PPTXSchemaValidator } from "./validators/pptx";
 import { validateRedlining } from "./validators/redlining";
 import { propertiesParts } from "../../lib/properties-parts";
-import { wordReadParts, wordRelationshipNamedParts, wordStoryRootParts } from "../../lib/word-read-parts";
+import { wordReadParts, wordPossiblyReadParts, wordStoryRootParts } from "../../lib/word-read-parts";
 import { CT_DUPLICATE_DECLARATION } from "../../lib/content-types";
-import { isWordBlockingIssue, namedByNoRelationship } from "./validators/word-blocking";
+import { isWordBlockingIssue, isUnreadByWord, needsPossiblyReadParts } from "./validators/word-blocking";
 import { explainWordError } from "./validators/word-error-explanations";
 import { archiveWithoutEntries, loadCentralNamedArchive } from "../../lib/zip-central-names";
 import { WORD_PART_CONTENT_TYPE_MISMATCH } from "./checks/word-part-content-type-mismatch";
@@ -912,7 +912,7 @@ function findingsUnderProfile(
     context?: ValidationContext,
     storyRootParts: ReadonlySet<string> = new Set(),
     observedContentTypeParts: ReadonlySet<string> = new Set(),
-    relationshipNamedParts?: ReadonlySet<string>,
+    possiblyReadParts?: ReadonlySet<string>,
 ): ValidationIssue[] {
     // Full DOCX validation diagnoses root Ignorable prefixes before dropping
     // their MC restatements. Apply those same two steps only when the selected
@@ -950,7 +950,7 @@ function findingsUnderProfile(
                 : outcome.issues.map((issue): ValidationIssue =>
                       issue.severity === "error" &&
                       !isWordBlockingIssue(issue, properties, wordRead, storyRootParts, observedContentTypeParts, {
-                          namedByNoRelationship: namedByNoRelationship(issue, relationshipNamedParts),
+                          unreadByWord: isUnreadByWord(issue, possiblyReadParts),
                       })
                           ? { ...issue, severity: "warning" }
                           : issue,
@@ -1023,7 +1023,10 @@ async function archiveFindings(
                       await wordObservedContentTypeParts(opened.context, profile),
                   ]
                 : [new Set<string>(), new Set<string>(), new Set<string>(), new Set<string>()];
-        const named = profile === "word-valid" && format === "docx" ? await wordRelationshipNamedParts(opened.context, profile) : undefined;
+        const possiblyRead =
+            profile === "word-valid" && format === "docx" && outcomes.some((outcome) => needsPossiblyReadParts(outcome.issues))
+                ? await wordPossiblyReadParts(opened.context, profile)
+                : undefined;
         const issues = findingsUnderProfile(
             { ...run, outcomes, issues: outcomes.flatMap((outcome) => outcome.issues) },
             registry,
@@ -1034,7 +1037,7 @@ async function archiveFindings(
             opened.context,
             storyRoots,
             observedContentTypes,
-            named,
+            possiblyRead,
         );
         return { issues, executed: [...run.executed] };
     } catch {
@@ -1217,8 +1220,10 @@ async function runSelectedChecks(
                   await wordObservedContentTypeParts(opened.context, mode.profile),
               ]
             : [new Set<string>(), new Set<string>(), new Set<string>(), new Set<string>()];
-    const named =
-        mode.profile === "word-valid" && format === "docx" ? await wordRelationshipNamedParts(opened.context, mode.profile) : undefined;
+    const possiblyRead =
+        mode.profile === "word-valid" && format === "docx" && outcomes.some((outcome) => needsPossiblyReadParts(outcome.issues))
+            ? await wordPossiblyReadParts(opened.context, mode.profile)
+            : undefined;
     const issues = findingsUnderProfile(
         { ...run, outcomes, issues: outcomes.flatMap((outcome) => outcome.issues) },
         registry,
@@ -1229,7 +1234,7 @@ async function runSelectedChecks(
         opened.context,
         storyRoots,
         observedContentTypes,
-        named,
+        possiblyRead,
     );
     return {
         valid: issues.every((issue) => issue.severity !== "error"),

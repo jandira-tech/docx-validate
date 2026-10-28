@@ -98,6 +98,7 @@ import {
     canonicalPartName,
     equivalentPartLookup,
     findEquivalentPart,
+    hasUriScheme,
     isRelationshipsFolderName,
     isRelationshipsPartName,
     resolveTarget,
@@ -723,25 +724,34 @@ export const wordReadTypedTargets = async (context: ValidationContext, profile?:
     (await wordStoryReadTargets(context, profile))?.targets ?? [];
 
 /**
- * Canonical names of the parts an internal relationship names (#1116), from
- * any relationships part, wherever it is stored and whether or not Word reads
- * its source. Every `Relationship` element of the stored DOM counts, nested
- * ones included, so a relationship inside a Choice Word does not select still
- * names its part: the list can be too wide, never too narrow. `undefined`
- * when that cannot be decided: the package relationships part is missing or
- * does not parse, it names no stored main document (#816), or a relationships
- * part fails the byte-level XML checks.
+ * Canonical names of the parts Word may read (#1116, #1125): every part the
+ * read model reads, and every part an internal relationship names, from any
+ * relationships part, wherever it is stored and whether or not Word reads its
+ * source — except a header, footer, comments or notes relationship that is a
+ * direct child of a story root's own relationships part, which names its part
+ * only through the read model, so a story the root relates but does not use
+ * stays out (session 84 s84a). Every other `Relationship` element of the
+ * stored DOM counts, nested ones included, so a relationship inside a Choice
+ * Word does not select still names its part: the list can be too wide, never
+ * too narrow. A target spelling a URI scheme names the part word-valid's
+ * file-reference walk resolves it to: every scheme but `http:`, `https:` and
+ * `mailto:` reads as a relative reference (#988, #1008), which the read model
+ * does not follow, so a story root's own story relationship to one counts
+ * (#1127). `undefined` when that cannot be decided: the package
+ * relationships part is missing or does not parse, it names no stored main
+ * document (#816), or a relationships part fails the byte-level XML checks.
  */
-export const wordRelationshipNamedParts = async (
-    context: ValidationContext,
-    profile?: Profile,
-): Promise<ReadonlySet<string> | undefined> => {
+export const wordPossiblyReadParts = async (context: ValidationContext, profile?: Profile): Promise<ReadonlySet<string> | undefined> => {
     const reach = await packageReach(context, profile);
     if (reach === undefined || reach.mainParts.length === 0) {
         return undefined;
     }
     const { names, lookup } = reach;
-    const named = new Set<string>();
+    const read = await wordReadTypedTargets(context, profile);
+    const rootSidecars = new Set(
+        read.filter((target) => target.segment === "relationships").map((target) => canonicalPartName(target.part)),
+    );
+    const named = new Set(read.map((target) => canonicalPartName(target.part)));
     for (const name of names) {
         if (!isRelationshipsPartName(name)) {
             continue;
@@ -751,19 +761,42 @@ export const wordRelationshipNamedParts = async (
         if (bytes === undefined || !parsed?.ok || (await checkXmlSyntax(bytes, name)).some((issue) => issue.severity === "error")) {
             return undefined;
         }
+        const rootSidecar = rootSidecars.has(canonicalPartName(name));
         const baseDir = relationshipsBaseDir(name);
         for (const relationship of getElementsByTagNameNSAll(parsed.document, NS.PR, "Relationship")) {
             if (relationship.getAttribute("TargetMode") === "External") {
                 continue;
             }
-            const target = resolveTarget(lookup, baseDir, relationship.getAttribute("Target") ?? "");
-            if (target !== undefined) {
-                named.add(canonicalPartName(target));
+            const reference = relationship.getAttribute("Target") ?? "";
+            const target = resolveTarget(lookup, baseDir, reference);
+            const segment = officeRelationshipTypeSegment(relationship.getAttribute("Type") ?? "");
+            if (
+                target !== undefined &&
+                rootSidecar &&
+                segment !== undefined &&
+                LAZY_TYPES.has(segment) &&
+                relationship.parentNode === parsed.document.documentElement
+            ) {
+                continue;
+            }
+            const part = target ?? schemeTargetPart(lookup, baseDir, reference);
+            if (part !== undefined) {
+                named.add(canonicalPartName(part));
             }
         }
     }
     return named;
 };
+
+/**
+ * The part a target spelling a URI scheme names under word-valid's
+ * file-reference walk, which skips only `http:`, `https:` and `mailto:`,
+ * ASCII case-insensitively, and resolves any other scheme as a relative
+ * reference (#988, #1008). `undefined` for those three schemes and for a
+ * target with no scheme, which `resolveTarget` reads.
+ */
+const schemeTargetPart = (lookup: (partName: string) => string | undefined, baseDir: string, target: string): string | undefined =>
+    hasUriScheme(target) && !/^(?:https?|mailto):/i.test(target) ? resolveTarget(lookup, baseDir, `./${target}`) : undefined;
 
 /** The lazily read stories, beside the story roots' own `officeDocument` entries. */
 const STORY_SEGMENTS: ReadonlySet<string> = new Set(["header", "footer", "comments", "footnotes", "endnotes"]);
