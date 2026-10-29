@@ -12,7 +12,7 @@
 <h1>Interface XsdValidationOutcome</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">XsdValidationOutcome</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#errors">errors</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Set</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#infrastructure">infrastructure</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#issues">issues</a><span class="tsd-signature-symbol">?:</span> <a href="../types/ValidationIssue.html" class="tsd-signature-type tsd-kind-type-alias">ValidationIssue</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#schemaissues">schemaIssues</a><span class="tsd-signature-symbol">?:</span> <a href="../types/ValidationIssue.html" class="tsd-signature-type tsd-kind-type-alias">ValidationIssue</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#transformedview">transformedView</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#valid">valid</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/6d0357ddf1acad91777b4a99730bacae36ba0826/src/scripts/office/validators/base.ts#L448">src/scripts/office/validators/base.ts:448</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/19f38432fbe13ab35977d656a9ff6c015ee51ef2/src/scripts/office/validators/base.ts#L448">src/scripts/office/validators/base.ts:448</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -34,7 +34,7 @@
 <h3 class="tsd-anchor-link" id="errors"><span>errors</span><a href="#errors" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Set</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/6d0357ddf1acad91777b4a99730bacae36ba0826/src/scripts/office/validators/base.ts#L451">src/scripts/office/validators/base.ts:451</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/19f38432fbe13ab35977d656a9ff6c015ee51ef2/src/scripts/office/validators/base.ts#L451">src/scripts/office/validators/base.ts:451</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="infrastructure"><code class="tsd-tag">Optional</code><span>infrastructure</span><a href="#infrastructure" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">infrastructure</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -45,14 +45,14 @@ never erase these: they surface as error-severity issues and keep the
 part invalid under every profile (#289).</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/6d0357ddf1acad91777b4a99730bacae36ba0826/src/scripts/office/validators/base.ts#L476">src/scripts/office/validators/base.ts:476</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/19f38432fbe13ab35977d656a9ff6c015ee51ef2/src/scripts/office/validators/base.ts#L476">src/scripts/office/validators/base.ts:476</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="issues"><code class="tsd-tag">Optional</code><span>issues</span><a href="#issues" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">issues</span><span class="tsd-signature-symbol">?:</span> <a href="../types/ValidationIssue.html" class="tsd-signature-type tsd-kind-type-alias">ValidationIssue</a><span class="tsd-signature-symbol">[]</span></div>
 <div class="tsd-comment tsd-typography"><p>Compatibility diagnostics keep their own stable codes, independent of XSD messages.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/6d0357ddf1acad91777b4a99730bacae36ba0826/src/scripts/office/validators/base.ts#L453">src/scripts/office/validators/base.ts:453</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/19f38432fbe13ab35977d656a9ff6c015ee51ef2/src/scripts/office/validators/base.ts#L453">src/scripts/office/validators/base.ts:453</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="schemaissues"><code class="tsd-tag">Optional</code><span>schema<wbr/>Issues</span><a href="#schemaissues" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">schemaIssues</span><span class="tsd-signature-symbol">?:</span> <a href="../types/ValidationIssue.html" class="tsd-signature-type tsd-kind-type-alias">ValidationIssue</a><span class="tsd-signature-symbol">[]</span></div>
@@ -63,7 +63,7 @@ verbatim (deduplicated message strings would collapse repeated
 identical defects onto one report and lose their locations).</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/6d0357ddf1acad91777b4a99730bacae36ba0826/src/scripts/office/validators/base.ts#L461">src/scripts/office/validators/base.ts:461</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/19f38432fbe13ab35977d656a9ff6c015ee51ef2/src/scripts/office/validators/base.ts#L461">src/scripts/office/validators/base.ts:461</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="transformedview"><code class="tsd-tag">Optional</code><span>transformed<wbr/>View</span><a href="#transformedview" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">transformedView</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -73,14 +73,14 @@ re-serialization). Reported <code>line</code> values then refer to the
 transformed view, not the source part.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/6d0357ddf1acad91777b4a99730bacae36ba0826/src/scripts/office/validators/base.ts#L468">src/scripts/office/validators/base.ts:468</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/19f38432fbe13ab35977d656a9ff6c015ee51ef2/src/scripts/office/validators/base.ts#L468">src/scripts/office/validators/base.ts:468</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="valid"><span>valid</span><a href="#valid" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">valid</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span></div>
 <div class="tsd-comment tsd-typography"><p><code>null</code> mirrors Python's <code>(None, None)</code> skip — no schema configured.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/6d0357ddf1acad91777b4a99730bacae36ba0826/src/scripts/office/validators/base.ts#L450">src/scripts/office/validators/base.ts:450</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/19f38432fbe13ab35977d656a9ff6c015ee51ef2/src/scripts/office/validators/base.ts#L450">src/scripts/office/validators/base.ts:450</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
