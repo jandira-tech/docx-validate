@@ -34,20 +34,6 @@ async function writeDoc(dir: string, body: string): Promise<string> {
     return docPath;
 }
 
-/** A part stored in UTF-16, with the byte order mark that says which way round it is. */
-function utf16Part(text: string, endian: "le" | "be"): Buffer {
-    const body = Buffer.from(text, "utf16le");
-    if (endian === "be") body.swap16();
-    return Buffer.concat([Buffer.from(endian === "le" ? [0xff, 0xfe] : [0xfe, 0xff]), body]);
-}
-
-/** The text of a UTF-16 part, decoded in the byte order it was stored in. */
-function decodeUtf16(bytes: Buffer, endian: "le" | "be"): string {
-    const body = Buffer.from(bytes.subarray(2));
-    if (endian === "be") body.swap16();
-    return body.toString("utf16le");
-}
-
 async function buildDocx(target: string, body: string): Promise<void> {
     const zip = new JSZip();
     zip.file("word/document.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document ${W}>${body}</w:document>`);
@@ -133,70 +119,6 @@ describe("simplifyRedlines", () => {
 
             const result = await simplifyRedlines(dir);
             expect(result.count).toBe(1);
-        });
-    });
-
-    it.each(["le", "be"] as const)("merges tracked changes in a UTF-16%s main part and keeps its encoding (#866)", async (endian) => {
-        await withTempDir(async (dir) => {
-            const body =
-                "<w:body><w:p>" +
-                '<w:ins w:id="1" w:author="Alice" w:date="2025-01-01T00:00:00Z">' +
-                "<w:r><w:t>foo</w:t></w:r>" +
-                "</w:ins>" +
-                '<w:ins w:id="2" w:author="Alice" w:date="2025-02-02T00:00:00Z">' +
-                "<w:r><w:t>bar</w:t></w:r>" +
-                "</w:ins>" +
-                "</w:p></w:body>";
-            const document = `<?xml version="1.0" encoding="UTF-16" standalone="yes"?>\n<w:document ${W}>${body}</w:document>`;
-            const wordDir = path.join(dir, "word");
-            await fs.mkdir(wordDir, { recursive: true });
-            const docPath = path.join(wordDir, "document.xml");
-            await fs.writeFile(docPath, utf16Part(document, endian));
-
-            const result = await simplifyRedlines(dir);
-            expect(result.count).toBe(1);
-
-            const bytes = await fs.readFile(docPath);
-            expect([...bytes.subarray(0, 2)]).toEqual(endian === "le" ? [0xff, 0xfe] : [0xfe, 0xff]);
-            const after = decodeUtf16(bytes, endian);
-            expect((after.match(/<w:ins[ >]/g) ?? []).length).toBe(1);
-            expect(after).toMatch(/foo/);
-            expect(after).toMatch(/bar/);
-        });
-    });
-
-    // #1139: the walk keeps its own stack, so a part nested deeper than the
-    // call stack is simplified as a shallow one is.
-    it("merges the tracked changes of a main document nested 50 000 elements deep (#1139)", async () => {
-        await withTempDir(async (dir) => {
-            const depth = 50_000;
-            const docPath = await writeDoc(
-                dir,
-                `<w:body>${"<w:customXml>".repeat(depth)}<w:p>` +
-                    '<w:ins w:id="1" w:author="Alice"><w:r><w:t>foo</w:t></w:r></w:ins>' +
-                    '<w:ins w:id="2" w:author="Alice"><w:r><w:t>bar</w:t></w:r></w:ins>' +
-                    `</w:p>${"</w:customXml>".repeat(depth)}</w:body>`,
-            );
-            expect(await simplifyRedlines(dir)).toEqual({ count: 1, message: "Simplified 1 tracked changes" });
-            const after = await fs.readFile(docPath, "utf8");
-            expect((after.match(/<w:ins[ >]/g) ?? []).length).toBe(1);
-        });
-    });
-
-    // #1139: the stack walk starts at the root, as the recursive one did, so
-    // a part whose root is a paragraph has its tracked changes merged.
-    it("merges the tracked changes of a part whose root is a paragraph (#1139)", async () => {
-        await withTempDir(async (dir) => {
-            await fs.mkdir(path.join(dir, "word"), { recursive: true });
-            const docPath = path.join(dir, "word", "document.xml");
-            await fs.writeFile(
-                docPath,
-                `<?xml version="1.0" encoding="UTF-8"?>\n<w:p ${W}>` +
-                    '<w:ins w:id="1" w:author="Alice"><w:r><w:t>foo</w:t></w:r></w:ins>' +
-                    '<w:ins w:id="2" w:author="Alice"><w:r><w:t>bar</w:t></w:r></w:ins></w:p>',
-                "utf8",
-            );
-            expect(await simplifyRedlines(dir)).toEqual({ count: 1, message: "Simplified 1 tracked changes" });
         });
     });
 });

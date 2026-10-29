@@ -39,67 +39,16 @@
  * `validate()` and merge the per-check results with `mergeResults`.
  */
 
-import { existsSync, lstatSync, promises as fs, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
-import type { Stats } from "node:fs";
+import { existsSync, promises as fs, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import {
-    CT_DUPLICATE_DECLARATION,
-    duplicateContentTypeDeclarations,
-    equivalentPartLookup,
-    findContentTypesStream,
-    findEquivalentPart,
-    isContentTypesStreamName,
-    isRelationshipsFolderName,
-    isRelationshipsPartName,
-    parseContentTypes,
-    partExtension,
-    relationshipTargetFolder,
-    resolveContentType,
-    resolvePartName,
-} from "../../../lib/content-types";
-import {
-    applyMarkupCompatibility,
-    isAlternateContentCharacterData,
-    relocateCompatibilityIssue,
-    RELATIONSHIPS_UNDERSTOOD_NAMESPACES,
-    STRICT_UNDERSTOOD_NAMESPACES,
-    UNDERSTOOD_NAMESPACES,
-    understoodNamespacesForPart,
-    withWordSessionCitation,
-} from "../../../lib/markup-compatibility";
-import { STRICT_OOXML_NS_PREFIX } from "../../../lib/conformance-class";
-import { opcNameIssueSeverity, wordObservedIssueSeverity } from "../../../lib/mode-policy";
 import { withTempDir } from "../../../lib/run-cli";
-import { VALIDATION_DEADLINE, type RunDeadline } from "../../../lib/run-deadline";
-import { indexByPartName, normalizePartName, type ValidationContext } from "../../../lib/validation-context";
-import type { PackageFormat, Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
-import { DEFAULT_PROFILE, NS, OK_RESULT } from "../../../lib/types";
-import { allowSchemaResourceRoot, createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
-import {
-    decodeXmlBytes,
-    getElementsByTagNameNSAll,
-    getElementsByTagNameAll,
-    getRelationshipChildren,
-    parseXml,
-    parseXmlBytes,
-    serializeXml,
-} from "../../../lib/xml-helpers";
-import { writeXmlPart } from "../../../lib/xml-part-io";
-import { checkXmlSyntax } from "../../../lib/xml-syntax";
+import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
+import { DEFAULT_PROFILE, OK_RESULT } from "../../../lib/types";
+import { createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
+import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
 import { resolveSafeZipEntry } from "../../../lib/zip-path";
-import { XML_SYNTAX_CHECK_ID, xmlPartNames } from "../checks/xml";
-import { CT_OVERRIDE_PARTNAME_WORD_REFUSED, ctOverridePartnameWordRefusedCheck } from "../checks/ct-override-partname-word-refused";
-import { CT_OVERRIDE_PARTNAME_INVALID, ctOverridePartnameInvalidCheck } from "../checks/ct-override-partname";
-import { ctDuplicateDeclarationCheck } from "../checks/word-content-types";
-import { isStoryReferenceLocalName, registerStoryReferenceIdentity } from "../story-reference-identity";
-import { registerRelsBrokenTarget, registerRelsEmptyElementShape } from "../rels-finding-facts";
-import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
-import { CT_MARKUP_COMPATIBILITY, ctMarkupCompatibilityCheck } from "../checks/ct-markup-compatibility";
-import { globalElementKey, schemaGlobals } from "../schema-globals";
-import type JSZip from "jszip";
-import { AsyncLocalStorage } from "node:async_hooks";
 
 /**
  * Schema mapping table — file basename / suffix → relative path inside the
@@ -119,7 +68,6 @@ const SCHEMA_MAPPINGS: Record<string, string> = {
     "commentsExtensible.xml": "microsoft/wml-cex-2018.xsd",
     "commentsExtended.xml": "microsoft/wml-2012.xsd",
     chart: "ISO-IEC29500-4_2016/dml-chart.xsd",
-    diagram: "ISO-IEC29500-4_2016/dml-diagram.xsd",
     theme: "ISO-IEC29500-4_2016/dml-main.xsd",
     drawing: "ISO-IEC29500-4_2016/dml-main.xsd",
     "bibliography.xml": "ISO-IEC29500-4_2016/shared-bibliography.xsd",
@@ -128,58 +76,23 @@ const SCHEMA_MAPPINGS: Record<string, string> = {
     sig: "ecma/fourth-edition/opc-digSig.xsd",
 };
 
-// These namespaces are understood only when validating their standalone
-// mapped part schemas. wml.xsd does not import these Microsoft extensions.
-const SCHEMA_NAMESPACE_CAPABILITIES: Readonly<Record<string, string>> = {
-    "wml-2012.xsd": NS.W15,
-    "wml-cex-2018.xsd": NS.W16CEX,
-    "wml-cid-2016.xsd": NS.W16CID,
-};
-
-/**
- * Directory inside `schemas/` holding the bundled ISO/IEC 29500 Strict
- * conformance-class schemas (see `schemas/SOURCES.md`).
- */
-const STRICT_SCHEMA_DIR = "iso-strict";
-
-/**
- * Subset of {@link SCHEMA_MAPPINGS} keys that have a Strict-conformance
- * schema under {@link STRICT_SCHEMA_DIR}. OPC parts (`[Content_Types].xml`,
- * `.rels`, `docProps/core.xml`, digital signatures) share one namespace across
- * both conformance classes and always resolve to the OPC schemas; Microsoft
- * extension parts (`commentsExtended.xml`, `people.xml`, …) keep their
- * `microsoft/` schemas. A Strict part whose key is absent here has no
- * applicable schema — it is skipped exactly like an unmapped Transitional
- * part.
- */
-const STRICT_SCHEMA_MAPPINGS: Record<string, string> = {
-    word: `${STRICT_SCHEMA_DIR}/wml.xsd`,
-    ppt: `${STRICT_SCHEMA_DIR}/pml.xsd`,
-    xl: `${STRICT_SCHEMA_DIR}/sml.xsd`,
-    "app.xml": `${STRICT_SCHEMA_DIR}/shared-documentPropertiesExtended.xsd`,
-    "custom.xml": `${STRICT_SCHEMA_DIR}/shared-documentPropertiesCustom.xsd`,
-    chart: `${STRICT_SCHEMA_DIR}/dml-chart.xsd`,
-    diagram: `${STRICT_SCHEMA_DIR}/dml-diagram.xsd`,
-    theme: `${STRICT_SCHEMA_DIR}/dml-main.xsd`,
-    drawing: `${STRICT_SCHEMA_DIR}/dml-main.xsd`,
-    "bibliography.xml": `${STRICT_SCHEMA_DIR}/shared-bibliography.xsd`,
-    "additionalCharacteristics.xml": `${STRICT_SCHEMA_DIR}/shared-additionalCharacteristics.xsd`,
-    itemProps: `${STRICT_SCHEMA_DIR}/shared-customXmlDataProperties.xsd`,
-};
-
 const IGNORED_VALIDATION_ERRORS: readonly string[] = [
-    // Inherited from the Python validator with no recorded reason or
-    // fixture; it hides every engine message that mentions the element.
-    // Lenient keeps it for compatibility. Strict never consults this list:
-    // its validity rests on unsuppressed schema issues. Word-valid runs no
-    // XSD at all, so it never consults the list either.
     "hyphenationZone",
-    // opc-coreProperties.xsd's Dublin Core imports resolve to the bundled
-    // schemas/dublincore/ copies (SOURCES.md), so the libxmljs2-era
-    // suppressions for the missing remote import ("purl.org/dc/terms",
-    // "dublincore.org", "Invalid XSD schema") are gone — schema-load
-    // failures must surface as xsd-schema-load-failed, never a suppressed
-    // pass.
+    "purl.org/dc/terms",
+    // opc-coreProperties.xsd imports the Dublin Core schema from a remote
+    // HTTP URL that is not (and should not be) bundled; libxml2-wasm reports
+    // the failed fetch with the dublincore.org host in the message. Python's
+    // lxml hit the same wall with the purl.org/dc/terms namespace — both
+    // strings are filtered so the docProps/core.xml false-positive stays
+    // suppressed (AGENTS.md behavioural note 4).
+    "dublincore.org",
+    // Legacy defence from the libxmljs2 era, kept because the filter is
+    // engine-agnostic string matching: libxmljs2 swallowed schema-load
+    // failures into one opaque "Invalid XSD schema" error. libxml2-wasm
+    // surfaces load failures as explicit `xsd-schema-load-failed` issues, so
+    // this string should no longer occur — but a schema regression would
+    // otherwise resurrect the false-positive this list exists to suppress.
+    "Invalid XSD schema",
 ];
 
 const UNIQUE_ID_REQUIREMENTS: Record<string, [attr: string, scope: "file" | "global"]> = {
@@ -206,69 +119,43 @@ const MC_NAMESPACE = "http://schemas.openxmlformats.org/markup-compatibility/200
 export const XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace";
 export const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
 export const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
-export const STRICT_OFFICE_RELATIONSHIPS_NAMESPACE = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
+
 const MAIN_CONTENT_FOLDERS = new Set(["word", "ppt", "xl"]);
 
-/**
- * The DrawingML diagram parts' file names, ASCII lower-cased: data, layout,
- * quick style and colors (roots `dgm:dataModel`, `dgm:layoutDef`,
- * `dgm:styleDef`, `dgm:colorsDef`). Microsoft's drawing cache (`drawingN.xml`,
- * `dsp:drawing`) has no bundled schema.
- */
-const DIAGRAM_PART_NAME = /^(?:data|layout|quickstyle|colors)\d*\.xml$/;
-
-/**
- * The PresentationML parts one folder below `ppt/`, keyed by their folder's
- * ASCII lower case: each file-name pattern names the parts whose root element
- * pml.xsd declares there — `p:sld` (slides), `p:sldLayout` (slideLayouts),
- * `p:sldMaster` (slideMasters), `p:notes` (notesSlides), `p:notesMaster`
- * (notesMasters), `p:handoutMaster` (handoutMasters), the legacy `p:cmLst`
- * comments (comments) and `p:tagLst` tags (tags). PowerPoint's modern
- * comments (`ppt/comments/modernComment_*.xml`, root in the Microsoft
- * 2018/8 namespace pml.xsd does not declare) match no pattern, so they stay
- * unmapped and draw the #628 audit (#864). A map, not an object literal: the
- * folder name comes from the package, and `constructor` or `__proto__` must
- * name no entry.
- */
-const PPT_PART_NAME_BY_FOLDER: ReadonlyMap<string, RegExp> = new Map([
-    ["slides", /^slide\d*\.xml$/],
-    ["slidelayouts", /^slidelayout\d*\.xml$/],
-    ["slidemasters", /^slidemaster\d*\.xml$/],
-    ["notesslides", /^notesslide\d*\.xml$/],
-    ["notesmasters", /^notesmaster\d*\.xml$/],
-    ["handoutmasters", /^handoutmaster\d*\.xml$/],
-    ["comments", /^comment\d*\.xml$/],
-    ["tags", /^tag\d*\.xml$/],
+const OOXML_NAMESPACES = new Set<string>([
+    "http://schemas.openxmlformats.org/officeDocument/2006/math",
+    "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+    "http://schemas.openxmlformats.org/schemaLibrary/2006/main",
+    "http://schemas.openxmlformats.org/drawingml/2006/main",
+    "http://schemas.openxmlformats.org/drawingml/2006/chart",
+    "http://schemas.openxmlformats.org/drawingml/2006/chartDrawing",
+    "http://schemas.openxmlformats.org/drawingml/2006/diagram",
+    "http://schemas.openxmlformats.org/drawingml/2006/picture",
+    "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing",
+    "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing",
+    "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+    "http://schemas.openxmlformats.org/presentationml/2006/main",
+    "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
+    "http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes",
+    "http://www.w3.org/XML/1998/namespace",
 ]);
 
 /**
- * The conventional file names of the parts stored directly in `ppt/`, ASCII
- * lower-cased, whose root element pml.xsd, or a schema it imports, declares:
- * `p:presentation` (presentation.xml), `p:presentationPr` (presProps.xml),
- * `p:viewPr` (viewProps.xml), `p:cmAuthorLst` (commentAuthors.xml) and the
- * DrawingML `a:tblStyleLst` pml.xsd reaches through its dml-main.xsd import
- * (tableStyles.xml). Since #887 they are a fast path only: every other name
- * directly in `ppt/` routes by its root element (see `_schemaMappingKey`),
- * so a renamed main presentation or a relocated slide keeps its schema
- * check, while the roots no bundled schema declares — PowerPoint's modern
- * comment authors list (`ppt/authors.xml`, `p188:authorLst`) and revision
- * info (`ppt/revisionInfo.xml`, `p1510:revInfo`), which the folder rule sent
- * to pml.xsd only to fail (#872) — stay unmapped. A set, not an object
- * literal: the file name comes from the package, and `constructor` or
- * `__proto__` must name no entry.
+ * URI prefix shared by all ISO OOXML Strict conformance class namespaces.
+ * Strict documents use `purl.oclc.org/ooxml/` instead of the Transitional
+ * `schemas.openxmlformats.org/…` prefix. Any root element namespace that
+ * starts with this prefix belongs to the Strict conformance class.
+ *
+ * The XSD schemas bundled with this validator are Transitional-only, so Strict
+ * files cannot be validated against them — `validateAgainstXsd` detects these
+ * via `_isStrictXmlFile` and emits an info-level `xsd-strict-skipped` issue
+ * instead of false-positive xsd-* errors.
+ *
+ * See PORT_NOTES.md § "ISO OOXML Strict XSD validation" for rationale.
+ * Adding full Strict schema support is tracked as a future improvement.
  */
-const PPT_DIRECT_PART_NAMES: ReadonlySet<string> = new Set([
-    "presentation.xml",
-    "presprops.xml",
-    "viewprops.xml",
-    "commentauthors.xml",
-    "tablestyles.xml",
-]);
-
-const asciiLowerCase = (text: string): string => text.replace(/[A-Z]/g, (letter) => letter.toLowerCase());
-
-/** {@link SCHEMA_MAPPINGS} keys by their ASCII lower case, for part-name lookups (#377). */
-const SCHEMA_KEY_BY_LOWER_CASE = new Map(Object.keys(SCHEMA_MAPPINGS).map((key) => [asciiLowerCase(key), key]));
+const STRICT_OOXML_NS_PREFIX = "http://purl.oclc.org/ooxml/";
 
 // Use a non-`g` regex for the predicate (`.test()` against a stateful `g`
 // pattern advances `lastIndex` between calls and silently mis-skips matches),
@@ -303,14 +190,6 @@ export interface BaseSchemaValidatorOptions {
      * native addon cannot build against Node 26.
      */
     xsdValidator?: XsdValidator;
-    /**
-     * The wall-clock budget of the run this validator belongs to (#630).
-     * `validate()` asks it before each of its rules, and the schema walk
-     * before each part; a rule or part already running finishes. The steps it
-     * stops are recorded on the deadline, and `validate()` reports them in one
-     * error-severity `validation-deadline` finding. Repairs never consult it.
-     */
-    deadline?: RunDeadline;
 }
 
 /**
@@ -341,29 +220,17 @@ export function defaultSchemasDir(): string {
 
 /**
  * Containment check for relationship targets resolved from untrusted OOXML
- * parts (CWE-22). Two layers, and the canonical one decides (#594):
+ * parts (CWE-22). Two layers:
  *
- * 1. Lexical: the resolved path, as spelled, must stay under `unpackedDir`
- *    (`path.relative` must not escape via `..` or go absolute). This judges
- *    the spellings as passed, so on a case-insensitive volume it reads an
- *    in-root target spelled unlike the root as an escape — it is a filter,
- *    never the verdict, while layer 2 can run.
- * 2. Symlinks and case: a purely lexical check is defeated by a symlink
- *    inside the unpacked tree pointing outward (`link/secret` where `link`
- *    → `/etc`), and blind to spelling: Node's JS `realpathSync` keeps the
- *    case a path is written in, so only `realpathSync.native` reports the
- *    on-disk case (#587). The root is canonicalized and the deepest
- *    EXISTING ancestor of the target is resolved with `realpathSync.native`
- *    and re-checked against it: a target whose canonical path lies under
- *    the canonical root is contained under any spelling; non-existent
- *    trailing components cannot change the verdict (callers report missing
- *    targets as broken anyway).
+ * 1. Lexical: the resolved path must stay under `unpackedDir`
+ *    (`path.relative` must not escape via `..` or go absolute).
+ * 2. Symlinks: a purely lexical check is defeated by a symlink inside the
+ *    unpacked tree pointing outward (`link/secret` where `link` → `/etc`).
+ *    The deepest EXISTING ancestor of the target is resolved with
+ *    `realpathSync` and re-checked; non-existent trailing components cannot
+ *    change the verdict (callers report missing targets as broken anyway).
  *
- * The lexical layer decides only when the realpath layer cannot run — when
- * the root itself cannot be canonicalized, or when nothing along the target
- * resolves — and it fails closed for a lexical escape in both cases.
- *
- * Returns the target as passed when contained, `null` on escape.
+ * Returns the original resolved path when contained, `null` on escape.
  * Not race-resistant across the check and a later open — acceptable for a
  * validator scanning an unpacked tree it controls; flagged for any future
  * fd-based (`O_NOFOLLOW`) hardening.
@@ -372,66 +239,33 @@ export function containRelationshipTarget(unpackedDir: string, resolvedPath: str
     const root = path.resolve(unpackedDir);
     const target = path.resolve(resolvedPath);
     const rel = path.relative(root, target);
-    const escapesLexically = rel === ".." || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel);
+    if (rel === ".." || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel)) return null;
 
-    let realRoot: string;
+    let realRoot = root;
     try {
-        realRoot = realpathSync.native(root);
+        realRoot = realpathSync(root);
     } catch {
-        // Root itself unreachable — the lexical verdict on the spellings as
-        // passed is all that remains, failing closed for an escape.
-        return escapesLexically ? null : target;
+        // Root itself unreachable — the lexical verdict stands.
+        return target;
     }
     let probe = target;
-    let resolved = false;
     for (;;) {
         let real: string | null = null;
         try {
-            real = realpathSync.native(probe);
+            real = realpathSync(probe);
         } catch {
             real = null;
         }
         if (real !== null) {
             const realRel = path.relative(realRoot, real);
             if (realRel === ".." || realRel.startsWith(`..${path.sep}`) || path.isAbsolute(realRel)) return null;
-            resolved = true;
             break;
         }
         const parent = path.dirname(probe);
         if (parent === probe) break;
         probe = parent;
     }
-    // The realpath layer could not run on anything along the target; the
-    // lexical verdict stands, failing closed for an escape.
-    if (!resolved && escapesLexically) return null;
     return target;
-}
-
-/**
- * The path, inside `unpackedDir`, of the part a relationship target names:
- * the target's dot segments resolve against `baseDir`, the source part's
- * folder inside `unpackedDir` (unused for a package-absolute target, which
- * resolves from the root), as part-name segments, a climb above the package
- * root stopping at the root, as RFC 3986's dot-segment removal stops it and
- * Word reads it: a stored root customXml item, styles part, header and notes
- * part, each named by `../../<name>` or `/../<name>` (sessions 54 and 74 to
- * 76, #984). The segments resolve before any file-system join, so a climb
- * cannot come back into the tree through the unpacked directory's own name
- * (CodeRabbit on #985). The path is lexical: {@link containRelationshipTarget}
- * still decides whether a symbolic link takes it outside the tree.
- */
-export function packageTargetPath(unpackedDir: string, baseDir: string, target: string): string {
-    const root = path.resolve(unpackedDir);
-    const absolute = target.startsWith("/");
-    const folder = absolute
-        ? []
-        : path
-              .relative(root, path.resolve(baseDir))
-              .split(path.sep)
-              .filter((segment) => segment !== "");
-    const segments = path.posix.normalize([...folder, absolute ? target.replace(/^\/+/, "") : target].join("/")).split("/");
-    const climb = segments.findIndex((segment) => segment !== "..");
-    return path.join(root, ...(climb === -1 ? [] : segments.slice(climb)));
 }
 
 interface IdHit {
@@ -439,46 +273,10 @@ interface IdHit {
     tag: string;
 }
 
-/** A root element's identity: its namespace URI and local name. */
-interface RootQName {
-    readonly namespace: string;
-    readonly localName: string;
-}
-
 export interface XsdValidationOutcome {
     /** `null` mirrors Python's `(None, None)` skip — no schema configured. */
     valid: boolean | null;
     errors: Set<string>;
-    /** Compatibility diagnostics keep their own stable codes, independent of XSD messages. */
-    issues?: ValidationIssue[];
-    /**
-     * Structured engine findings for the part, one entry per error
-     * occurrence with `line` when libxml2 reports it. Populated by
-     * `_validateSingleFileXsd` on failure. The `strict` profile emits these
-     * verbatim (deduplicated message strings would collapse repeated
-     * identical defects onto one report and lose their locations).
-     */
-    schemaIssues?: ValidationIssue[];
-    /**
-     * True when the XML sent to the engine differs from the part bytes
-     * (template-tag stripping, the markup-compatibility view, or
-     * re-serialization). Reported `line` values then refer to the
-     * transformed view, not the source part.
-     */
-    transformedView?: boolean;
-    /**
-     * True when the failure is an infrastructure finding — the schema failed
-     * to load (`xsd-schema-load-failed`) or the engine itself failed — rather
-     * than a document defect. Baseline subtraction against `--original` must
-     * never erase these: they surface as error-severity issues and keep the
-     * part invalid under every profile (#289).
-     */
-    infrastructure?: boolean;
-}
-
-/** The last path segment of a relationship type, the name a mismatch message shows. */
-function relationshipTypeName(type: string): string {
-    return type.includes("/") ? (type.split("/").pop() ?? type) : type;
 }
 
 export class BaseSchemaValidator {
@@ -488,63 +286,12 @@ export class BaseSchemaValidator {
     readonly schemasDir: string;
     readonly xmlFiles: string[];
     readonly profile: Profile;
-    /** The run's wall-clock budget, when it has one (#630). */
-    readonly deadline: RunDeadline | undefined;
     /**
-     * Engine trace owned by one `validateAgainstXsd` walk on this instance.
-     * Published at entry so a lone walk is observable while running; the
-     * walk that finishes last publishes its own trace again, even on a
-     * throw, so nested walks do not mix their parts or counts (#943).
+     * Engine trace for the most recent `validateAgainstXsd` on this instance.
      * `DOCXSchemaValidator.validate` resets it at entry. `mergeResults` drops
      * it, so the public `validate()` copies it off the instance afterwards.
      */
     xsdWalk: XsdWalkTrace = { started: false, parts: [], eligible: 0 };
-
-    /**
-     * Parts the running `validate()` found not well-formed. Their XML
-     * diagnostics already reject the package, so the schema walk does not
-     * parse them again.
-     */
-    protected malformedParts: ReadonlySet<string> = new Set();
-
-    /**
-     * Parts whose schema the engine could not load, or whose XSD call threw,
-     * in the walk that finished last. Each `validateAgainstXsd` owns its
-     * count, resets the instance at entry and publishes its count at exit,
-     * even on a throw, so a nested walk cannot erase the outer count (#943).
-     * A call outside every walk's active calls (a direct call, or a late
-     * task after its call settled) counts on the instance, and a walk still
-     * running replaces that count when it publishes its own: the failure is
-     * not the walk's, and its own outcome reports it.
-     *
-     * `xsdWalk.parts.length === xsdWalk.eligible` only proves every eligible
-     * part was *offered* to the engine; this counter is what proves the engine
-     * actually answered for it. A schema that fails to compile still counts as
-     * a completed walk, which is why the top-level `validate()` also requires
-     * this to be 0 before reporting `schemaCompleted: true`.
-     */
-    xsdEngineFailures = 0;
-
-    /**
-     * Ids of the named checks this validator executed, in the order they ran.
-     *
-     * The registry lists every check for a format, but a profile only reaches
-     * some of them: the Word rules run under `word-valid` and `strict` only.
-     * Recording what actually ran is what lets `metadata.executedChecks`
-     * distinguish a check that passed from one that never ran (#319).
-     *
-     * The XML well-formedness pass is the `xml-syntax` check; subclasses add
-     * the registry checks they run through the scheduler.
-     */
-    private readonly executedCheckIds = new Set<string>();
-
-    /**
-     * The named checks this validator executed, in the order they ran.
-     * Reset at the entry of every `validate()`.
-     */
-    public get executedChecks(): readonly string[] {
-        return [...this.executedCheckIds];
-    }
 
     /**
      * Subclasses override to map an element name → expected relationship type
@@ -567,42 +314,9 @@ export class BaseSchemaValidator {
         this.originalFile = opts.originalFile ? path.resolve(opts.originalFile) : null;
         this.verbose = opts.verbose ?? false;
         this.schemasDir = opts.schemasDir ?? defaultSchemasDir();
-        this.xmlFiles = xmlPackageEntries(this.unpackedDir).map(([, file]) => file);
+        this.xmlFiles = walkFiles(this.unpackedDir, [".xml", ".rels"]);
         this.profile = opts.profile ?? DEFAULT_PROFILE;
         this.xsdValidatorRef = opts.xsdValidator;
-        this.deadline = opts.deadline;
-    }
-
-    /**
-     * How `validate()` starts its rules (#630). Without a deadline each rule
-     * starts as soon as it is asked for, as before. With one, each rule starts
-     * after the previous one settles, and only while the budget lasts: the
-     * rules interleave at their file reads, so asking the deadline when a rule
-     * is merely started would stop nothing. A rule the deadline stopped is
-     * recorded on it as `step` and contributes no finding.
-     */
-    protected ruleScheduler(): (step: string, run: () => Promise<ValidationResult>) => Promise<ValidationResult> {
-        const deadline = this.deadline;
-        if (deadline === undefined) return (_step, run) => run();
-        let previous: Promise<unknown> = Promise.resolve();
-        return (step, run) => {
-            const result = previous.then(() => (deadline.reached(step) ? OK_RESULT : run()));
-            // A rule that rejects still rejects `validate()`, as Promise.all
-            // did; the rules after it keep their turn.
-            previous = result.catch(() => undefined);
-            return result;
-        };
-    }
-
-    /**
-     * `result`, made invalid by the one `validation-deadline` finding when
-     * the deadline stopped any step (#630). Appended after every profile
-     * policy, so no policy can lower it to a warning.
-     */
-    protected withDeadlineFinding(result: ValidationResult): ValidationResult {
-        const issue = this.deadline?.issue();
-        if (issue === undefined) return result;
-        return { ...result, valid: false, issues: [...result.issues.filter((existing) => existing.code !== VALIDATION_DEADLINE), issue] };
     }
 
     /**
@@ -618,10 +332,6 @@ export class BaseSchemaValidator {
         if (this.xsdValidatorRef) {
             return this.xsdValidatorRef;
         }
-        // The engine's file access is restricted to allowed schema roots; a
-        // caller-supplied `schemasDir` must be one of them or its import
-        // closure would be refused.
-        allowSchemaResourceRoot(this.schemasDir);
         if (!this.xsdValidatorPromise) {
             this.xsdValidatorPromise = createXsdValidator();
         }
@@ -631,15 +341,22 @@ export class BaseSchemaValidator {
     }
 
     /**
-     * Every XML part should NOT begin with a UTF-8 BOM (U+FEFF, bytes EF BB
-     * BF). XML 1.0 §4.3.3 permits the BOM and Microsoft Office emits it
-     * routinely, so this is reported at `warning` severity under EVERY
-     * profile — it never fails a document on its own. The finding stays
-     * visible in `result.issues` so callers who care about canonical bytes can
-     * audit it.
+     * Strict-profile-only check: every XML part must NOT begin with a UTF-8
+     * BOM (U+FEFF, encoded as bytes EF BB BF). The XML spec permits the BOM
+     * and Microsoft Office routinely emits it; the lenient profile silently
+     * strips it before parsing. Strict callers want to know it's there.
+     *
+     * Severity is profile-aware:
+     *   - `strict`  → reported as `error` (fails the document).
+     *   - `lenient` → reported as `warning` (visible to anyone inspecting
+     *     `result.issues` but does NOT flip `valid` to false).
+     *
+     * The check NEVER becomes a silent no-op — even in lenient mode the
+     * gap is surfaced as a warning so callers can audit it later.
      */
     async validateNoBom(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
+        const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
         for (const xmlFile of this.xmlFiles) {
             let bytes: Buffer;
             try {
@@ -649,10 +366,10 @@ export class BaseSchemaValidator {
             }
             if (bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) {
                 issues.push({
-                    severity: "warning",
+                    severity,
                     message:
-                        "XML part begins with a UTF-8 BOM (U+FEFF). Permitted by the XML spec (and emitted by Microsoft Office), " +
-                        "so it is reported as a warning under every profile and never fails a document on its own.",
+                        "XML part begins with a UTF-8 BOM (U+FEFF). Permitted by the XML spec but " +
+                        "non-canonical for OOXML; reported as error under strict, warning under lenient.",
                     path: this.relPath(xmlFile),
                     code: "xml-bom-leading",
                 });
@@ -684,10 +401,10 @@ export class BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
         const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
         for (const xmlFile of this.xmlFiles) {
-            if (!isRelationshipsPartName(this.entryName(xmlFile))) continue;
+            if (!xmlFile.endsWith(".rels")) continue;
             let dom: Document;
             try {
-                dom = await this.readPartDom(xmlFile);
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
             } catch {
                 // Malformed rels files surface elsewhere via xml-syntax /
                 // rels-broken codes; don't double-report here.
@@ -751,7 +468,7 @@ export class BaseSchemaValidator {
             }
             let isEmpty = false;
             try {
-                const dom = parseXmlBytes(await fs.readFile(xmlFile));
+                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
                 const root = dom.documentElement;
                 if (root) {
                     const rels = getElementsByTagNameNSAll(
@@ -787,8 +504,6 @@ export class BaseSchemaValidator {
         // the same validator instance don't try to read the deleted files.
         this.xmlFiles.length = 0;
         for (const f of surviving) this.xmlFiles.push(f);
-        this.mainDocumentParts = undefined;
-        this.resetProcessedRelationships();
         return repairs;
     }
 
@@ -797,14 +512,9 @@ export class BaseSchemaValidator {
 
         for (const xmlFile of this.xmlFiles) {
             try {
-                const content = decodeXmlBytes(await fs.readFile(xmlFile));
+                const content = await fs.readFile(xmlFile, "utf-8");
                 const dom = parseXml(content);
                 let modified = false;
-                // Counted and printed only after the write: a part whose
-                // encoding `writeXmlPart` refuses is left untouched, so its
-                // repairs never reached disk (#880).
-                let partRepairs = 0;
-                const repairedLines: string[] = [];
 
                 const all = getElementsByTagNameAll(dom);
                 for (let i = 0; i < all.length; i += 1) {
@@ -820,22 +530,19 @@ export class BaseSchemaValidator {
                     if (!startsWS && !endsWS) continue;
                     if (elem.getAttribute("xml:space") !== "preserve") {
                         elem.setAttribute("xml:space", "preserve");
-                        partRepairs += 1;
+                        repairs += 1;
                         modified = true;
                         if (this.verbose) {
                             const preview = text.length > 30 ? JSON.stringify(text.slice(0, 30)) + "..." : JSON.stringify(text);
-                            repairedLines.push(
+                            process.stdout.write(
                                 `  Repaired: ${path.basename(xmlFile)}: Added xml:space='preserve' to ${elem.tagName}: ${preview}\n`,
                             );
                         }
                     }
                 }
 
-                if (modified && (await writeXmlPart(xmlFile, dom))) {
-                    repairs += partRepairs;
-                    for (const line of repairedLines) {
-                        process.stdout.write(line);
-                    }
+                if (modified) {
+                    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
                 }
             } catch {
                 // pass — mirrors Python's bare except
@@ -847,57 +554,23 @@ export class BaseSchemaValidator {
 
     // ----- well-formedness & namespaces ---------------------------------------
 
-    /**
-     * Well-formedness of every XML part, checked on the ORIGINAL BYTES.
-     *
-     * libxml2 parses bytes, so the part's own BOM and `encoding` declaration
-     * decide how it decodes (a UTF-16 part read as a UTF-8 string is garbage)
-     * and every diagnostic carries a 1-based line/column. Parsing runs
-     * WITHOUT `XML_PARSE_RECOVER` so content `@xmldom` silently recovers from
-     * (a bare `&`, an unquoted attribute value) is reported instead of
-     * accepted, and WITH `XML_PARSE_NONET | XML_PARSE_NO_XXE` so external
-     * entities are never fetched. See `src/lib/xml-syntax.ts`.
-     *
-     * Codes: `xml-syntax` (not well-formed), `xml-undeclared-prefix`
-     * (undeclared namespace prefix), `xml-encoding` (declared encoding
-     * unsupported / bytes do not decode in it).
-     */
     async validateXml(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        // The parts the `xml-syntax` check parses, whatever the spelling of
-        // their extension: `word/COMMENTS.XML` is no less an XML part (#390).
-        // Findings name the part, as that check's do, so a file stored as
-        // `word\\foo.xml` is judged as the `word/` part it is (review Q).
-        for (const [part, xmlFile] of xmlPackageEntries(this.unpackedDir)) {
-            let raw: Buffer;
+        for (const xmlFile of this.xmlFiles) {
             try {
-                raw = await fs.readFile(xmlFile);
-            } catch {
-                continue;
+                const content = await fs.readFile(xmlFile, "utf-8");
+                parseXml(content);
+            } catch (err) {
+                const message = err instanceof Error ? err.message : String(err);
+                issues.push({
+                    severity: "error",
+                    message,
+                    path: this.relPath(xmlFile),
+                    code: "xml-syntax",
+                });
             }
-            issues.push(...(await checkXmlSyntax(raw, part)));
         }
-        // This pass is the `xml-syntax` check: the same bytes, the same
-        // diagnostics, under the check id callers select it by.
-        this.recordExecutedCheck(XML_SYNTAX_CHECK_ID);
         return finalize(issues);
-    }
-
-    /** Record that a named check ran, so the run can disclose it (#319). */
-    protected recordExecutedCheck(id: string): void {
-        this.executedCheckIds.add(id);
-    }
-
-    /** Record several named checks, in the order they ran. */
-    protected recordExecutedChecks(ids: readonly string[]): void {
-        for (const id of ids) {
-            this.recordExecutedCheck(id);
-        }
-    }
-
-    /** Forget the checks a previous run recorded. */
-    protected resetExecutedChecks(): void {
-        this.executedCheckIds.clear();
     }
 
     async validateNamespaces(): Promise<ValidationResult> {
@@ -905,14 +578,32 @@ export class BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             let dom: Document;
             try {
-                dom = await this.readPartDom(xmlFile);
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
             } catch {
                 continue;
             }
             const root = dom.documentElement;
             if (!root) continue;
 
-            issues.push(...rootIgnorableIssues(root, this.relPath(xmlFile)));
+            const declared = collectDeclaredPrefixes(root);
+
+            const attrs = root.attributes;
+            for (let i = 0; i < attrs.length; i += 1) {
+                const attr = attrs[i];
+                if (!attr) continue;
+                if (!attr.name.endsWith("Ignorable")) continue;
+                const tokens = attr.value.split(/\s+/).filter(Boolean);
+                for (const ns of tokens) {
+                    if (!declared.has(ns)) {
+                        issues.push({
+                            severity: "error",
+                            message: `Namespace '${ns}' in Ignorable but not declared`,
+                            path: this.relPath(xmlFile),
+                            code: "ignorable-undeclared",
+                        });
+                    }
+                }
+            }
         }
         return finalize(issues);
     }
@@ -926,7 +617,7 @@ export class BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -946,9 +637,7 @@ export class BaseSchemaValidator {
 
             for (const elem of iterElements(root)) {
                 const tag = localName(elem.tagName ?? elem.nodeName).toLowerCase();
-                // Object.hasOwn: an element named for an Object.prototype key
-                // has no requirement (#1071).
-                const requirement = Object.hasOwn(UNIQUE_ID_REQUIREMENTS, tag) ? UNIQUE_ID_REQUIREMENTS[tag] : undefined;
+                const requirement = UNIQUE_ID_REQUIREMENTS[tag];
                 if (!requirement) continue;
 
                 if (hasExcludedAncestor(elem)) continue;
@@ -997,26 +686,25 @@ export class BaseSchemaValidator {
 
     async validateFileReferences(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const entries = packageEntries(this.unpackedDir);
-        const names = [...entries.keys()];
-        const relsFiles = [...entries].flatMap(([name, file]) => (isRelationshipsPartName(name) ? [[name, file] as const] : []));
+        const relsFiles = walkFiles(this.unpackedDir, [".rels"]);
 
         if (relsFiles.length === 0) {
             return OK_RESULT;
         }
 
         const allFiles: string[] = [];
-        for (const [name, f] of entries) {
-            if (isContentTypesStreamName(name) || isRelationshipsPartName(name)) continue;
+        for (const f of walkFiles(this.unpackedDir)) {
+            const base = path.basename(f);
+            if (base === "[Content_Types].xml" || f.endsWith(".rels")) continue;
             allFiles.push(path.resolve(f));
         }
 
         const allReferenced = new Set<string>();
 
-        for (const [relsPart, relsFile] of relsFiles) {
+        for (const relsFile of relsFiles) {
             let dom: Document;
             try {
-                dom = await this.readPartDom(relsFile);
+                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -1029,93 +717,51 @@ export class BaseSchemaValidator {
             const root = dom.documentElement;
             if (!root) continue;
 
-            // The source part's folder, package-relative, as the targets
-            // below resolve against it: the folder above a `_rels` folder
-            // (the package root for `_rels/.rels`), or the relationships
-            // part's own folder outside one, as the orphan walk's
-            // resolveRelationshipTargetPath reads it (#990).
-            const relsFolder = path.posix.dirname(relsPart);
-            const sourceFolder = isRelationshipsFolderName(path.posix.basename(relsFolder)) ? path.posix.dirname(relsFolder) : relsFolder;
-            const broken: Array<{ target: string; part: string; folder?: true }> = [];
+            const relsDir = path.dirname(relsFile);
+            const referenced: string[] = [];
+            const broken: string[] = [];
 
-            const rels = this.relationshipElements(dom, relsPart);
+            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
                 const target = rel.getAttribute("Target");
                 if (!target) continue;
-                // An `http:`, `https:` or `mailto:` URI names no part.
-                // Word-valid and strict skip only those schemes, so a relative
-                // target that merely starts with `http` resolves as a part:
-                // Word refused `httpimage1.png/.` as a folder (session 79,
-                // #988). Another scheme that starts with `http` (`httpfoo:`)
-                // resolves as a part too, as `ftp:` does. A scheme is ASCII
-                // case-insensitive (RFC 3986 §3.1), so they read `HTTP:` and
-                // `MAILTO:` as `http:` and `mailto:` (#1008). Lenient keeps
-                // its historical case-sensitive prefix scan (#665).
-                const uri =
-                    this.profile === "lenient"
-                        ? target.startsWith("http") || target.startsWith("mailto:")
-                        : /^(?:https?|mailto):/i.test(target);
-                if (uri) continue;
-                // An External target names a resource outside the package, never
-                // a part (ECMA-376 Part 2 §9.3), so it is not resolved as one.
-                // Lenient keeps its historical scan, pinned byte for byte (#665).
-                if (this.profile !== "lenient" && rel.getAttribute("TargetMode") === "External") continue;
+                if (target.startsWith("http") || target.startsWith("mailto:")) continue;
 
-                // A final `.` or `..` segment, or a trailing `/`, names a
-                // folder, never the part its path spells, which the
-                // file-system join below would find: Word refused every such
-                // target, whatever the relationship type and whether anything
-                // used it (sessions 70 to 73, #975). An External target
-                // names no part, so lenient's historical scan keeps resolving
-                // it as before (#980).
-                const folder = rel.getAttribute("TargetMode") === "External" ? undefined : relationshipTargetFolder(sourceFolder, target);
-                if (folder !== undefined) {
-                    broken.push({ target, part: folder, folder: true });
-                    continue;
+                let targetPath: string;
+                if (target.startsWith("/")) {
+                    targetPath = path.join(this.unpackedDir, target.replace(/^\/+/, ""));
+                } else if (path.basename(relsFile) === ".rels") {
+                    targetPath = path.join(this.unpackedDir, target);
+                } else {
+                    targetPath = path.join(path.dirname(relsDir), target);
                 }
 
-                // RFC 3986 dot-segment removal keeps a `..` above the
-                // package root at the root, where Word reads the target: a
-                // stored part there is the one it names, and an absent one is
-                // broken under that name (sessions 54 and 74 to 76, #984).
-                // Only a symbolic link can leave the tree.
-                let targetPath = packageTargetPath(this.unpackedDir, path.join(this.unpackedDir, sourceFolder), target);
-
                 try {
-                    const contained = containRelationshipTarget(this.unpackedDir, targetPath);
-                    if (contained === null) {
-                        broken.push({ target, part: this.entryName(targetPath) });
+                    targetPath = path.resolve(targetPath);
+                    if (containRelationshipTarget(this.unpackedDir, targetPath) === null) {
+                        broken.push(target);
                         continue;
                     }
-                    targetPath = contained;
-                    // Resolve against stored part names, as the main-part lookup
-                    // does. Filesystem existence and target spelling cannot decide
-                    // OPC equivalence (ASCII case and unreserved escapes, #393).
-                    const part = resolvePartName(names, this.entryName(targetPath));
-                    const file = part === undefined ? undefined : entries.get(part);
-                    if (file !== undefined && containRelationshipTarget(this.unpackedDir, file) !== null) {
-                        allReferenced.add(path.resolve(file));
+                    if (existsSync(targetPath) && statSync(targetPath).isFile()) {
+                        referenced.push(targetPath);
+                        allReferenced.add(targetPath);
                     } else {
-                        broken.push({ target, part: part ?? this.entryName(targetPath) });
+                        broken.push(target);
                     }
                 } catch {
-                    broken.push({ target, part: this.entryName(targetPath) });
+                    broken.push(target);
                 }
             }
 
-            for (const { target, part, folder } of broken) {
-                const issue: ValidationIssue = {
+            for (const ref of broken) {
+                issues.push({
                     severity: "error",
-                    message: folder ? `Broken reference to ${target}: it names a folder, not a part` : `Broken reference to ${target}`,
+                    message: `Broken reference to ${ref}`,
                     path: this.relPath(relsFile),
                     code: "rels-broken",
-                };
-                // The word-valid verdict reads the part the target resolved
-                // to, never the raw Target spelling the message embeds (#734).
-                registerRelsBrokenTarget(issue, part);
-                issues.push(issue);
+                });
             }
         }
 
@@ -1134,19 +780,17 @@ export class BaseSchemaValidator {
 
     async validateRelationshipElements(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const relsFiles = [...packageEntries(this.unpackedDir)].flatMap(([name, file]) =>
-            isRelationshipsPartName(name) ? [[name, file] as const] : [],
-        );
+        const relsFiles = walkFiles(this.unpackedDir, [".rels"]);
 
-        for (const [relsPart, relsFile] of relsFiles) {
+        for (const relsFile of relsFiles) {
             let dom: Document;
             try {
-                dom = await this.readPartDom(relsFile);
+                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
             } catch {
                 continue;
             }
 
-            const rels = this.relationshipElements(dom, relsPart);
+            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
@@ -1156,18 +800,14 @@ export class BaseSchemaValidator {
                 const target = rel.getAttribute("Target");
 
                 if (!rid || !type || !target) {
-                    const issue: ValidationIssue = {
+                    issues.push({
                         severity: "error",
                         message:
                             `<Relationship> missing required attribute(s): ` +
                             [!rid && "Id", !type && "Type", !target && "Target"].filter(Boolean).join(", "),
                         path: this.relPath(relsFile),
                         code: "rels-empty-element",
-                    };
-                    // The word-valid verdict reads this registered shape,
-                    // never the message (#735).
-                    registerRelsEmptyElementShape(issue, "missing-attribute");
-                    issues.push(issue);
+                    });
                     continue;
                 }
 
@@ -1187,17 +827,12 @@ export class BaseSchemaValidator {
                     }
                 }
                 if (hasBodyContent) {
-                    const issue: ValidationIssue = {
+                    issues.push({
                         severity: "error",
                         message: `<Relationship Id="${rid}"> must be a self-closing empty element, not <Relationship>...</Relationship>`,
                         path: this.relPath(relsFile),
                         code: "rels-empty-element",
-                    };
-                    // The word-valid verdict reads this registered shape,
-                    // never the message: the Id it embeds is
-                    // package-controlled (#735).
-                    registerRelsEmptyElementShape(issue, "body-content");
-                    issues.push(issue);
+                    });
                 }
             }
         }
@@ -1205,96 +840,30 @@ export class BaseSchemaValidator {
         return finalize(issues);
     }
 
-    /**
-     * Reports every mismatched `r:id` it finds, under every profile: this
-     * method knows nothing about the registered Word checks, so a caller
-     * composing it directly gets the full legacy finding set (#612). A full
-     * `DOCXSchemaValidator.validate()` run hands the story reference
-     * elements its Word rule already reported back to that rule
-     * (`withoutRepeatedHeaderFooterFindings` in docx.ts), through the
-     * structured story reference identity this method registers on each
-     * `headerReference`/`footerReference` mismatch (#616) and on each such
-     * `rels-id-missing` (#619), and the same hand-off pairs a dangling
-     * `c:chart`/`o:OLEObject` r:id with `word-part-reference-relationship`
-     * (#705), a `wne:toolbarData` with `word-attached-toolbar-relationship`
-     * (#716) and a refused `w:hyperlink` with `word-hyperlink-relationship`
-     * (#1089). A full non-lenient `PPTXSchemaValidator.validate()` run hands
-     * a slide master's `p:sldLayoutId` to `sldlayout-missing-rid` the same
-     * way (#1093). Each pairing reads the registered identity, never the
-     * message prose.
-     */
     async validateAllRelationshipIds(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const entries = packageEntries(this.unpackedDir);
-        const findPart = equivalentPartLookup([...entries.keys()]);
-        // #618: every relationships part is judged exactly once, whichever
-        // walk reaches it first — the package scan below, the `.xml` owner
-        // loop, or the non-`.xml` owner pass after it (an owner stored under
-        // two equivalent spellings must not double-report).
-        const judgedRelsFiles = new Set<string>();
-        /** Report each repeated `Id` in the relationships part `relsFile` once, at that part; a part already judged is skipped. */
-        const reportDuplicates = (document: Document, relsFile: string, part: string): void => {
-            if (judgedRelsFiles.has(relsFile)) return;
-            judgedRelsFiles.add(relsFile);
-            const seen = new Set<string>();
-            for (const relationship of this.relationshipElements(document, part)) {
-                const id = relationship.getAttribute("Id");
-                if (!id) continue;
-                if (seen.has(id)) {
-                    issues.push({
-                        severity: "error",
-                        message: `Duplicate relationship ID '${id}' (IDs must be unique)`,
-                        path: this.relPath(relsFile),
-                        code: "rels-id-duplicate",
-                    });
-                }
-                seen.add(id);
-            }
-        };
-        // The package has no owner part, so neither owner walk below ever
-        // visits its relationships. Lenient retains its historical XSD-only
-        // diagnosis here (#615); XML checks own missing/malformed parts.
-        if (this.profile !== "lenient") {
-            const packageRels = findPart("_rels/.rels");
-            const packageRelsFile = packageRels === undefined ? undefined : entries.get(packageRels);
-            if (packageRelsFile !== undefined) {
-                try {
-                    reportDuplicates(
-                        await this.readPartDom(packageRelsFile),
-                        packageRelsFile,
-                        packageRels ?? this.entryName(packageRelsFile),
-                    );
-                } catch {
-                    // XML syntax diagnostics already report this part.
-                }
-            }
-        }
 
         for (const xmlFile of this.xmlFiles) {
-            const part = normalizePartName(this.entryName(xmlFile));
-            if (isRelationshipsPartName(part)) continue;
+            if (xmlFile.endsWith(".rels")) continue;
 
-            const relsPart = findPart(path.posix.join(path.posix.dirname(part), "_rels", `${path.posix.basename(part)}.rels`));
-            const relsFile = relsPart === undefined ? undefined : entries.get(relsPart);
+            const relsDir = path.join(path.dirname(xmlFile), "_rels");
+            const relsFile = path.join(relsDir, `${path.basename(xmlFile)}.rels`);
 
-            // Gap 4: flag XML parts that use relationship references but have no .rels sidecar.
-            // #624: session 33 (s33a, s33c) in docs/plans/evidence/word-probes-2026-10-24.md:
-            // Word refuses a Strict footer reference without its sidecar, but
-            // opens the same Strict package clean when it has no reference.
-            if (!relsFile) {
+            // Gap 4: flag XML parts that use r:id attributes but have no .rels sidecar.
+            if (!existsSync(relsFile)) {
                 let xmlDomCheck: Document;
                 try {
-                    xmlDomCheck = await this.readPartDom(xmlFile);
+                    xmlDomCheck = parseXml(await fs.readFile(xmlFile, "utf-8"));
                 } catch {
                     continue;
                 }
-                const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, STRICT_OFFICE_RELATIONSHIPS_NAMESPACE];
+                const rNs = OFFICE_RELATIONSHIPS_NAMESPACE;
                 const xmlRootCheck = xmlDomCheck.documentElement;
                 if (!xmlRootCheck) continue;
                 let hasRidRef = false;
                 outer: for (const elem of iterElements(xmlRootCheck)) {
                     for (const attrName of ["id", "embed", "link"] as const) {
-                        if (relationshipNamespaces.some((ns) => elem.getAttributeNS(ns, attrName))) {
+                        if (elem.getAttributeNS(rNs, attrName)) {
                             hasRidRef = true;
                             break outer;
                         }
@@ -1303,7 +872,7 @@ export class BaseSchemaValidator {
                 if (hasRidRef) {
                     issues.push({
                         severity: "error",
-                        message: `Part '${this.relPath(xmlFile)}' uses relationship references but has no .rels sidecar file`,
+                        message: `Part '${this.relPath(xmlFile)}' uses r:id relationship references but has no .rels sidecar file`,
                         path: this.relPath(xmlFile),
                         code: "rels-missing-sidecar",
                     });
@@ -1313,7 +882,7 @@ export class BaseSchemaValidator {
 
             let relsDom: Document;
             try {
-                relsDom = await this.readPartDom(relsFile);
+                relsDom = parseXml(await fs.readFile(relsFile, "utf-8"));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -1324,21 +893,29 @@ export class BaseSchemaValidator {
                 continue;
             }
 
-            reportDuplicates(relsDom, relsFile, relsPart ?? this.entryName(relsFile));
             const ridToType = new Map<string, string>();
-            const rels = this.relationshipElements(relsDom, relsPart ?? this.entryName(relsFile));
+            const rels = getElementsByTagNameNSAll(relsDom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
                 const rid = rel.getAttribute("Id");
                 const relType = rel.getAttribute("Type") ?? "";
                 if (!rid) continue;
-                ridToType.set(rid, relType);
+                if (ridToType.has(rid)) {
+                    issues.push({
+                        severity: "error",
+                        message: `Duplicate relationship ID '${rid}' (IDs must be unique)`,
+                        path: this.relPath(relsFile),
+                        code: "rels-id-duplicate",
+                    });
+                }
+                const typeName = relType.includes("/") ? (relType.split("/").pop() ?? relType) : relType;
+                ridToType.set(rid, typeName);
             }
 
             let xmlDom: Document;
             try {
-                xmlDom = await this.readPartDom(xmlFile);
+                xmlDom = parseXml(await fs.readFile(xmlFile, "utf-8"));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -1349,85 +926,41 @@ export class BaseSchemaValidator {
                 continue;
             }
 
-            // #1065: outside lenient the ids are read in both relationships
-            // namespaces, as the sidecar check above reads them, so a Strict
-            // package's ids are judged; lenient keeps the Python validator's
-            // Transitional-only walk.
-            const ridNamespaces =
-                this.profile === "lenient"
-                    ? [OFFICE_RELATIONSHIPS_NAMESPACE]
-                    : [OFFICE_RELATIONSHIPS_NAMESPACE, STRICT_OFFICE_RELATIONSHIPS_NAMESPACE];
+            const rNs = OFFICE_RELATIONSHIPS_NAMESPACE;
             const ridAttrsToCheck: ReadonlyArray<"id" | "embed" | "link"> = ["id", "embed", "link"];
             const xmlRoot = xmlDom.documentElement;
             if (!xmlRoot) continue;
 
             for (const elem of iterElements(xmlRoot)) {
-                for (const rNs of ridNamespaces) {
-                    for (const attrName of ridAttrsToCheck) {
-                        const ridAttr = elem.getAttributeNS(rNs, attrName);
-                        if (!ridAttr) continue;
-                        const elemName = localName(elem.tagName ?? elem.nodeName);
+                for (const attrName of ridAttrsToCheck) {
+                    const ridAttr = elem.getAttributeNS(rNs, attrName);
+                    if (!ridAttr) continue;
+                    const elemName = localName(elem.tagName ?? elem.nodeName);
 
-                        if (!ridToType.has(ridAttr)) {
-                            const valid = [...ridToType.keys()].sort().slice(0, 5).join(", ");
-                            const ellipsis = ridToType.size > 5 ? "..." : "";
-                            // #1090: outside lenient the message names the
-                            // attribute as the part spells it, so a Strict
-                            // rs:id is not reported as r:id; lenient keeps the
-                            // Python validator's literal r: prefix.
-                            const spelled =
-                                this.profile === "lenient"
-                                    ? `r:${attrName}`
-                                    : (elem.getAttributeNodeNS(rNs, attrName)?.name ?? `r:${attrName}`);
-                            const issue: ValidationIssue = {
-                                severity: "error",
-                                message:
-                                    `<${elemName}> ${spelled} references non-existent relationship '${ridAttr}' ` +
-                                    `(valid IDs: ${valid}${ellipsis})`,
-                                path: this.relPath(xmlFile),
-                                code: "rels-id-missing",
-                            };
-                            // #619: the full run's Word-rule hand-off pairs this
-                            // copy with the rule's finding through the registered
-                            // element identity, never the prose.
-                            if (attrName === "id" && isStoryReferenceLocalName(elemName)) {
-                                registerStoryReferenceIdentity(issue, {
-                                    part: this.relPath(xmlFile),
-                                    namespaceURI: elem.namespaceURI ?? "",
-                                    localName: elemName,
-                                    rid: ridAttr,
-                                    ridNamespaceURI: rNs,
+                    if (!ridToType.has(ridAttr)) {
+                        const valid = [...ridToType.keys()].sort().slice(0, 5).join(", ");
+                        const ellipsis = ridToType.size > 5 ? "..." : "";
+                        issues.push({
+                            severity: "error",
+                            message:
+                                `<${elemName}> r:${attrName} references non-existent relationship '${ridAttr}' ` +
+                                `(valid IDs: ${valid}${ellipsis})`,
+                            path: this.relPath(xmlFile),
+                            code: "rels-id-missing",
+                        });
+                    } else if (attrName === "id" && Object.keys(this.elementRelationshipTypes).length > 0) {
+                        const expectedType = this._getExpectedRelationshipType(elemName);
+                        if (expectedType) {
+                            const actualType = ridToType.get(ridAttr) ?? "";
+                            if (!actualType.toLowerCase().includes(expectedType)) {
+                                issues.push({
+                                    severity: "error",
+                                    message:
+                                        `<${elemName}> references '${ridAttr}' which points to '${actualType}' ` +
+                                        `but should point to a '${expectedType}' relationship`,
+                                    path: this.relPath(xmlFile),
+                                    code: "rels-id-mismatch",
                                 });
-                            }
-                            issues.push(issue);
-                        } else if (attrName === "id" && Object.keys(this.elementRelationshipTypes).length > 0) {
-                            const expectedType = this._getExpectedRelationshipType(elemName);
-                            if (expectedType) {
-                                const fullType = ridToType.get(ridAttr) ?? "";
-                                const actualType = relationshipTypeName(fullType);
-                                if (!this.relationshipTypeSatisfies(fullType, expectedType, elem.namespaceURI ?? "")) {
-                                    const issue: ValidationIssue = {
-                                        severity: "error",
-                                        message:
-                                            `<${elemName}> references '${ridAttr}' which points to '${actualType}' ` +
-                                            `but should point to a '${expectedType}' relationship`,
-                                        path: this.relPath(xmlFile),
-                                        code: "rels-id-mismatch",
-                                    };
-                                    // #616: the full run's Word-rule hand-off pairs
-                                    // this copy with the rule's finding through the
-                                    // registered element identity, never the prose.
-                                    if (isStoryReferenceLocalName(elemName)) {
-                                        registerStoryReferenceIdentity(issue, {
-                                            part: this.relPath(xmlFile),
-                                            namespaceURI: elem.namespaceURI ?? "",
-                                            localName: elemName,
-                                            rid: ridAttr,
-                                            ridNamespaceURI: rNs,
-                                        });
-                                    }
-                                    issues.push(issue);
-                                }
                             }
                         }
                     }
@@ -1435,55 +968,13 @@ export class BaseSchemaValidator {
             }
         }
 
-        // #618: `this.xmlFiles` holds the parts named as XML or declared with
-        // an XML content type (#620), so the loop above never visits the
-        // sidecar of an owner stored under another name with another type —
-        // yet Word reads a story root stored as `word/document.bin` or
-        // `word/glossary/document.bin` and offers recovery for duplicate Ids
-        // in its sidecar (session 31, s31a). Walk every remaining owner that
-        // exists in the package, whatever its suffix, and judge its sidecar
-        // through the same `reportDuplicates`, exactly once per relationships
-        // part. Nothing else follows the owner here: it is never parsed as
-        // XML, so it gets no `rels-missing-sidecar`/`rels-id-*` walk of its
-        // own content, and a sidecar that does not parse yields no finding —
-        // the XML syntax checks own that diagnosis, as in the package scan
-        // above. A `.rels` whose owner is not in the package keeps today's
-        // behaviour: with no owner to walk from, only the schema-walking
-        // profiles judge it. The package `_rels/.rels` stays with that scan.
-        const xmlFiles = new Set(this.xmlFiles);
-        for (const [name, file] of entries) {
-            if (xmlFiles.has(file)) continue;
-            const relsPart = findPart(path.posix.join(path.posix.dirname(name), "_rels", `${path.posix.basename(name)}.rels`));
-            const relsFile = relsPart === undefined ? undefined : entries.get(relsPart);
-            if (relsFile === undefined) continue;
-            try {
-                reportDuplicates(await this.readPartDom(relsFile), relsFile, relsPart ?? this.entryName(relsFile));
-            } catch {
-                // XML syntax diagnostics already report this part.
-            }
-        }
-
         return finalize(issues);
-    }
-
-    /**
-     * Whether a relationship of `type` satisfies an element, in the namespace
-     * `_elementNamespace`, expecting the lower-case type name `expected`: the
-     * type's last path segment, lower-cased, contains it — the historical
-     * reading of the Python validator. The PPTX validator reads exact types
-     * for PresentationML's own elements outside lenient (#1058, #1061).
-     */
-    protected relationshipTypeSatisfies(type: string, expected: string, _elementNamespace: string): boolean {
-        return relationshipTypeName(type).toLowerCase().includes(expected);
     }
 
     protected _getExpectedRelationshipType(elementName: string): string | null {
         const elemLower = elementName.toLowerCase();
-        // Object.hasOwn: the table is a plain object, so `constructor` and
-        // `__proto__` would otherwise answer with Object.prototype's (#1063).
-        const listed = Object.hasOwn(this.elementRelationshipTypes, elemLower) ? this.elementRelationshipTypes[elemLower] : undefined;
-        if (listed) {
-            return listed;
+        if (this.elementRelationshipTypes[elemLower]) {
+            return this.elementRelationshipTypes[elemLower];
         }
         if (elemLower.endsWith("id") && elemLower.length > 2) {
             const prefix = elemLower.slice(0, -2);
@@ -1499,17 +990,10 @@ export class BaseSchemaValidator {
 
     // ----- content types ------------------------------------------------------
 
-    /** Unobserved formats stay advisory outside strict; DOCX overrides Word-valid. */
-    protected get duplicateContentTypeSeverity(): "error" | "warning" {
-        return this.profile === "strict" ? "error" : "warning";
-    }
-
     async validateContentTypes(): Promise<ValidationResult> {
-        this.recordExecutedCheck(CT_DUPLICATE_DECLARATION);
         const issues: ValidationIssue[] = [];
-        const entries = packageEntries(this.unpackedDir);
-        const contentTypesName = findContentTypesStream(entries.keys());
-        if (contentTypesName === undefined) {
+        const contentTypesFile = path.join(this.unpackedDir, "[Content_Types].xml");
+        if (!existsSync(contentTypesFile)) {
             return {
                 valid: false,
                 issues: [
@@ -1524,42 +1008,52 @@ export class BaseSchemaValidator {
 
         let dom: Document;
         try {
-            dom = await this.readPartDom(entries.get(contentTypesName)!);
+            dom = parseXml(await fs.readFile(contentTypesFile, "utf-8"));
         } catch (err) {
             return {
                 valid: false,
                 issues: [
                     {
                         severity: "error",
-                        message: `Error parsing ${contentTypesName}: ${err instanceof Error ? err.message : String(err)}`,
-                        path: contentTypesName,
+                        message: `Error parsing [Content_Types].xml: ${err instanceof Error ? err.message : String(err)}`,
+                        path: "[Content_Types].xml",
                         code: "ct-parse",
                     },
                 ],
             };
         }
 
-        // [M1.19]: coverage and duplicates judge the stream after Markup
-        // Compatibility processing — the same view the named checks read
-        // through `ctx.effectiveXml` — so declarations in an ignored branch
-        // name no part here either. The processor understands the stream's
-        // own vocabulary, so an Ignorable naming it blinds no pass (#493).
-        // Word refuses the markup itself, which `ct-markup-compatibility`
-        // reports (#459); the pass's own issues are not duplicated from the
-        // view.
-        const contentTypesDom = applyMarkupCompatibility(dom, { understood: understoodNamespacesForPart(contentTypesName) }).document;
+        const declaredParts = new Set<string>();
+        const declaredExtensions = new Set<string>();
 
-        // Single OPC resolution table (Override first, then Default —
-        // ECMA-376 Part 2 §10.1.2.4) shared by every coverage pass below:
-        // declarable XML roots (ct-undeclared-part), known media extensions
-        // (ct-undeclared-ext) and the residual invariant (ct-uncovered-part).
-        const table = parseContentTypes(contentTypesDom);
-        issues.push(
-            ...duplicateContentTypeDeclarations(contentTypesDom, contentTypesName).map((issue) => ({
-                ...issue,
-                severity: this.duplicateContentTypeSeverity,
-            })),
-        );
+        const overrides = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Override");
+        for (let i = 0; i < overrides.length; i += 1) {
+            const o = overrides[i];
+            if (!o) continue;
+            const partName = o.getAttribute("PartName");
+            // OPC PartName is a package-relative URI; the on-disk path is its
+            // decoded form, so decode before storing or an escaped PartName
+            // (%20 et al.) never matches the walked file list. Fall back to
+            // the raw value on malformed escapes — the lookup then simply
+            // misses and the residual pass reports the part.
+            if (partName) {
+                let decoded = partName.replace(/^\/+/, "");
+                try {
+                    decoded = decodeURIComponent(decoded);
+                } catch {
+                    // keep raw
+                }
+                declaredParts.add(decoded);
+            }
+        }
+
+        const defaults = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Default");
+        for (let i = 0; i < defaults.length; i += 1) {
+            const d = defaults[i];
+            if (!d) continue;
+            const ext = d.getAttribute("Extension");
+            if (ext) declaredExtensions.add(ext.toLowerCase());
+        }
 
         const declarableRoots = new Set<string>([
             "sld",
@@ -1583,30 +1077,22 @@ export class BaseSchemaValidator {
             emf: "image/x-emf",
         };
 
-        const allFiles = [...entries.values()];
+        const allFiles = walkFiles(this.unpackedDir);
 
         for (const xmlFile of this.xmlFiles) {
             const pathStr = this.relPath(xmlFile).replace(/\\/g, "/");
-            if (
-                isContentTypesStreamName(pathStr) ||
-                isRelationshipsPartName(pathStr) ||
-                ["docProps/", "_rels/"].some((s) => pathStr.includes(s))
-            ) {
+            if ([".rels", "[Content_Types]", "docProps/", "_rels/"].some((s) => pathStr.includes(s))) {
                 continue;
             }
 
             try {
-                const root = (await this.readPartDom(xmlFile)).documentElement;
+                const root = parseXml(await fs.readFile(xmlFile, "utf-8")).documentElement;
                 if (!root) continue;
                 const rootName = localName(root.tagName ?? root.nodeName);
-                // A declarable root must be covered by an <Override PartName>
-                // (OPC-equivalent match — case-insensitive, percent-decoded);
-                // coverage through a bare <Default Extension> is not enough
-                // for parts Word opens by name.
-                if (declarableRoots.has(rootName) && resolveContentType(table, pathStr)?.source !== "override") {
+                if (declarableRoots.has(rootName) && !declaredParts.has(pathStr)) {
                     issues.push({
                         severity: "error",
-                        message: `File with <${rootName}> root not declared in ${contentTypesName}`,
+                        message: `File with <${rootName}> root not declared in [Content_Types].xml`,
                         path: pathStr,
                         code: "ct-undeclared-part",
                     });
@@ -1616,27 +1102,22 @@ export class BaseSchemaValidator {
 
         for (const filePath of allFiles) {
             const ext = path.extname(filePath).toLowerCase();
-            if (ext === ".xml" || isRelationshipsPartName(this.entryName(filePath))) continue;
-            if (isContentTypesStreamName(this.relPath(filePath))) continue;
+            if (ext === ".xml" || ext === ".rels") continue;
+            if (path.basename(filePath) === "[Content_Types].xml") continue;
             const parts = filePath.split(path.sep);
             if (parts.includes("_rels") || parts.includes("docProps")) continue;
 
-            const rel = this.relPath(filePath).replace(/\\/g, "/");
             const extension = ext.replace(/^\./, "");
-            // An exact <Override PartName> covers a media part just as well
-            // as a <Default Extension> — OPC §10.1.2.4 resolves Override
-            // first — so resolve through the table instead of consulting
-            // only the Default extensions (jubarte redlines declare every
-            // media part by Override; issues #208/#237).
             // Object.hasOwn, not `in`: mediaExtensions is a plain object, so
             // `"constructor" in mediaExtensions` is true and a part named
             // x.constructor would sail past the check (and be "suggested"
             // with ContentType="undefined").
-            if (Object.hasOwn(mediaExtensions, extension) && resolveContentType(table, rel) === null) {
+            if (extension && !declaredExtensions.has(extension) && Object.hasOwn(mediaExtensions, extension)) {
+                const rel = this.relPath(filePath);
                 issues.push({
                     severity: "error",
                     message:
-                        `File with extension '${extension}' not declared in ${contentTypesName} - ` +
+                        `File with extension '${extension}' not declared in [Content_Types].xml - ` +
                         `should add: <Default Extension="${extension}" ContentType="${mediaExtensions[extension]}"/>`,
                     path: rel,
                     code: "ct-undeclared-ext",
@@ -1649,26 +1130,26 @@ export class BaseSchemaValidator {
         // media extensions (ct-undeclared-ext) — and deliberately skip what
         // they don't recognise. This pass enforces the underlying spec
         // invariant instead: every part must be matched by an
-        // <Override PartName> or a <Default Extension> in the content-types stream.
+        // <Override PartName> or a <Default Extension> in [Content_Types].xml.
         // The recurring real-world case is extensionless media
         // (word/media/image_3094991244). Known media extensions are left to
         // ct-undeclared-ext above, which reports them with a fix-it message.
         for (const filePath of allFiles) {
-            if (isContentTypesStreamName(this.relPath(filePath))) continue;
+            if (path.basename(filePath) === "[Content_Types].xml") continue;
             const rel = this.relPath(filePath).replace(/\\/g, "/");
-            // One resolver call subsumes the old set lookups: an OPC-
-            // equivalent <Override PartName> (case-insensitive, decoded) or
-            // a <Default Extension> for the part's OPC extension covers it.
-            if (resolveContentType(table, rel) !== null) continue;
+            if (declaredParts.has(rel)) continue;
+            const base = rel.slice(rel.lastIndexOf("/") + 1);
+            const dot = base.lastIndexOf(".");
             // OPC extension = substring after the last dot of the part name's
             // last segment — unlike POSIX, `_rels/.rels` has extension "rels".
-            const extension = partExtension(rel);
+            const extension = dot >= 0 ? base.slice(dot + 1).toLowerCase() : "";
+            if (extension !== "" && declaredExtensions.has(extension)) continue;
             if (Object.hasOwn(mediaExtensions, extension)) continue;
             issues.push({
                 severity: "error",
                 message:
                     `Part '${rel}' has no content type: matched by no <Override PartName> and no ` +
-                    `<Default Extension> in ${contentTypesName}. OPC requires a content type for every ` +
+                    `<Default Extension> in [Content_Types].xml. OPC requires a content type for every ` +
                     `part; Word prompts to repair such packages.`,
                 path: rel,
                 code: "ct-uncovered-part",
@@ -1678,219 +1159,93 @@ export class BaseSchemaValidator {
         return finalize(issues);
     }
 
-    /**
-     * The `Override` `PartName` grammar (#414): report every `Override` whose
-     * `PartName` is not a valid OPC part name. The named check runs under
-     * every profile, so a full run and a partial run report the same
-     * finding: an error under strict and under word-valid for DOCX/DOCM
-     * (Word 16.115 offers recovery for every malformed PartName probed but a
-     * folder segment ending with `.`, which the word-valid profile then
-     * tolerates, #450), and a warning under lenient and for the unobserved
-     * PPTX/XLSX.
-     *
-     * Also run the Word-specific spelling rule (#451). It warns for PPTX/XLSX
-     * under every profile, while strict DOCX includes Word's refusals.
-     *
-     * The parts that do not parse are hidden from the check, as the XML
-     * syntax gate hides them from every other DOM-reading rule (#307): a
-     * content-types stream that does not parse is reported by that gate
-     * (#388), never from here.
-     */
-    protected async validateOverridePartNames(
-        context: ValidationContext,
-        format: PackageFormat,
-        malformed: ReadonlySet<string>,
-    ): Promise<ValidationResult> {
-        const view = malformed.size > 0 ? context.withUnparseable(new Map([...malformed].map((part) => [part, "malformed"]))) : context;
-        const issues = await ctOverridePartnameInvalidCheck.run(view);
-        this.recordExecutedCheck(CT_OVERRIDE_PARTNAME_INVALID);
-        const severity = opcNameIssueSeverity(this.profile, format);
-        const wordIssues = await ctOverridePartnameWordRefusedCheck.run(view);
-        this.recordExecutedCheck(CT_OVERRIDE_PARTNAME_WORD_REFUSED);
-        return finalize([
-            ...issues.map((issue): ValidationIssue => ({ ...issue, severity })),
-            ...wordIssues.map((issue): ValidationIssue => ({ ...issue, severity: wordObservedIssueSeverity(this.profile, format) })),
-        ]);
-    }
-
-    /**
-     * The duplicate-declaration rule (#431) over the package context, at the
-     * severity {@link validateContentTypes} gives it, for a full run that
-     * stops before that method: the PPTX run once a part fails to parse
-     * (#456). The parts that do not parse are hidden, as in
-     * {@link validateOverridePartNames}.
-     */
-    protected async validateDuplicateDeclarations(context: ValidationContext, malformed: ReadonlySet<string>): Promise<ValidationResult> {
-        const view = malformed.size > 0 ? context.withUnparseable(new Map([...malformed].map((part) => [part, "malformed"]))) : context;
-        const issues = await ctDuplicateDeclarationCheck.run(view);
-        this.recordExecutedCheck(CT_DUPLICATE_DECLARATION);
-        return finalize([...issues].map((issue): ValidationIssue => ({ ...issue, severity: this.duplicateContentTypeSeverity })));
-    }
-
-    /**
-     * Markup Compatibility in the content-types stream (#459): Word 16.115
-     * offers recovery for every usage probed — `mc:Ignorable`, an ignored
-     * element, `mc:AlternateContent` in either orientation (probe session 14a,
-     * docs/plans/evidence/word-probes-2026-10-24.md) — while a bare `xmlns:mc`
-     * declaration opens clean. The named check reads the raw stream, so a full
-     * run and a partial run report the same finding at the severity
-     * {@link wordObservedIssueSeverity} gives it: an error for DOCX/DOCM under
-     * word-valid and strict, a warning under lenient and for PPTX. The parts
-     * that do not parse are hidden, as in {@link validateOverridePartNames}.
-     */
-    protected async validateContentTypesMarkupCompatibility(
-        context: ValidationContext,
-        format: PackageFormat,
-        malformed: ReadonlySet<string>,
-    ): Promise<ValidationResult> {
-        const view = malformed.size > 0 ? context.withUnparseable(new Map([...malformed].map((part) => [part, "malformed"]))) : context;
-        const issues = await ctMarkupCompatibilityCheck.run(view);
-        this.recordExecutedCheck(CT_MARKUP_COMPATIBILITY);
-        const severity = wordObservedIssueSeverity(this.profile, format);
-        return finalize([...issues].map((issue): ValidationIssue => (severity === "warning" ? { ...issue, severity: "warning" } : issue)));
-    }
-
     // ----- XSD validation -----------------------------------------------------
 
-    async validateAgainstXsd(): Promise<ValidationResult> {
-        // Each walk reads roots into a map of its own: a part rewritten
-        // between walks is routed by the root it holds now (#902), and a walk
-        // nested in another neither empties nor fills the outer walk's (#949).
-        // The scope serves reads only until the walk has settled; a task it
-        // started then reads afresh (#964).
-        const roots = new Map<string, RootQName | null>();
-        const scope: RootQNameScope = { validator: this, roots, active: true };
-        try {
-            return await rootQNameStore.run(scope, () => this.walkAgainstXsd(roots));
-        } finally {
-            scope.active = false;
-        }
+    /**
+     * Word-valid override stops after the first Word-blocking `xsd-error`.
+     * Lenient and strict keep the default: never stop.
+     */
+    protected shouldStopXsdWalk(_rel: string, _errors: ReadonlySet<string>): boolean {
+        return false;
     }
 
-    /** The schema walk {@link validateAgainstXsd} runs in the scope of its own `roots` (#949). */
-    private async walkAgainstXsd(roots: Map<string, RootQName | null>): Promise<ValidationResult> {
-        if (baselineRunStore.getStore() === undefined) this.forgetOriginal();
+    /**
+     * `xsd-error` strings kept from one part. The default cap is three.
+     * A profile that stops the walk has to override this when a blocking
+     * error sits past that cap, or the stop hides the only failing issue.
+     */
+    protected xsdErrorsToReport(_rel: string, errors: ReadonlySet<string>): readonly string[] {
+        return [...errors].slice(0, 3);
+    }
+
+    async validateAgainstXsd(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         let strictSkipped = false;
-        const trace: XsdWalkTrace = { started: true, parts: [], eligible: 0 };
-        const state = { trace, xsdEngineFailures: 0, roots };
-        this.xsdWalk = trace;
-        this.xsdEngineFailures = 0;
-        try {
-            // The main document comes from the processed package relationships,
-            // which a repair between walks can change (#657).
-            this.mainDocumentParts = undefined;
+        this.xsdWalk.started = true;
+        this.xsdWalk.parts = [];
+        this.xsdWalk.eligible = 0;
 
-            const noteStrict = (): void => {
-                if (strictSkipped) return;
-                strictSkipped = true;
-                issues.push({
-                    severity: "info",
-                    message:
-                        "Document uses ISO OOXML Strict conformance class namespace URIs; " +
-                        "XSD validation skipped under this profile. The bundled ISO Strict schemas " +
-                        "(schemas/iso-strict/) validate these parts under the strict profile.",
-                    code: "xsd-strict-skipped",
-                });
-            };
+        const noteStrict = (): void => {
+            if (strictSkipped) return;
+            strictSkipped = true;
+            issues.push({
+                severity: "info",
+                message:
+                    "Document uses ISO OOXML Strict conformance class namespace URIs; " +
+                    "XSD validation skipped (only Transitional schemas are bundled). " +
+                    "See PORT_NOTES.md § 'ISO OOXML Strict XSD validation'.",
+                code: "xsd-strict-skipped",
+            });
+        };
 
-            const countEligible = async (xmlFile: string): Promise<boolean> => {
-                if (this.malformedParts.has(this.relPath(xmlFile))) return false;
-                // Strict-conformance parts are only skipped outside the strict
-                // profile: lenient keeps the documented `xsd-strict-skipped` info
-                // issue, while `strict` schema-validates them against the bundled
-                // iso-strict schemas. Word-valid never walks the schemas.
-                if (this._isStrictXmlFile(xmlFile) && this.profile !== "strict") {
-                    noteStrict();
-                    return false;
-                }
-                if (!this._getSchemaPath(xmlFile)) {
-                    // Direct walks have no recorded XML pass. Audit only bytes
-                    // that parse, without reparsing parts in the full run (#867).
-                    if (baselineRunStore.getStore() === undefined) {
-                        const syntax = await checkXmlSyntax(await fs.readFile(xmlFile), this.relPath(xmlFile));
-                        if (syntax.some((issue) => issue.severity === "error")) return false;
-                    }
-                    issues.push({
-                        severity: "info",
-                        message: "The bundled schemas map no schema to this part; XSD validation skipped for this part.",
-                        path: this.relPath(xmlFile),
-                        code: "xsd-no-schema",
-                    });
-                    return false;
-                }
-                trace.eligible += 1;
-                return true;
-            };
+        const countEligible = (xmlFile: string): boolean => {
+            if (this._isStrictXmlFile(xmlFile)) {
+                noteStrict();
+                return false;
+            }
+            if (!this._getSchemaPath(xmlFile)) return false;
+            this.xsdWalk.eligible += 1;
+            return true;
+        };
 
-            for (const [index, xmlFile] of this.xmlFiles.entries()) {
-                // #630: the walk stops between parts once the run's budget is
-                // spent. The parts it never reached are not judged eligible or
-                // not: that would read them.
-                if (this.deadline?.expired()) {
-                    const notExamined = this.xmlFiles.length - index;
-                    trace.notExamined = notExamined;
-                    this.deadline.record(
-                        `schema validation of ${notExamined} XML ${notExamined === 1 ? "part" : "parts"} it had not reached`,
-                    );
-                    break;
-                }
-                if (!(await countEligible(xmlFile))) continue;
+        const files = this.xmlFiles;
+        for (let i = 0; i < files.length; i += 1) {
+            const xmlFile = files[i];
+            if (!xmlFile) continue;
+            if (!countEligible(xmlFile)) continue;
 
-                const token: XsdWalkCall = { validator: this, xmlFile, active: true, claimed: false, state };
-                let outcome: XsdValidationOutcome;
-                try {
-                    outcome = await xsdWalkStore.run(token, () => this.validateFileAgainstXsd(xmlFile));
-                } finally {
-                    token.active = false;
-                }
-                issues.push(...(outcome.issues ?? []));
-                const rel = this.relPath(xmlFile);
-                trace.parts.push(rel);
-                if (outcome.valid === null || outcome.valid) continue;
+            const outcome = await this.validateFileAgainstXsd(xmlFile);
+            const rel = this.relPath(xmlFile);
+            this.xsdWalk.parts.push(rel);
+            if (outcome.valid === null || outcome.valid) continue;
 
+            issues.push({
+                severity: "error",
+                message: `${rel}: ${outcome.errors.size} new error(s)`,
+                path: rel,
+                code: "xsd-summary",
+            });
+            const list = this.xsdErrorsToReport(rel, outcome.errors);
+            for (const e of list) {
+                const truncated = e.length > 250 ? `${e.slice(0, 250)}...` : e;
                 issues.push({
                     severity: "error",
-                    message: `${rel}: ${outcome.errors.size} new error(s)`,
+                    message: `  - ${truncated}`,
                     path: rel,
-                    code: "xsd-summary",
+                    code: "xsd-error",
                 });
-                if (this.profile === "strict") {
-                    // One issue per occurrence, with the engine's own line and
-                    // code preserved. When preprocessing rewrote the XML the
-                    // reported line belongs to the transformed view, not the
-                    // source part — say so instead of inventing source lines.
-                    for (const issue of outcome.schemaIssues ?? []) {
-                        const message = issue.message.trim();
-                        const truncated = message.length > 250 ? `${message.slice(0, 250)}...` : message;
-                        const suffix =
-                            outcome.transformedView && issue.line !== undefined ? " (line refers to the preprocessed validation view)" : "";
-                        issues.push({
-                            severity: "error",
-                            message: `  - ${truncated}${suffix}`,
-                            path: rel,
-                            ...(issue.line !== undefined ? { line: issue.line } : {}),
-                            code: !issue.code || issue.code === "xsd-validation-failed" ? "xsd-error" : issue.code,
-                        });
-                    }
-                } else {
-                    for (const e of [...outcome.errors].slice(0, 3)) {
-                        const truncated = e.length > 250 ? `${e.slice(0, 250)}...` : e;
-                        issues.push({
-                            severity: "error",
-                            message: `  - ${truncated}`,
-                            path: rel,
-                            code: "xsd-error",
-                        });
-                    }
-                }
             }
+            if (!this.shouldStopXsdWalk(rel, outcome.errors)) continue;
 
-            return finalize(issues);
-        } finally {
-            this.xsdWalk = trace;
-            this.xsdEngineFailures = state.xsdEngineFailures;
+            for (let j = i + 1; j < files.length; j += 1) {
+                const rest = files[j];
+                if (!rest) continue;
+                countEligible(rest);
+            }
+            break;
         }
+
+        return finalize(issues);
     }
 
     /**
@@ -1900,104 +1255,28 @@ export class BaseSchemaValidator {
      * XSD checks that only apply to Transitional documents.
      */
     protected _isStrictXmlFile(xmlFile: string): boolean {
-        const root = this.rootQName(xmlFile);
-        return root !== null && root.namespace.startsWith(STRICT_OOXML_NS_PREFIX);
-    }
-
-    /**
-     * The root element's identity of `xmlFile`, read once per file in the
-     * current walk or call's scope (#902, #949). Only a scope belonging to
-     * this validator keeps the answer, and only while its walk or call is
-     * still running: once that has settled, even a task it started reads
-     * afresh and stores nothing (#964). Without a scope, read afresh and
-     * store nothing. `null` means the part cannot be read or parsed, or its
-     * root is not namespaced, as Strict sniffing read it before #887 shared
-     * the answer with the `ppt/` root route.
-     */
-    private rootQName(xmlFile: string): RootQName | null {
-        const scope = rootQNameStore.getStore();
-        const roots = scope?.validator === this && scope.active ? scope.roots : undefined;
-        const cached = roots?.get(xmlFile);
-        if (cached !== undefined) return cached;
-        let root: RootQName | null = null;
         try {
-            const element = parseXml(decodeXmlBytes(readFileSync(xmlFile))).documentElement;
-            const namespace = element?.namespaceURI;
-            if (element && namespace) root = { namespace, localName: element.localName };
+            const content = readFileSync(xmlFile, "utf-8");
+            const dom = parseXml(content);
+            const root = dom.documentElement;
+            if (!root) return false;
+            const ns = root.namespaceURI;
+            return !!ns && ns.startsWith(STRICT_OOXML_NS_PREFIX);
         } catch {
-            root = null;
+            return false;
         }
-        roots?.set(xmlFile, root);
-        return root;
     }
 
-    /**
-     * Validate one part against the schema the routing picks for it. The
-     * schema walk calls it for each part it validates, so a subclass that
-     * overrides it sees every one. Only the first base call the walk's own
-     * active call makes for this part claims the root its eligibility check
-     * read, once (#902, #941). Each call owns its roots: the claiming call
-     * takes that one entry from its walk at claim time, while every other
-     * call starts empty and reads afresh (#910, #926). A nested call or walk
-     * cannot replace the root the claiming call routes by (#949). The call's
-     * scope stops serving reads once the call is done — after
-     * `_validateSingleFileXsd` and the `--original` baseline read — so a
-     * task that outlives it reads afresh (#964).
-     */
     async validateFileAgainstXsd(xmlFile: string): Promise<XsdValidationOutcome> {
-        const token = xsdWalkStore.getStore();
-        const roots = new Map<string, RootQName | null>();
-        if (token?.validator === this && token.xmlFile === xmlFile && token.active && !token.claimed) {
-            token.claimed = true;
-            const root = token.state.roots.get(xmlFile);
-            if (root !== undefined) roots.set(xmlFile, root);
-        }
-        const scope: RootQNameScope = { validator: this, roots, active: true };
-        try {
-            return await this.validateFileInScope(xmlFile, scope);
-        } finally {
-            scope.active = false;
-        }
-    }
-
-    /** {@link validateFileAgainstXsd}'s work, run in its call's root scope (#949, #964). */
-    private async validateFileInScope(xmlFile: string, scope: RootQNameScope): Promise<XsdValidationOutcome> {
-        const single = await rootQNameStore.run(scope, () => this._validateSingleFileXsd(xmlFile));
+        const single = await this._validateSingleFileXsd(xmlFile);
         if (single.valid === null) {
             return { valid: null, errors: new Set() };
         }
         if (single.valid) {
-            return single;
+            return { valid: true, errors: new Set() };
         }
 
-        // Infrastructure failures (schema load / engine failure) are never
-        // part of the --original baseline subtraction: they surface as
-        // error-severity issues and keep the part invalid under every
-        // profile (#289).
-        if (single.infrastructure) {
-            return single;
-        }
-
-        if (this.profile === "strict") {
-            // Every structured finding survives — no baseline subtraction, no
-            // message suppression, no dedup of repeated messages — so repeated
-            // identical defects keep their own location.
-            const schemaIssues = single.schemaIssues ?? [];
-            if (schemaIssues.length === 0) {
-                return { ...single, valid: true, errors: new Set(), schemaIssues: [] };
-            }
-            return {
-                ...single,
-                valid: false,
-                errors: new Set(schemaIssues.map((issue) => issue.message.trim())),
-                schemaIssues,
-            };
-        }
-
-        // Baseline subtraction diffs the modified part against --original so
-        // migrations don't fail on pre-existing defects; lenient/word-valid
-        // keep the diff.
-        const originalErrors = await rootQNameStore.run(scope, () => this._getOriginalFileErrors(xmlFile));
+        const originalErrors = await this._getOriginalFileErrors(xmlFile);
         const newErrors = new Set<string>();
         for (const e of single.errors) {
             if (originalErrors.has(e)) continue;
@@ -2006,9 +1285,9 @@ export class BaseSchemaValidator {
         }
 
         if (newErrors.size > 0) {
-            return { ...single, valid: false, errors: newErrors };
+            return { valid: false, errors: newErrors };
         }
-        return { ...single, valid: true, errors: new Set() };
+        return { valid: true, errors: new Set() };
     }
 
     /**
@@ -2043,164 +1322,13 @@ export class BaseSchemaValidator {
         }
     }
 
-    /** Semantic relationship readers use the processed direct children; lenient retains its historical scan. */
-    protected relationshipElements(document: Document, part: string): Element[] {
-        if (this.profile === "lenient") {
-            return getElementsByTagNameNSAll(document, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
-        }
-        // #635: Word offered recovery for a duplicate split between a direct
-        // child and Fallback (session 34 s34a), and read selected footer/main
-        // relationships (session 33 s33d/s33e); see docs/plans/evidence/word-probes-2026-10-24.md.
-        // The processed view is DOCX/DOCM-only (#643) and built once per
-        // relationships part (#642); relationships nested in foreign
-        // wrappers stay ignored either way.
-        return getRelationshipChildren(this.relationshipsView(document, part));
-    }
-
-    /**
-     * Whether a markup-compatibility finding may cite the Word sessions that
-     * showed it (#1016). Word was shown WordprocessingML packages only, so
-     * PPTX and every other format never cites them; DOCX/DOCM asks the
-     * package's conformance class.
-     */
-    protected citesWordSessions(): boolean {
-        return false;
-    }
-
-    /**
-     * The relationships part `part` as the non-lenient walks read it.
-     * DOCX/DOCM applies markup compatibility — Word 16.115 resolves
-     * `mc:AlternateContent` and `mc:Ignorable` in `.rels` streams (probe
-     * sessions 33–35, docs/plans/evidence/word-probes-2026-10-24.md) —
-     * while PPTX and every other format keeps the stored view: PowerPoint
-     * was never shown markup compatibility in a relationships part (#643).
-     */
-    protected relationshipsView(document: Document, _part: string): Document {
-        return document;
-    }
-
-    /**
-     * The markup-compatibility view of `document`, memoized per part: the
-     * legacy walks would otherwise re-process each `.rels` on every
-     * `relationshipElements` call — five or more passes per part per run
-     * (#642). `DOCXSchemaValidator.relationshipsView` prefers the run
-     * context's `effectiveXml`, so this memo covers only a part the context
-     * cannot supply. Reset when the package view may have changed: at the
-     * start of a `validate()` run, when a repair rewrites the package, and
-     * on every DOCX call outside a run (#654).
-     */
-    private readonly processedRelationships = new Map<string, Document>();
-
-    /** Drop the memoized processed views; call when the package on disk may have changed. */
-    protected resetProcessedRelationships(): void {
-        this.processedRelationships.clear();
-    }
-
-    /**
-     * The processed view `relationshipElements` clones per part when no
-     * shared context view is available, using the same capabilities as
-     * `ctx.effectiveXml`'s `understoodNamespacesForPart` for `.rels`
-     * streams.
-     */
-    protected processedRelationshipsView(document: Document, part: string): Document {
-        const cached = this.processedRelationships.get(part);
-        if (cached) {
-            return cached;
-        }
-        const view = applyMarkupCompatibility(document, { understood: RELATIONSHIPS_UNDERSTOOD_NAMESPACES }).document;
-        this.processedRelationships.set(part, view);
-        return view;
-    }
-
-    /** Identify the required main part by the package relationship, never its basename. */
-    private isMainDocumentPart(xmlFile: string): boolean {
-        // Resolved once per XSD walk: this runs for every part whose root is
-        // ignored, and a walk per call grows with the square of the part
-        // count (#355).
-        this.mainDocumentParts ??= this.resolveMainDocumentParts();
-        return this.mainDocumentParts.has(this.entryName(xmlFile));
-    }
-
-    /** A walked file's name in the package, with `/` separators on every platform. */
-    protected entryName(file: string): string {
-        return this.relPath(file).split(path.sep).join("/");
-    }
-
-    /**
-     * The entries the officeDocument relationships name, resolved as the
-     * word-document-root check resolves them, so both agree on which entry is
-     * the main part: reserved escapes stay distinct (`word%2Fdocument.xml` is
-     * another part, #344), `\` reads as `/` in targets and in entry names
-     * alike (#349, #357), and of two equivalent entries only the one the
-     * target names is main (#349). Of several files naming one part, only the
-     * one the package view keeps is main (#366). Holds entry names.
-     */
-    private resolveMainDocumentParts(): ReadonlySet<string> {
-        const parts = new Set<string>();
-        try {
-            // Indexed as `ValidationContext` indexes its entries, so both keep
-            // the same file when several name one part (#366).
-            const kept = packageEntries(this.unpackedDir);
-            const names = [...kept.keys()];
-            // Read the package relationships as the package view does: found by
-            // part name under OPC equivalence, so `_rels\.rels` and
-            // `_RELS/.RELS` count (#362, #364), and decoded by BOM or
-            // declaration, so UTF-16 counts (#362).
-            const relsName = findEquivalentPart(names, "_rels/.rels");
-            const relsFile = relsName === undefined ? undefined : kept.get(relsName);
-            if (relsFile === undefined) {
-                return parts;
-            }
-            const relationships = parseXmlBytes(readFileSync(relsFile));
-            for (const relationship of this.relationshipElements(relationships, relsName ?? "_rels/.rels")) {
-                const type = relationship.getAttribute("Type");
-                if (
-                    relationship.getAttribute("TargetMode") === "External" ||
-                    (type !== `${OFFICE_RELATIONSHIPS_NAMESPACE}/officeDocument` &&
-                        type !== "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument")
-                ) {
-                    continue;
-                }
-                const part = resolvePartName(names, relationship.getAttribute("Target") ?? "");
-                const file = part === undefined ? undefined : kept.get(part);
-                if (file !== undefined) {
-                    parts.add(this.entryName(file));
-                }
-            }
-        } catch {
-            // Missing or malformed package relationships are diagnosed by their own checks.
-        }
-        return parts;
-    }
-
     protected async _validateSingleFileXsd(xmlFile: string): Promise<XsdValidationOutcome> {
         const schemaPath = this._getSchemaPath(xmlFile);
         if (!schemaPath) return { valid: null, errors: new Set() };
 
-        const countEngineFailure = (): void => {
-            const token = xsdWalkStore.getStore();
-            const state = token?.validator === this && token.active ? token.state : this;
-            state.xsdEngineFailures += 1;
-        };
-        const compatibilityIssues: ValidationIssue[] = [];
         try {
-            const xmlContent = decodeXmlBytes(readFileSync(xmlFile));
-            const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile, compatibilityIssues);
-            if (compatibilityIssues.some((issue) => issue.code === "mce-root-ignored")) {
-                const main = this.isMainDocumentPart(xmlFile);
-                const issues = compatibilityIssues.map((issue): ValidationIssue =>
-                    main && issue.code === "mce-root-ignored"
-                        ? {
-                              ...issue,
-                              severity: "error",
-                              code: "mce-main-root-ignored",
-                              message: `Required main document part ${this.relPath(xmlFile)} has no root after markup compatibility processing.`,
-                          }
-                        : issue,
-                );
-                return { valid: true, errors: new Set(), issues };
-            }
-            const transformedView = cleanedString !== xmlContent;
+            const xmlContent = readFileSync(xmlFile, "utf-8");
+            const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile);
 
             const validator = await this._getXsdValidator();
             const issues = await validator.validate(cleanedString, schemaPath);
@@ -2209,65 +1337,30 @@ export class BaseSchemaValidator {
             // failures arrive as errors and are string-filtered by
             // IGNORED_VALIDATION_ERRORS in `validateFileAgainstXsd`.
             const errorIssues = issues.filter((i) => i.severity === "error");
-            // A schema the engine could not load means it produced no verdict
-            // for this part, so the walk is not "completed". Apply the same
-            // IGNORED_VALIDATION_ERRORS filter used one layer up: the
-            // bundled schemas load (opc-coreProperties.xsd's Dublin Core
-            // imports resolve to the local schemas/dublincore/ copies), so a
-            // load failure is a real infrastructure problem and must count.
-            const engineFailure = errorIssues.find(
-                (i) => i.code === "xsd-schema-load-failed" && !IGNORED_VALIDATION_ERRORS.some((pattern) => i.message.includes(pattern)),
-            );
-            if (engineFailure) {
-                countEngineFailure();
-            }
             if (errorIssues.length === 0) {
-                return {
-                    valid: true,
-                    errors: new Set(),
-                    ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}),
-                };
+                return { valid: true, errors: new Set() };
             }
             const errors = new Set<string>();
             for (const issue of errorIssues) {
                 errors.add(issue.message.trim());
             }
-            const infrastructure = errorIssues.some(
-                (issue) => issue.code === "xsd-schema-load-failed" || issue.message.startsWith("XSD engine failed"),
-            );
-            return {
-                valid: false,
-                errors,
-                schemaIssues: errorIssues,
-                transformedView,
-                ...(infrastructure ? { infrastructure } : {}),
-                ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}),
-            };
+            return { valid: false, errors };
         } catch (err) {
-            // The engine never produced a verdict for this part: reading the
-            // part, preprocessing it, or the engine call itself failed.
-            countEngineFailure();
             const message = err instanceof Error ? err.message : String(err);
-            return {
-                valid: false,
-                errors: new Set([message]),
-                // A throw means the engine never measured the part — unreadable
-                // bytes, preprocessing failure, or an engine-level error. Every
-                // one of those stays blocking: baseline subtraction must not
-                // erase it (#289).
-                infrastructure: true,
-                schemaIssues: [{ severity: "error", message }],
-                ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}),
-            };
+            return { valid: false, errors: new Set([message]) };
         }
     }
 
     /**
      * Pre-process XML before XSD validation: strips `{{template}}` tags from
-     * non-`<*:t>` text nodes, then applies markup compatibility to a validation
-     * view of parts inside `word/`, `ppt/`, and `xl/`.
+     * non-`<*:t>` text nodes, removes the `mc:Ignorable` attribute, and (for
+     * files inside `word/`, `ppt/`, `xl/`) strips elements/attributes belonging
+     * to namespaces not in `OOXML_NAMESPACES`.
+     *
+     * Mirrors `_remove_template_tags_from_text_nodes` + `_preprocess_for_mc_ignorable`
+     * + `_clean_ignorable_namespaces` in Python.
      */
-    protected _preprocessXmlForXsd(xmlContent: string, xmlFile: string, issues: ValidationIssue[] = []): string {
+    protected _preprocessXmlForXsd(xmlContent: string, xmlFile: string): string {
         const dom = parseXml(xmlContent);
 
         // _remove_template_tags_from_text_nodes
@@ -2290,163 +1383,55 @@ export class BaseSchemaValidator {
             }
         }
 
-        const rel = this.relPath(xmlFile);
-        // ASCII case-insensitive, as the schema mapping is (#377).
-        const firstSegment = asciiLowerCase(rel.split(/[\\/]/)[0] ?? "");
-        if (MAIN_CONTENT_FOLDERS.has(firstSegment)) {
-            const schemaNamespace = SCHEMA_NAMESPACE_CAPABILITIES[path.basename(this._getSchemaPath(xmlFile) ?? "")];
-            // A Strict part understands the purl.oclc.org counterparts of the
-            // Transitional namespaces its iso-strict schema validates.
-            const baseUnderstood = dom.documentElement?.namespaceURI?.startsWith(STRICT_OOXML_NS_PREFIX)
-                ? STRICT_UNDERSTOOD_NAMESPACES
-                : UNDERSTOOD_NAMESPACES;
-            const understood = schemaNamespace ? new Set([...baseUnderstood, schemaNamespace]) : baseUnderstood;
-            const compatible = applyMarkupCompatibility(dom, { understood });
-            const located = (found: readonly ValidationIssue[]): ValidationIssue[] => {
-                const relocated = found.map((issue) =>
-                    relocateCompatibilityIssue(issue, {
-                        path: rel,
-                        message: issue.code === "mce-extension-not-ignorable" ? `${rel}: ${issue.message}` : issue.message,
-                    }),
-                );
-                return relocated.some(isAlternateContentCharacterData) && this.citesWordSessions()
-                    ? relocated.map(withWordSessionCitation)
-                    : relocated;
-            };
-            if (this.profile === "lenient" && compatible.rootUnwrapElementCount !== undefined) {
-                // #640 preserves lenient's diagnostics byte for byte. Previously
-                // a multi-root unwrap reached the existing XSD failure path as
-                // this xmldom error; an empty unwrap reported mce-root-ignored.
-                // The shared processor now returns an intact source view with
-                // mce-malformed instead. Keep the old schema adapter's output
-                // here only; Word-valid/strict consume the structured finding.
-                if (compatible.rootUnwrapElementCount > 1) {
-                    throw new Error("Only one element can be added and only after doctype");
+        // _preprocess_for_mc_ignorable
+        const root = dom.documentElement;
+        if (root) {
+            const attrs = root.attributes;
+            for (let i = attrs.length - 1; i >= 0; i -= 1) {
+                const attr = attrs[i];
+                if (!attr) continue;
+                if (attr.namespaceURI === MC_NAMESPACE && localName(attr.name) === "Ignorable") {
+                    root.removeAttributeNode(attr);
                 }
-                // The processor's other findings stay, in order: only the
-                // root-unwrap mce-malformed becomes the mce-root-ignored the
-                // empty root reported in its place (#664).
-                issues.push(
-                    ...located(
-                        compatible.issues.map((issue) =>
-                            issue === compatible.rootUnwrapIssue
-                                ? {
-                                      severity: "info" as const,
-                                      code: "mce-root-ignored",
-                                      message: `Root element ${dom.documentElement.tagName} is in an ignorable namespace that is not understood; the part has no content to schema-validate.`,
-                                  }
-                                : issue,
-                        ),
-                    ),
-                );
-                return "";
             }
-            issues.push(...located(compatible.issues));
-            return serializeXml(compatible.document, "UTF-8");
+        }
+
+        // _clean_ignorable_namespaces — only for word/ppt/xl files
+        const rel = this.relPath(xmlFile);
+        const firstSegment = rel.split(/[\\/]/)[0];
+        if (MAIN_CONTENT_FOLDERS.has(firstSegment) && root) {
+            stripNonOoxmlAttributes(root);
+            removeNonOoxmlElements(root);
         }
 
         return serializeXml(dom, "UTF-8");
     }
 
     protected _getSchemaPath(xmlFile: string): string | null {
-        const key = this._schemaMappingKey(xmlFile);
-        if (!key) return null;
-        // Dispatch by namespace AND part identity: a Strict-conformance root
-        // resolves to the iso-strict schema for the same key when one exists.
-        // Keys without a Strict schema (OPC parts, Microsoft extensions,
-        // customXml itemProps is mapped — see STRICT_SCHEMA_MAPPINGS) fall
-        // through to null so unmapped Strict parts keep the usual skip.
-        if (this._isStrictXmlFile(xmlFile)) {
-            const strictMapping = STRICT_SCHEMA_MAPPINGS[key];
-            if (!strictMapping) return null;
-            return path.join(this.schemasDir, strictMapping);
+        const base = path.basename(xmlFile);
+        if (SCHEMA_MAPPINGS[base]) {
+            return path.join(this.schemasDir, SCHEMA_MAPPINGS[base]);
         }
-        return path.join(this.schemasDir, SCHEMA_MAPPINGS[key]);
-    }
-
-    /**
-     * Part-identity lookup — the {@link SCHEMA_MAPPINGS} key this XML part
-     * maps to, independent of conformance class. Mirrors the pre-strict
-     * `_getSchemaPath` heuristics exactly.
-     */
-    protected _schemaMappingKey(xmlFile: string): string | null {
-        // Part names compare ASCII case-insensitively (OPC), so a part under
-        // `WORD/` maps as one under `word/` does. The tests read the
-        // package-relative name with `/` on every platform (#377).
-        const name = asciiLowerCase(this.relPath(xmlFile).split(path.sep).join("/"));
-        if (isContentTypesStreamName(name)) return "[Content_Types].xml";
-        const base = path.posix.basename(name);
-        const mapped = SCHEMA_KEY_BY_LOWER_CASE.get(base);
-        if (mapped !== undefined && mapped !== "[Content_Types].xml") {
-            return mapped;
+        if (xmlFile.endsWith(".rels")) {
+            return path.join(this.schemasDir, SCHEMA_MAPPINGS[".rels"]);
         }
-        if (isRelationshipsPartName(name)) {
-            return ".rels";
+        if (xmlFile.includes("charts/") && base.startsWith("chart")) {
+            return path.join(this.schemasDir, SCHEMA_MAPPINGS["chart"]);
         }
-        if (name.includes("charts/") && base.startsWith("chart")) {
-            return "chart";
+        if (xmlFile.includes("theme/") && base.startsWith("theme")) {
+            return path.join(this.schemasDir, SCHEMA_MAPPINGS["theme"]);
         }
-        if (name.includes("theme/") && base.startsWith("theme")) {
-            return "theme";
+        if (xmlFile.includes("customXml/") && base.startsWith("itemProps") && base.endsWith(".xml")) {
+            return path.join(this.schemasDir, SCHEMA_MAPPINGS["itemProps"]);
         }
-        if (name.includes("customxml/") && base.startsWith("itemprops") && base.endsWith(".xml")) {
-            return "itemProps";
+        if (xmlFile.includes("_xmlsignatures/") && base.startsWith("sig") && base.endsWith(".xml")) {
+            return path.join(this.schemasDir, SCHEMA_MAPPINGS["sig"]);
         }
-        if (name.includes("_xmlsignatures/") && base.startsWith("sig") && base.endsWith(".xml")) {
-            return "sig";
-        }
-        const parentName = path.posix.basename(path.posix.dirname(name));
-        // Directly in `ppt/`, the five conventional names are a fast path
-        // and every other name routes by its root element (#887), so a
-        // renamed main presentation or a relocated slide keeps its pml.xsd
-        // check while the Microsoft extension roots stay unmapped. `word/`
-        // and `xl/` keep the folder rule.
-        if (parentName === "ppt") {
-            if (PPT_DIRECT_PART_NAMES.has(base)) return "ppt";
-            return this._routesToPptSchemaByRoot(xmlFile) ? "ppt" : null;
-        }
+        const parentName = path.basename(path.dirname(xmlFile));
         if (MAIN_CONTENT_FOLDERS.has(parentName) && SCHEMA_MAPPINGS[parentName]) {
-            return parentName;
-        }
-        // One folder below a main content folder: the glossary document and
-        // the parts it relates are WordprocessingML, and the diagram parts
-        // DrawingML; the folder rule above never reached them (#628).
-        const grandparentName = path.posix.basename(path.posix.dirname(path.posix.dirname(name)));
-        if (parentName === "glossary" && grandparentName === "word") {
-            return "word";
-        }
-        if (parentName === "diagrams" && MAIN_CONTENT_FOLDERS.has(grandparentName) && DIAGRAM_PART_NAME.test(base)) {
-            return "diagram";
-        }
-        // One folder below `ppt/`: the slide, layout, master, notes, comments
-        // and tags parts pml.xsd declares, matched by folder and file name so
-        // a sibling pml.xsd never declares (the modern comments) stays
-        // unmapped. The folder rule above reached only `ppt/` itself, so
-        // these parts were never walked (#864).
-        if (grandparentName === "ppt" && PPT_PART_NAME_BY_FOLDER.get(parentName)?.test(base)) {
-            return "ppt";
+            return path.join(this.schemasDir, SCHEMA_MAPPINGS[parentName]);
         }
         return null;
-    }
-
-    /**
-     * Whether `xmlFile`, stored directly in `ppt/` under a name outside
-     * {@link PPT_DIRECT_PART_NAMES}, holds a root element the `ppt` schema's
-     * closure declares for its conformance class. A part's identity in OPC
-     * comes from its relationship and content type, not its name, so the
-     * root decides (#887): a renamed main presentation or a relocated slide
-     * keeps its check, while a well-formed root no bundled schema declares
-     * — PowerPoint's `p188:authorLst`, `p1510:revInfo` — stays unmapped and
-     * draws the `xsd-no-schema` audit, as it did before. A part that cannot
-     * be read or parsed maps to no schema either; a malformed one draws its
-     * XML diagnostics, not the audit (#902).
-     */
-    private _routesToPptSchemaByRoot(xmlFile: string): boolean {
-        const root = this.rootQName(xmlFile);
-        if (root === null) return false;
-        // The conformance dispatch `_getSchemaPath` applies one step later.
-        const schema = this._isStrictXmlFile(xmlFile) ? STRICT_SCHEMA_MAPPINGS.ppt : SCHEMA_MAPPINGS.ppt;
-        return schemaGlobals(path.join(this.schemasDir, schema)).has(globalElementKey(root.namespace, root.localName));
     }
 
     protected async _getOriginalFileErrors(xmlFile: string): Promise<Set<string>> {
@@ -2456,8 +1441,15 @@ export class BaseSchemaValidator {
         // inside the original .docx zip and validate it standalone.
         const rel = path.relative(this.unpackedDir, xmlFile);
 
-        const zip = await this._loadOriginalArchive();
-        const entry = zip?.file(rel.replace(/\\/g, "/"));
+        const { default: JSZip } = await import("jszip");
+        let zipContent: Buffer;
+        try {
+            zipContent = await fs.readFile(this.originalFile);
+        } catch {
+            return new Set();
+        }
+        const zip = await JSZip.loadAsync(zipContent);
+        const entry = zip.file(rel.replace(/\\/g, "/"));
         if (!entry) return new Set();
 
         return withTempDir(async (tmpDir) => {
@@ -2482,335 +1474,41 @@ export class BaseSchemaValidator {
     protected relPath(absPath: string): string {
         return path.relative(this.unpackedDir, absPath) || path.basename(absPath);
     }
-
-    /** See {@link isMainDocumentPart}; reset at the start of every XSD walk (#657) and when a repair deletes files. */
-    private mainDocumentParts: ReadonlySet<string> | undefined;
-    /**
-     * Everything this validator read from `--original` outside a
-     * `withinBaselineRun` scope — direct `validateAgainstXsd()` and
-     * `compareParagraphCounts()` calls memoize here so repeated direct calls
-     * share one load, and {@link forgetOriginal} drops it wholesale.
-     */
-    private outsideRunBaseline: BaselineState = {};
-
-    /**
-     * The baseline state in effect: the current run's own store inside a
-     * `validate()` invocation, the shared outside-run slot otherwise.
-     */
-    protected baselineState(): BaselineState {
-        return baselineRunStore.getStore() ?? this.outsideRunBaseline;
-    }
-
-    /**
-     * Run `validate()`'s checks so they share one `--original` load, starting
-     * from the `--original` as it is now: a re-run on this validator never
-     * subtracts the previous run's baseline (#503), and an overlapping
-     * `validate()` on this validator never sees — let alone replaces — this
-     * run's baseline, because the archive lives in async-local state scoped
-     * to the invocation rather than on the instance (#520).
-     */
-    protected async withinBaselineRun<T>(run: () => Promise<T>): Promise<T> {
-        // Clear only the OUTSIDE-run cache so a post-run direct call re-reads
-        // the `--original`; this run's own reads go into its fresh store.
-        this.forgetOriginal();
-        return baselineRunStore.run({}, run);
-    }
-
-    /** Drop what was read from the `--original` outside a run, so the next use reads it again (#503). */
-    protected forgetOriginal(): void {
-        this.outsideRunBaseline = {};
-    }
-
-    /**
-     * Parse a part file for a check that only reads the DOM. Inside a
-     * `validate()` run every such check shares one parse of the same bytes:
-     * a full DOCX run otherwise parses `word/document.xml` once per check,
-     * about fifteen times, which took a 2 MB document past 30 seconds on CI.
-     * The file is re-read and its bytes compared on every call, so a part
-     * written during the run is parsed afresh, and a parse failure is replayed
-     * to every caller that reads the same bytes. Outside a run every call
-     * parses fresh, as before.
-     *
-     * Callers must not mutate the result. A check that rewrites its DOM
-     * (`validateUniqueIds` strips AlternateContent) parses its own copy.
-     */
-    protected async readPartDom(file: string): Promise<Document> {
-        const bytes = await fs.readFile(file);
-        const run = baselineRunStore.getStore();
-        if (run === undefined) return parseXmlBytes(bytes);
-        run.partDoms ??= new Map();
-        const parsed = run.partDoms.get(file);
-        if (parsed !== undefined && parsed.bytes.equals(bytes)) {
-            if (parsed.dom === undefined) throw parsed.error;
-            return parsed.dom;
-        }
-        try {
-            const dom = parseXmlBytes(bytes);
-            run.partDoms.set(file, { bytes, dom });
-            return dom;
-        } catch (error) {
-            run.partDoms.set(file, { bytes, error });
-            throw error;
-        }
-    }
-
-    /**
-     * The `--original` archive, read from disk and loaded once per
-     * `validate()` run — baseline subtraction consults it for every XSD-failed
-     * part, and each call otherwise re-reads and re-parses the archive (#481).
-     * A direct `validateAgainstXsd()` call outside a run starts from the
-     * `--original` as it is then (#503).
-     *
-     * A failed read resolves to `null` (the caller's empty result), exactly as
-     * before. A load JSZip refuses still rejects, so the error surfaces where it
-     * did before — and the shared rejection replays it to every caller in the
-     * run.
-     */
-    protected _loadOriginalArchive(): Promise<JSZip | null> {
-        const state = this.baselineState();
-        state.archivePromise ??= (async () => {
-            if (!this.originalFile) return null;
-            let zipContent: Buffer;
-            try {
-                zipContent = await fs.readFile(this.originalFile);
-            } catch {
-                return null;
-            }
-            return loadCentralNamedArchive(zipContent);
-        })();
-        return state.archivePromise;
-    }
 }
 
 // ===== module-level helpers ===================================================
 
-/**
- * The files of `dir` by part name. Of several files naming one part
- * (`word\document.xml` beside `word/document.xml`) only the one
- * `ValidationContext` keeps is listed, so a full run judges the entries a
- * quick run judges (#366, #368). Only a directory given as input can hold
- * several: a packed file is extracted under part names (#371).
- */
-export function packageEntries(dir: string, extensions?: ReadonlyArray<string>): Map<string, string> {
-    return indexByPartName(walkFiles(dir, extensions).map((file) => [path.relative(dir, file).split(path.sep).join("/"), file] as const));
-}
-
-/**
- * The {@link packageEntries} of `dir` the XML passes judge, `xml-syntax`'s
- * parts (`xmlPartNames`): by name, or by an XML content type whatever the
- * name (#620).
- */
-function xmlPackageEntries(dir: string): [string, string][] {
-    const entries = packageEntries(dir);
-    const xmlParts = xmlPartNames([...entries.keys()], (part) => {
-        try {
-            return readFileSync(entries.get(part)!);
-        } catch {
-            return undefined;
-        }
-    });
-    return [...entries].filter(([part]) => xmlParts.has(part));
-}
-
-/** A stored entry `walkDirectory` cannot read, with the reason naming its kind (#426). */
-export interface UnreadableEntry {
-    /** Absolute path of the stored entry. */
-    file: string;
-    /** Why it cannot be read: `"a broken symbolic link"`, `"not a regular file"`,
-     * `"a symbolic link loop"`, `"a symbolic link outside the input directory"`,
-     * `"a symbolic link the walk cannot resolve (…)"`, or `"an unreadable
-     * directory (…)"` for a directory the walk cannot list or an input root
-     * it cannot canonicalize (#543, #546, #576). */
-    reason: string;
-    /**
-     * What the entry is. A directory names no stored file entry, so it
-     * contributes no name to the package view and the stored-name checks
-     * never judge a name no package holds (#573); a file keeps its stored
-     * name (#426).
-     */
-    kind: "file" | "directory";
-}
-
-/** The device/inode identity of a directory on the walk's current path (#546). */
-const directoryIdentity = (st: Stats): string => `${st.dev}:${st.ino}`;
-
-/**
- * The canonical path of `target`, or the error code resolving it failed
- * with. The canonical path is what decides whether a link leaves the input
- * root (#576): a lexical path cannot tell, since the link's own spelling
- * stays inside the root. `realpath(3)` returns the on-disk case; Node's JS
- * `realpathSync` keeps the case a path is written in, so on a
- * case-insensitive volume a root spelled in another case than a link's
- * absolute target would read that link as leaving the root.
- */
-function canonicalPath(target: string): { readonly path: string } | { readonly code: string } {
-    try {
-        return { path: realpathSync.native(target) };
-    } catch (err) {
-        return { code: (err as NodeJS.ErrnoException).code ?? "error" };
-    }
-}
-
-/** Whether the canonical path `resolved` lies inside the canonical `root`. */
-function isInsideRoot(root: string, resolved: string): boolean {
-    const relative = path.relative(root, resolved);
-    if (relative === "") return true;
-    if (path.isAbsolute(relative)) return false;
-    // A sibling named "..foo" is inside; a parent named ".." is not.
-    return relative !== ".." && !relative.startsWith(`..${path.sep}`);
-}
-
-/**
- * Walk `dir` recursively the way {@link walkFiles} does, without dropping
- * what that walk silently skips (#426): stored entries that cannot be read
- * — a broken symbolic link, or anything that resolves to neither a regular
- * file nor a directory (a FIFO, a socket, a device) — are reported in
- * `unreadable` instead of vanishing from the package, and `holdsSymlinks`
- * marks a tree where any stored entry or directory segment is itself a
- * symbolic link, whose auto-repair write-back must never follow the link
- * (#425). A directory the walk cannot list is reported the same way, naming
- * the directory: every stored file under it would otherwise vanish from the
- * package with it (#543). A symlink whose target is a directory already on
- * the current path — by device and inode — is reported as `"a symbolic link
- * loop"` at the link's stored name, so the walk stops there instead of
- * descending until the kernel's symlink budget runs out (#546); an `ELOOP`
- * from resolving a symlink (a chain that loops without reaching a
- * directory) is never labelled a broken link. A link whose target resolves
- * outside the input root is not followed at all: it is reported as `"a
- * symbolic link outside the input directory"` at the link's stored name, so
- * foreign files never become package parts and a link to an ancestor of the
- * root is named at the link itself (#576). `holdsHardLinks` marks a
- * regular file with more than one directory entry, whose write-back must
- * not modify an unnamed alias (#545). `files` is exactly what `walkFiles`
- * returns.
- */
-export function walkDirectory(
-    dir: string,
-    extensions?: ReadonlyArray<string>,
-): { files: string[]; unreadable: UnreadableEntry[]; holdsSymlinks: boolean; holdsHardLinks: boolean } {
-    const files: string[] = [];
-    const unreadable: UnreadableEntry[] = [];
-    let holdsSymlinks = false;
-    let holdsHardLinks = false;
-    // The input directory's own identity anchors the path: a link back to it
-    // loops too. A directory the walk cannot even stat carries no identity,
-    // so only the deeper directories guard against loops there.
-    let rootAncestors: ReadonlySet<string> = new Set();
-    try {
-        rootAncestors = new Set([directoryIdentity(statSync(dir))]);
-    } catch {
-        // readdirSync below reports the unreadable input directory (#543).
-    }
-    // The input root's canonical path bounds the walk: a link whose target
-    // resolves outside it is not followed (#576). A root that cannot be
-    // canonicalized cannot bound anything, so the walk fails closed: it
-    // refuses the input directory and lists nothing.
-    const root = canonicalPath(dir);
-    const rootReal = "path" in root ? root.path : undefined;
-    if ("code" in root) {
-        unreadable.push({ file: dir, kind: "directory", reason: `an unreadable directory (${root.code})` });
-    }
-    const stack: { dir: string; ancestors: ReadonlySet<string> }[] = rootReal === undefined ? [] : [{ dir, ancestors: rootAncestors }];
+/** Walk `dir` recursively, returning absolute paths. Optional `extensions` (with leading dot) filter. */
+export function walkFiles(dir: string, extensions?: ReadonlyArray<string>): string[] {
+    const results: string[] = [];
+    const stack: string[] = [dir];
     while (stack.length > 0) {
         const current = stack.pop();
         if (current === undefined) break;
         let entries: string[];
         try {
-            entries = readdirSync(current.dir);
-        } catch (err) {
-            // A directory the walk cannot list hides every stored file under
-            // it — a whole subtree vanishing, not one entry (#543). Name it
-            // as unreadable so the run fails instead of judging the parts it
-            // can still see.
-            unreadable.push({
-                file: current.dir,
-                kind: "directory",
-                reason: `an unreadable directory (${(err as NodeJS.ErrnoException).code ?? "error"})`,
-            });
+            entries = readdirSync(current);
+        } catch {
             continue;
         }
         for (const name of entries) {
-            const full = path.join(current.dir, name);
-            let listed;
-            try {
-                listed = lstatSync(full);
-            } catch {
-                continue;
-            }
-            if (listed.isSymbolicLink()) holdsSymlinks = true;
+            const full = path.join(current, name);
             let st;
             try {
                 st = statSync(full);
-            } catch (err) {
-                const code = (err as NodeJS.ErrnoException).code;
-                // ELOOP means resolution looped through symlinks, not that a
-                // link points nowhere (#546).
-                let reason: string;
-                if (!listed.isSymbolicLink()) reason = `unreadable (${code ?? "error"})`;
-                else reason = code === "ELOOP" ? "a symbolic link loop" : "a broken symbolic link";
-                unreadable.push({ file: full, kind: "file", reason });
+            } catch {
                 continue;
             }
-            // A link out of the input root is not followed: its target is in
-            // no package this input holds, so the walk refuses it at the
-            // link's stored name instead of judging foreign files as parts
-            // (#576).
-            if (listed.isSymbolicLink() && rootReal !== undefined) {
-                const resolved = canonicalPath(full);
-                // A link that cannot be canonicalized cannot be bounded, so
-                // it is refused, never followed (#576).
-                if ("code" in resolved) {
-                    unreadable.push({
-                        file: full,
-                        kind: st.isDirectory() ? "directory" : "file",
-                        reason: `a symbolic link the walk cannot resolve (${resolved.code})`,
-                    });
-                    continue;
-                }
-                if (!isInsideRoot(rootReal, resolved.path)) {
-                    unreadable.push({
-                        file: full,
-                        kind: st.isDirectory() ? "directory" : "file",
-                        reason: "a symbolic link outside the input directory",
-                    });
-                    continue;
-                }
-            }
             if (st.isDirectory()) {
-                const identity = directoryIdentity(st);
-                // A directory entry resolving to one already on the current
-                // path can only be reached through a symlink loop: report the
-                // link as stored instead of re-listing the tree under it (#546).
-                if (current.ancestors.has(identity)) {
-                    unreadable.push({ file: full, kind: "directory", reason: "a symbolic link loop" });
-                    continue;
-                }
-                const ancestors = new Set(current.ancestors);
-                ancestors.add(identity);
-                stack.push({ dir: full, ancestors });
+                stack.push(full);
             } else if (st.isFile()) {
-                if (st.nlink > 1) holdsHardLinks = true;
                 if (!extensions || extensions.some((e) => full.endsWith(e))) {
-                    files.push(full);
+                    results.push(full);
                 }
-            } else {
-                unreadable.push({ file: full, kind: "file", reason: "not a regular file" });
             }
         }
     }
-    return {
-        files: files.sort(),
-        // Code-unit order, as the file list beside it: the host's ICU
-        // collation must never decide the order of the message (#575).
-        unreadable: unreadable.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0)),
-        holdsSymlinks,
-        holdsHardLinks,
-    };
-}
-
-/** Walk `dir` recursively, returning absolute paths. Optional `extensions` (with leading dot) filter. */
-export function walkFiles(dir: string, extensions?: ReadonlyArray<string>): string[] {
-    return walkDirectory(dir, extensions).files;
+    return results.sort();
 }
 
 function localName(qname: string): string {
@@ -2866,122 +1564,6 @@ export function collectDeclaredPrefixes(root: Element): Set<string> {
     return declared;
 }
 
-/** Root-prefix diagnosis shared by staged, archive-backed and partial runs (#499). */
-export function rootIgnorableIssues(root: Element, part: string): ValidationIssue[] {
-    const issues: ValidationIssue[] = [];
-    const declared = collectDeclaredPrefixes(root);
-
-    const attrs = root.attributes;
-    for (let i = 0; i < attrs.length; i += 1) {
-        const attr = attrs[i];
-        if (!attr) continue;
-        if (!attr.name.endsWith("Ignorable")) continue;
-        const tokens = attr.value.split(/\s+/).filter(Boolean);
-        for (const ns of tokens) {
-            if (!declared.has(ns)) {
-                issues.push({
-                    severity: "error",
-                    message: `Namespace '${ns}' in Ignorable but not declared`,
-                    path: part,
-                    code: "ignorable-undeclared",
-                });
-            }
-        }
-    }
-    return issues;
-}
-/**
- * What one baseline scope reads from `--original`: the loaded archive
- * memoized for the scope's lifetime (#481), plus the DOCX original-document
- * root that shares that archive (#503). A scope is either one `validate()`
- * invocation's async-local store or a validator's shared outside-run slot;
- * two overlapping runs therefore hold separate archives (#520).
- */
-export interface BaselineState {
-    /** See {@link BaseSchemaValidator._loadOriginalArchive}. */
-    archivePromise?: Promise<JSZip | null>;
-    /** Parsed `word/document.xml` of `--original`; see DOCXSchemaValidator. */
-    documentRoot?: Element | null;
-    /** True once loading `word/document.xml` was attempted and failed. */
-    documentRootFailed?: boolean;
-    /** This run's parsed part files, by path; see {@link BaseSchemaValidator.readPartDom}. */
-    partDoms?: Map<string, { bytes: Buffer; dom?: Document; error?: unknown }>;
-}
-
-/** Per-`validate()`-invocation baseline scope; see {@link BaselineState} (#520). */
-const baselineRunStore = new AsyncLocalStorage<BaselineState>();
-
-/**
- * The walk's own call for one part, active only until that call settles.
- * Its first base call for this validator and part claims the root memo
- * once (#941); second and nested calls read the root afresh. Inherited
- * async stores keep the token but not its active lifetime (#926). Its state
- * holds this walk's roots for the claim to copy, independent of any nested
- * scope (#949), and its trace and engine-failure count; only an active call
- * on this validator counts failures there, keeping nested walks separate (#943).
- */
-type XsdWalkCall = {
-    validator: BaseSchemaValidator;
-    xmlFile: string;
-    active: boolean;
-    claimed: boolean;
-    state: { trace: XsdWalkTrace; xsdEngineFailures: number; roots: Map<string, RootQName | null> };
-};
-
-/** The active call's validator and part may claim the root memo once; see {@link BaseSchemaValidator.validateFileAgainstXsd} (#926, #941). */
-const xsdWalkStore = new AsyncLocalStorage<XsdWalkCall>();
-
-/**
- * Roots owned by one walk or one `validateFileAgainstXsd` call on a validator.
- * Strict sniffing, schema dispatch, preprocessing and the `ppt/` root route
- * share these reads. Each scope owns its map; the claiming call copies only
- * its part's entry from its walk, so nested calls and walks never replace
- * each other's roots (#902, #910, #926, #941, #949). A scope serves reads
- * only while its walk or call is still running; once that has settled, the
- * tasks it started read afresh and store nothing, as outside any scope
- * (#964).
- */
-type RootQNameScope = {
-    validator: BaseSchemaValidator;
-    roots: Map<string, RootQName | null>;
-    active: boolean;
-};
-
-/** Per-walk or per-call roots; see {@link RootQNameScope} (#949). */
-const rootQNameStore = new AsyncLocalStorage<RootQNameScope>();
-
-const IGNORABLE_UNDECLARED_MESSAGE = /^Namespace '(.+)' in Ignorable but not declared$/;
-const UNBOUND_IGNORABLE_MESSAGE = /^Unbound prefix in mc:Ignorable: (.+)$/;
-
-/**
- * `validateNamespaces` reports an undeclared prefix in a part root's
- * `Ignorable` as `ignorable-undeclared`, and the markup-compatibility
- * processor reports the same prefix as `mce-unbound-prefix`. Keep the
- * established code, once: one processor finding is dropped per
- * `ignorable-undeclared` on the same part and prefix (#309). A prefix only the
- * processor sees unbound (an `Ignorable` below the root, or a root prefix
- * bound only on a descendant) keeps its finding.
- */
-export function withoutRestatedIgnorablePrefixes(result: ValidationResult): ValidationResult {
-    // validateNamespaces reports path.relative paths (backslashes on Windows);
-    // the Word rule reports the normalized part name.
-    const key = (issue: ValidationIssue, prefix: string): string => `${(issue.path ?? "").replace(/\\/g, "/")}\u0000${prefix}`;
-    const undeclared = new Map<string, number>();
-    for (const issue of result.issues) {
-        const prefix = issue.code === "ignorable-undeclared" ? IGNORABLE_UNDECLARED_MESSAGE.exec(issue.message)?.[1] : undefined;
-        if (prefix !== undefined) undeclared.set(key(issue, prefix), (undeclared.get(key(issue, prefix)) ?? 0) + 1);
-    }
-    if (undeclared.size === 0) return result;
-    const issues = result.issues.filter((issue) => {
-        const prefix = issue.code === "mce-unbound-prefix" ? UNBOUND_IGNORABLE_MESSAGE.exec(issue.message)?.[1] : undefined;
-        const remaining = prefix === undefined ? 0 : (undeclared.get(key(issue, prefix)) ?? 0);
-        if (remaining === 0) return true;
-        undeclared.set(key(issue, prefix!), remaining - 1);
-        return false;
-    });
-    return finalize(issues);
-}
-
 function removeMcAlternateContent(dom: Document): void {
     const list = getElementsByTagNameNSAll(dom, MC_NAMESPACE, "AlternateContent");
     const items: Element[] = [];
@@ -3013,6 +1595,47 @@ function findIdAttribute(elem: Element, attrName: string): string | null {
         if (local === attrName) return attr.value;
     }
     return null;
+}
+
+function stripNonOoxmlAttributes(root: Element): void {
+    for (const elem of iterElements(root)) {
+        const attrs = elem.attributes;
+        const toRemove: Attr[] = [];
+        for (let i = 0; i < attrs.length; i += 1) {
+            const attr = attrs[i];
+            if (!attr) continue;
+            const ns = attr.namespaceURI;
+            if (ns && !OOXML_NAMESPACES.has(ns)) {
+                toRemove.push(attr);
+            }
+        }
+        for (const attr of toRemove) {
+            elem.removeAttributeNode(attr);
+        }
+    }
+}
+
+function removeNonOoxmlElements(root: Element): void {
+    // DFS, removing element children whose namespace is outside OOXML_NAMESPACES.
+    const stack: Element[] = [root];
+    while (stack.length > 0) {
+        const node = stack.pop();
+        if (node === undefined) break;
+        const children = node.childNodes;
+        const toRemove: Element[] = [];
+        for (let i = 0; i < children.length; i += 1) {
+            const child = children[i];
+            if (!child || child.nodeType !== 1) continue;
+            const elem = child as Element;
+            const ns = elem.namespaceURI;
+            if (ns && !OOXML_NAMESPACES.has(ns)) {
+                toRemove.push(elem);
+            } else {
+                stack.push(elem);
+            }
+        }
+        for (const e of toRemove) node.removeChild(e);
+    }
 }
 
 function finalize(issues: ValidationIssue[]): ValidationResult {

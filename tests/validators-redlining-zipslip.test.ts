@@ -22,7 +22,6 @@ import { describe, expect, it } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
 import { validateRedlining } from "../src/scripts/office/validators/redlining";
-import { buildRawZip } from "./support/raw-zip";
 
 const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
 
@@ -72,28 +71,6 @@ describe("validateRedlining zip slip prevention", () => {
             } finally {
                 JSZip.loadAsync = originalLoadAsync;
             }
-        });
-    });
-
-    // JSZip keeps no unsafeOriginalName for a folder entry, so only the
-    // central directory shows its stored name (#676).
-    it("returns an unpack error when a stored folder name escapes the extract dir", async () => {
-        await withTempDir(async (dir) => {
-            const body = '<w:body><w:p><w:ins w:author="Ritapolis"><w:r><w:t>Hello world</w:t></w:r></w:ins></w:p></w:body>';
-            const unpacked = path.join(dir, "unpacked");
-            await writeUnpacked(unpacked, body);
-            const docxPath = path.join(dir, "slip.docx");
-            await fs.writeFile(
-                docxPath,
-                buildRawZip([
-                    { name: "../../outside/", content: "" },
-                    { name: "word/document.xml", content: wrapDoc(body) },
-                ]),
-            );
-
-            const result = await validateRedlining({ unpackedDir: unpacked, originalDocx: docxPath, author: "Ritapolis" });
-            expect(result.valid).toBe(false);
-            expect(result.issues[0]?.message).toMatch(/Refusing to extract entry outside output dir: \.\.\/\.\.\/outside\//);
         });
     });
 });

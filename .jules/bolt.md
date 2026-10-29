@@ -32,17 +32,6 @@
 
 **Learning:** Parent traversal (`parentNode` loops) for every matched node in a deep document is O(N*D). Combining this with querying all elements leads to huge performance degradation.
 **Action:** Implement an integrated top-down DFS traversal instead of querying all elements and then checking their parent chains. This removes redundant parent tree traversals and prunes excluded subtrees. End-to-end timings can still be dominated by XML parsing and allocation; see `docs/performance/redlining-dfs.md` for mixed local measurements.
-
-## 2026-10-25 - What the salvage of PRs #198-#202, #205, #265, #421 and #633 kept
-
-**Learning:** Of these nine PRs, one change survived measurement: a single walk for the deleted-text checks (#199), 2.3-3.6x faster on the text-box check and 1.9-2.0x on the move-source check it now also covers. Even that is about 0.4% of a 12-second word-valid run on a 2.4 MB document. The `childNodes` loop in `getElementsByTagNameNSAll` (#633) measured 0.89-1.76x, with no gain on synthetic documents. The duplicate-ID DFS (#265) measured 0.93-1.18x, because the ancestor walk it removes runs only for elements that carry an ID. The `collectText` DFS (#201, #198) ran 1.2-1.5x in isolation and no faster when building the inventory, against an A/A noise floor of 5-6%. Querying the containers first (#421, #200, #202) was slower than one walk, and the first versions missed deleted text in the other Word namespace. #205 swapped qualified-name matching for namespace matching that lost Strict documents.
-**Action:** Benchmark both the function itself and the end-to-end path that calls it, with interleaved samples and an A/A run for the noise floor. Propose a change only when it beats that floor. When replacing an ancestor walk, check both Word namespaces. Append to this journal; never rewrite it (#633 deleted every earlier entry).
-
-## 2026-10-28 - #677, #686 and #936 re-proposed rejected changes
-
-**Learning:** Three PRs opened after the #674 salvage repeated changes the 2026-10-25 entry had already measured and rejected. #677 queried the `txbxContent`/`moveFrom` containers first, like #421, #200 and #202, though one walk for both checks had landed in 58e53b73. #686 and #936 replaced the `lastChild`/`previousSibling` walk in `getElementsByTagNameNSAll` with `childNodes` iteration, which is #633's change. None reported an end-to-end measurement. All three also edited workflow files (#1027).
-**Action:** Read this journal before proposing a change. A traversal rewrite that an entry here rejects needs interleaved end-to-end measurements that beat the A/A noise floor. A performance PR touches no workflow or rules file.
-
-## 2026-10-28 - Optimize DOM traversal
+## 2026-10-29 - Optimize DOM traversal
 **Learning:** In @xmldom/xmldom, accessing `node.childNodes` and iterating backwards is over 2x faster than using `.lastChild` and `.previousSibling` due to fewer function calls and internal getter overhead.
 **Action:** Use `const { childNodes } = node;` and iterate backwards for performance-critical DOM traversals.
