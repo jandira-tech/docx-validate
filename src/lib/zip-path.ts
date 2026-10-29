@@ -109,6 +109,9 @@ export const extractZipEntries = async (zip: JSZip, outputDir: string, storedNam
     zip.forEach((relativePath, file) => {
         const stored = (file as JSZip.JSZipObject & { unsafeOriginalName?: string }).unsafeOriginalName;
         if (stored !== undefined) {
+            if (stored.includes("../") || stored.includes("..\\") || path.isAbsolute(stored)) {
+                throw new Error(`Refusing to extract entry outside output dir: ${stored}`);
+            }
             resolveSafeZipEntry(root, stored);
         }
         entries.push({ name: relativePath, resolved: resolveSafeZipEntry(root, relativePath), file });

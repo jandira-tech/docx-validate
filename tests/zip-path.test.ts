@@ -380,3 +380,47 @@ describe("extractPackageParts", () => {
         },
     );
 });
+
+describe("zip slip unsafeOriginalName checks", () => {
+    it("does not throw if unsafeOriginalName is present but safe via absolute checking", async () => {
+        const out = path.join("/tmp", "out");
+        const zip = new JSZip();
+        // create a mock JSZipObject
+        const obj = {
+            unsafeOriginalName: "safe.txt",
+            async: async () => Buffer.from(""),
+        } as unknown as JSZip.JSZipObject;
+        zip.file("safe.txt", "content");
+        zip.files["safe.txt"] = obj;
+
+        await expect(extractZipEntries(zip, out)).resolves.toBeUndefined();
+    });
+
+    it("throws if unsafeOriginalName is present and malicious via absolute checking", async () => {
+        const out = path.join("/tmp", "out");
+        const zip = new JSZip();
+        // create a mock JSZipObject
+        const obj = {
+            unsafeOriginalName: "../../evil.txt",
+            async: async () => Buffer.from(""),
+        } as unknown as JSZip.JSZipObject;
+        zip.file("../../evil.txt", "content");
+        zip.files["../../evil.txt"] = obj;
+
+        await expect(extractZipEntries(zip, out)).rejects.toThrow(/Refusing to extract entry outside output dir/);
+    });
+
+    it("throws if unsafeOriginalName is present and absolute via absolute checking", async () => {
+        const out = path.join("/tmp", "out");
+        const zip = new JSZip();
+        // create a mock JSZipObject
+        const obj = {
+            unsafeOriginalName: "/etc/passwd",
+            async: async () => Buffer.from(""),
+        } as unknown as JSZip.JSZipObject;
+        zip.file("/etc/passwd", "content");
+        zip.files["/etc/passwd"] = obj;
+
+        await expect(extractZipEntries(zip, out)).rejects.toThrow(/Refusing to extract entry outside output dir/);
+    });
+});
