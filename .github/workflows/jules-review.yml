@@ -1,5 +1,6 @@
 # Jules PR review: audited fork of thalesraymond/jules-pr-reviewer, pinned by commit SHA.
 # Audit + rollout tracking: https://github.com/arthrod/jules-pr-reviewer/issues/1
+# Pinned to release v1.8.1: https://github.com/arthrod/jules-pr-reviewer/releases/tag/v1.8.1
 name: Jules PR Review
 
 on:
@@ -17,14 +18,21 @@ concurrency:
 jobs:
     review:
         # Fork and Dependabot PRs get no repository secrets, so there is no key to run with.
+        # Dependabot, Renovate and Jules-agent PRs are skipped by author, even when a person
+        # re-triggers one: they would spend Jules's daily task limit.
         if: >-
             github.event.pull_request.head.repo.full_name == github.repository &&
-            github.actor != 'dependabot[bot]'
+            github.actor != 'dependabot[bot]' &&
+            !contains(fromJSON('["dependabot[bot]","renovate[bot]","google-labs-jules[bot]"]'), github.event.pull_request.user.login)
         # GitHub-hosted by default. To use a self-hosted runner (e.g. Coolify), set a repo
         # variable: gh variable set JULES_RUNNER -R <owner/repo> -b self-hosted
         # The runner must be recent enough to run node24 actions.
         runs-on: ${{ vars.JULES_RUNNER || 'ubuntu-latest' }}
-        timeout-minutes: 60
+        # 30 min of concurrency-cap retries + 3 sessions of timeout_minutes each (an
+        # agentic session that times out falls back to prompt mode, which tries
+        # twice) + 15 min for session start-up, checkout and posting + up to 35 min
+        # when Jules rate-limits session creation (7 attempts of up to 5 min each).
+        timeout-minutes: 215
         permissions:
             contents: read
             pull-requests: write
@@ -33,7 +41,7 @@ jobs:
             # No checkout: the action reads the diff and rules through the GitHub API,
             # so no token is persisted to disk in the workspace.
             - name: Jules review
-              uses: arthrod/jules-pr-reviewer@de95c2cb6820df8b0e562d77f1f758d71b14b974
+              uses: arthrod/jules-pr-reviewer@716785e3a91409985502a45af5b1eae543df15ae # v1.8.1
               with:
                   jules_api_key: ${{ secrets.JULES_API_KEY }}
                   github_token: ${{ secrets.GITHUB_TOKEN }}
