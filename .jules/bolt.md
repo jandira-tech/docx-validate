@@ -42,3 +42,8 @@
 
 **Learning:** Three PRs opened after the #674 salvage repeated changes the 2026-10-25 entry had already measured and rejected. #677 queried the `txbxContent`/`moveFrom` containers first, like #421, #200 and #202, though one walk for both checks had landed in 58e53b73. #686 and #936 replaced the `lastChild`/`previousSibling` walk in `getElementsByTagNameNSAll` with `childNodes` iteration, which is #633's change. None reported an end-to-end measurement. All three also edited workflow files (#1027).
 **Action:** Read this journal before proposing a change. A traversal rewrite that an entry here rejects needs interleaved end-to-end measurements that beat the A/A noise floor. A performance PR touches no workflow or rules file.
+
+## 2026-10-18 - Optimize tree traversal in XML helpers
+
+**Learning:** When traversing XML/DOM trees using `@xmldom/xmldom` in this codebase, accessing `node.childNodes` and iterating backwards with a standard `for` loop is significantly faster than traversing using `node.lastChild` and `child.previousSibling`.
+**Action:** Replace `lastChild` and `previousSibling` traversals in `getElementsByTagNameNSAll` with direct `childNodes` iteration to improve traversal performance without losing correctness.

@@ -479,12 +479,16 @@ const walkElements = (root: Document | Element, namespaceURI: string, localName:
             }
         }
 
-        let child = node.lastChild;
-        while (child) {
-            if (child.nodeType === 1) {
-                stack.push(child);
+        // PERF: In @xmldom/xmldom, iterating over the childNodes array backwards
+        // is significantly faster than walking pointers (lastChild / previousSibling).
+        const { childNodes } = node;
+        if (childNodes) {
+            for (let i = childNodes.length - 1; i >= 0; i--) {
+                const child = childNodes[i];
+                if (child.nodeType === 1) {
+                    stack.push(child);
+                }
             }
-            child = child.previousSibling;
         }
     }
     return out;
