@@ -157,7 +157,11 @@ export async function unpack(inputFile: string, outputDir: string, opts: UnpackO
 }
 
 const extractAll = (zip: JSZip, outputPath: string, bytes: Uint8Array): Promise<void> =>
-    extractZipEntries(zip, outputPath, zipCentralDirectoryEntries(bytes)?.map((entry) => entry.name));
+    extractZipEntries(
+        zip,
+        outputPath,
+        zipCentralDirectoryEntries(bytes)?.map((entry) => entry.name),
+    );
 
 async function collectXmlFiles(root: string): Promise<string[]> {
     const out: string[] = [];
