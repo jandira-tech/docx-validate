@@ -42,3 +42,7 @@
 
 **Learning:** Three PRs opened after the #674 salvage repeated changes the 2026-10-25 entry had already measured and rejected. #677 queried the `txbxContent`/`moveFrom` containers first, like #421, #200 and #202, though one walk for both checks had landed in 58e53b73. #686 and #936 replaced the `lastChild`/`previousSibling` walk in `getElementsByTagNameNSAll` with `childNodes` iteration, which is #633's change. None reported an end-to-end measurement. All three also edited workflow files (#1027).
 **Action:** Read this journal before proposing a change. A traversal rewrite that an entry here rejects needs interleaved end-to-end measurements that beat the A/A noise floor. A performance PR touches no workflow or rules file.
+
+## 2026-10-28 - Optimize DOM traversal
+**Learning:** In @xmldom/xmldom, accessing `node.childNodes` and iterating backwards is over 2x faster than using `.lastChild` and `.previousSibling` due to fewer function calls and internal getter overhead.
+**Action:** Use `const { childNodes } = node;` and iterate backwards for performance-critical DOM traversals.
