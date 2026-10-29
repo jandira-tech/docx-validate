@@ -44,3 +44,8 @@
 **Vulnerability:** `extractZipEntries` wrote each entry under the name JSZip had resolved, so a stored `../evil.txt` was extracted as `evil.txt` instead of being refused.
 **Learning:** 0a498a5b (#675, #676) passes every entry's stored `unsafeOriginalName` through `resolveSafeZipEntry` before the first write and refuses a name that leaves the output directory. #685 proposed refusing any name that contains `../`, `..\` or is absolute. That substring test also refuses `a/../b`, which resolves inside the directory (#1027).
 **Prevention:** Judge a stored name by where it resolves, not by the substrings it contains.
+
+## 2023-11-20 - [Zip-Slip bypass with JSZip unsafeOriginalName]
+**Vulnerability:** A Zip-Slip vulnerability in file extraction.
+**Learning:** JSZip v3.8.0+ sanitizes `.name` by removing path traversal characters (`../`). Custom security wrapper functions (like `resolveSafeZipEntry`) might verify the sanitized `.name` instead of the original raw path, allowing malicious zip files to quietly extract directly to the output folder instead of triggering the expected security exception for an attempted escape.
+**Prevention:** When validating JSZip files during extraction for path traversal, always check against `unsafeOriginalName` if available on the file object (`(file as JSZipObject & { unsafeOriginalName?: string }).unsafeOriginalName || name`), instead of relying purely on `.name`.
