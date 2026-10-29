@@ -22,7 +22,6 @@ import { promisify } from "node:util";
 import { Command } from "commander";
 
 import type { Profile } from "../src/lib/types";
-import { classifyWordOutcome } from "../src/lib/word-provenance";
 import { validate } from "../src/scripts/office/validate";
 
 const execFileAsync = promisify(execFile);
@@ -53,14 +52,14 @@ interface ValidatorOutcome {
     threw?: string;
 }
 
-export interface WordProbe {
+interface WordProbe {
     outcome: WordOutcome;
     clean: boolean;
     details: string;
     durationMs: number;
 }
 
-export interface ProbeRecord {
+interface ProbeRecord {
     relativePath: string;
     file: string;
     validator: ValidatorOutcome & { profile: Profile };
@@ -77,7 +76,6 @@ interface Summary {
     validatorInvalid: number;
     wordClean: number;
     wordNotClean: number;
-    wordUnattributable: number;
     aligned: number;
     falsePositive: number;
     falseNegative: number;
@@ -402,14 +400,8 @@ function includeByGroup(valid: boolean, only: CliOptions["only"]): boolean {
     return !valid;
 }
 
-export function classify(record: ProbeRecord): ProbeRecord {
+function classify(record: ProbeRecord): ProbeRecord {
     if (!record.word) return record;
-    // `unknown`/`timeout` carry no clean/rejected signal (#274): they are
-    // unattributable, so they stay out of the accuracy denominators and can
-    // never count as alignment or as a validator false positive/negative.
-    if (classifyWordOutcome(record.word.outcome) === "unattributable") {
-        return { ...record, aligned: null, mismatch: null };
-    }
     const validatorClean = record.validator.valid;
     const wordClean = record.word.clean;
     const aligned = validatorClean === wordClean;
@@ -420,17 +412,13 @@ export function classify(record: ProbeRecord): ProbeRecord {
     return { ...record, aligned, mismatch };
 }
 
-export function updateSummary(summary: Summary, record: ProbeRecord): void {
+function updateSummary(summary: Summary, record: ProbeRecord): void {
     summary.totalConsidered += 1;
     if (record.validator.valid) summary.validatorValid += 1;
     else summary.validatorInvalid += 1;
     if (!record.word) return;
     summary.probed += 1;
     summary.outcomes[record.word.outcome] = (summary.outcomes[record.word.outcome] ?? 0) + 1;
-    if (classifyWordOutcome(record.word.outcome) === "unattributable") {
-        summary.wordUnattributable += 1;
-        return;
-    }
     if (record.word.clean) summary.wordClean += 1;
     else summary.wordNotClean += 1;
     if (record.aligned) summary.aligned += 1;
@@ -438,7 +426,7 @@ export function updateSummary(summary: Summary, record: ProbeRecord): void {
     if (record.mismatch === "validator-false-negative") summary.falseNegative += 1;
 }
 
-export function emptySummary(): Summary {
+function emptySummary(): Summary {
     return {
         totalConsidered: 0,
         probed: 0,
@@ -447,7 +435,6 @@ export function emptySummary(): Summary {
         validatorInvalid: 0,
         wordClean: 0,
         wordNotClean: 0,
-        wordUnattributable: 0,
         aligned: 0,
         falsePositive: 0,
         falseNegative: 0,

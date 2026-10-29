@@ -45,67 +45,10 @@ export type ValidationIssue = {
     code?: string;
 };
 
-/**
- * What a real-Microsoft-Word observation did with the file, as it appears on
- * {@link ValidationMetadata}. A structural mirror of `WordVerification` from
- * `lib/word-verifier.ts` — declared here so `lib/types.ts` stays free of
- * imports from the verifier (which itself imports `lib/types.ts`).
- */
-export type WordVerificationMetadata = {
-    requested: boolean;
-    satisfied: boolean;
-    outcome: string;
-    platform: string;
-    details: string;
-    observedAt: string;
-    observationMs: number;
-    fileSha256: string;
-    wordVersion?: string;
-    wordBuild?: string;
-};
-
-/**
- * Execution metadata for one validation run (plan § 1, tasks 10-11). Answers
- * "what actually ran", so a caller can tell a complete run from a partial one:
- * a partial run is still `valid` when its selected checks passed, but
- * `omittedChecks` is non-empty and the caller is expected to say so.
- *
- * Every field is optional so a validator that knows nothing about modes can
- * still return a `ValidationResult` unchanged.
- */
-export type ValidationMetadata = {
-    /** The profile the run was executed under. */
-    profile?: Profile;
-    /** Check ids this run covered, in registry order. */
-    executedChecks?: readonly string[];
-    /** Applicable check ids the selection left out. Empty for a complete run. */
-    omittedChecks?: readonly string[];
-    /**
-     * True only when every schema-eligible part was validated and no schema
-     * failed to load. False when schema validation never started, stopped
-     * early, or the engine could not compile a schema. Always false for a
-     * partial run, and for a DOCX/DOCM under `word-valid`, which judges the
-     * package by structural Word checks and compiles no schema. A PPTX walks
-     * its schemas under every profile, `word-valid` included (#340).
-     */
-    schemaCompleted?: boolean;
-    /** Present when real-Word verification ran. */
-    wordVerification?: WordVerificationMetadata;
-    /**
-     * Present when the caller gave the run a `deadlineMs` (#630): the budget,
-     * and the steps it stopped, in the order they were stopped. An empty
-     * `notRun` means every step ran. A non-empty one comes with one
-     * error-severity `validation-deadline` finding.
-     */
-    deadline?: { budgetMs: number; notRun: readonly string[] };
-};
-
 /** Aggregate result returned by every validator. `valid` is false iff there is at least one `error` issue. */
 export type ValidationResult = {
     valid: boolean;
     issues: ValidationIssue[];
-    /** What the run executed. Attached by the top-level `validate()`, never by an inner validator. */
-    metadata?: ValidationMetadata;
 };
 
 /**
@@ -114,19 +57,12 @@ export type ValidationResult = {
  *
  * `started` is true once `validateAgainstXsd` is entered. `parts` are the
  * relative paths sent to the engine. `eligible` is how many parts a full
- * walk would send (a schema is mapped for the part's conformance class; a
- * Strict root counts only under the strict profile).
+ * walk would send (a schema is mapped and the root is not Strict OOXML).
  */
 export type XsdWalkTrace = {
     started: boolean;
     parts: string[];
     eligible: number;
-    /**
-     * XML parts the walk never examined because the run's deadline was
-     * reached (#630). Their eligibility is unknown, so `eligible` does not
-     * count them; a walk with any is not complete.
-     */
-    notExamined?: number;
 };
 
 /** Walk trace for a path that never entered `validateAgainstXsd`. */
@@ -138,13 +74,7 @@ export const OK_RESULT: ValidationResult = Object.freeze({
     issues: [],
 });
 
-/**
- * Combine multiple results into one; `valid` is the AND of all inputs.
- *
- * Keeps only `valid` and `issues`, so per-run `metadata` (and the older
- * `xsdWalk` trace) is dropped here and re-attached by the caller that knows
- * what the whole run executed.
- */
+/** Combine multiple results into one; `valid` is the AND of all inputs. */
 export const mergeResults = (...results: ValidationResult[]): ValidationResult => {
     const issues = results.flatMap((r) => r.issues);
     const valid = results.every((r) => r.valid);
@@ -213,11 +143,9 @@ export type PackageFormat = "docx" | "pptx" | "xlsx";
  * - `"lenient"` (default): matches real-world Microsoft Office output. UTF-8
  *   BOMs at the start of XML parts are accepted (the XML spec permits them
  *   and Word/Office 365 routinely emits them).
- * - `"strict"`: spec-purist. Reports every tolerated-but-non-canonical
- *   construct it can see. A leading BOM is still only a `warning`
- *   (`xml-bom-leading`) under every profile: XML 1.0 permits it and Microsoft
- *   Office emits it, so it never fails a document on its own. All other
- *   checks run identically.
+ * - `"strict"`: spec-purist. Reports a `xml-bom-leading` error for any part
+ *   that begins with a BOM and refuses to silently strip it. All other checks
+ *   run identically.
  * - `"word-valid"`: empirical Microsoft Word openability profile. It keeps
  *   checks that correlate with Word's unreadable-content/open-error dialogs as
  *   errors and downgrades tolerated OOXML/schema quirks to warnings.

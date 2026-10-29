@@ -1,4 +1,4 @@
-// cspell:words Ctxt DTDLOAD NOENT
+// cspell:words Ctxt
 /*
  * Copyright 2026 Jandira Technologies, LLC
  *
@@ -32,10 +32,6 @@
  * and runs in both Node and the browser — that's what unlocks the
  * one-bundle-two-runtimes architecture from the spec.
  */
-
-import { existsSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 import type { ValidationIssue } from "./types";
 
@@ -135,107 +131,26 @@ export const _resetXsdValidatorMemo = (): void => {
 };
 
 /**
- * One-time registration of a RESTRICTED Node-side fs input provider so
- * libxml2-wasm can resolve relative `<xs:import schemaLocation="../mce/mc.xsd"/>`
- * references inside the bundled OOXML schemas. Without an input provider,
- * `XsdValidator.fromDoc()` throws on the first unresolved import.
- *
- * Restriction: `open` hands out a file descriptor ONLY for files under an
- * allowed schema root (see {@link allowSchemaResourceRoot}) and `match` claims
- * every request, so libxml2 never falls back to its own loader. Untrusted
- * OOXML therefore cannot make libxml2 open `file:///etc/passwd` (or anything
- * else outside the configured schemas directory) through a DTD or a schema
- * import; libxml2 reports the refusal as a load failure.
+ * One-time registration of Node-side fs input providers so libxml2-wasm can
+ * resolve relative `<xs:import schemaLocation="../mce/mc.xsd"/>` references
+ * inside the bundled OOXML schemas. Without this, `XsdValidator.fromDoc()`
+ * throws on the first unresolved import.
  *
  * Browser consumers will need a buffer-backed input provider; that's PR C's
  * concern — for PR A the validator is Node-only by design.
  */
-
-/** The bundled OOXML schema tree shipped in the package. */
-const bundledSchemasDir = (): string => {
-    const here = path.dirname(fileURLToPath(import.meta.url));
-    // Source tree: src/lib/ → src/scripts/office/schemas. Built bundle:
-    // dist/index.mjs → dist/schemas (copied there by vite.config.ts).
-    const candidates = [path.resolve(here, "..", "scripts", "office", "schemas"), path.resolve(here, "schemas")];
-    return candidates.find((candidate) => existsSync(candidate)) ?? (candidates[0] as string);
-};
-
-/** Absolute directories libxml2 may read XSD resources from. */
-const schemaRoots = new Set<string>([bundledSchemasDir()]);
-
-/** The allowed schema roots, sorted. Exported for diagnostics and tests. */
-export const schemaResourceRoots = (): string[] => [...schemaRoots].sort();
-
-/**
- * Allow libxml2 to read XSD resources from `root` (and anything under it).
- * `BaseSchemaValidator` calls this with its configured `schemasDir` so a
- * caller-supplied schema tree keeps working; the bundled tree is always
- * allowed.
- */
-export const allowSchemaResourceRoot = (root: string): void => {
-    schemaRoots.add(path.resolve(root));
-};
-
-/** Drop every explicitly registered root, keeping the bundled default. Tests only. */
-export const _resetSchemaResourceRoots = (): void => {
-    schemaRoots.clear();
-    schemaRoots.add(bundledSchemasDir());
-};
-
-/** `file:` URL → filesystem path; anything else → `null` (network, data:, …). */
-const toLocalPath = (filename: string): string | null => {
-    if (!filename.startsWith("file:")) {
-        return path.isAbsolute(filename) ? filename : null;
-    }
-    try {
-        return fileURLToPath(filename);
-    } catch {
-        return null;
-    }
-};
-
-const isInsideRoot = (root: string, target: string): boolean => {
-    const relative = path.relative(root, target);
-    return relative === "" || (!relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative));
-};
-
 let fsProvidersRegistered = false;
 const ensureFsProviders = async (): Promise<void> => {
     if (fsProvidersRegistered) {
         return;
     }
-    const { fsInputProviders } = await import("libxml2-wasm/lib/nodejs.mjs");
-    const { xmlRegisterInputProvider } = await import("libxml2-wasm/lib/libxml2.mjs");
-    // `match` claims EVERY request so libxml2 always routes through us and
-    // never falls back to its own default loader; the allow-list is enforced
-    // in `open`, where refusing means "no file descriptor", not "try someone
-    // else". The file mechanics themselves are libxml2-wasm's own.
-    xmlRegisterInputProvider({
-        match: () => true,
-        open: (filename: string) => {
-            const local = toLocalPath(filename);
-            return local !== null && schemaResourceRoots().some((root) => isInsideRoot(root, local))
-                ? fsInputProviders.open(filename)
-                : undefined;
-        },
-        read: fsInputProviders.read,
-        close: fsInputProviders.close,
-    });
+    const { xmlRegisterFsInputProviders } = await import("libxml2-wasm/lib/nodejs.mjs");
+    xmlRegisterFsInputProviders();
     fsProvidersRegistered = true;
 };
 
 const buildWasmValidator = async (): Promise<XsdValidator> => {
-    const { ParseOption, XmlDocument, XsdValidator: WasmXsdValidator, XmlValidateError } = await import("libxml2-wasm");
-    // Instance documents: never touch the network, never resolve an external
-    // entity or external DTD. (No NOENT/DTDLOAD, so entities stay unresolved.)
-    // libxml2's ParseOption is a bit-flag field, so combining flags requires a
-    // bitwise OR.
-    // oxlint-disable-next-line no-bitwise
-    const INSTANCE_PARSE_OPTIONS = ParseOption.XML_PARSE_NONET | ParseOption.XML_PARSE_NO_XXE;
-    // Schema documents: the network is refused, but local imports MUST resolve
-    // (through the restricted input provider above), so NO_XXE is deliberately
-    // NOT set here — it would refuse the OOXML import closure as well.
-    const SCHEMA_PARSE_OPTIONS = ParseOption.XML_PARSE_NONET;
+    const { XmlDocument, XsdValidator: WasmXsdValidator, XmlValidateError } = await import("libxml2-wasm");
     const libxml2 = await import("libxml2-wasm/lib/libxml2.mjs");
     const { xmlSchemaFreeValidCtxt, xmlSchemaNewValidCtxt, xmlSchemaSetValidStructuredErrors, xmlSchemaValidateDoc } = libxml2;
     // addFunction is exported by the ESM build and missing from the .d.mts.
@@ -264,15 +179,14 @@ const buildWasmValidator = async (): Promise<XsdValidator> => {
             return cached;
         }
         const load = (async () => {
-            // Read schema file directly, parse with fromString. The registered
-            // input provider resolves any relative
-            // <xs:import schemaLocation="..."/> references encountered during
-            // the parse — but only from an allowed schema root — allowing OOXML
-            // schemas with imports to load cleanly offline when they are all
-            // present on disk. The document base URL makes those imports resolve
-            // against the schema file's directory, not the process cwd.
+            // Read schema file directly, parse with fromString. fsInputProviders
+            // resolves any relative <xs:import schemaLocation="..."/> references
+            // encountered during the parse, allowing OOXML schemas with imports
+            // to load cleanly when they're all present on disk. The document base
+            // URL makes those imports resolve against the schema file's
+            // directory, not the process cwd.
             const schemaSource = await readFile(schemaPath, "utf-8");
-            const schemaDoc = XmlDocument.fromString(schemaSource, { url: schemaPath, option: SCHEMA_PARSE_OPTIONS });
+            const schemaDoc = XmlDocument.fromString(schemaSource, { url: schemaPath });
             try {
                 return WasmXsdValidator.fromDoc(schemaDoc);
             } finally {
@@ -312,7 +226,7 @@ const buildWasmValidator = async (): Promise<XsdValidator> => {
 
         let xmlDoc;
         try {
-            xmlDoc = XmlDocument.fromString(xml, { option: INSTANCE_PARSE_OPTIONS });
+            xmlDoc = XmlDocument.fromString(xml);
         } catch (parseErr) {
             const message = parseErr instanceof Error ? parseErr.message : String(parseErr);
             return [{ severity: "error", code: "xml-parse-error", message }];

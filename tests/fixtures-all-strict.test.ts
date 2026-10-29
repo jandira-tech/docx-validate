@@ -24,21 +24,18 @@
  * Each fixture is asserted with a specific expected outcome — pass or fail
  * — so a *change* in validator behaviour shows up as a CI red, not a
  * silent drift in coverage. The manifest of expected outcomes lives in
- * `tests/fixtures-all.manifest.json`. `pnpm run test:fixtures:refresh`
- * (`tsx scripts/update-manifest.ts`) rewrites it while merging every Word
- * observation; review each expectation change it makes individually.
+ * `tests/fixtures-all.manifest.json`, regenerated via
+ * `pnpm run test:fixtures:refresh` (`tsx scripts/probe-all-fixtures.ts`).
  *
  * The lenient counterpart of this suite is `fixtures-all-lenient.test.ts`.
  */
 
-import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { effectiveOutcome, parseWordField } from "../src/lib/word-provenance";
 import { validate } from "../src/scripts/office/validate";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -68,26 +65,6 @@ const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf-8")) as Manifest;
 describe("all fixtures — strict profile", () => {
     it(`manifest covers all ${manifest.totalFixtures} fixtures`, () => {
         expect(manifest.entries.length).toBe(manifest.totalFixtures);
-    });
-
-    it("binds every Word observation to its fixture's current sha256 (#274)", () => {
-        const unbound: string[] = [];
-        const stale: string[] = [];
-        for (const entry of manifest.entries) {
-            const observation = parseWordField((entry as { word?: unknown }).word);
-            if (!observation) continue;
-            if (observation.sha256 === undefined) {
-                unbound.push(entry.relativePath);
-                continue;
-            }
-            const bytes = readFileSync(path.join(FIXTURES, entry.relativePath));
-            const current = createHash("sha256").update(bytes).digest("hex");
-            if (effectiveOutcome(observation, current) !== observation.outcome) {
-                stale.push(entry.relativePath);
-            }
-        }
-        expect(unbound, "entries whose Word observation carries no sha256").toEqual([]);
-        expect(stale, "entries whose Word observation no longer matches the fixture bytes").toEqual([]);
     });
 
     for (const entry of manifest.entries) {

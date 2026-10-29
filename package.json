@@ -41,9 +41,6 @@
     "attw": {
         "profile": "esm-only"
     },
-    "bin": {
-        "docx-validate": "./dist/cli.mjs"
-    },
     "exports": {
         ".": {
             "types": "./dist/index.d.mts",
@@ -60,8 +57,7 @@
         "test": "vitest",
         "test:strict": "vitest run tests/fixtures-all-strict.test.ts",
         "test:lenient": "vitest run tests/fixtures-all-lenient.test.ts",
-        "test:coverage-gate": "vitest run --coverage && tsx scripts/coverage-gate.ts",
-        "test:fixtures:refresh": "tsx scripts/update-manifest.ts",
+        "test:fixtures:refresh": "tsx scripts/probe-all-fixtures.ts",
         "test:fixtures:word": "tsx scripts/probe-word-fixtures.ts",
         "test:fixtures:regenerate-word-invalid": "tsx scripts/regenerate-word-invalid-fixtures.ts",
         "vp": "vitest",

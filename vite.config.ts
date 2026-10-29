@@ -21,32 +21,6 @@ const copySchemasPlugin = {
     },
 };
 
-const CLI_ENTRY = path.resolve(here, "src/cli.ts");
-const SRC_DIR = path.resolve(here, "src") + path.sep;
-// A file: URL that can never canonicalize to a real argv[1] — the bundle-only
-// replacement for `import.meta.url` inside the `runCli` shims.
-const INERT_CLI_META_URL = '"file:///docx-validate.cli-shim-inert"';
-
-// Every src/scripts/** CLI module ends with `runCli(import.meta.url, …)` so it
-// doubles as a `tsx` entry point. Bundled into dist/index.mjs, those modules
-// all share ONE import.meta.url — the guard can no longer tell
-// `node dist/index.mjs` apart from a library import, so every shim fires at
-// once (#314: `node dist/index.mjs --help` printed several usages). Rewrite
-// the shim's metaUrl to an inert file: URL so only src/cli.ts (exempt below —
-// it IS the packaged validator CLI) keeps a live entry-point guard.
-const inertCliShimsPlugin = {
-    name: "docx-validate:inert-cli-shims",
-    transform(code: string, id: string) {
-        const file = id.split("?")[0]!;
-        if (file === CLI_ENTRY || !file.startsWith(SRC_DIR) || !file.endsWith(".ts")) return null;
-        if (!code.includes("runCli(import.meta.url")) return null;
-        return {
-            code: code.replaceAll("runCli(import.meta.url", `runCli(${INERT_CLI_META_URL}`),
-            map: null,
-        };
-    },
-};
-
 export default defineConfig({
     // Format settings live here — NOT in `.oxfmtrc.json`. vite-plus's oxfmt
     // invocation (vp fmt / vp check) only reads the `fmt` block and ignores
@@ -63,12 +37,6 @@ export default defineConfig({
         sortPackageJson: false,
     },
     pack: {
-        // Two entry points: the library bundle (dist/index.mjs) and the
-        // packaged validator CLI (dist/cli.mjs, package.json's `bin` target).
-        entry: {
-            index: "src/index.ts",
-            cli: "src/cli.ts",
-        },
         // Emit dist/index.d.mts so consumers get the full TypeScript surface
         // (every public re-export from src/index.ts is fully typed). The
         // package.json `exports.types` condition points at this file.
@@ -81,7 +49,7 @@ export default defineConfig({
         //              (node10, node16, bundler, ESM, CJS).
         publint: true,
         attw: true,
-        plugins: [inertCliShimsPlugin, copySchemasPlugin],
+        plugins: [copySchemasPlugin],
     },
     test: {
         // Only run the package's own test suite. Vendored third-party
@@ -89,22 +57,11 @@ export default defineConfig({
         // their own deps and must not be picked up by vitest here.
         include: ["tests/**/*.test.ts"],
         exclude: ["node_modules/**", "dist/**", "docx/**", "docx-templates/**", "dotgithubtoport/**"],
-        // Integration rows run whole validations. On a loaded machine the full
-        // suite's contention pushed the slowest past vitest's 5 s default
-        // while each passed alone in under 2 s (#1142), so a test gets 30 s
-        // unless its describe or row sets its own timeout.
-        testTimeout: 30_000,
-        // The summary reporter prints `Coverage: N% lines, M% branches` on
-        // every --coverage run, failed ones included; `reportOnFailure` below
-        // keeps the provider's own reports on failed runs too.
-        reporters: ["default", "./tests/support/coverage-summary-reporter.ts"],
         coverage: {
             provider: "v8",
             // lcov is required for codecov upload in ci.yml; text/html keep
-            // the local `pnpm test --coverage` workflow human-readable;
-            // json-summary feeds the per-module threshold gate.
-            reporter: ["text", "json-summary", "html", "lcov"],
-            reportOnFailure: true,
+            // the local `pnpm test --coverage` workflow human-readable.
+            reporter: ["text", "html", "lcov"],
             include: ["src/**/*.ts"],
             exclude: ["src/**/*.d.ts", "tests/**", "dist/**", "docx/**", "docx-templates/**", "dotgithubtoport/**"],
         },

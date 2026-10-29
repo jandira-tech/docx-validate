@@ -33,9 +33,8 @@ import { Command } from "commander";
 import JSZip from "jszip";
 
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
-import type { ValidationIssue, ValidationResult } from "../../lib/types";
-import { readXmlPart, writeXmlPart, type DecodedXmlPart } from "../../lib/xml-part-io";
-import { getElementsByTagNameAll, parseXml } from "../../lib/xml-helpers";
+import type { ValidationResult } from "../../lib/types";
+import { getElementsByTagNameAll, parseXml, serializeXml } from "../../lib/xml-helpers";
 import { inferAuthor } from "./helpers/simplify-redlines";
 import { DOCXSchemaValidator } from "./validators/docx";
 import { PPTXSchemaValidator } from "./validators/pptx";
@@ -64,8 +63,6 @@ export interface PackResult {
     message: string;
     /** Free-form lines emitted during validation (Python printed these to stdout). */
     validationLog?: string;
-    /** The failing validators' issues, when validation refused the package (#1157). */
-    issues?: ValidationIssue[];
 }
 
 /**
@@ -130,7 +127,7 @@ export async function pack(inputDirectory: string, outputFile: string, opts: Pac
                 };
             }
         }
-        const { success, log, issues } = await runValidation(inputDir, originalPath, suffix, inferAuthorFunc, opts.author);
+        const { success, log } = await runValidation(inputDir, originalPath, suffix, inferAuthorFunc, opts.author);
         if (log) {
             validationLog = log;
         }
@@ -139,7 +136,6 @@ export async function pack(inputDirectory: string, outputFile: string, opts: Pac
                 ok: false,
                 message: `Error: Validation failed for ${inputDirectory}`,
                 validationLog,
-                issues,
             };
         }
     }
@@ -187,9 +183,8 @@ async function runValidation(
     suffix: string,
     inferAuthorFunc?: PackOptions["inferAuthorFunc"],
     explicitAuthor?: string,
-): Promise<{ success: boolean; log?: string; issues?: ValidationIssue[] }> {
+): Promise<{ success: boolean; log?: string }> {
     const lines: string[] = [];
-    const issues: ValidationIssue[] = [];
     const validators: ValidatorRunner[] = [];
 
     if (suffix === ".docx") {
@@ -245,7 +240,6 @@ async function runValidation(
         const result = await v.runChecks();
         if (!result.valid) {
             success = false;
-            issues.push(...result.issues);
         }
     }
 
@@ -253,7 +247,7 @@ async function runValidation(
         lines.push("All validations PASSED!");
     }
 
-    return { success, log: lines.length > 0 ? lines.join("\n") : undefined, issues };
+    return { success, log: lines.length > 0 ? lines.join("\n") : undefined };
 }
 
 async function copyDir(src: string, dest: string): Promise<void> {
@@ -312,15 +306,9 @@ async function collectAllFiles(root: string): Promise<string[]> {
 
 async function condenseXml(xmlFile: string): Promise<void> {
     let dom: Document;
-    let part: DecodedXmlPart;
     try {
-        const decoded = await readXmlPart(xmlFile);
-        if (decoded === undefined) {
-            // An encoding we cannot decode: leave the part's bytes untouched.
-            return;
-        }
-        part = decoded;
-        dom = parseXml(part.text);
+        const content = await fs.readFile(xmlFile, "utf8");
+        dom = parseXml(content);
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         process.stderr.write(`ERROR: Failed to parse ${path.basename(xmlFile)}: ${message}\n`);
@@ -353,7 +341,7 @@ async function condenseXml(xmlFile: string): Promise<void> {
         }
     }
 
-    await writeXmlPart(xmlFile, dom, part);
+    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf8");
 }
 
 function parseBoolFlag(value: string): boolean {

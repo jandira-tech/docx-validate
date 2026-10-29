@@ -47,63 +47,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { Command } from "commander";
-import {
-    canonicalPartName,
-    contentTypeMediaType,
-    CONTENT_TYPES_NAMESPACE,
-    findEquivalentPart,
-    parseContentTypes,
-    relationshipTargetPartName,
-    resolveContentType,
-} from "../lib/content-types";
-import { applyMarkupCompatibility, RELATIONSHIPS_UNDERSTOOD_NAMESPACES } from "../lib/markup-compatibility";
 import { commanderExitCode, runCli } from "../lib/run-cli";
 import { nextSecureLongHexNumber } from "../lib/secure-id";
-import { NS as XML_NS } from "../lib/types";
-import { readXmlPart, writeXmlPart, writeXmlText, type DecodedXmlPart } from "../lib/xml-part-io";
-import { getElementsByTagNameNSAll, getRelationshipChildren, parseXml, serializeXml, xmlDeclarationEncoding } from "../lib/xml-helpers";
-import { findLinkBelow } from "../lib/zip-path";
-import { walkDirectory } from "./office/validators/base";
+import { parseXml, serializeXml } from "../lib/xml-helpers";
 
 const TEMPLATE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "templates");
-
-const RELATIONSHIPS_CONTENT_TYPE = "application/vnd.openxmlformats-package.relationships+xml";
-/** The relationships part addComment creates for a main document that has none (#895). */
-const EMPTY_RELATIONSHIPS_XML =
-    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>';
-
-/** The package relationships part, as it is stored at the package root. */
-const PACKAGE_RELS_PART = "_rels/.rels";
-/** The relationship types that name a WordprocessingML main document, in either conformance class. */
-const OFFICE_DOCUMENT_RELATIONSHIP_TYPES: ReadonlySet<string> = new Set([
-    "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
-    "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument",
-]);
-/** The relationship types that relate the comments part, in either conformance class. */
-const COMMENTS_PART_RELATIONSHIP_TYPES: ReadonlySet<string> = new Set([
-    "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments",
-    "http://purl.oclc.org/ooxml/officeDocument/relationships/comments",
-]);
-/** The conventional main document, whose relationships part is `word/_rels/document.xml.rels` (#906). */
-const CONVENTIONAL_MAIN_DOCUMENT = "word/document.xml";
-/** The conventional main document's relationships part, the wiring #895 established. */
-const CONVENTIONAL_MAIN_RELS_PART = "word/_rels/document.xml.rels";
-/** The comments parts, in the order their relationships are written. */
-const COMMENT_PART_NAMES: readonly string[] = ["comments.xml", "commentsExtended.xml", "commentsIds.xml", "commentsExtensible.xml"];
-/** The relationship type reaching each comments part, in `COMMENT_PART_NAMES` order. */
-const COMMENT_RELATIONSHIP_TYPES: readonly string[] = [
-    "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments",
-    "http://schemas.microsoft.com/office/2011/relationships/commentsExtended",
-    "http://schemas.microsoft.com/office/2016/09/relationships/commentsIds",
-    "http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible",
-];
-/** The content type of each comments part, in `COMMENT_PART_NAMES` order. */
-const COMMENT_CONTENT_TYPES: readonly string[] = [
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsIds+xml",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtensible+xml",
-];
 
 const NS: Record<string, string> = {
     w: "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
@@ -195,40 +143,14 @@ async function pathExists(p: string): Promise<boolean> {
     }
 }
 
-/**
- * Append `content` under the part's root element, in the part's own
- * encoding. The root is the document element when it has the expected
- * `namespace` and local name, whatever prefix the part binds, so a part that
- * prefixes it another way is appended to as the comment checks read it
- * (#930); one nested deeper is not the root, and nothing is appended under it
- * (#953). A first comment's freshly copied template parts behave exactly as
- * before. The appended content is imported from the `w:`-prefixed
- * templates as-is: the serializer declares each prefix the part does not
- * already bind on the appended subtree itself, keeping the part well-formed
- * and every element and attribute in its namespace.
- */
-async function appendXml(
-    xmlPath: string,
-    rootNamespace: string,
-    rootLocalName: string,
-    content: string,
-    decoded?: DecodedXmlPart,
-): Promise<boolean> {
-    const part = decoded ?? (await readXmlPart(xmlPath));
-    if (part === undefined) {
-        // An encoding we cannot decode: leave the part's bytes untouched.
-        return false;
+async function appendXml(xmlPath: string, rootTag: string, content: string): Promise<void> {
+    const text = await fs.readFile(xmlPath, "utf-8");
+    const dom = parseXml(text);
+    const roots = dom.getElementsByTagName(rootTag);
+    if (roots.length === 0) {
+        throw new Error(`Root tag <${rootTag}> not found in ${xmlPath}`);
     }
-    const dom = parseXml(part.text);
-    const root = dom.documentElement;
-    if (!root || root.namespaceURI !== rootNamespace || root.localName !== rootLocalName) {
-        // Defensive: addComment's preflight refuses a part whose document
-        // element is not its root element before any write (#930, #953), so
-        // this branch is unreachable from addComment — kept, as its defensive
-        // parent check is, so a future caller fails loudly rather than
-        // appending under another element.
-        throw new Error(`Root element <${rootLocalName}> in namespace ${rootNamespace} not found in ${xmlPath}`);
-    }
+    const root = roots.item(0)!;
     const nsAttrs = Object.entries(NS)
         .map(([k, v]) => `xmlns:${k}="${v}"`)
         .join(" ");
@@ -240,27 +162,21 @@ async function appendXml(
             root.appendChild(dom.importNode(child, true));
         }
     }
-    const output = encodeSmartQuotes(serializeXml(dom, xmlDeclarationEncoding(part)));
-    await writeXmlText(xmlPath, output, part);
-    return true;
+    const output = encodeSmartQuotes(serializeXml(dom, "UTF-8"));
+    await fs.writeFile(xmlPath, output, "utf-8");
 }
 
-/**
- * The `w14:paraId` of the first paragraph of the comment with the given id,
- * or null when there is none. The comments, their ids, their paragraphs and
- * the paragraph ids are read by namespace, so a part that binds the
- * namespaces to other prefixes is read too (#930).
- */
-function findParaId(commentsPart: DecodedXmlPart, commentId: number): string | null {
-    const dom = parseXml(commentsPart.text);
-    const comments = getElementsByTagNameNSAll(dom, NS.w, "comment");
+async function findParaId(commentsPath: string, commentId: number): Promise<string | null> {
+    const text = await fs.readFile(commentsPath, "utf-8");
+    const dom = parseXml(text);
+    const comments = dom.getElementsByTagName("w:comment");
     for (let i = 0; i < comments.length; i += 1) {
-        const c = comments[i]!;
-        if (c.getAttributeNS(NS.w, "id") === String(commentId)) {
-            const ps = getElementsByTagNameNSAll(c, NS.w, "p");
+        const c = comments.item(i)!;
+        if (c.getAttribute("w:id") === String(commentId)) {
+            const ps = c.getElementsByTagName("w:p");
             for (let j = 0; j < ps.length; j += 1) {
-                const p = ps[j]!;
-                const pid = p.getAttributeNS(NS.w14, "paraId");
+                const p = ps.item(j)!;
+                const pid = p.getAttribute("w14:paraId");
                 if (pid) {
                     return pid;
                 }
@@ -270,422 +186,128 @@ function findParaId(commentsPart: DecodedXmlPart, commentId: number): string | n
     return null;
 }
 
-/** Return true if the comments part already contains a comment with the
- * given id, reading the comments and their ids by namespace so a part that
- * binds the WordprocessingML namespace to another prefix is read too (#930).
- * Used to preflight `addComment()` before mutating any part. */
-function commentIdExists(commentsPart: DecodedXmlPart, commentId: number): boolean {
-    const dom = parseXml(commentsPart.text);
-    const comments = getElementsByTagNameNSAll(dom, NS.w, "comment");
+/** Return true if `commentsPath` already contains a `<w:comment>` with the
+ * given `w:id`. Used to preflight `addComment()` before mutating any part. */
+async function commentIdExists(commentsPath: string, commentId: number): Promise<boolean> {
+    const text = await fs.readFile(commentsPath, "utf-8");
+    const dom = parseXml(text);
+    const comments = dom.getElementsByTagName("w:comment");
     for (let i = 0; i < comments.length; i += 1) {
-        const c = comments[i]!;
-        if (c.getAttributeNS(NS.w, "id") === String(commentId)) {
+        const c = comments.item(i)!;
+        if (c.getAttribute("w:id") === String(commentId)) {
             return true;
         }
     }
     return false;
 }
 
-/**
- * The next free relationship id: one past the `rId<N>` id of every element
- * whose local name is `Relationship`, whatever its namespace or prefix, so a
- * new id never repeats one the part already holds — in a part whose
- * relationships are prefixed, or one holding a `Relationship` element in
- * another namespace, alike (#918). The leading digits of the suffix are
- * counted as a `bigint`, however many there are, so the ids count on past
- * 2^53; before, they were read as a Number, which adding 1 no longer changes
- * there, so a part holding `rId9007199254740992` got four relationships with
- * that id, and one holding an id numbered 10^21 or more got four ids in
- * exponent notation (#940).
- */
-function getNextRid(dom: Document): bigint {
-    let maxRid = 0n;
-    const rels = getElementsByTagNameNSAll(dom, "*", "Relationship");
+async function getNextRid(relsPath: string): Promise<number> {
+    const text = await fs.readFile(relsPath, "utf-8");
+    const dom = parseXml(text);
+    let maxRid = 0;
+    const rels = dom.getElementsByTagName("Relationship");
     for (let i = 0; i < rels.length; i += 1) {
-        const rel = rels[i]!;
+        const rel = rels.item(i)!;
         const rid = rel.getAttribute("Id");
         if (rid && rid.startsWith("rId")) {
-            const digits = /^\d+/.exec(rid.slice(3));
-            if (digits) {
-                const n = BigInt(digits[0]);
-                if (n > maxRid) {
-                    maxRid = n;
-                }
+            const n = Number.parseInt(rid.slice(3), 10);
+            if (Number.isFinite(n)) {
+                maxRid = Math.max(maxRid, n);
             }
         }
     }
-    return maxRid + 1n;
+    return maxRid + 1;
 }
 
-/**
- * The relationships a stored relationships part holds as the checks read
- * them: markup compatibility selects a branch first, with the namespaces the
- * read model understands in a relationships part, so a relationship a
- * selected `mc:Fallback` or an understood `mc:Choice` holds counts, and one
- * only an unselected branch holds does not (#927); before, the stored root's
- * direct children were read as stored, so a selected branch's relationship
- * was read as absent — a package whose `officeDocument` relationship sat in
- * one was refused, and a `comments` relationship in one got a second set
- * beside it (#932). The issues the processor reports (`mce-malformed`, for
- * example) are not addComment's to judge: validation reports them.
- * `getNextRid` and every write keep the stored DOM (#918).
- */
-function effectiveRelationships(dom: Document): Element[] {
-    return getRelationshipChildren(applyMarkupCompatibility(dom, { understood: RELATIONSHIPS_UNDERSTOOD_NAMESPACES }).document);
-}
-
-/**
- * Whether a relationship in `dom` relates `partName`: an internal
- * relationship of the comments type, Transitional or Strict, whose target
- * names `partName` under OPC part-name equivalence once resolved as the
- * read model resolves it: `\` read as `/`, the query and fragment dropped,
- * a URI scheme or an empty reference naming no part (#906, #928). A target's
- * dot segments resolve, a package-absolute target's below its leading `/`,
- * so `/word/../word/comments.xml` names `word/comments.xml` (#947), and a
- * climb past the package root stops there, so `word/`'s
- * `../../word/comments.xml` names it too, as Word read a comments target's
- * climb (session 77, #986). The relationships are read on the
- * effective view `effectiveRelationships` returns — the stored DOM after
- * markup compatibility selects a branch — so a relationship a selected
- * `mc:Fallback` or an understood `mc:Choice` holds counts, and one only an
- * unselected branch holds does not (#932, #927); a part whose root binds
- * the package-relationships namespace to a prefix is read too, and an
- * element in another namespace is not read as a relationship, even one
- * named `Relationship` (#918). An External relationship, or one of another
- * type, does not count; before, it stopped addComment adding the comments
- * relationships, so it reported success with the comments parts related to
- * nothing (#917); and a target spelled with a query, a fragment or a
- * backslash was not counted, so a second set of relationships was added
- * beside it (#928).
- */
-function relatesCommentsPart(dom: Document, baseDir: string, partName: string): boolean {
-    const key = canonicalPartName(partName);
-    const rels = effectiveRelationships(dom);
+async function hasRelationship(relsPath: string, target: string): Promise<boolean> {
+    const text = await fs.readFile(relsPath, "utf-8");
+    const dom = parseXml(text);
+    const rels = dom.getElementsByTagName("Relationship");
     for (let i = 0; i < rels.length; i += 1) {
-        const rel = rels[i]!;
-        if (!COMMENTS_PART_RELATIONSHIP_TYPES.has(rel.getAttribute("Type") ?? "")) {
-            continue;
-        }
-        if (rel.getAttribute("TargetMode") === "External") {
-            continue;
-        }
-        const resolved = relationshipTargetPartName(baseDir, rel.getAttribute("Target") ?? "");
-        if (resolved !== undefined && canonicalPartName(resolved) === key) {
+        const rel = rels.item(i)!;
+        if (rel.getAttribute("Target") === target) {
             return true;
         }
     }
     return false;
 }
 
-/**
- * The stored part names a relationship target is looked up among: every
- * file `walkDirectory` reports under `unpackedDir`, each as a
- * forward-slash part name relative to it. `walkDirectory` is the walk the
- * package view reads, so a file or directory symbolic link whose target
- * resolves inside the unpacked root counts under its own stored name, and
- * an entry that walk cannot read — a link that resolves outside the root,
- * a broken link, a loop, a FIFO — is not a candidate here, though the
- * package context keeps its name for the stored-name checks (#971).
- * Before, a
- * private dirents walker dropped every link, so a main document stored as
- * a link inside the tree was refused as naming no stored part while the
- * checks read it (#938), and a directory it could not list rejected the
- * whole call with the file system's error (#961).
- */
-function packageViewPartNames(unpackedDir: string): string[] {
-    return walkDirectory(unpackedDir).files.map((file) => path.relative(unpackedDir, file).split(path.sep).join("/"));
-}
-
-/**
- * Where a first comment's relationships are wired through (#906): the main
- * document `_rels/.rels` names, resolved as the read model resolves it
- * (`\` as `/`, the query and fragment dropped) and looked up among the
- * stored parts under OPC part-name equivalence, so `word/m%61in.xml` names
- * a stored `word/main.xml`; before, a query, a fragment or an escaped
- * spelling was refused (#919). A missing `_rels/.rels`, or one whose stored
- * part is named exactly `word/document.xml`, keeps the wiring #895
- * established; every other stored spelling of that conventional part —
- * `word/Document.xml`, `word/docum%65nt.xml` — is wired through its own
- * stored name like any other renamed main document; before, an
- * OPC-equivalent spelling dropped it, so the relationships were written to
- * a second, OPC-equivalent `word/_rels/document.xml.rels` (#946). Either
- * way, the relationships part is found under OPC equivalence, as the read
- * model's `sidecarOf` finds it: the stored part equivalent to the sidecar
- * derived from the main document's stored name when one is stored, and
- * that derived name when none is, so a sidecar stored under another,
- * equivalent spelling (`word/main.xml` with `word/_rels/m%61in.xml.rels`)
- * is written to, never given a second one beside it; before, the derived
- * name alone was used (#946). The relationships are read on the effective
- * view `effectiveRelationships` returns — the stored DOM after markup
- * compatibility selects a branch — so a relationship a selected
- * `mc:Fallback` or an understood `mc:Choice` holds counts, and one only an
- * unselected branch holds does not (#932); a part whose root binds the
- * package-relationships namespace to a prefix is read too, and an element
- * in another namespace is not read as a relationship (#918).
- * A target climbing past the package root names the part its climb stops
- * at, as `validate` reads it (#986). What cannot be resolved — a URI scheme,
- * an empty reference, or a named part that is not stored, the conventional
- * `word/document.xml` included — is refused, naming `_rels/.rels` or the
- * missing part, before any write (#919).
- * The stored parts are the names `packageViewPartNames` reads, so a main
- * document stored as a symbolic link, or under one, that resolves inside the
- * unpacked tree is found under the link's own name, and one that resolves
- * outside it, or is broken, is not (#938); a directory that walk cannot list
- * hides only what is stored under it (#961).
- */
-type CommentWiring =
-    | { kind: "conventional"; mainRelsPart: string }
-    | { kind: "wired"; mainDocument: string; mainRelsPart: string }
-    | { kind: "refused"; message: string };
-
-/**
- * The relationships part a first comment writes through for the main
- * document `mainDocument`: the stored part OPC-equivalent to the sidecar
- * derived from the main document's stored name — `<main folder>/_rels/<main
- * basename>.rels` — when one is stored, and that derived name when none is
- * (#946). The lookup is what the read model's `sidecarOf` does, so a
- * sidecar stored under another, equivalent spelling
- * (`word/_rels/m%61in.xml.rels` beside `word/main.xml`) is written to under
- * its own name, never given a second, OPC-equivalent one beside it.
- * `storedNames` are the names `packageViewPartNames` reads, so a sidecar
- * that is a symbolic link inside the tree counts under its own name (#938).
- */
-function mainDocumentRelsPart(storedNames: readonly string[], mainDocument: string): string {
-    const derived = path.posix.join(path.posix.dirname(mainDocument), "_rels", `${path.posix.basename(mainDocument)}.rels`);
-    return findEquivalentPart(storedNames, derived) ?? derived;
-}
-
-async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring> {
-    const packageRelsPath = path.join(unpackedDir, ...PACKAGE_RELS_PART.split("/"));
-    if (!(await pathExists(packageRelsPath))) {
-        const storedNames = packageViewPartNames(unpackedDir);
-        return { kind: "conventional", mainRelsPart: mainDocumentRelsPart(storedNames, CONVENTIONAL_MAIN_DOCUMENT) };
-    }
-    const part = await readXmlPart(packageRelsPath);
-    if (part === undefined) {
-        return { kind: "refused", message: `Error: ${packageRelsPath} is stored in an encoding this tool cannot decode` };
-    }
-    let dom: Document;
-    try {
-        dom = parseXml(part.text);
-    } catch (err) {
-        const detail = err instanceof Error ? err.message : String(err);
-        return { kind: "refused", message: `Error: ${packageRelsPath} is not well-formed XML: ${detail}` };
-    }
-    const relationships = effectiveRelationships(dom);
-    let mainRel: Element | undefined;
-    let sawOfficeDocument = false;
-    for (let i = 0; i < relationships.length; i += 1) {
-        const rel = relationships[i]!;
-        if (!OFFICE_DOCUMENT_RELATIONSHIP_TYPES.has(rel.getAttribute("Type") ?? "")) {
-            continue;
+async function hasContentType(ctPath: string, partName: string): Promise<boolean> {
+    const text = await fs.readFile(ctPath, "utf-8");
+    const dom = parseXml(text);
+    const overrides = dom.getElementsByTagName("Override");
+    for (let i = 0; i < overrides.length; i += 1) {
+        const override = overrides.item(i)!;
+        if (override.getAttribute("PartName") === partName) {
+            return true;
         }
-        sawOfficeDocument = true;
-        if (rel.getAttribute("TargetMode") === "External") {
-            continue;
-        }
-        mainRel = rel;
-        break;
     }
-    if (mainRel === undefined) {
-        return {
-            kind: "refused",
-            message: sawOfficeDocument
-                ? `Error: ${packageRelsPath} names an External officeDocument relationship`
-                : `Error: ${packageRelsPath} names no officeDocument relationship`,
-        };
-    }
-    // The reference is resolved as the read model resolves it (a URI scheme
-    // or an empty target names no part, the query and fragment are dropped),
-    // a climb past the package root stopping there, as Word read
-    // `../word/document.xml` and `/../word/document.xml` (session 78, #986).
-    const target = mainRel.getAttribute("Target") ?? "";
-    const reference = relationshipTargetPartName(".", target);
-    if (reference === undefined) {
-        // A URI names a part outside the package; a target whose path is
-        // empty — no Target, an empty Target, or only a query or fragment —
-        // names no part at all (#1002).
-        const [targetPath = ""] = target.replace(/\\/g, "/").split(/[?#]/, 1);
-        return {
-            kind: "refused",
-            message:
-                targetPath === ""
-                    ? `Error: ${packageRelsPath} names an officeDocument target with an empty path, which names no main document`
-                    : `Error: ${packageRelsPath} names a main document outside the package`,
-        };
-    }
-    // A reference ending in `/` names a folder, which Word refuses as the
-    // main document (session 70, #962), and so does the package root,
-    // spelled `.` relative: it names no part whatever is stored, as the read
-    // model reads it, though a stored `%2e` is its OPC equivalent (#970,
-    // #977).
-    if (reference === "." || reference.endsWith("/")) {
-        return { kind: "refused", message: `Error: ${packageRelsPath} names a folder, not a main document` };
-    }
-    // The reference names the stored part the read model would find, under
-    // OPC equivalence, and the wiring goes through that part's own name; a
-    // named part that is not stored is refused before any write, the
-    // conventional `word/document.xml` included (#919).
-    const storedNames = packageViewPartNames(unpackedDir);
-    const storedName = findEquivalentPart(storedNames, reference);
-    if (storedName === undefined) {
-        return { kind: "refused", message: `Error: ${path.join(unpackedDir, ...reference.replace(/^\//, "").split("/"))} not found` };
-    }
-    // The conventional wiring stays only for the conventional spelling
-    // itself: OPC part names compare ASCII case-insensitively, with
-    // unreserved escapes decoded, so `Word/Document.xml` and
-    // `word/docum%65nt.xml` name the conventional part — but wiring them
-    // through it dropped their stored spelling and wrote their
-    // relationships to a second, OPC-equivalent
-    // `word/_rels/document.xml.rels`, so every other stored spelling is
-    // wired through its own name (#946).
-    if (storedName === CONVENTIONAL_MAIN_DOCUMENT) {
-        return { kind: "conventional", mainRelsPart: mainDocumentRelsPart(storedNames, CONVENTIONAL_MAIN_DOCUMENT) };
-    }
-    return { kind: "wired", mainDocument: storedName, mainRelsPart: mainDocumentRelsPart(storedNames, storedName) };
+    return false;
 }
 
-/**
- * Relate the comments parts from the main document's relationships part,
- * stored at `relsPath` with each part's `target` relative to the main
- * document's folder `baseDir` (#906). New relationships are created in the
- * package-relationships namespace under the root's prefix, so a prefixed
- * part keeps its prefix on every element and an unprefixed one serializes
- * as it always has, with no declaration of the new elements' own (#918).
- * Returns whether it created that part: a main document with no
- * relationships part is legal, but the comments parts are reached only
- * through relationships, so it creates one rather than leave them related
- * to nothing (#895).
- */
-async function ensureCommentRelationships(
-    relsPath: string,
-    baseDir: string,
-    targets: readonly string[],
-    decoded?: DecodedXmlPart,
-): Promise<boolean> {
-    const created = !(await pathExists(relsPath));
-    if (created) {
-        await fs.mkdir(path.dirname(relsPath), { recursive: true });
-        await fs.writeFile(relsPath, EMPTY_RELATIONSHIPS_XML, "utf-8");
+async function ensureCommentRelationships(unpackedDir: string): Promise<void> {
+    const relsPath = path.join(unpackedDir, "word", "_rels", "document.xml.rels");
+    if (!(await pathExists(relsPath))) {
+        return;
     }
 
-    const part = decoded ?? (await readXmlPart(relsPath));
-    if (part === undefined) {
-        // addComment's preflight decodes this part before any write, so this is
-        // reachable only when the part changed mid-run: refuse, never report a
-        // write that did not happen (#879).
-        throw new Error(`${relsPath} is stored in an encoding this tool cannot decode`);
+    if (await hasRelationship(relsPath, "comments.xml")) {
+        return;
     }
-    const dom = parseXml(part.text);
-    if (relatesCommentsPart(dom, baseDir, path.posix.join("word", "comments.xml"))) {
-        return created;
-    }
+
+    const text = await fs.readFile(relsPath, "utf-8");
+    const dom = parseXml(text);
     const root = dom.documentElement;
-    // The root may bind the package-relationships namespace to a prefix; the
-    // new relationships carry that prefix, and no declaration of their own.
-    const qualifiedName = root.prefix ? `${root.prefix}:Relationship` : "Relationship";
-    let nextRid = getNextRid(dom);
+    let nextRid = await getNextRid(relsPath);
 
-    for (let i = 0; i < COMMENT_RELATIONSHIP_TYPES.length; i += 1) {
-        const rel = dom.createElementNS(XML_NS.PR, qualifiedName);
+    const rels: Array<[string, string]> = [
+        ["http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments", "comments.xml"],
+        ["http://schemas.microsoft.com/office/2011/relationships/commentsExtended", "commentsExtended.xml"],
+        ["http://schemas.microsoft.com/office/2016/09/relationships/commentsIds", "commentsIds.xml"],
+        ["http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible", "commentsExtensible.xml"],
+    ];
+
+    for (const [relType, target] of rels) {
+        const rel = dom.createElement("Relationship");
         rel.setAttribute("Id", `rId${nextRid}`);
-        rel.setAttribute("Type", COMMENT_RELATIONSHIP_TYPES[i]!);
-        rel.setAttribute("Target", targets[i]!);
+        rel.setAttribute("Type", relType);
+        rel.setAttribute("Target", target);
         root.appendChild(rel);
-        nextRid += 1n;
+        nextRid += 1;
     }
 
-    await writeXmlPart(relsPath, dom, part);
-    return created;
+    await fs.writeFile(relsPath, serializeXml(dom, "UTF-8"), "utf-8");
 }
 
-/**
- * Type the comments parts in `[Content_Types].xml`, and the main document's
- * relationships part — named `relsPartName`, the part's own name — when
- * `createdRels` says addComment created it and nothing resolves it to the
- * relationships media type (#895, #906, #901): a Default of another type is
- * left alone and answered with an Override under the part's own name, and
- * an Override that names the part under OPC equivalence with another type
- * is rewritten in place, never answered with a second Override. A
- * relationships part that already existed is never retyped. Each comment
- * part is decided on its own, read as the checks read the stream: its
- * Override is added only when no Override in the content-types namespace
- * names the part under OPC equivalence, and one that already names it, with
- * whatever type, is neither retyped nor answered with a second one; before,
- * one literal check on `/word/comments.xml` decided all four (#937). The
- * stream is read and written in its namespace, whatever prefix it binds it
- * to: an Override is read only in the content-types namespace, and each new
- * one is created there carrying the prefix the root `Types` element uses,
- * so an unprefixed stream serializes exactly as before (#923).
- */
-async function ensureCommentContentTypes(
-    unpackedDir: string,
-    createdRels: boolean,
-    relsPartName: string,
-    decoded?: DecodedXmlPart,
-): Promise<void> {
+async function ensureCommentContentTypes(unpackedDir: string): Promise<void> {
     const ctPath = path.join(unpackedDir, "[Content_Types].xml");
     if (!(await pathExists(ctPath))) {
         return;
     }
 
-    const part = decoded ?? (await readXmlPart(ctPath));
-    if (part === undefined) {
-        // addComment's preflight decodes this part before any write, so this is
-        // reachable only when the part changed mid-run: refuse, never report a
-        // write that did not happen (#879).
-        throw new Error(`${ctPath} is stored in an encoding this tool cannot decode`);
-    }
-    const dom = parseXml(part.text);
-    const table = parseContentTypes(dom);
-    const overrides: Array<[string, string]> = [];
-    for (let i = 0; i < COMMENT_PART_NAMES.length; i += 1) {
-        const partName = `/word/${COMMENT_PART_NAMES[i]!}`;
-        if (!table.overrides.has(canonicalPartName(partName))) {
-            overrides.push([partName, COMMENT_CONTENT_TYPES[i]!]);
-        }
-    }
-    // Coverage alone is not correctness: a `.rels` Default of another type
-    // covered the created part with the wrong type while addComment reported
-    // success (#901). The media type comparison ignores case and parameters.
-    let mistypedRelsOverride = false;
-    if (createdRels) {
-        const resolved = resolveContentType(table, relsPartName);
-        if (
-            resolved === null ||
-            (resolved.source === "default" &&
-                contentTypeMediaType(resolved.contentType) !== contentTypeMediaType(RELATIONSHIPS_CONTENT_TYPE))
-        ) {
-            overrides.push([relsPartName, RELATIONSHIPS_CONTENT_TYPE]);
-        } else if (
-            resolved.source === "override" &&
-            contentTypeMediaType(resolved.contentType) !== contentTypeMediaType(RELATIONSHIPS_CONTENT_TYPE)
-        ) {
-            mistypedRelsOverride = true;
-        }
-    }
-    if (overrides.length === 0 && !mistypedRelsOverride) {
+    if (await hasContentType(ctPath, "/word/comments.xml")) {
         return;
     }
+
+    const text = await fs.readFile(ctPath, "utf-8");
+    const dom = parseXml(text);
     const root = dom.documentElement;
-    const overridePrefix = root.prefix ? `${root.prefix}:` : "";
+
+    const overrides: Array<[string, string]> = [
+        ["/word/comments.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml"],
+        ["/word/commentsExtended.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml"],
+        ["/word/commentsIds.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsIds+xml"],
+        ["/word/commentsExtensible.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtensible+xml"],
+    ];
 
     for (const [partName, contentType] of overrides) {
-        const override = dom.createElementNS(CONTENT_TYPES_NAMESPACE, `${overridePrefix}Override`);
+        const override = dom.createElement("Override");
         override.setAttribute("PartName", partName);
         override.setAttribute("ContentType", contentType);
         root.appendChild(override);
     }
-    if (mistypedRelsOverride) {
-        const key = canonicalPartName(relsPartName);
-        for (const override of getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Override")) {
-            if (canonicalPartName(override.getAttribute("PartName") ?? "") === key) {
-                override.setAttribute("ContentType", RELATIONSHIPS_CONTENT_TYPE);
-            }
-        }
-    }
 
-    await writeXmlPart(ctPath, dom, part);
+    await fs.writeFile(ctPath, serializeXml(dom, "UTF-8"), "utf-8");
 }
 
 export interface AddCommentOptions {
@@ -710,23 +332,8 @@ export interface AddCommentResult {
  * Add a comment (or reply) to an unpacked DOCX.
  *
  * On success, returns the generated `paraId` and a human-readable status
- * message. A first comment relates the comments parts from the stored main
- * document's own relationships part — the part `_rels/.rels` names, found under
- * OPC equivalence like the main document itself, whatever spelling either is
- * stored under (#906, #946). On failure (missing `word/` directory, missing
- * parent comment, a part this edit would write that is stored in an encoding
- * this tool cannot decode (#879) or is not well-formed XML (#905), a part this
- * edit would write whose path runs through, or ends at, a symbolic link (#939),
- * a stored comment part whose document element is not its expected root
- * element, by namespace and local name — whatever prefix it binds (#930, #953),
- * or, for a first comment, missing `[Content_Types].xml`, an `_rels/.rels` that
- * cannot be decoded or parsed, an `_rels/.rels` naming no non-External
- * `officeDocument` relationship, or an `officeDocument` target that, resolved
- * as the read model resolves it (`\` as `/`, the query and fragment dropped,
- * a climb past the package root stopped at the root (#986), the stored part
- * matched under OPC part-name equivalence), is a URI or names no stored part —
- * the conventional `word/document.xml` included (#906, #919)), returns
- * `paraId = ""` and a message starting with `Error:`.
+ * message. On failure (missing `word/` directory, missing parent comment),
+ * returns `paraId = ""` and a message starting with `Error:`.
  */
 export async function addComment(opts: AddCommentOptions): Promise<AddCommentResult> {
     const { unpackedDir, commentId, text, parent, author, initials, date } = opts;
@@ -741,123 +348,21 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
     const ts = formatUtcTimestamp(date ?? new Date());
 
     const comments = path.join(word, "comments.xml");
-    const ext = path.join(word, "commentsExtended.xml");
-    const ids = path.join(word, "commentsIds.xml");
-    const extensible = path.join(word, "commentsExtensible.xml");
-    const ctPath = path.join(unpackedDir, "[Content_Types].xml");
     const firstComment = !(await pathExists(comments));
-    if (firstComment && !(await pathExists(ctPath))) {
-        // A first comment's parts must be typed in the content-types stream.
-        // A package without one cannot be made valid here, so refuse before
-        // anything is written rather than report a success (#895).
-        return { paraId: "", message: `Error: ${ctPath} not found` };
-    }
-
-    // A first comment relates the comments parts from the main document's
-    // relationships part, which belongs to the main document `_rels/.rels`
-    // names — not necessarily `word/document.xml` (#906) — and is itself
-    // found under OPC equivalence, whatever spelling either is stored
-    // under (#946). A later comment never touches relationships, so it
-    // reads no `_rels/.rels` at all.
-    let mainDocument = CONVENTIONAL_MAIN_DOCUMENT;
-    let mainRelsPart = CONVENTIONAL_MAIN_RELS_PART;
-    if (firstComment) {
-        const wiring = await resolveCommentWiring(unpackedDir);
-        if (wiring.kind === "refused") {
-            return { paraId: "", message: wiring.message };
-        }
-        mainRelsPart = wiring.mainRelsPart;
-        if (wiring.kind === "wired") {
-            mainDocument = wiring.mainDocument;
-        }
-    }
-    const mainFolder = path.posix.dirname(mainDocument);
-    const mainRelsPath = path.join(unpackedDir, ...mainRelsPart.split("/"));
-    const commentTargets = COMMENT_PART_NAMES.map((name) => path.posix.relative(mainFolder, path.posix.join("word", name)));
-
-    // Preflight: decode and parse every existing part this edit may write,
-    // before any file is created, copied or changed. The main document's
-    // relationships part and `[Content_Types].xml` are written only for the
-    // first comment. A part whose encoding cannot be decoded is left
-    // byte-for-byte untouched (#866), so an undecodable part found mid-write
-    // used to leave earlier parts already changed, or report success for a
-    // wiring it skipped (#879). A part that decodes but does not parse used
-    // to throw mid-write the same way, so it is refused here too (#905).
-    const writtenParts = [comments, ext, ids, extensible];
-    if (firstComment) {
-        writtenParts.push(mainRelsPath, ctPath);
-    }
-    // Every part this edit may write or create must not run through, or end
-    // at, a symbolic link: the write would follow it, out of the unpacked
-    // tree when the link points outside (#939). `unpack` refuses the same
-    // before its first write (#675), and the validators' write-back never
-    // follows a link (#425). The check runs before the preflight below, so
-    // a link's target is not even read.
-    const root = path.resolve(unpackedDir);
-    for (const part of writtenParts) {
-        const link = await findLinkBelow(root, path.resolve(part));
-        if (link !== undefined) {
-            // Named under the caller's spelling of the tree, as every other
-            // refusal names its part.
-            const named = path.join(unpackedDir, path.relative(root, link));
-            return { paraId: "", message: `Error: ${named} is a symbolic link; addComment does not write through one` };
-        }
-    }
-    const decoded = new Map<string, DecodedXmlPart>();
-    for (const part of writtenParts) {
-        if (!(await pathExists(part))) {
-            continue;
-        }
-        const xml = await readXmlPart(part);
-        if (xml === undefined) {
-            return { paraId: "", message: `Error: ${part} is stored in an encoding this tool cannot decode` };
-        }
-        try {
-            parseXml(xml.text);
-        } catch (err) {
-            const detail = err instanceof Error ? err.message : String(err);
-            return { paraId: "", message: `Error: ${part} is not well-formed XML: ${detail}` };
-        }
-        decoded.set(part, xml);
-    }
-
-    // Each comment part that exists must have its root element, by namespace
-    // and local name, whatever prefix it binds, as its document element: one
-    // whose document element is in another namespace or of another local name
-    // is refused before any write, the tree unchanged; before, the call threw
-    // mid-write (#930), and a root nested under another document element was
-    // appended to (#953). A first comment appends to the three Microsoft parts
-    // too when they are already stored, so the check runs for it as well.
-    const rootElements: Array<[string, string, string]> = [
-        [comments, NS.w, "comments"],
-        [ext, NS.w15, "commentsEx"],
-        [ids, NS.w16cid, "commentsIds"],
-        [extensible, NS.w16cex, "commentsExtensible"],
-    ];
-    for (const [part, namespace, localName] of rootElements) {
-        const decodedPart = decoded.get(part);
-        if (decodedPart === undefined) {
-            continue;
-        }
-        const documentElement = parseXml(decodedPart.text).documentElement;
-        if (!documentElement || documentElement.namespaceURI !== namespace || documentElement.localName !== localName) {
-            return { paraId: "", message: `Error: ${part} has no ${localName} root element in the ${namespace} namespace` };
-        }
-    }
 
     // Preflight validation: check duplicate commentId and resolve `parent`
     // BEFORE we mutate any part. Without this, an existing comments.xml could
     // be mutated and then the parent-not-found branch leaves an orphan comment
     // behind on a failed call.
     if (!firstComment) {
-        if (commentIdExists(decoded.get(comments)!, commentId)) {
+        if (await commentIdExists(comments, commentId)) {
             return {
                 paraId: "",
                 message: `Error: Comment id ${commentId} already exists`,
             };
         }
         if (parent !== undefined) {
-            const parentPara = findParaId(decoded.get(comments)!, parent);
+            const parentPara = await findParaId(comments, parent);
             if (!parentPara) {
                 return {
                     paraId: "",
@@ -873,36 +378,29 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
 
     if (firstComment) {
         await fs.copyFile(path.join(TEMPLATE_DIR, "comments.xml"), comments);
-        const createdRels = await ensureCommentRelationships(mainRelsPath, mainFolder, commentTargets, decoded.get(mainRelsPath));
-        await ensureCommentContentTypes(unpackedDir, createdRels, `/${mainRelsPart}`, decoded.get(ctPath));
+        await ensureCommentRelationships(unpackedDir);
+        await ensureCommentContentTypes(unpackedDir);
     }
-    if (
-        !(await appendXml(
-            comments,
-            NS.w,
-            "comments",
-            formatTemplate(COMMENT_XML, {
-                id: commentId,
-                author: escapeXml(author),
-                date: ts,
-                initials: escapeXml(initials),
-                para_id: paraId,
-                text: escapeXml(text),
-            }),
-            decoded.get(comments),
-        ))
-    ) {
-        return { paraId: "", message: `Error: ${comments} is stored in an encoding this tool cannot decode` };
-    }
+    await appendXml(
+        comments,
+        "w:comments",
+        formatTemplate(COMMENT_XML, {
+            id: commentId,
+            author: escapeXml(author),
+            date: ts,
+            initials: escapeXml(initials),
+            para_id: paraId,
+            text: escapeXml(text),
+        }),
+    );
 
+    const ext = path.join(word, "commentsExtended.xml");
     if (!(await pathExists(ext))) {
         await fs.copyFile(path.join(TEMPLATE_DIR, "commentsExtended.xml"), ext);
     }
-
-    let commentEx = `<w15:commentEx w15:paraId="${paraId}" w15:done="0"/>`;
     if (parent !== undefined) {
         // Already preflighted above; resolve the actual paraId here for the link.
-        const parentPara = findParaId(decoded.get(comments)!, parent);
+        const parentPara = await findParaId(comments, parent);
         if (!parentPara) {
             // Defensive: should be unreachable given preflight, but keep a
             // structured failure rather than a silent bad ref.
@@ -911,42 +409,26 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
                 message: `Error: Parent comment ${parent} not found`,
             };
         }
-        commentEx = `<w15:commentEx w15:paraId="${paraId}" w15:paraIdParent="${parentPara}" w15:done="0"/>`;
+        await appendXml(ext, "w15:commentsEx", `<w15:commentEx w15:paraId="${paraId}" w15:paraIdParent="${parentPara}" w15:done="0"/>`);
+    } else {
+        await appendXml(ext, "w15:commentsEx", `<w15:commentEx w15:paraId="${paraId}" w15:done="0"/>`);
     }
 
+    const ids = path.join(word, "commentsIds.xml");
     if (!(await pathExists(ids))) {
         await fs.copyFile(path.join(TEMPLATE_DIR, "commentsIds.xml"), ids);
     }
+    await appendXml(ids, "w16cid:commentsIds", `<w16cid:commentId w16cid:paraId="${paraId}" w16cid:durableId="${durableId}"/>`);
 
+    const extensible = path.join(word, "commentsExtensible.xml");
     if (!(await pathExists(extensible))) {
         await fs.copyFile(path.join(TEMPLATE_DIR, "commentsExtensible.xml"), extensible);
     }
-
-    if (!(await appendXml(ext, NS.w15, "commentsEx", commentEx, decoded.get(ext)))) {
-        return { paraId: "", message: `Error: ${ext} is stored in an encoding this tool cannot decode` };
-    }
-    if (
-        !(await appendXml(
-            ids,
-            NS.w16cid,
-            "commentsIds",
-            `<w16cid:commentId w16cid:paraId="${paraId}" w16cid:durableId="${durableId}"/>`,
-            decoded.get(ids),
-        ))
-    ) {
-        return { paraId: "", message: `Error: ${ids} is stored in an encoding this tool cannot decode` };
-    }
-    if (
-        !(await appendXml(
-            extensible,
-            NS.w16cex,
-            "commentsExtensible",
-            `<w16cex:commentExtensible w16cex:durableId="${durableId}" w16cex:dateUtc="${ts}"/>`,
-            decoded.get(extensible),
-        ))
-    ) {
-        return { paraId: "", message: `Error: ${extensible} is stored in an encoding this tool cannot decode` };
-    }
+    await appendXml(
+        extensible,
+        "w16cex:commentsExtensible",
+        `<w16cex:commentExtensible w16cex:durableId="${durableId}" w16cex:dateUtc="${ts}"/>`,
+    );
 
     const action = parent !== undefined ? "reply" : "comment";
     return {

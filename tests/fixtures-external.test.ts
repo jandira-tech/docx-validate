@@ -46,10 +46,7 @@ describe("external fixtures — apache-poi", () => {
     });
 
     it("rejects MultipleBodyBug.docx (multiple <w:body> elements — structural violation)", async () => {
-        // Explicit lenient: this pins that the XSD pipeline rejects the file.
-        // The default profile is now `word-valid`, which downgrades the
-        // schema summary to a warning — Word opens the file.
-        const result = await validate(fix("apache-poi", "MultipleBodyBug.docx"), { profile: "lenient" });
+        const result = await validate(fix("apache-poi", "MultipleBodyBug.docx"));
         expect(result.valid).toBe(false);
         expect(result.issues.length).toBeGreaterThan(0);
         expect(result.issues.some((i) => i.code === "xsd-summary")).toBe(true);
@@ -93,27 +90,20 @@ describe("external fixtures — apache-poi", () => {
 // ---------------------------------------------------------------------------
 describe("external fixtures — open-xml-sdk", () => {
     it("rejects EmptyRelationshipElement.docx with rels-empty-element (non-self-closing <Relationship>)", async () => {
-        // Explicit lenient: `word-valid` tolerates a non-self-closing
-        // <Relationship>, so only the lenient profile reports it.
-        const result = await validate(fix("open-xml-sdk", "EmptyRelationshipElement.docx"), { profile: "lenient" });
+        const result = await validate(fix("open-xml-sdk", "EmptyRelationshipElement.docx"));
         expect(result.valid).toBe(false);
         expect(result.issues.some((i) => i.code === "rels-empty-element")).toBe(true);
     });
 
     it("rejects 5Errors.docx (five intentional schema validation errors)", async () => {
-        // Explicit lenient: pins the XSD summary, and word-valid (the DOCX
-        // default) compiles no schema.
-        const result = await validate(fix("open-xml-sdk", "5Errors.docx"), { profile: "lenient" });
+        const result = await validate(fix("open-xml-sdk", "5Errors.docx"));
         expect(result.valid).toBe(false);
         expect(result.issues.length).toBeGreaterThanOrEqual(1);
         expect(result.issues.some((i) => i.code === "xsd-summary")).toBe(true);
     });
 
     it("rejects InvalidDocProps.docx (malformed docProps part)", async () => {
-        // Explicit lenient: the broken media relationship `word-valid`
-        // tolerates (Word shows a missing-image placeholder) is an error only
-        // under lenient.
-        const result = await validate(fix("open-xml-sdk", "InvalidDocProps.docx"), { profile: "lenient" });
+        const result = await validate(fix("open-xml-sdk", "InvalidDocProps.docx"));
         expect(result.valid).toBe(false);
         expect(result.issues.length).toBeGreaterThan(0);
         expect(result.issues.some((i) => i.code === "rels-broken")).toBe(true);
@@ -127,17 +117,13 @@ describe("external fixtures — open-xml-sdk", () => {
     });
 
     it("rejects UnknownElement.docx (unknown XML element under mc:ignorable)", async () => {
-        // Explicit lenient: pins the XSD summary, and word-valid (the DOCX
-        // default) compiles no schema.
-        const result = await validate(fix("open-xml-sdk", "UnknownElement.docx"), { profile: "lenient" });
+        const result = await validate(fix("open-xml-sdk", "UnknownElement.docx"));
         expect(result.valid).toBe(false);
         expect(result.issues.some((i) => i.code === "xsd-summary")).toBe(true);
     }, 20000);
 
     it("rejects mcdoc.docx (Markup Compatibility / AlternateContent issues)", async () => {
-        // Explicit lenient: pins the XSD summary; `word-valid` keeps the
-        // document valid because Word opens it.
-        const result = await validate(fix("open-xml-sdk", "mcdoc.docx"), { profile: "lenient" });
+        const result = await validate(fix("open-xml-sdk", "mcdoc.docx"));
         expect(result.valid).toBe(false);
         expect(result.issues.some((i) => i.code === "xsd-summary")).toBe(true);
     });
@@ -146,9 +132,7 @@ describe("external fixtures — open-xml-sdk", () => {
         // Option A: Strict namespace URIs are detected and XSD validation is skipped
         // with a documented info-level issue. Transitional XSD schemas cannot
         // validate Strict URIs; full Strict schema support is a future improvement.
-        // Explicit lenient: the skip notice comes from lenient's schema walk;
-        // word-valid (the DOCX default) compiles no schema.
-        const result = await validate(fix("open-xml-sdk", "Strict01.docx"), { profile: "lenient" });
+        const result = await validate(fix("open-xml-sdk", "Strict01.docx"));
         expect(result.valid).toBe(true);
         expect(result.issues.some((i) => i.code === "xsd-strict-skipped")).toBe(true);
         expect(result.issues.every((i) => i.severity !== "error")).toBe(true);
@@ -180,8 +164,7 @@ describe("external fixtures — docx4j", () => {
     });
 
     it("rejects NumberingImplicitNumId.docx (numbering with implicit numId)", async () => {
-        // Explicit lenient: `word-valid` tolerates the broken relationship.
-        const result = await validate(fix("docx4j", "NumberingImplicitNumId.docx"), { profile: "lenient" });
+        const result = await validate(fix("docx4j", "NumberingImplicitNumId.docx"));
         expect(result.valid).toBe(false);
         expect(result.issues.some((i) => i.code === "rels-broken")).toBe(true);
     });

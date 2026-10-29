@@ -12,9 +12,6 @@
 // Existing surface (preserved verbatim from the auto-generated barrel).
 export * from "./lib/run-cli";
 export * from "./lib/types";
-export * from "./lib/mode-policy";
-export * from "./lib/run-deadline";
-export * from "./lib/content-types";
 export * from "./lib/xml-helpers";
 export * from "./scripts/comment";
 export * from "./scripts/office/pack";
@@ -36,12 +33,10 @@ export { Repair } from "./repair";
 export type { RepairOptions, RepairResult } from "./repair";
 export { Normalize } from "./normalize";
 export type { NormalizeResult } from "./normalize";
-export { PackageStepError } from "./lib/package-step-error";
-export type { PackageStep } from "./lib/package-step-error";
 export { Measure } from "./measure";
 export type { MeasureOptions, MeasureResult, MeasureClassification, MeasureMetrics, AstAdapter } from "./measure";
 
-import { Validate, type ValidateOptions } from "./validate";
+import { Validate } from "./validate";
 import { Repair } from "./repair";
 import { Normalize } from "./normalize";
 import { Measure } from "./measure";
@@ -54,7 +49,7 @@ import { Measure } from "./measure";
  * configure an `XsdValidator` or other options.
  */
 export const jubarte = {
-    validate: (bytes: Uint8Array, options?: ValidateOptions) => new Validate(options).run(bytes),
+    validate: (bytes: Uint8Array) => new Validate().run(bytes),
     repair: (bytes: Uint8Array) => new Repair().run(bytes),
     normalize: (bytes: Uint8Array) => new Normalize().run(bytes),
     measure: (bytes: Uint8Array) => new Measure().runOne(bytes),
