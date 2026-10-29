@@ -412,12 +412,12 @@ const collectDeletedRunText = (root: Document | Element, localName: string): Ele
             }
         }
 
-        let child = node.lastChild;
-        while (child) {
+        const { childNodes } = node;
+        for (let i = childNodes.length - 1; i >= 0; i -= 1) {
+            const child = childNodes[i]!;
             if (child.nodeType === 1) {
                 stack.push({ node: child as Element, inDel: nextInDel });
             }
-            child = child.previousSibling;
         }
     }
 
@@ -1046,12 +1046,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     }
                 }
 
-                let child = node.lastChild;
-                while (child) {
+                const { childNodes } = node;
+                for (let i = childNodes.length - 1; i >= 0; i -= 1) {
+                    const child = childNodes[i]!;
                     if (child.nodeType === 1) {
                         stack.push({ node: child as Element, inDel: nextInDel, inIns: nextInIns });
                     }
-                    child = child.previousSibling;
                 }
             }
 
@@ -3734,12 +3734,12 @@ function countParagraphsInRoot(doc: Document): number {
             continue;
         }
 
-        let child = node.lastChild;
-        while (child) {
+        const { childNodes } = node;
+        for (let i = childNodes.length - 1; i >= 0; i -= 1) {
+            const child = childNodes[i]!;
             if (child.nodeType === 1) {
                 stack.push(child as Element);
             }
-            child = child.previousSibling;
         }
     }
 
