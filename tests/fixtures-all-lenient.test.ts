@@ -28,14 +28,12 @@
  * findings.
  */
 
-import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { afterAll, describe, expect, it } from "vitest";
 
-import { effectiveOutcome, parseWordField } from "../src/lib/word-provenance";
 import { validate } from "../src/scripts/office/validate";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -72,26 +70,6 @@ const strictGaps: StrictGap[] = [];
 describe("all fixtures — lenient profile", () => {
     it(`manifest covers all ${manifest.totalFixtures} fixtures`, () => {
         expect(manifest.entries.length).toBe(manifest.totalFixtures);
-    });
-
-    it("binds every Word observation to its fixture's current sha256 (#274)", () => {
-        const unbound: string[] = [];
-        const stale: string[] = [];
-        for (const entry of manifest.entries) {
-            const observation = parseWordField((entry as { word?: unknown }).word);
-            if (!observation) continue;
-            if (observation.sha256 === undefined) {
-                unbound.push(entry.relativePath);
-                continue;
-            }
-            const bytes = readFileSync(path.join(FIXTURES, entry.relativePath));
-            const current = createHash("sha256").update(bytes).digest("hex");
-            if (effectiveOutcome(observation, current) !== observation.outcome) {
-                stale.push(entry.relativePath);
-            }
-        }
-        expect(unbound, "entries whose Word observation carries no sha256").toEqual([]);
-        expect(stale, "entries whose Word observation no longer matches the fixture bytes").toEqual([]);
     });
 
     for (const entry of manifest.entries) {

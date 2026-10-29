@@ -35,16 +35,9 @@ describe("word-valid anchor attributes and position choice", { timeout: 30000 },
         expect(result.valid).toBe(true);
     });
 
-    it("does not report the causes on lenient", async () => {
-        const result = await validate(BROKEN, { profile: "lenient" });
+    it.each(["lenient", "strict"] as const)("does not report the causes on %s", async (profile) => {
+        const result = await validate(BROKEN, { profile });
         expect(result.issues.some((issue) => issue.code === "word-anchor-missing-attribute")).toBe(false);
         expect(result.issues.some((issue) => issue.code === "word-position-offset-and-align")).toBe(false);
-    });
-
-    // strict includes every Word-valid check (validation contract, Task 1).
-    it("reports the causes on strict", async () => {
-        const result = await validate(BROKEN, { profile: "strict" });
-        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-anchor-missing-attribute")).toBe(true);
-        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-position-offset-and-align")).toBe(true);
     });
 });

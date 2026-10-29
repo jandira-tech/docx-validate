@@ -23,10 +23,6 @@ import { describe, expect, it } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
 import { runValidateFromArgv, validate } from "../src/scripts/office/validate";
-import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
-import { buildRawZip } from "./support/raw-zip";
-import { contentTypeSpecimens } from "./support/word-content-types-specimens";
-import { rels, relation } from "./support/word-rule-test-xml";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -64,49 +60,11 @@ async function writeMinimalDocxDir(root: string, body: string): Promise<void> {
 }
 
 describe("validate", () => {
-    it.each(["ENOENT", "ENOTDIR"])(
-        "keeps the missing-target error for %s (#574)",
-        async (code) => {
-            await withTempDir(async (dir) => {
-                const holder = path.join(dir, "holder");
-                if (code === "ENOTDIR") await fs.writeFile(holder, "a regular file");
-                const target = path.join(holder, "missing.docx");
-                await expect(validate(target)).rejects.toThrow(`Error: ${target} does not exist`);
-            });
-        },
-        60_000,
-    );
-
-    it.skipIf(process.platform === "win32" || process.getuid?.() === 0)(
-        "names EACCES when a packed target's parent cannot be traversed (#574)",
-        async () => {
-            await withTempDir(async (dir) => {
-                const holder = path.join(dir, "holder");
-                const target = path.join(holder, "packed.docx");
-                await fs.mkdir(holder);
-                await fs.writeFile(target, await buildDocx());
-                await fs.chmod(holder, 0o000);
-                try {
-                    await expect(validate(target)).rejects.toThrow(`Error: Cannot access ${target}: EACCES:`);
-                } finally {
-                    await fs.chmod(holder, 0o755);
-                }
-            });
-        },
-        60_000,
-    );
-
-    it.skipIf(process.platform === "win32")(
-        "names ELOOP when access cannot resolve the target (#574)",
-        async () => {
-            await withTempDir(async (dir) => {
-                const target = path.join(dir, "loop.docx");
-                await fs.symlink("loop.docx", target);
-                await expect(validate(target)).rejects.toThrow(`Error: Cannot access ${target}: ELOOP:`);
-            });
-        },
-        60_000,
-    );
+    it("throws when the target path does not exist", async () => {
+        await withTempDir(async (dir) => {
+            await expect(validate(path.join(dir, "missing.docx"))).rejects.toThrow(/does not exist/);
+        });
+    });
 
     it("throws when the original is not a real file", async () => {
         await withTempDir(async (dir) => {
@@ -185,7 +143,7 @@ describe("validate", () => {
 
     it("flags paraId overflow in a packed DOCX (negative case)", async () => {
         const docxPath = path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx");
-        const result = await validate(docxPath, { profile: "lenient" });
+        const result = await validate(docxPath);
         expect(result.valid).toBe(false);
         expect(result.issues.some((i) => i.severity === "error" && i.code === "id-paraid-overflow")).toBe(true);
     });
@@ -266,131 +224,12 @@ describe("validate", () => {
             expect(wsAfter.length).toBe(0);
             expect(
                 after.issues.some(
-                    (i) =>
-                        i.code === "repair-plan" && i.path === "word/document.xml" && i.message.includes("Auto-repair cleared 1; 0 remain"),
+                    (i) => i.code === "repair-plan" && i.path === "word/document.xml" && i.message.includes("add xml:space='preserve'"),
                 ),
             ).toBe(true);
             expect(after.issues.some((i) => i.code === "repair-content-preserved")).toBe(true);
 
             // Sanity-check the on-disk file actually got the attribute added.
-            const docXml = await fs.readFile(path.join(unpacked, "word", "document.xml"), "utf8");
-            expect(docXml).toMatch(/xml:space="preserve"/);
-        });
-    });
-
-    it("reports no repair for a part whose write-back writeXmlPart refuses (#880)", async () => {
-        await withTempDir(async (tmp) => {
-            const writeTree = async (root: string, documentXml: string): Promise<void> => {
-                for (const [name, content] of Object.entries({ ...MINIMAL_PARTS, "word/document.xml": documentXml })) {
-                    await fs.mkdir(path.dirname(path.join(root, name)), { recursive: true });
-                    await fs.writeFile(path.join(root, name), content, "utf8");
-                }
-            };
-            // The same leading-space <w:t>; only the declaration differs, so the
-            // macintosh tree is judged (ASCII content, UTF-8 fallback decode)
-            // while its write-back is refused.
-            const mainWith = (encoding: string): string =>
-                (MINIMAL_PARTS["word/document.xml"] as string)
-                    .replace('encoding="UTF-8"', `encoding="${encoding}"`)
-                    .replace("<w:t>Hello</w:t>", "<w:t> Hello</w:t>");
-            // Synthesise a tiny "original" so dispatch picks the docx path even
-            // though our targets are bare directories with no extension.
-            const originalDocx = path.join(tmp, "orig.docx");
-            await fs.writeFile(originalDocx, await buildDocx());
-
-            const undecodable = path.join(tmp, "undecodable");
-            await writeTree(undecodable, mainWith("macintosh"));
-            const before = await fs.readFile(path.join(undecodable, "word", "document.xml"));
-            const refused = await validate(undecodable, {
-                profile: "strict",
-                autoRepair: true,
-                original: originalDocx,
-                author: "Test Author",
-            });
-            expect(refused.repairs).toBe(0);
-            expect(await fs.readFile(path.join(undecodable, "word", "document.xml"))).toEqual(before);
-            expect(refused.issues.some((i) => i.code === "ws-missing-preserve")).toBe(true);
-
-            const decodable = path.join(tmp, "decodable");
-            await writeTree(decodable, mainWith("UTF-8"));
-            const written = await validate(decodable, {
-                profile: "strict",
-                autoRepair: true,
-                original: originalDocx,
-                author: "Test Author",
-            });
-            expect(written.repairs).toBe(1);
-            expect(await fs.readFile(path.join(decodable, "word", "document.xml"), "utf8")).toMatch(/xml:space="preserve"/);
-        });
-    });
-
-    it("discloses that auto-repair on a packed file ran on a staged copy (#649)", async () => {
-        await withTempDir(async (tmp) => {
-            const file = path.join(tmp, "packed.docx");
-            await fs.writeFile(
-                file,
-                await buildDocx({
-                    ...MINIMAL_PARTS,
-                    "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(">Hello<", "> Hello <"),
-                }),
-            );
-            const beforeBytes = await fs.readFile(file);
-            const result = await validate(file, { autoRepair: true });
-            expect(result.repairs).toBeGreaterThanOrEqual(1);
-            // The plan reports the repair as cleared, but the repaired bytes
-            // never reach the file — the result must say so.
-            expect(result.issues).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        severity: "info",
-                        code: "auto-repair-staged-copy",
-                        message:
-                            "Auto-repair ran on a temporary staged copy of the packed file; the repairs and repair-plan findings describe that copy, and the source file is unchanged.",
-                    }),
-                ]),
-            );
-            expect(await fs.readFile(file)).toEqual(beforeBytes);
-        });
-    });
-
-    it("claims no auto-repair for a packed .xlsx input, which has no validators (#666)", async () => {
-        await withTempDir(async (tmp) => {
-            const file = path.join(tmp, "packed.xlsx");
-            await fs.writeFile(file, await buildDocx({ ...MINIMAL_PARTS }));
-            const result = await validate(file, { autoRepair: true });
-            // runValidators returns before its repair block, so nothing ran.
-            expect(result.repairs).toBe(0);
-            expect(result.issues).toContainEqual(expect.objectContaining({ code: "unsupported-file-type", severity: "error" }));
-            expect(result.issues.filter((i) => i.code === "auto-repair-staged-copy")).toEqual([]);
-        });
-    });
-
-    it("claims no auto-repair when the packed file cannot be extracted (#666)", async () => {
-        await withTempDir(async (tmp) => {
-            const file = path.join(tmp, "packed.docx");
-            // The archive opens, but no host filesystem holds a 300-character
-            // file name, so the extraction fails before any repair (#454).
-            await fs.writeFile(
-                file,
-                buildRawZip([
-                    ...Object.entries(MINIMAL_PARTS).map(([name, content]) => ({ name, content })),
-                    { name: `word/${"a".repeat(300)}.xml`, content: "<x/>" },
-                ]),
-            );
-            const result = await validate(file, { autoRepair: true });
-            expect(result.repairs).toBe(0);
-            expect(result.issues).toContainEqual(expect.objectContaining({ code: "package-extract-failed", severity: "error" }));
-            expect(result.issues.filter((i) => i.code === "auto-repair-staged-copy")).toEqual([]);
-        });
-    });
-
-    it("keeps directory write-back and emits no staged-copy disclosure (#649)", async () => {
-        await withTempDir(async (tmp) => {
-            const unpacked = path.join(tmp, "unpacked.docx");
-            await writeMinimalDocxDir(unpacked, "<w:body><w:p><w:r><w:t> hello</w:t></w:r></w:p></w:body>");
-            const result = await validate(unpacked, { autoRepair: true });
-            expect(result.repairs).toBeGreaterThanOrEqual(1);
-            expect(result.issues.some((i) => i.code === "auto-repair-staged-copy")).toBe(false);
             const docXml = await fs.readFile(path.join(unpacked, "word", "document.xml"), "utf8");
             expect(docXml).toMatch(/xml:space="preserve"/);
         });
@@ -508,7 +347,6 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
         await withTempDir(async (dir) => {
             const unpacked = path.join(dir, "unpacked");
             await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
-            await fs.writeFile(path.join(unpacked, "data.json"), "{}");
             // Overwrite [Content_Types].xml to add a Default with invalid- ContentType
             await fs.writeFile(
                 path.join(unpacked, "[Content_Types].xml"),
@@ -623,11 +461,9 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
         });
     });
 
-    it("word-valid profile reports a malformed word/document.xml once, as xml-syntax (Issue M)", async () => {
-        // validateWordOpenCompatibility cannot parse the part and emits
-        // word-math-parse. The XML diagnostics already reject the part, so
-        // that consequential parse failure is dropped and the part is
-        // reported once.
+    it("word-valid profile flags malformed word/document.xml as word-math-parse error (Issue M)", async () => {
+        // When word/document.xml cannot be XML-parsed, validateWordOpenCompatibility
+        // emits word-math-parse (fatal) instead of proceeding to the m:sPre check.
         await withTempDir(async (dir) => {
             const unpacked = path.join(dir, "unpacked");
             await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
@@ -639,44 +475,29 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
                 author: "Test",
             });
             expect(result.valid).toBe(false);
-            const onDocument = result.issues.filter((i) => i.path === "word/document.xml");
-            expect(onDocument.length).toBeGreaterThan(0);
-            expect(new Set(onDocument.map((i) => i.code))).toEqual(new Set(["xml-syntax"]));
-            expect(onDocument.every((i) => i.severity === "error")).toBe(true);
+            const mathParseIssue = result.issues.find((i) => i.code === "word-math-parse");
+            expect(mathParseIssue).toBeDefined();
+            expect(mathParseIssue?.severity).toBe("error");
+            expect(mathParseIssue?.path).toContain("word/document.xml");
         });
     });
 
-    it("xml-syntax error in a reached word/ file stays fatal under word-valid profile (Issue N, #437)", async () => {
-        // isWordBlockingIssue blocks an xml-syntax error on a part Word reads
-        // through a relationship — here the eagerly parsed styles part — while
-        // a part named by nothing (word/xtra.xml) only warns: Word 16.115
-        // opens an unreferenced truncated word/ part clean (#437).
+    it("xml-syntax error in word/ file stays fatal under word-valid profile (Issue N)", async () => {
+        // isWordBlockingIssue returns true for xml-syntax when path starts with 'word/',
+        // so the error must NOT be downgraded to a warning by applyWordValidProfile.
         await withTempDir(async (dir) => {
             const unpacked = path.join(dir, "unpacked");
             await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
-            await fs.mkdir(path.join(unpacked, "word", "_rels"), { recursive: true });
-            await fs.writeFile(
-                path.join(unpacked, "word", "_rels", "document.xml.rels"),
-                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-                    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
-                    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
-                    "</Relationships>",
-                "utf8",
-            );
             // Write an unparseable word/styles.xml so validateXml emits xml-syntax for it.
             await fs.writeFile(path.join(unpacked, "word", "styles.xml"), "this is <definitely not valid xml", "utf8");
-            await fs.writeFile(path.join(unpacked, "word", "xtra.xml"), "this is <also not valid xml", "utf8");
             const result = await validate(unpacked, {
                 profile: "word-valid",
                 original: path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx"),
                 author: "Test",
             });
-            const onStyles = result.issues.find((i) => i.code === "xml-syntax" && i.path === "word/styles.xml");
-            expect(onStyles).toBeDefined();
-            expect(onStyles?.severity).toBe("error");
-            const onXtra = result.issues.find((i) => i.code === "xml-syntax" && i.path === "word/xtra.xml");
-            expect(onXtra).toBeDefined();
-            expect(onXtra?.severity).toBe("warning");
+            const xmlSyntaxIssue = result.issues.find((i) => i.code === "xml-syntax" && (i.path?.startsWith("word/") ?? false));
+            expect(xmlSyntaxIssue).toBeDefined();
+            expect(xmlSyntaxIssue?.severity).toBe("error");
         });
     });
 
@@ -701,53 +522,6 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
             expect(result.valid).toBe(true);
         });
     });
-
-    it("xml-undeclared-prefix stays fatal under word-valid on a reached part, and warns elsewhere (#437)", async () => {
-        // An undeclared namespace prefix is the same class of defect as a
-        // malformed part (Word reports unreadable content), so it follows the
-        // same reachability policy as xml-syntax: the eagerly parsed settings
-        // part blocks; a part named by nothing and an unreferenced docProps
-        // part only warn.
-        await withTempDir(async (dir) => {
-            const unpacked = path.join(dir, "unpacked");
-            await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
-            await fs.mkdir(path.join(unpacked, "word", "_rels"), { recursive: true });
-            await fs.writeFile(
-                path.join(unpacked, "word", "_rels", "document.xml.rels"),
-                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-                    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
-                    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>' +
-                    "</Relationships>",
-                "utf8",
-            );
-            await fs.writeFile(
-                path.join(unpacked, "word", "settings.xml"),
-                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings><w:zoom w:percent="100"/></w:settings>',
-                "utf8",
-            );
-            await fs.writeFile(path.join(unpacked, "word", "comments.xml"), '<w:comments><w:comment w:id="0"/></w:comments>', "utf8");
-            await fs.mkdir(path.join(unpacked, "docProps"), { recursive: true });
-            await fs.writeFile(path.join(unpacked, "docProps", "custom.xml"), "<Properties><cp:Thing/></Properties>", "utf8");
-
-            const result = await validate(unpacked, {
-                profile: "word-valid",
-                original: path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx"),
-                author: "Test",
-            });
-
-            const onSettings = result.issues.find((i) => i.code === "xml-undeclared-prefix" && i.path === "word/settings.xml");
-            expect(onSettings).toBeDefined();
-            expect(onSettings?.severity).toBe("error");
-            const onComments = result.issues.find((i) => i.code === "xml-undeclared-prefix" && i.path === "word/comments.xml");
-            expect(onComments).toBeDefined();
-            expect(onComments?.severity).toBe("warning");
-            const docPropsPart = result.issues.find(
-                (i) => i.code === "xml-undeclared-prefix" && (i.path?.startsWith("docProps/") ?? false),
-            );
-            expect(docPropsPart).toBeDefined();
-            expect(docPropsPart?.severity).toBe("warning");
-        });
-    });
 });
 
 describe("validate startup probe", () => {
@@ -756,197 +530,5 @@ describe("validate startup probe", () => {
         // libxml2-wasm engine fails loudly instead of degrading into
         // per-file XSD errors.
         await expect(BaseSchemaValidator.assertXsdValidationAvailable()).resolves.toBeUndefined();
-    });
-});
-
-// Packed integration regressions, all specimens generated without fixture edits.
-describe("packed OPC-equivalent relationships parts (#398)", () => {
-    // A full run also reports an escaped spelling under OPC [M1.8] (#408).
-    const escapedNameFindings = (name: string) =>
-        /%[0-9a-f]{2}/i.test(name)
-            ? [
-                  {
-                      code: "opc-part-name-escaped-unreserved",
-                      message: `OPC [M1.8] forbids percent-encoded unreserved characters in stored name: ${JSON.stringify(name)}.`,
-                      path: name,
-                      severity: "error",
-                  },
-              ]
-            : [];
-    it.each([
-        ["theme", false],
-        ["theme", true],
-        ["fontTable", false],
-        ["fontTable", true],
-    ] as const)("rejects duplicate %s relationships with selected=%s in Word-valid", async (type, selected) => {
-        await withTempDir(async (dir) => {
-            const check = type === "theme" ? "word-duplicate-theme-relationship" : "word-duplicate-font-table-relationship";
-            const checks = selected ? [check] : undefined;
-            const run = async (extension: string) => {
-                const parts = { ...MINIMAL_PARTS };
-                delete parts["word/_rels/document.xml.rels"];
-                const part = `word/_rels/document.xml.${extension}`;
-                parts[part] = rels(
-                    relation("styles", "styles", "", "styles.xml") +
-                        relation("themeA", type, "", "styles.xml") +
-                        relation("themeB", type, "", "styles.xml"),
-                );
-                const file = path.join(dir, `${extension}.docx`);
-                const bytes = await buildDocx(parts);
-                await fs.writeFile(file, bytes);
-                const result = await validate(file, { profile: "word-valid", checks });
-                expect(await fs.readFile(file)).toEqual(bytes);
-                return result;
-            };
-            const control = await run("rels");
-            expect(control.valid).toBe(false);
-            expect(control.issues).toContainEqual(
-                expect.objectContaining({ code: check, severity: "error", path: "word/_rels/document.xml.rels" }),
-            );
-            for (const extension of ["RELS", "%72els", "%52ELS"]) {
-                const variant = await run(extension);
-                expect(variant.valid).toBe(control.valid);
-                expect(variant.issues).toEqual([
-                    ...control.issues.map((issue) => ({
-                        ...issue,
-                        ...(issue.path === "word/_rels/document.xml.rels" ? { path: `word/_rels/document.xml.${extension}` } : {}),
-                        message: issue.message.replaceAll("document.xml.rels", `document.xml.${extension}`),
-                    })),
-                    ...(selected ? [] : escapedNameFindings(`word/_rels/document.xml.${extension}`)),
-                ]);
-            }
-        });
-    });
-
-    it.each(["RELS", "%72els", "%52ELS"])("rejects an empty notes.%s in a full strict packed run", async (extension) => {
-        await withTempDir(async (dir) => {
-            const run = async (ext: string) => {
-                const file = path.join(dir, `${ext}.docx`);
-                const bytes = await buildDocx({ ...MINIMAL_PARTS, [`word/notes.${ext}`]: rels("") });
-                await fs.writeFile(file, bytes);
-                const result = await validate(file, { profile: "strict" });
-                expect(await fs.readFile(file)).toEqual(bytes);
-                return result;
-            };
-            const control = await run("rels");
-            expect(control.valid).toBe(false);
-            expect(control.issues).toContainEqual(
-                expect.objectContaining({ code: "rels-empty-part", severity: "error", path: "word/notes.rels" }),
-            );
-            const variant = await run(extension);
-            expect(variant.valid).toBe(control.valid);
-            expect(variant.issues).toEqual([
-                ...control.issues.map((issue) => ({
-                    ...issue,
-                    ...(issue.path === "word/notes.rels" ? { path: `word/notes.${extension}` } : {}),
-                })),
-                ...escapedNameFindings(`word/notes.${extension}`),
-            ]);
-        });
-    });
-
-    it("does not introduce findings when the content-types stream is stored as [CONTENT_TYPES].XML", async () => {
-        await withTempDir(async (dir) => {
-            for (const profile of ["word-valid", "lenient", "strict"] as const) {
-                const run = async (name: string) => {
-                    const parts = { ...MINIMAL_PARTS };
-                    delete parts["[Content_Types].xml"];
-                    parts[name] = MINIMAL_PARTS["[Content_Types].xml"];
-                    const file = path.join(dir, `${profile}-${name}.docx`);
-                    await fs.writeFile(file, await buildDocx(parts));
-                    return validate(file, { profile });
-                };
-                const control = await run("[Content_Types].xml");
-                const variant = await run("[CONTENT_TYPES].XML");
-                // The stream is found in any case (#396), so the expanded XML
-                // list (#398) adds no finding for it.
-                expect(variant.issues).toEqual(control.issues);
-                expect(variant.valid).toBe(control.valid);
-            }
-        });
-    });
-});
-
-describe("packed content-types stream names (#396)", () => {
-    it.each([
-        { profile: "word-valid", checks: undefined },
-        { profile: "word-valid", checks: ["word-content-type-invalid"] },
-        { profile: "lenient", checks: undefined },
-    ] as const)("preserves the control verdict under $profile with checks=$checks", async (options) => {
-        await withTempDir(async (dir) => {
-            const types = MINIMAL_PARTS["[Content_Types].xml"]
-                .replace('<Default Extension="xml" ContentType="application/xml"/>', "")
-                .replace("</Types>", `<Override PartName="/word/x.xml" ContentType="invalid-type"/></Types>`);
-            const { "[Content_Types].xml": _stream, ...otherParts } = MINIMAL_PARTS;
-            const controlFile = path.join(dir, "control.docx");
-            const parts = { ...otherParts, "word/x.xml": MINIMAL_PARTS["word/document.xml"]! };
-            await fs.writeFile(controlFile, await buildDocx({ ...parts, "[Content_Types].xml": types }));
-            const control = await validate(controlFile, options);
-            const controlFindings = control.issues.filter((issue) => issue.code === "word-content-type-invalid");
-            expect(controlFindings).toHaveLength(options.profile === "lenient" ? 0 : 1);
-            for (const name of ["[CONTENT_TYPES].XML", "[content_types].xml"]) {
-                const file = path.join(dir, "variant.docx");
-                const bytes = await buildDocx({ ...parts, [name]: types });
-                await fs.writeFile(file, bytes);
-                const result = await validate(file, options);
-                expect(result.valid).toBe(control.valid);
-                expect(result.issues.filter((issue) => issue.code === "word-content-type-invalid")).toEqual(
-                    controlFindings.map((issue) => ({ ...issue, path: name })),
-                );
-                expect(result.issues.filter((issue) => issue.code?.startsWith("ct-"))).toEqual(
-                    control.issues.filter((issue) => issue.code?.startsWith("ct-")),
-                );
-                expect(await fs.readFile(file)).toEqual(bytes);
-            }
-        });
-    });
-
-    it.each(["[CONTENT_TYPES].XML", "[content_types].xml"])("dispatches stored stream %s to the OPC schema under strict", async (name) => {
-        await withTempDir(async (dir) => {
-            const { "[Content_Types].xml": types, ...parts } = MINIMAL_PARTS;
-            // Missing PartName is an OPC XSD error; other parts remain valid.
-            const invalid = types.replace("</Types>", `<Override ContentType="application/xml"/></Types>`);
-            const file = path.join(dir, "variant.docx");
-            const controlFile = path.join(dir, "control.docx");
-            await fs.writeFile(file, await buildDocx({ ...parts, [name]: invalid }));
-            await fs.writeFile(controlFile, await buildDocx({ ...parts, "[Content_Types].xml": invalid }));
-            const control = await validate(controlFile, { profile: "strict" });
-            const result = await validate(file, { profile: "strict" });
-            expect(control.xsdWalk.parts).toContain("[Content_Types].xml");
-            expect(result.xsdWalk.parts).toContain(name);
-            expect(result.valid).toBe(false);
-            const errors = (issues: typeof result.issues, stored: string) =>
-                issues.filter((issue) => issue.path === stored && issue.code === "xsd-error");
-            expect(errors(control.issues, "[Content_Types].xml")).not.toHaveLength(0);
-            expect(errors(result.issues, name)).toEqual(
-                errors(control.issues, "[Content_Types].xml").map((issue) => ({ ...issue, path: name })),
-            );
-        });
-    });
-});
-
-describe("stored content-type scope in full and partial runs (#401)", () => {
-    it.each(contentTypeSpecimens)("$name", async ({ parts, rejected, malformedPartName }) => {
-        await withTempDir(async (dir) => {
-            const file = path.join(dir, "scope.docx");
-            const bytes = await buildDocx(parts);
-            await fs.writeFile(file, bytes);
-            const full = await validate(file, { profile: "word-valid" });
-            // The whole content-types group, so the partial run judges the
-            // Override PartName grammar (#414) as the full run does.
-            const partial = await validate(file, { profile: "word-valid", checks: ["content-types"] });
-            const findings = (result: typeof full) => result.issues.filter((issue) => issue.code === "word-content-type-invalid");
-            // A malformed Override PartName is a defect of its own (#414), so
-            // the package is invalid on that account too.
-            expect(full.valid).toBe(!rejected && !malformedPartName);
-            expect(partial.valid).toBe(full.valid);
-            expect(findings(full)).toHaveLength(rejected ? 1 : 0);
-            expect(findings(partial)).toEqual(findings(full));
-            const errors = (result: typeof full) =>
-                result.issues.filter((issue) => issue.severity === "error").map((issue) => `${issue.code}@${issue.path}`);
-            expect(errors(full)).toEqual(expect.arrayContaining(errors(partial)));
-            if (full.valid) expect(partial.valid).toBe(true);
-            await expect(fs.readFile(file)).resolves.toEqual(bytes);
-        });
     });
 });

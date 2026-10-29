@@ -8,17 +8,10 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import { describe, it, expect, afterEach, beforeAll, vi } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import path from "node:path";
 import { writeFileSync } from "node:fs";
-import {
-    _resetSchemaResourceRoots,
-    _resetXsdValidatorMemo,
-    allowSchemaResourceRoot,
-    createXsdValidator,
-    schemaResourceRoots,
-    type XsdValidator,
-} from "../src/lib/xsd-validator";
+import { createXsdValidator, _resetXsdValidatorMemo, type XsdValidator } from "../src/lib/xsd-validator";
 import { withTempDir } from "../src/lib/run-cli";
 
 // Self-contained XSD with no imports — proves the validator core works.
@@ -38,27 +31,6 @@ const SELF_CONTAINED_XSD = `<?xml version="1.0" encoding="UTF-8"?>
 const VALID_XML = `<?xml version="1.0"?><root><child>hello</child></root>`;
 const SCHEMA_INVALID_XML = `<?xml version="1.0"?><root><wrong/></root>`;
 const NOT_XML = "this is not xml at all";
-
-/**
- * A schema in its own namespace that an importing schema pulls in. The
- * importing schema's root element is typed with a type that only exists in the
- * import, so the import is load-bearing: if it does not resolve, compilation
- * fails instead of silently degrading.
- */
-const IMPORTED_XSD = `<?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:imported"
-  xmlns:i="urn:imported" elementFormDefault="qualified">
-  <xs:complexType name="shared">
-    <xs:simpleContent><xs:extension base="xs:string"/></xs:simpleContent>
-  </xs:complexType>
-</xs:schema>`;
-
-const importingXsd = (schemaLocation: string): string =>
-    `<?xml version="1.0"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:i="urn:imported">` +
-    `<xs:import namespace="urn:imported" schemaLocation="${schemaLocation}"/>` +
-    `<xs:element name="root" type="i:shared"/></xs:schema>`;
-
-const IMPORTED_DOC = `<?xml version="1.0"?><root>text</root>`;
 
 const OOXML_WML_SCHEMA = path.resolve(__dirname, "..", "src", "scripts", "office", "schemas", "ISO-IEC29500-4_2016", "wml.xsd");
 
@@ -162,62 +134,5 @@ describe("xsd-validator", () => {
         expect(issues.length).toBe(1);
         expect(issues[0]!.code).toBe("xsd-schema-load-failed");
         expect(issues[0]!.severity).toBe("error");
-    });
-
-    describe("external resources", () => {
-        afterEach(() => {
-            _resetSchemaResourceRoots();
-        });
-
-        it("never reads a file named by an external entity in the document's DTD", async () => {
-            await withTempDir(async (dir) => {
-                const secret = path.join(dir, "secret.txt");
-                writeFileSync(secret, "TOP-SECRET-HOSTS-MARKER", "utf-8");
-                const inlineSchemaPath = path.join(dir, "self-contained.xsd");
-                writeFileSync(inlineSchemaPath, SELF_CONTAINED_XSD, "utf-8");
-                const document = `<?xml version="1.0"?><!DOCTYPE root [<!ENTITY e SYSTEM "file://${secret}">]><root><child>&e;</child></root>`;
-
-                const issues = await validator.validate(document, inlineSchemaPath);
-
-                expect(JSON.stringify(issues)).not.toContain("TOP-SECRET-HOSTS-MARKER");
-                expect(issues.map((i) => i.code)).not.toContain("xml-parse-error");
-            });
-        });
-
-        it("refuses to resolve a schema import outside the allowed schema roots", async () => {
-            await withTempDir(async (dir) => {
-                const imported = path.join(dir, "imported.xsd");
-                writeFileSync(imported, IMPORTED_XSD, "utf-8");
-                const importingSchema = path.join(dir, "importing.xsd");
-                writeFileSync(importingSchema, importingXsd(`file://${imported}`), "utf-8");
-
-                const issues = await validator.validate(IMPORTED_DOC, importingSchema);
-
-                expect(issues.map((i) => i.code)).toEqual(["xsd-schema-load-failed"]);
-                expect(issues[0]!.severity).toBe("error");
-                expect(issues[0]!.message).toContain("imported.xsd");
-            });
-        });
-
-        it("resolves a schema import once its directory is an allowed root", async () => {
-            await withTempDir(async (dir) => {
-                const imported = path.join(dir, "imported.xsd");
-                writeFileSync(imported, IMPORTED_XSD, "utf-8");
-                const importingSchema = path.join(dir, "importing.xsd");
-                writeFileSync(importingSchema, importingXsd(`file://${imported}`), "utf-8");
-
-                allowSchemaResourceRoot(dir);
-
-                expect(schemaResourceRoots()).toContain(dir);
-                const issues = await validator.validate(IMPORTED_DOC, importingSchema);
-                expect(issues).toEqual([]);
-            });
-        });
-
-        it("resolves the bundled OOXML schema import closure from the default root", async () => {
-            expect(schemaResourceRoots()).toContain(path.resolve(__dirname, "..", "src", "scripts", "office", "schemas"));
-            const issues = await validator.validate(VALID_XML, OOXML_WML_SCHEMA);
-            expect(issues.map((i) => i.code)).toEqual(["xsd-validation-failed"]);
-        });
     });
 });

@@ -27,9 +27,9 @@
  * - Removes proofErr elements (spell/grammar markers that block merging)
  */
 
+import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import { readXmlPart, writeXmlPart, type DecodedXmlPart } from "../../../lib/xml-part-io";
 import { parseXml, serializeXml } from "../../../lib/xml-helpers";
 
 export interface MergeRunsResult {
@@ -44,19 +44,15 @@ export interface MergeRunsResult {
 export async function mergeRuns(inputDir: string): Promise<MergeRunsResult> {
     const docXml = path.join(inputDir, "word", "document.xml");
 
-    let part: DecodedXmlPart | undefined;
+    let text: string;
     try {
-        part = await readXmlPart(docXml);
+        text = await fs.readFile(docXml, "utf8");
     } catch {
         return { count: 0, message: `Error: ${docXml} not found` };
     }
-    if (part === undefined) {
-        // An encoding we cannot decode: leave the part's bytes untouched.
-        return { count: 0, message: "Merged 0 runs" };
-    }
 
     try {
-        const dom = parseXml(part.text);
+        const dom = parseXml(text);
         const root = dom.documentElement;
         if (!root) {
             return { count: 0, message: "Error: empty document" };
@@ -78,7 +74,7 @@ export async function mergeRuns(inputDir: string): Promise<MergeRunsResult> {
             mergeCount += mergeRunsIn(container);
         }
 
-        await writeXmlPart(docXml, dom, part);
+        await fs.writeFile(docXml, serializeXml(dom, "UTF-8"), "utf8");
         return { count: mergeCount, message: `Merged ${mergeCount} runs` };
     } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
@@ -98,26 +94,20 @@ function matchesTag(node: Element, tag: string): boolean {
     return name === tag || name.endsWith(`:${tag}`);
 }
 
-/**
- * `root` and its descendant elements named `tag`, in document order. The walk
- * keeps its own stack, children pushed last first, so a part nested deeper
- * than the call stack is walked as a shallow one is (#1139).
- */
 function findElements(root: Node, tag: string): Element[] {
     const results: Element[] = [];
-    const stack: Node[] = [root];
-    while (stack.length > 0) {
-        const node = stack.pop()!;
-        if (node.nodeType !== ELEMENT_NODE) {
-            continue;
+    const traverse = (node: Node): void => {
+        if (node.nodeType === ELEMENT_NODE) {
+            const el = node as Element;
+            if (matchesTag(el, tag)) {
+                results.push(el);
+            }
+            for (let child = node.firstChild; child; child = child.nextSibling) {
+                traverse(child);
+            }
         }
-        if (matchesTag(node as Element, tag)) {
-            results.push(node as Element);
-        }
-        for (let child = node.lastChild; child; child = child.previousSibling) {
-            stack.push(child);
-        }
-    }
+    };
+    traverse(root);
     return results;
 }
 
