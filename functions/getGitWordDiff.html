@@ -19,7 +19,7 @@
 post-<code>@@</code> content lines on success, <code>null</code> on git failure. Mirrors
 <code>_get_git_word_diff</code> — first attempt uses <code>--word-diff-regex=.</code> (per-char
 granularity); if that yields nothing, retries without the regex (line
-granularity).</p>
+granularity). The retry gets only what is left of <code>GIT_DIFF_BUDGET_MS</code>.</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -28,7 +28,7 @@ granularity).</p>
 <li><span><span class="tsd-kind-parameter">modifiedText</span>: <span class="tsd-signature-type">string</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/c0a587825db67db03cf9466e4b9aad50eaf7d912/src/scripts/office/validators/redlining.ts#L264">scripts/office/validators/redlining.ts:264</a></li></ul></aside></div></li></ul></section></div>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/6d0357ddf1acad91777b4a99730bacae36ba0826/src/scripts/office/validators/redlining.ts#L277">src/scripts/office/validators/redlining.ts:277</a></li></ul></aside></div></li></ul></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

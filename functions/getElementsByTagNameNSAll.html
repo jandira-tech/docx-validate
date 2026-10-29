@@ -24,6 +24,12 @@ localName instead.</p>
 get a flat array, not a live <code>NodeList</code>.</p>
 <p>Use <code>&quot;*&quot;</code> as the namespace to match across all namespaces (mirrors
 <code>Document.getElementsByTagName('*')</code>).</p>
+<p>A query rooted at a Document reads an index of its elements once a second
+query finds the document unchanged since the first: a full DOCX run asks
+the same main document for one element name after another, hundreds of
+walks that dominated a 2 MB document's validation time. A caller that
+changes the document between queries keeps the plain walk instead of
+rebuilding the index for each one.</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -33,7 +39,7 @@ get a flat array, not a live <code>NodeList</code>.</p>
 <li><span><span class="tsd-kind-parameter">localName</span>: <span class="tsd-signature-type">string</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Element</span><span class="tsd-signature-symbol">[]</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/c0a587825db67db03cf9466e4b9aad50eaf7d912/src/lib/xml-helpers.ts#L163">lib/xml-helpers.ts:163</a></li></ul></aside></div></li></ul></section></div>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/6d0357ddf1acad91777b4a99730bacae36ba0826/src/lib/xml-helpers.ts#L393">src/lib/xml-helpers.ts:393</a></li></ul></aside></div></li></ul></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

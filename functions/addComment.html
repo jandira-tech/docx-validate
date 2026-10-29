@@ -17,8 +17,23 @@
 <div class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Add a comment (or reply) to an unpacked DOCX.</p>
 <p>On success, returns the generated <code>paraId</code> and a human-readable status
-message. On failure (missing <code>word/</code> directory, missing parent comment),
-returns <code>paraId = &quot;&quot;</code> and a message starting with <code>Error:</code>.</p>
+message. A first comment relates the comments parts from the stored main
+document's own relationships part — the part <code>_rels/.rels</code> names, found under
+OPC equivalence like the main document itself, whatever spelling either is
+stored under (#906, #946). On failure (missing <code>word/</code> directory, missing
+parent comment, a part this edit would write that is stored in an encoding
+this tool cannot decode (#879) or is not well-formed XML (#905), a part this
+edit would write whose path runs through, or ends at, a symbolic link (#939),
+a stored comment part whose document element is not its expected root
+element, by namespace and local name — whatever prefix it binds (#930, #953),
+or, for a first comment, missing <code>[Content_Types].xml</code>, an <code>_rels/.rels</code> that
+cannot be decoded or parsed, an <code>_rels/.rels</code> naming no non-External
+<code>officeDocument</code> relationship, or an <code>officeDocument</code> target that, resolved
+as the read model resolves it (<code>\</code> as <code>/</code>, the query and fragment dropped,
+a climb past the package root stopped at the root (#986), the stored part
+matched under OPC part-name equivalence), is a URI or names no stored part —
+the conventional <code>word/document.xml</code> included (#906, #919)), returns
+<code>paraId = &quot;&quot;</code> and a message starting with <code>Error:</code>.</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -26,7 +41,7 @@ returns <code>paraId = &quot;&quot;</code> and a message starting with <code>Err
 <li><span><span class="tsd-kind-parameter">opts</span>: <a href="../interfaces/AddCommentOptions.html" class="tsd-signature-type tsd-kind-interface">AddCommentOptions</a></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/AddCommentResult.html" class="tsd-signature-type tsd-kind-interface">AddCommentResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/c0a587825db67db03cf9466e4b9aad50eaf7d912/src/scripts/comment.ts#L338">scripts/comment.ts:338</a></li></ul></aside></div></li></ul></section></div>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/6d0357ddf1acad91777b4a99730bacae36ba0826/src/scripts/comment.ts#L731">src/scripts/comment.ts:731</a></li></ul></aside></div></li></ul></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

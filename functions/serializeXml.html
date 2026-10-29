@@ -20,7 +20,10 @@
 and is currently advisory: <code>@xmldom</code> always emits UTF-16 JS strings and
 leaves byte-encoding to the caller (write the result with <code>fs.writeFile(..., 'utf8')</code>
 unless you have a reason to do otherwise). When <code>encoding</code> is supplied
-we prepend an XML declaration that names it, like Python does.</p>
+we prepend an XML declaration that names it, like Python does — and when
+the document already carries a declaration, its encoding pseudo-attribute
+is rewritten to name the requested encoding, since the returned string is
+what the caller will store or re-parse as that encoding.</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -29,7 +32,7 @@ we prepend an XML declaration that names it, like Python does.</p>
 <li><span><code class="tsd-tag">Optional</code><span class="tsd-kind-parameter">encoding</span>: <span class="tsd-signature-type">string</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/c0a587825db67db03cf9466e4b9aad50eaf7d912/src/lib/xml-helpers.ts#L70">lib/xml-helpers.ts:70</a></li></ul></aside></div></li></ul></section></div>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/6d0357ddf1acad91777b4a99730bacae36ba0826/src/lib/xml-helpers.ts#L282">src/lib/xml-helpers.ts:282</a></li></ul></aside></div></li></ul></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

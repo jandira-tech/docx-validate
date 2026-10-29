@@ -16,17 +16,28 @@
 <div class="tsd-signature tsd-anchor-link" id="containrelationshiptarget"><span class="tsd-kind-call-signature">containRelationshipTarget</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">unpackedDir</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">resolvedPath</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span><a href="#containrelationshiptarget" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
 <div class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Containment check for relationship targets resolved from untrusted OOXML
-parts (CWE-22). Two layers:</p>
+parts (CWE-22). Two layers, and the canonical one decides (#594):</p>
 <ol>
-<li>Lexical: the resolved path must stay under <code>unpackedDir</code>
-(<code>path.relative</code> must not escape via <code>..</code> or go absolute).</li>
-<li>Symlinks: a purely lexical check is defeated by a symlink inside the
-unpacked tree pointing outward (<code>link/secret</code> where <code>link</code> → <code>/etc</code>).
-The deepest EXISTING ancestor of the target is resolved with
-<code>realpathSync</code> and re-checked; non-existent trailing components cannot
-change the verdict (callers report missing targets as broken anyway).</li>
+<li>Lexical: the resolved path, as spelled, must stay under <code>unpackedDir</code>
+(<code>path.relative</code> must not escape via <code>..</code> or go absolute). This judges
+the spellings as passed, so on a case-insensitive volume it reads an
+in-root target spelled unlike the root as an escape — it is a filter,
+never the verdict, while layer 2 can run.</li>
+<li>Symlinks and case: a purely lexical check is defeated by a symlink
+inside the unpacked tree pointing outward (<code>link/secret</code> where <code>link</code>
+→ <code>/etc</code>), and blind to spelling: Node's JS <code>realpathSync</code> keeps the
+case a path is written in, so only <code>realpathSync.native</code> reports the
+on-disk case (#587). The root is canonicalized and the deepest
+EXISTING ancestor of the target is resolved with <code>realpathSync.native</code>
+and re-checked against it: a target whose canonical path lies under
+the canonical root is contained under any spelling; non-existent
+trailing components cannot change the verdict (callers report missing
+targets as broken anyway).</li>
 </ol>
-<p>Returns the original resolved path when contained, <code>null</code> on escape.
+<p>The lexical layer decides only when the realpath layer cannot run — when
+the root itself cannot be canonicalized, or when nothing along the target
+resolves — and it fails closed for a lexical escape in both cases.</p>
+<p>Returns the target as passed when contained, <code>null</code> on escape.
 Not race-resistant across the check and a later open — acceptable for a
 validator scanning an unpacked tree it controls; flagged for any future
 fd-based (<code>O_NOFOLLOW</code>) hardening.</p>
@@ -38,7 +49,7 @@ fd-based (<code>O_NOFOLLOW</code>) hardening.</p>
 <li><span><span class="tsd-kind-parameter">resolvedPath</span>: <span class="tsd-signature-type">string</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/c0a587825db67db03cf9466e4b9aad50eaf7d912/src/scripts/office/validators/base.ts#L238">scripts/office/validators/base.ts:238</a></li></ul></aside></div></li></ul></section></div>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/6d0357ddf1acad91777b4a99730bacae36ba0826/src/scripts/office/validators/base.ts#L371">src/scripts/office/validators/base.ts:371</a></li></ul></aside></div></li></ul></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
