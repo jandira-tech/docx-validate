@@ -788,7 +788,15 @@ export const wordPossiblyReadParts = async (context: ValidationContext, profile?
         // is a markup-compatibility clone, which lifts a relationship inside a
         // selected branch or a processed wrapper to a direct child (#1158).
         const view = relationshipsXml(context, name, profile);
-        const readable = new Set(view?.ok ? getRelationshipChildren(view.document).map(relationshipKey) : []);
+        // An external relationship names nothing, so it never stands for an
+        // internal twin with its Id, Type and Target (#1161).
+        const readable = new Set(
+            view?.ok
+                ? getRelationshipChildren(view.document)
+                      .filter((child) => child.getAttribute("TargetMode") !== "External")
+                      .map(relationshipKey)
+                : [],
+        );
         for (const relationship of getElementsByTagNameNSAll(parsed.document, "*", "Relationship")) {
             if (relationship.getAttribute("TargetMode") === "External") {
                 continue;
@@ -827,7 +835,7 @@ const schemeTargetPart = (lookup: (partName: string) => string | undefined, base
 
 /**
  * A relationship's identity across a stored part and its markup-compatibility
- * clone. `TargetMode` is left out: an external relationship names nothing.
+ * clone. `TargetMode` is left out: only internal relationships are keyed.
  */
 const relationshipKey = (relationship: Element): string =>
     JSON.stringify(["Id", "Type", "Target"].map((attribute) => relationship.getAttribute(attribute)));

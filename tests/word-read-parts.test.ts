@@ -2509,6 +2509,20 @@ describe("wordPossiblyReadParts (#1116, #1125)", () => {
         expect(await named(parts)).toEqual(READ.map(canonicalPartName).sort());
     });
 
+    // An external relationship names nothing, so an unselected internal twin
+    // with its Id, Type and Target is not the relationship the read model
+    // judged and names its part (#1161 Codex P1).
+    it("lists an unused header an unselected internal twin of a read external relationship names (#1158)", async () => {
+        const parts = wrapRelationship(
+            withHeaders() as Record<string, string>,
+            DOCUMENT_RELS,
+            "rIdH",
+            (read) => `${read.replace("/>", ' TargetMode="External"/>')}${unselectedTwin(read)}`,
+        );
+        expect(parts[DOCUMENT_RELS]).toContain('TargetMode="External"');
+        expect(await named(parts)).toContain(HEADER1);
+    });
+
     // The match is by attributes in the package-relationships namespace: a
     // foreign twin of a read relationship still names its part (#1135).
     it("lists an unused header a foreign-namespace twin of a read relationship names (#1135, #1158)", async () => {
