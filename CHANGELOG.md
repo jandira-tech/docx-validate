@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.54.0-rc.0] — 2026-10-29
+
+Changes since `v0.53.0-rc.1` (2026-10-15), consolidated in [#1169](https://github.com/jandira-tech/docx-validate/pull/1169). This prerelease is published under npm's `next` tag; it does not advance `latest`.
+
+- Refuse an archive whose central directory stores a name that leaves the output directory, a folder entry or a record a later entry shadows included ([#676](https://github.com/jandira-tech/docx-validate/pull/676)). JSZip keeps no `unsafeOriginalName` for a folder entry, and keys its view by the resolved name, so `unpack` and the redlining staging now pass the stored names to `extractZipEntries`, which refuses any that leave the directory before the first write.
+- Key only internal relationships in #1158's markup-compatibility view ([#1161](https://github.com/jandira-tech/docx-validate/pull/1161)). An external relationship names nothing, so it no longer stands for an unselected internal twin with the same `Id`, `Type` and `Target`: that twin names its part in `wordPossiblyReadParts` again.
 - Pin the two scopes #1155 changed that no row held ([#1162](https://github.com/jandira-tech/docx-validate/issues/1162)). Tests only. Review 1156 F2 found the gaps; #1164 fixed its F1.
     - `mce-malformed` in a related footnotes part whose only reference sits in a used header warns, in a full and a `--checks` run, and blocks when the body references the part. Session 86 (s86c) showed Word both.
     - `wordPossiblyReadParts` does not list a reached glossary's related comments, footnotes or endnotes part whose only reference sits in the glossary's used header, and lists it when the docPartBody references it. An integration row has `mce-must-understand` warn in the first comments part and block in the second. Session 86 (s86b) showed Word both.
