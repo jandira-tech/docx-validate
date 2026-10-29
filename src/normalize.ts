@@ -32,6 +32,7 @@ import { unpack } from "./scripts/office/unpack";
 import { pack } from "./scripts/office/pack";
 import { mergeRuns } from "./scripts/office/helpers/merge-runs";
 import { withTempDir } from "./lib/run-cli";
+import { assertStepOk } from "./lib/package-step-error";
 
 export type NormalizeResult = {
     bytes: Uint8Array;
@@ -50,7 +51,7 @@ export class Normalize {
             await writeFile(inputPath, bytes);
 
             const unpackedDir = path.join(dir, "unpacked");
-            await unpack(inputPath, unpackedDir);
+            assertStepOk("Normalize", "unpack", await unpack(inputPath, unpackedDir), dir);
 
             // Canonical-form passes. `mergeRuns` is the one we always apply.
             // `simplifyRedlines` requires an author identity and isn't
@@ -59,7 +60,7 @@ export class Normalize {
             const mergeResult = await mergeRuns(unpackedDir);
 
             const outPath = path.join(dir, "out.docx");
-            await pack(unpackedDir, outPath);
+            assertStepOk("Normalize", "pack", await pack(unpackedDir, outPath), dir);
             const outBuffer = await readFile(outPath);
             const outBytes = new Uint8Array(outBuffer);
 

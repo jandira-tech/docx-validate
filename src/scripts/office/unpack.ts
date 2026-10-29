@@ -23,6 +23,11 @@
  * - Merges adjacent runs with identical formatting (DOCX only)
  * - Simplifies adjacent tracked changes from same author (DOCX only)
  *
+ * Keeps raw JSZip names rather than the validator's central-keyed view (#469).
+ * In particular, flag-less CP437 `caf\x82.xml` extracts as `caf�.xml` under
+ * JSZip's default UTF-8 decoding, not the validator's `café.xml` (#480).
+ * Directory validation of that extracted tree sees `caf�.xml` too.
+ *
  * CLI:
  *   tsx unpack.ts <office_file> <output_dir> [--merge-runs true|false] [--simplify-redlines true|false]
  */
@@ -34,8 +39,10 @@ import { Command } from "commander";
 import JSZip from "jszip";
 
 import { commanderExitCode, runCli } from "../../lib/run-cli";
+import { readXmlPart, writeXmlText } from "../../lib/xml-part-io";
 import { parseXml, prettyXml } from "../../lib/xml-helpers";
-import { extractZipEntries } from "../../lib/zip-path";
+import { zipCentralDirectoryEntries } from "../../lib/zip-central-directory";
+import { escapeControlCharacters, extractZipEntries } from "../../lib/zip-path";
 import { mergeRuns } from "./helpers/merge-runs";
 import { simplifyRedlines } from "./helpers/simplify-redlines";
 
@@ -87,20 +94,31 @@ export async function unpack(inputFile: string, outputDir: string, opts: UnpackO
     }
 
     try {
-        await fs.mkdir(outputPath, { recursive: true });
+        // The first folder this call creates, if any: a failed extraction
+        // removes it, so the caller finds the file system as it was (#675).
+        const createdOutput = await fs.mkdir(outputPath, { recursive: true });
+        const removeCreatedOutput = async (): Promise<void> => {
+            if (createdOutput !== undefined) await fs.rm(createdOutput, { recursive: true, force: true });
+        };
 
         const buf = await fs.readFile(inputPath);
         let zip: JSZip;
         try {
             zip = await JSZip.loadAsync(buf);
         } catch {
+            await removeCreatedOutput();
             return {
                 ok: false,
                 message: `Error: ${inputFile} is not a valid Office file`,
             };
         }
 
-        await extractAll(zip, outputPath);
+        try {
+            await extractAll(zip, outputPath, buf);
+        } catch (err) {
+            await removeCreatedOutput();
+            throw err;
+        }
 
         const xmlFiles = await collectXmlFiles(outputPath);
         for (const xmlFile of xmlFiles) {
@@ -133,11 +151,17 @@ export async function unpack(inputFile: string, outputDir: string, opts: UnpackO
         return { ok: true, message };
     } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        return { ok: false, message: `Error unpacking: ${msg}` };
+        // File-system errors quote the path an entry name built.
+        return { ok: false, message: `Error unpacking: ${escapeControlCharacters(msg)}` };
     }
 }
 
-const extractAll = (zip: JSZip, outputPath: string): Promise<void> => extractZipEntries(zip, outputPath);
+const extractAll = (zip: JSZip, outputPath: string, bytes: Uint8Array): Promise<void> =>
+    extractZipEntries(
+        zip,
+        outputPath,
+        zipCentralDirectoryEntries(bytes)?.map((entry) => entry.name),
+    );
 
 async function collectXmlFiles(root: string): Promise<string[]> {
     const out: string[] = [];
@@ -161,10 +185,14 @@ async function collectXmlFiles(root: string): Promise<string[]> {
 
 async function prettyPrintXml(xmlFile: string): Promise<void> {
     try {
-        const content = await fs.readFile(xmlFile, "utf8");
-        const dom = parseXml(content);
+        const part = await readXmlPart(xmlFile);
+        if (part === undefined) {
+            // An encoding we cannot decode: leave the part's bytes untouched.
+            return;
+        }
+        const dom = parseXml(part.text);
         const pretty = prettyXml(dom, "  ");
-        await fs.writeFile(xmlFile, pretty, "utf8");
+        await writeXmlText(xmlFile, pretty, part);
     } catch {
         // Match Python: silently skip files we cannot pretty-print.
     }
@@ -172,11 +200,17 @@ async function prettyPrintXml(xmlFile: string): Promise<void> {
 
 async function escapeSmartQuotes(xmlFile: string): Promise<void> {
     try {
-        let content = await fs.readFile(xmlFile, "utf8");
+        const part = await readXmlPart(xmlFile);
+        if (part === undefined) {
+            // An encoding we cannot decode: writing text decoded from it
+            // would corrupt the part, so leave its bytes untouched.
+            return;
+        }
+        let content = part.text;
         for (const [char, entity] of SMART_QUOTE_REPLACEMENTS) {
             content = content.split(char).join(entity);
         }
-        await fs.writeFile(xmlFile, content, "utf8");
+        await writeXmlText(xmlFile, content, part);
     } catch {
         // Match Python.
     }

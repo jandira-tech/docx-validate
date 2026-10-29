@@ -1,8 +1,11 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
+import { isContentTypesStreamName, canonicalPartName, normalizePartName } from "../../../lib/content-types";
 import type { Profile, ValidationIssue } from "../../../lib/types";
-import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXml } from "../../../lib/xml-helpers";
+import { glossaryTypedRelationshipTargets, wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
+import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXmlBytes } from "../../../lib/xml-helpers";
+import { contextFromDirectory } from "../package-context";
 
 const WORD_NAMESPACES = new Set([
     "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
@@ -70,27 +73,30 @@ export function severityClassFor(category: string): InventorySeverityClass {
 interface RepairPlanGroup {
     path?: string;
     code: string;
-    action: string;
-    supported: boolean;
     count: number;
+    /** Distinct manual guidance strings carried by the group's findings. */
+    actions: Set<string>;
+    /** Findings in the group with no manual guidance. */
+    unguided: number;
 }
 
 export async function collectDocxSemanticInventory(unpackedDir: string, profile: Profile = "lenient"): Promise<DocxSemanticInventory> {
     const inventory: MutableDocxSemanticInventory = { counters: new Map() };
     const files = await walkFiles(unpackedDir);
+    const styleParts = await judgedStylePartNames(unpackedDir, files, profile);
     for (const file of files) {
         const rel = path.relative(unpackedDir, file).split(path.sep).join("/");
-        if (!rel.endsWith(".xml") && !rel.endsWith(".rels")) {
+        if (!isContentTypesStreamName(rel) && !rel.endsWith(".xml") && !rel.endsWith(".rels")) {
             await collectPackageAsset(file, rel, inventory);
             continue;
         }
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(file, "utf-8"));
+            dom = parseXmlBytes(await fs.readFile(file));
         } catch {
             continue;
         }
-        collectXmlPart(rel, dom, inventory, profile);
+        collectXmlPart(rel, dom, inventory, profile, styleParts);
     }
     return { counters: new Map([...inventory.counters].sort(([a], [b]) => a.localeCompare(b))) };
 }
@@ -121,36 +127,69 @@ export function compareDocxSemanticInventories(before: DocxSemanticInventory, af
     ];
 }
 
-export function buildRepairPlanIssues(issues: readonly ValidationIssue[]): ValidationIssue[] {
+/**
+ * Summarize the same auto-repair run's observed outcomes. Groups key on the
+ * finding's (path, code) alone — never the guidance class — so a surviving
+ * finding always keeps its group's "none remain" line away: a `repair-plan`
+ * issue cannot sit beside findings carrying the same path and code (#648).
+ * The surviving findings supply the manual guidance, listed inside the one
+ * line when they differ. Counts decide whether a group cleared, partly
+ * cleared, or remains. This also captures indirect repairs and works for
+ * every format without a capability table.
+ */
+export function buildRepairPlanIssues(before: readonly ValidationIssue[], after: readonly ValidationIssue[]): ValidationIssue[] {
+    const beforeGroups = groupRepairIssues(before);
+    const afterGroups = groupRepairIssues(after);
+    return [...beforeGroups.values()].sort(compareRepairPlanGroups).map((group) => {
+        const survivors = afterGroups.get(groupKey(group.path, group.code));
+        const remaining = survivors?.count ?? 0;
+        // New findings may increase a group; never report a negative clearance.
+        const cleared = Math.max(0, group.count - remaining);
+        const actions = [...(survivors?.actions ?? [])].sort();
+        const unguided = survivors?.unguided ?? 0;
+        const guidance =
+            remaining === 0
+                ? ""
+                : actions.length === 0
+                  ? " No manual repair guidance is available."
+                  : ` Fix manually: ${actions.join("; ")}.` +
+                    (unguided > 0 ? " No manual repair guidance is available for the other remaining issue(s)." : "");
+        return {
+            severity: "info" as const,
+            path: group.path,
+            code: remaining === 0 ? "repair-plan" : cleared > 0 ? "repair-plan-partial" : "repair-plan-unavailable",
+            message: `Before repair found ${group.count} [${group.code}] issue(s). Auto-repair cleared ${cleared}; ${remaining} remain.${guidance}`,
+        };
+    });
+}
+
+function groupKey(partPath: string | undefined, code: string): string {
+    return `${partPath ?? ""}\u0000${code}`;
+}
+
+function groupRepairIssues(issues: readonly ValidationIssue[]): Map<string, RepairPlanGroup> {
     const groups = new Map<string, RepairPlanGroup>();
     for (const issue of issues) {
         if (issue.severity === "info") continue;
         const code = issue.code ?? "uncoded-validation-issue";
         const action = repairActionForIssue(issue);
-        const supported = action !== null;
-        const groupAction = action ?? "no automatic repair is registered; validation will report it again after repair if it remains";
-        const key = `${issue.path ?? ""}\u0000${code}\u0000${supported ? "1" : "0"}\u0000${groupAction}`;
+        const key = groupKey(issue.path, code);
         const existing = groups.get(key);
         if (existing) {
             existing.count += 1;
-            continue;
+            if (action === null) existing.unguided += 1;
+            else existing.actions.add(action);
+        } else {
+            groups.set(key, {
+                path: issue.path,
+                code,
+                count: 1,
+                actions: new Set(action === null ? [] : [action]),
+                unguided: action === null ? 1 : 0,
+            });
         }
-        groups.set(key, {
-            path: issue.path,
-            code,
-            action: groupAction,
-            supported,
-            count: 1,
-        });
     }
-    return [...groups.values()].sort(compareRepairPlanGroups).map((group) => ({
-        severity: "info" as const,
-        path: group.path,
-        code: group.supported ? "repair-plan" : "repair-plan-unavailable",
-        message:
-            `Before repair found ${group.count} [${group.code}] issue(s). ` +
-            (group.supported ? `Auto-repair will ${group.action}.` : `Auto-repair will not change them because ${group.action}.`),
-    }));
+    return groups;
 }
 
 async function collectPackageAsset(file: string, rel: string, inventory: MutableDocxSemanticInventory): Promise<void> {
@@ -159,23 +198,71 @@ async function collectPackageAsset(file: string, rel: string, inventory: Mutable
     addCounter(inventory, rel, "package asset", "part bytes", "byte(s)", stat.size);
 }
 
-function collectXmlPart(rel: string, dom: Document, inventory: MutableDocxSemanticInventory, profile: Profile): void {
+function collectXmlPart(
+    rel: string,
+    dom: Document,
+    inventory: MutableDocxSemanticInventory,
+    profile: Profile,
+    styleParts: ReadonlySet<string>,
+): void {
     if (rel.endsWith(".rels")) {
         collectRelationships(rel, dom, inventory);
         return;
     }
-    if (rel === "[Content_Types].xml") collectContentTypes(rel, dom, inventory);
+    if (isContentTypesStreamName(rel)) collectContentTypes(rel, dom, inventory);
     collectDocumentStructure(rel, dom, inventory);
     collectText(rel, dom, inventory);
     collectFormatting(rel, dom, inventory);
     collectInlineMarks(rel, dom, inventory);
     collectTableShape(rel, dom, inventory);
-    collectStyles(rel, dom, inventory);
+    collectStyles(rel, dom, inventory, styleParts);
     collectComments(rel, dom, inventory);
     collectTrackedChanges(rel, dom, inventory);
     if (profile === "strict") {
         collectSectionGeometry(rel, dom, inventory);
         collectImageShape(rel, dom, inventory);
+    }
+}
+
+/**
+ * Canonical names of the parts whose style definitions the inventory
+ * counts: the styles parts the main document and the reached glossaries
+ * relate, found by relationship exactly as the style checks find them
+ * (#688), so a related part stored under another name counts (#745). The
+ * main document's folder keeps the by-name fallback the checks keep, when
+ * no relationship names a stored part (#699), while a `styles.xml` that
+ * nothing relates counts nowhere — a glossary's unrelated `styles.xml`
+ * counted before, by name alone, although no style check judges it
+ * (#699). A package view that cannot be read keeps the historical name
+ * rule — counting every part named `styles.xml` — so a broken view never
+ * silences the counters on one side of a repair.
+ */
+async function judgedStylePartNames(unpackedDir: string, files: readonly string[], profile: Profile): Promise<ReadonlySet<string>> {
+    try {
+        const context = contextFromDirectory(unpackedDir);
+        const mainStyles = await wordTypedRelationshipTargets(context, new Set(["styles"]), profile);
+        const judged = new Set(mainStyles.map((target) => canonicalPartName(target.part)));
+        for (const target of await glossaryTypedRelationshipTargets(context, new Set(["styles"]), profile)) {
+            judged.add(canonicalPartName(target.part));
+        }
+        if (mainStyles.length === 0) {
+            const [firstMain] = await wordTypedRelationshipTargets(context, new Set(["officeDocument"]), profile);
+            const folder = firstMain === undefined ? "word" : canonicalPartName(path.posix.dirname(normalizePartName(firstMain.part)));
+            for (const file of files) {
+                const rel = path.relative(unpackedDir, file).split(path.sep).join("/");
+                if (path.posix.basename(rel) === "styles.xml" && canonicalPartName(path.posix.dirname(normalizePartName(rel))) === folder) {
+                    judged.add(canonicalPartName(rel));
+                }
+            }
+        }
+        return judged;
+    } catch {
+        const byName = new Set<string>();
+        for (const file of files) {
+            const rel = path.relative(unpackedDir, file).split(path.sep).join("/");
+            if (path.posix.basename(rel) === "styles.xml") byName.add(canonicalPartName(rel));
+        }
+        return byName;
     }
 }
 
@@ -450,8 +537,8 @@ function wordChildAttrSelf(elem: Element, attr: string): string | null {
     return elem.getAttributeNS(wordNamespace(elem), attr) ?? elem.getAttribute(`w:${attr}`) ?? elem.getAttribute(attr);
 }
 
-function collectStyles(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
-    if (!rel.endsWith("/styles.xml") && rel !== "word/styles.xml") return;
+function collectStyles(rel: string, dom: Document, inventory: MutableDocxSemanticInventory, styleParts: ReadonlySet<string>): void {
+    if (!styleParts.has(canonicalPartName(rel))) return;
     for (const ns of WORD_NAMESPACES) {
         const styles = getElementsByTagNameNSAll(dom, ns, "style");
         for (let i = 0; i < styles.length; i += 1) {
@@ -637,13 +724,17 @@ function compareCounters(a: DocxSemanticCounter, b: DocxSemanticCounter): number
 }
 
 function compareRepairPlanGroups(a: RepairPlanGroup, b: RepairPlanGroup): number {
-    return (a.path ?? "").localeCompare(b.path ?? "") || a.code.localeCompare(b.code) || a.action.localeCompare(b.action);
+    return (a.path ?? "").localeCompare(b.path ?? "") || a.code.localeCompare(b.code);
 }
 
 function shortRelationshipType(type: string): string {
     return type.split("/").filter(Boolean).pop() ?? type;
 }
 
+/**
+ * Manual guidance only: a non-null action does not imply automatic support.
+ * The planner groups findings by this text and shows it for remaining issues.
+ */
 function repairActionForIssue(issue: ValidationIssue): string | null {
     switch (issue.code) {
         case "ws-missing-preserve":
@@ -651,8 +742,9 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "rels-empty-part":
             return "delete empty relationship sidecar parts that contain no relationships";
         case "id-durable-overflow":
-        case "id-durable-decimal":
             return "rewrite invalid durableId values to in-range values";
+        case "id-durable-decimal":
+            return "write the numbering.xml w16cid:durableId as a decimal number";
         case "id-paraid-overflow":
             return "rewrite over-cap paraId values and propagate the remap to threaded-comment references";
         case "id-textid-overflow":
@@ -664,23 +756,26 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "textid-missing-element":
             return "stamp missing w14:textId anchors on affected paragraphs or table rows";
         case "style-reference-undefined":
-            return "inject canonical definitions for known missing style IDs and leave unknown style IDs reported";
+            return "define the missing styles in the judged styles part or correct references to existing style IDs";
         case "style-default-missing":
             return "inject canonical implied-default Word style definitions";
         case "comment-thread-commentid-paraid-orphan":
-        case "comment-thread-commentid-missing-paraid":
-        case "comment-thread-commentid-missing-durableid":
         case "comment-thread-durableid-orphan":
-        case "comment-thread-durableid-missing":
             return "align commentsIds/commentsExtensible IDs with comments.xml when the target comment thread is unambiguous";
+        case "comment-thread-commentid-missing-paraid":
+            return "add the schema-required w16cid:paraId attribute to the w16cid:commentId element";
+        case "comment-thread-commentid-missing-durableid":
+            return "add the schema-required w16cid:durableId attribute to the w16cid:commentId element";
+        case "comment-thread-durableid-missing":
+            return "add the schema-required w16cex:durableId attribute to the w16cex:commentExtensible element";
         case "word-drawing-scalar-whitespace":
             return "trim leading and trailing whitespace around scalar DrawingML values";
         case "word-drawing-arc-radius":
-            return "replace non-integer a:arcTo wR and hR radii with integers";
+            return "replace invalid a:arcTo wR and hR radii with non-negative integers";
         case "word-empty-drawing":
             return "remove the empty w:drawing or give it a wp:anchor or wp:inline child";
         case "word-drawing-extent-negative":
-            return "replace each negative wp:extent cx or cy with a positive integer";
+            return "replace each negative wp:extent cx or cy with a non-negative integer";
         case "word-anchor-missing-attribute":
             return "add the missing locked, layoutInCell, or allowOverlap attribute on wp:anchor";
         case "word-position-offset-and-align":
@@ -688,7 +783,7 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "word-sdt-id-empty":
             return "set the empty w:sdtPr/w:id w:val to a number";
         case "word-attached-toolbar-utf8":
-            return "replace each EF BF BD sequence in the attached toolbar that wne:toolbarData references";
+            return "restore the original toolbar bytes in place of each EF BF BD replacement sequence in the part that wne:toolbarData references";
         case "word-row-without-cell":
             return "remove the table row that has no w:tc, or add a cell to it";
         case "word-cell-ends-with-table":
@@ -697,6 +792,8 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "remove the w:lvlPicBulletId that names no w:numPicBullet, or add that picture bullet";
         case "word-footnote-reference-missing":
             return "remove the w:footnoteReference whose id matches no w:footnote, or add that footnote";
+        case "word-endnote-reference-missing":
+            return "remove the w:endnoteReference whose id matches no w:endnote, or add that endnote";
         case "word-textbox-deleted-text":
             return "remove w:delText and w:delInstrText that sit in the text box outside a w:del; mc:Fallback text boxes and a w:del inside the text box are not this defect";
         case "word-move-from-deleted-text":
@@ -708,7 +805,11 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "word-text-contains-paragraph":
             return "move w:p elements out of the w:t text run that contains them";
         case "word-hyperlink-relationship":
-            return "point the w:hyperlink r:id at an external hyperlink relationship, or remove the r:id";
+            return "point the w:hyperlink r:id at a relationship whose Type is the Transitional or ISO Strict hyperlink relationship URI with TargetMode External, or remove the r:id";
+        case "word-header-footer-relationship":
+            return "set the w:headerReference or w:footerReference r:id to a non-empty id naming a relationship whose Type is the Transitional or ISO Strict header (respectively footer) relationship URI, adding such a relationship to the part's relationships when none exists";
+        case "word-part-reference-relationship":
+            return "point the c:chart r:id, dgm:relIds r:dm or o:OLEObject r:id at a relationship whose Type is the Transitional or ISO Strict chart, diagramData, package or oleObject relationship URI the element reads, adding such a relationship to the part's relationships when none exists";
         case "word-duplicate-theme-relationship":
             return "keep a single theme relationship in the part's .rels file";
         case "word-duplicate-font-table-relationship":
@@ -717,6 +818,14 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "keep a single web settings relationship in the part's .rels file";
         case "word-duplicate-settings-relationship":
             return "keep a single settings relationship in the part's .rels file";
+        case "word-duplicate-styles-relationship":
+            return "keep a single styles relationship in the part's .rels file";
+        case "word-duplicate-numbering-relationship":
+            return "keep a single numbering relationship in the part's .rels file";
+        case "word-duplicate-endnotes-relationship":
+            return "keep a single endnotes relationship in the part's .rels file";
+        case "word-duplicate-footnotes-relationship":
+            return "keep a single footnotes relationship in the part's .rels file";
         default:
             return xsdRepairAction(issue);
     }
@@ -726,13 +835,13 @@ function xsdRepairAction(issue: ValidationIssue): string | null {
     if (issue.code !== "xsd-error" && issue.code !== "xsd-summary") return null;
     const message = issue.message;
     if (message.includes("}graphic': This element is not expected") || message.includes("}blipFill': This element is not expected")) {
-        return "insert missing inline-picture scaffolding required by WordprocessingML/DrawingML schemas";
+        return "supply the required DrawingML children in schema order for the reported anchor, inline drawing, or picture";
     }
     if (message.includes("Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}spPr")) {
         return "insert missing picture shape properties required by DrawingML schemas";
     }
     if (message.includes("}filetime': '' is not a valid value")) {
-        return "trim invalid whitespace from core document properties that Word expects as scalar values";
+        return "give the custom property a valid xs:dateTime value or remove/correct it";
     }
     return null;
 }

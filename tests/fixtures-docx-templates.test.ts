@@ -31,12 +31,16 @@
  *                     routinely emits these and the XML spec permits them).
  *                     Under the default lenient profile we silently strip
  *                     the BOM and the document validates as ok. Under the
- *                     strict profile we emit `xml-bom-leading` and reject.
+ *                     strict profile the BOM is still reported, but as a
+ *                     `warning` — a BOM never fails a document on its own.
  *                     Both cases are pinned below.
- *  - zipGeneration.docx → genuinely missing <Default Extension="png" .../>
- *                         in [Content_Types].xml. Real OOXML violation —
- *                         pin both `valid===false` and the `ct-undeclared-ext`
- *                         code as a positive-test for that detector.
+ *  - zipGeneration.docx → declares its only media part by an exact
+ *                         <Override PartName="/word/media/image1.png"/> and no
+ *                         png <Default>. OPC resolves Override first (ECMA-376
+ *                         Part 2 §10.1.2.4), so the part IS covered and Word
+ *                         opens the file cleanly; `ct-undeclared-ext` used to
+ *                         flag it (#208). Lenient now passes it; strict still
+ *                         rejects it for its paraId and style-default gaps.
  *  - macroEnabledTemplate.docm → skipped: validate() currently only handles
  *                                .docx/.pptx/.xlsx; .docm is structurally
  *                                identical to .docx but the suffix gate
@@ -66,13 +70,14 @@ const KNOWN_FAILURES_LENIENT: Record<string, ExpectedFailure> = {
     // are stricter than Microsoft's actual implementation. A future "lenient
     // tolerates Office sequence-order deviations" pass would unblock this.
     "office365.docx": { codes: ["xsd-summary"] },
-    "zipGeneration.docx": { codes: ["ct-undeclared-ext"] },
 };
 
 const KNOWN_FAILURES_STRICT: Record<string, ExpectedFailure> = {
-    // Strict additionally surfaces xml-bom-leading (the canonical strict-only check).
+    // Strict surfaces xml-bom-leading as a WARNING (a BOM is XML-legal), so the
+    // strict rejection of office365.docx comes from the XSD sequence-order
+    // deviation alone — see KNOWN_FAILURES_LENIENT.
     "office365.docx": { codes: ["xml-bom-leading", "xsd-summary"] },
-    "zipGeneration.docx": { codes: ["ct-undeclared-ext"] },
+    "zipGeneration.docx": { codes: ["paraid-missing-element", "style-default-missing"] },
 };
 
 const SKIP = new Set<string>([
@@ -90,7 +95,7 @@ const allFixtures = (await fs.readdir(FIXTURE_DIR))
 
 const validFixturesLenient = allFixtures.filter((f) => !KNOWN_FAILURES_LENIENT[f] && !SKIP.has(f));
 
-describe("docx-templates corpus — valid templates pass under default (lenient) profile", () => {
+describe("docx-templates corpus — valid templates pass under the default profile", () => {
     it.each(validFixturesLenient)("%s validates as ok", async (name) => {
         const result = await validate(path.join(FIXTURE_DIR, name));
         if (!result.valid) {
@@ -101,11 +106,20 @@ describe("docx-templates corpus — valid templates pass under default (lenient)
     });
 });
 
+describe("docx-templates corpus — media declared by Override (#208)", () => {
+    it.each(["lenient", "strict"] as const)("zipGeneration.docx carries no ct-undeclared-ext under %s", async (profile) => {
+        const result = await validate(path.join(FIXTURE_DIR, "zipGeneration.docx"), { profile });
+        expect(result.issues.map((i) => i.code)).not.toContain("ct-undeclared-ext");
+    });
+});
+
 describe("docx-templates corpus — known failures under lenient profile", () => {
     it.each(Object.keys(KNOWN_FAILURES_LENIENT).sort())("%s is rejected with the expected codes", async (name) => {
         const expected = KNOWN_FAILURES_LENIENT[name];
         if (!expected) throw new Error(`missing expectation for ${name}`);
-        const result = await validate(path.join(FIXTURE_DIR, name));
+        // Explicit lenient: the default profile is now `word-valid`, which
+        // downgrades these schema/relationship hygiene findings to warnings.
+        const result = await validate(path.join(FIXTURE_DIR, name), { profile: "lenient" });
         expect(result.valid).toBe(false);
         for (const code of expected.codes) {
             expect(result.issues.some((i) => i.code === code)).toBe(true);
@@ -133,11 +147,25 @@ describe("docx-templates corpus — strict profile flags BOM and other quirks", 
         // the gap visible in `result.issues` for callers who audit them,
         // without flipping `valid` to false. The XSD sequence-order issue
         // is a separate concern (see KNOWN_FAILURES_LENIENT).
-        const result = await validate(path.join(FIXTURE_DIR, "office365.docx"));
+        const result = await validate(path.join(FIXTURE_DIR, "office365.docx"), { profile: "lenient" });
         expect(result.issues.some((i) => i.code === "xml-syntax")).toBe(false);
         const bomIssues = result.issues.filter((i) => i.code === "xml-bom-leading");
         expect(bomIssues.length).toBeGreaterThan(0);
         expect(bomIssues.every((i) => i.severity === "warning")).toBe(true);
+    });
+
+    it("office365.docx: strict also reports BOMs as warnings, never as errors", async () => {
+        // Same contract under strict: XML 1.0 §4.3.3 permits a leading BOM and
+        // Microsoft Office emits one in every part of this fixture, so it must
+        // not reject the document. It is still visible for callers that audit
+        // canonical bytes.
+        const result = await validate(path.join(FIXTURE_DIR, "office365.docx"), { profile: "strict" });
+        const bomIssues = result.issues.filter((i) => i.code === "xml-bom-leading");
+        expect(bomIssues.length).toBeGreaterThan(0);
+        expect(bomIssues.every((i) => i.severity === "warning")).toBe(true);
+        // The strict rejection is the Office XSD sequence-order deviation,
+        // never the BOM.
+        expect(result.issues.filter((i) => i.severity === "error").map((i) => i.code)).not.toContain("xml-bom-leading");
     });
 });
 

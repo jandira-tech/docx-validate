@@ -14,27 +14,153 @@
  * limitations under the License.
  */
 
-import { promises as fs } from "node:fs";
+import { promises as fs, realpathSync, type PathLike } from "node:fs";
 import path from "node:path";
 
 import JSZip from "jszip";
 import { describe, expect, it, vi } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
-import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
+import { validate } from "../src/scripts/office/validate";
+import { parseXml } from "../src/lib/xml-helpers";
+import {
+    BaseSchemaValidator,
+    containRelationshipTarget,
+    hasAnyElementChild,
+    walkDirectory,
+    withoutRestatedIgnorablePrefixes,
+} from "../src/scripts/office/validators/base";
+
+import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { relsBrokenTarget, relsEmptyElementShape } from "../src/scripts/office/rels-finding-facts";
 
 class HarnessValidator extends BaseSchemaValidator {
+    schemaMappingKey(part: string): string | null {
+        return this._schemaMappingKey(path.join(this.unpackedDir, part));
+    }
+
     originalErrors(xmlFile: string): Promise<Set<string>> {
         return this._getOriginalFileErrors(xmlFile);
+    }
+
+    partDom(file: string): Promise<Document> {
+        return this.readPartDom(file);
+    }
+
+    inRun<T>(run: () => Promise<T>): Promise<T> {
+        return this.withinBaselineRun(run);
     }
 }
 
 const RELS_HEADER = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`;
 const W_NS = `xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"`;
+const STYLES_RELATIONSHIP = `Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"`;
+// Relationships parts with element children but no OPC-namespace <Relationship> (#684).
+const WRONG_NAMESPACE_RELS: readonly (readonly [label: string, body: string])[] = [
+    ["no namespace", `<Relationships><Relationship ${STYLES_RELATIONSHIP}/></Relationships>`],
+    ["foreign namespace", `<Relationships xmlns="urn:example:relationships"><Relationship ${STYLES_RELATIONSHIP}/></Relationships>`],
+    [
+        "OPC root, foreign child",
+        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><x:Relationship xmlns:x="urn:example:x" ${STYLES_RELATIONSHIP}/></Relationships>`,
+    ],
+];
 
 async function writeFile(p: string, content: string): Promise<void> {
     await fs.mkdir(path.dirname(p), { recursive: true });
     await fs.writeFile(p, content, "utf-8");
 }
+
+describe("direct relationships outside legacy lenient (#434)", () => {
+    it.each([
+        ["validateFileReferences", '<Relationship Id="nested" Type="urn:image" Target="../customXml/missing.xml"/>', "rels-broken"],
+        ["validateRelationshipElements", '<Relationship Id="nested"/>', "rels-empty-element"],
+        ["validateAllRelationshipIds", '<Relationship Id="rId1" Type="urn:styles" Target="styles.xml"/>', "rels-id-duplicate"],
+    ] as const)("%s ignores nested entries and preserves lenient behavior", async (method, nested, code) => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PARTS,
+                "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                    "</Relationships>",
+                    `<x:Wrap xmlns:x="urn:x">${nested}</x:Wrap></Relationships>`,
+                ),
+            };
+            for (const [part, xml] of Object.entries(parts)) await writeFile(path.join(dir, part), xml);
+            const strict = await new HarnessValidator({ unpackedDir: dir, profile: "strict" })[method]();
+            expect(strict.issues.filter((issue) => issue.code === code)).toEqual([]);
+            const lenient = await new HarnessValidator({ unpackedDir: dir, profile: "lenient" })[method]();
+            expect(lenient.issues).toContainEqual(expect.objectContaining({ code, severity: "error" }));
+        });
+    });
+});
+
+describe("readPartDom shares one parse per run", () => {
+    const writeParts = async (dir: string): Promise<string> => {
+        for (const [part, xml] of Object.entries(MINIMAL_PARTS)) await writeFile(path.join(dir, part), xml);
+        return path.join(dir, "word/document.xml");
+    };
+
+    it("returns the same Document for the same bytes within a run, and a fresh one outside it", async () => {
+        await withTempDir(async (dir) => {
+            const file = await writeParts(dir);
+            const validator = new HarnessValidator({ unpackedDir: dir });
+            await validator.inRun(async () => {
+                const [a, b] = await Promise.all([validator.partDom(file), validator.partDom(file)]);
+                expect(a).toBe(b);
+                expect(await validator.partDom(file)).toBe(a);
+            });
+            const outside = await validator.partDom(file);
+            expect(await validator.partDom(file)).not.toBe(outside);
+            // A later run starts from nothing the previous run parsed.
+            const [first] = await validator.inRun(async () => [await validator.partDom(file)]);
+            await validator.inRun(async () => expect(await validator.partDom(file)).not.toBe(first));
+        });
+    });
+
+    it("parses a part written during the run afresh", async () => {
+        await withTempDir(async (dir) => {
+            const file = await writeParts(dir);
+            const validator = new HarnessValidator({ unpackedDir: dir });
+            await validator.inRun(async () => {
+                const before = await validator.partDom(file);
+                await fs.writeFile(file, `<w:document ${W_NS}><w:body><w:p/><w:p/></w:body></w:document>`, "utf-8");
+                const after = await validator.partDom(file);
+                expect(after).not.toBe(before);
+                expect(after.getElementsByTagName("w:p")).toHaveLength(2);
+            });
+        });
+    });
+
+    it("replays a parse failure to every caller that reads the same bytes", async () => {
+        await withTempDir(async (dir) => {
+            const file = await writeParts(dir);
+            await fs.writeFile(file, "<w:document", "utf-8");
+            const validator = new HarnessValidator({ unpackedDir: dir });
+            await validator.inRun(async () => {
+                const errors = await Promise.all([validator.partDom(file), validator.partDom(file)].map((p) => p.catch((e: unknown) => e)));
+                expect(errors[0]).toBeInstanceOf(Error);
+                expect(errors[1]).toBe(errors[0]);
+            });
+        });
+    });
+
+    it("leaves validateUniqueIds' AlternateContent stripping out of the shared Document", async () => {
+        await withTempDir(async (dir) => {
+            const file = await writeParts(dir);
+            await fs.writeFile(
+                file,
+                `<w:document ${W_NS} xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"><w:body>` +
+                    `<mc:AlternateContent><mc:Choice Requires="w"><w:p/></mc:Choice></mc:AlternateContent></w:body></w:document>`,
+                "utf-8",
+            );
+            const validator = new HarnessValidator({ unpackedDir: dir });
+            await validator.inRun(async () => {
+                const shared = await validator.partDom(file);
+                await validator.validateUniqueIds();
+                expect(shared.getElementsByTagName("mc:AlternateContent")).toHaveLength(1);
+                expect(await validator.partDom(file)).toBe(shared);
+            });
+        });
+    });
+});
 
 describe("BaseSchemaValidator", () => {
     describe("original-file extraction", () => {
@@ -130,9 +256,174 @@ describe("BaseSchemaValidator", () => {
                 expect(result.valid).toBe(true);
             });
         });
+
+        // #1071: the requirement table is read by own key, so an element named
+        // for an Object.prototype key has no id requirement.
+        it.each(["constructor", "__proto__"])("requires no unique id of an element named %s", async (name) => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} xmlns:x="urn:example:extension">` +
+                        `<x:${name} x:id="0"/><x:${name} x:id="0"/></w:comments>`,
+                );
+                const result = await new HarnessValidator({ unpackedDir: dir }).validateUniqueIds();
+                expect(result).toEqual({ valid: true, issues: [] });
+            });
+        });
     });
 
     describe("validateFileReferences", () => {
+        describe("OPC part-name equivalence (#346, #393)", { timeout: 120_000 }, () => {
+            const cases = [
+                {
+                    name: "WORD folder with lowercase relationship targets",
+                    parts: Object.fromEntries(Object.entries(MINIMAL_PARTS).map(([name, xml]) => [name.replace(/^word\//, "WORD/"), xml])),
+                    expected: [],
+                },
+                {
+                    name: "percent-encoded unreserved character in the main target",
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "_rels/.rels": MINIMAL_PARTS["_rels/.rels"]!.replace("word/document.xml", "word/%64ocument.xml"),
+                    },
+                    expected: [],
+                },
+                {
+                    name: "case and percent variants in a relative target",
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                            "styles.xml",
+                            "%73TYLES.xml",
+                        ),
+                    },
+                    expected: [],
+                },
+                {
+                    name: "equivalent package-absolute target",
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                            "styles.xml",
+                            "/WORD/%73tyles.xml",
+                        ),
+                    },
+                    expected: [],
+                },
+                {
+                    name: "target naming no part",
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace("styles.xml", "missing.xml"),
+                    },
+                    expected: [
+                        { code: "rels-broken", path: "word/_rels/document.xml.rels", message: "Broken reference to missing.xml" },
+                        { code: "rels-unreferenced", path: "word/styles.xml", message: "Unreferenced file: word/styles.xml" },
+                        {
+                            code: "rels-target-missing",
+                            path: "word/_rels/document.xml.rels",
+                            message: "Relationship target 'missing.xml' resolves to 'word/missing.xml' which does not exist",
+                        },
+                    ],
+                },
+                {
+                    // An escaped reserved character names another part (#297, #344).
+                    name: "reserved escape in the main target",
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "_rels/.rels": MINIMAL_PARTS["_rels/.rels"]!.replace("word/document.xml", "word%2Fdocument.xml"),
+                    },
+                    expected: [
+                        { code: "rels-broken", path: "_rels/.rels", message: "Broken reference to word%2Fdocument.xml" },
+                        { code: "rels-unreferenced", path: "word/document.xml", message: "Unreferenced file: word/document.xml" },
+                        {
+                            code: "rels-target-missing",
+                            path: "_rels/.rels",
+                            message: "Relationship target 'word%2Fdocument.xml' resolves to 'word%2Fdocument.xml' which does not exist",
+                        },
+                    ],
+                },
+                {
+                    // _RELS/.RELS names the package relationships part (#364).
+                    name: "package relationships stored as _RELS/.RELS",
+                    parts: Object.fromEntries(
+                        Object.entries(MINIMAL_PARTS).map(([name, xml]) => [name === "_rels/.rels" ? "_RELS/.RELS" : name, xml]),
+                    ),
+                    expected: [],
+                },
+                {
+                    name: "part named by no relationship",
+                    parts: { ...MINIMAL_PARTS, "word/orphan.xml": "<extra/>" },
+                    expected: [{ code: "rels-unreferenced", path: "word/orphan.xml", message: "Unreferenced file: word/orphan.xml" }],
+                },
+                // A final `.` segment or a trailing `/` names the folder
+                // `word/styles.xml/`, not the stored part, which nothing else
+                // relates (#975; Word refused both, sessions 71 and 72).
+                ...["styles.xml/.", "styles.xml/"].map((target) => ({
+                    name: `target ${target} naming a folder`,
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                            'Target="styles.xml"',
+                            `Target="${target}"`,
+                        ),
+                    },
+                    expected: [
+                        {
+                            code: "rels-broken",
+                            path: "word/_rels/document.xml.rels",
+                            message: `Broken reference to ${target}: it names a folder, not a part`,
+                        },
+                        { code: "rels-unreferenced", path: "word/styles.xml", message: "Unreferenced file: word/styles.xml" },
+                        {
+                            code: "rels-target-missing",
+                            path: "word/_rels/document.xml.rels",
+                            message: `Relationship target '${target}' names a folder, not a part`,
+                        },
+                    ],
+                })),
+            ];
+
+            // These are filesystem integration tests: exercise the public API
+            // against generated packages rather than host-dependent path mocks.
+            for (const profile of ["lenient", "strict"] as const) {
+                for (const input of ["directory", "packed"] as const) {
+                    for (const { name, parts, expected } of cases) {
+                        it(`${profile}, ${input}: ${name}`, async () => {
+                            await withTempDir(async (dir) => {
+                                const source = path.join(dir, "specimen.docx");
+                                const bytes = input === "packed" ? await buildDocx(parts) : undefined;
+                                if (bytes) {
+                                    await fs.writeFile(source, bytes);
+                                } else {
+                                    for (const [entry, xml] of Object.entries(parts)) {
+                                        await writeFile(path.join(source, entry), xml);
+                                    }
+                                }
+
+                                const result = await validate(source, { profile });
+                                const references = result.issues
+                                    .filter((issue) =>
+                                        ["rels-broken", "rels-unreferenced", "rels-target-missing"].includes(issue.code ?? ""),
+                                    )
+                                    .map(({ code, path, message }) => ({ code, path, message }));
+                                expect(references).toEqual(expected);
+                                expect(result.valid).toBe(expected.length === 0);
+
+                                if (bytes) {
+                                    expect(await fs.readFile(source)).toEqual(bytes);
+                                } else {
+                                    for (const [entry, xml] of Object.entries(parts)) {
+                                        expect(await fs.readFile(path.join(source, entry), "utf-8")).toBe(xml);
+                                    }
+                                }
+                            });
+                        });
+                    }
+                }
+            }
+        });
+
         it("detects broken Target references in .rels", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
@@ -150,6 +441,96 @@ describe("BaseSchemaValidator", () => {
                 const broken = result.issues.find((i) => i.code === "rels-broken");
                 expect(broken).toBeDefined();
                 expect(broken!.message).toContain("word/styles-missing.xml");
+            });
+        });
+
+        it("registers the resolved part name on each rels-broken finding (#734)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                await writeFile(
+                    path.join(dir, "_rels", ".rels"),
+                    `${RELS_HEADER}
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+              <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+            </Relationships>`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `${RELS_HEADER}
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+              <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/missing.xml"/>
+              <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/_rels/x.png"/>
+              <Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="notes.rels"/>
+              <Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="word/../customXml/x.png"/>
+            </Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateFileReferences();
+                const byMessage = new Map(result.issues.filter((i) => i.code === "rels-broken").map((i) => [i.message, i] as const));
+                expect([...byMessage.keys()]).toEqual([
+                    "Broken reference to ../customXml/missing.xml",
+                    "Broken reference to media/_rels/x.png",
+                    "Broken reference to notes.rels",
+                    "Broken reference to word/../customXml/x.png",
+                ]);
+                expect(relsBrokenTarget(byMessage.get("Broken reference to ../customXml/missing.xml")!)).toBe("customXml/missing.xml");
+                expect(relsBrokenTarget(byMessage.get("Broken reference to media/_rels/x.png")!)).toBe("word/media/_rels/x.png");
+                expect(relsBrokenTarget(byMessage.get("Broken reference to notes.rels")!)).toBe("word/notes.rels");
+                expect(relsBrokenTarget(byMessage.get("Broken reference to word/../customXml/x.png")!)).toBe("word/customXml/x.png");
+            });
+        });
+
+        it("registers the folder a target names, with its final / (#975)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                await writeFile(path.join(dir, "word", "media", "image1.png"), "not really a png");
+                await writeFile(path.join(dir, "docProps", "core.xml"), `<?xml version="1.0"?><x/>`);
+                await writeFile(
+                    path.join(dir, "_rels", ".rels"),
+                    `${RELS_HEADER}
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+              <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+              <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml/."/>
+              <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="/"/>
+            </Relationships>`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `${RELS_HEADER}
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+              <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.png/x/.."/>
+              <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="."/>
+              <Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../.."/>
+              <Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../../../customXml/item1.xml/."/>
+            </Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateFileReferences();
+                const folders = result.issues
+                    .filter((i) => i.code === "rels-broken")
+                    .map((i) => [i.path, i.message, relsBrokenTarget(i)] as const);
+                expect(folders).toEqual([
+                    ["_rels/.rels", "Broken reference to docProps/core.xml/.: it names a folder, not a part", "docProps/core.xml/"],
+                    ["_rels/.rels", "Broken reference to /: it names a folder, not a part", "/"],
+                    [
+                        "word/_rels/document.xml.rels",
+                        "Broken reference to media/image1.png/x/..: it names a folder, not a part",
+                        "word/media/image1.png/",
+                    ],
+                    ["word/_rels/document.xml.rels", "Broken reference to .: it names a folder, not a part", "word/"],
+                    ["word/_rels/document.xml.rels", "Broken reference to ../..: it names a folder, not a part", "/"],
+                    [
+                        "word/_rels/document.xml.rels",
+                        "Broken reference to ../../../customXml/item1.xml/.: it names a folder, not a part",
+                        "customXml/item1.xml/",
+                    ],
+                ]);
+                // A folder target relates no part, so the stored parts it
+                // spells are unreferenced.
+                expect(result.issues.filter((i) => i.code === "rels-unreferenced").map((i) => i.path)).toEqual([
+                    "docProps/core.xml",
+                    "word/media/image1.png",
+                ]);
             });
         });
 
@@ -284,6 +665,28 @@ describe("BaseSchemaValidator", () => {
                 const outcome = await v.validateFileAgainstXsd(path.join(dir, "_rels", ".rels"));
                 expect(outcome.valid).toBe(false);
                 expect(outcome.errors.size).toBeGreaterThan(0);
+            });
+        });
+
+        it("never subtracts schema-load failures (#289)", async () => {
+            // Infrastructure findings (xsd-schema-load-failed, engine
+            // failures) are never part of the --original baseline
+            // subtraction: they always surface as error-severity issues and
+            // make the part invalid, under every profile.
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "word", "document.xml");
+                await writeFile(file, MINIMAL_PARTS["word/document.xml"]!);
+                const original = path.join(dir, "original.docx");
+                await fs.writeFile(original, await buildDocx());
+                const schemasDir = path.join(dir, "empty-schemas");
+                await fs.mkdir(schemasDir);
+                const validator = new BaseSchemaValidator({
+                    unpackedDir: dir,
+                    originalFile: original,
+                    schemasDir,
+                    profile: "word-valid",
+                });
+                expect((await validator.validateFileAgainstXsd(file)).valid).toBe(false);
             });
         });
     });
@@ -478,6 +881,81 @@ describe("BaseSchemaValidator", () => {
             });
         });
 
+        it("covers media declared by an OPC case-variant Override PartName in every pass", async () => {
+            await withTempDir(async (dir) => {
+                // OPC part-name comparison is ASCII case-insensitive, so
+                // /Word/Media/IMAGE1.JPEG declares word/media/image1.jpeg.
+                await writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    `<?xml version="1.0"?>` +
+                        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+                        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+                        `<Override PartName="/Word/Media/IMAGE1.JPEG" ContentType="image/jpeg"/>` +
+                        `</Types>`,
+                );
+                await writeFile(path.join(dir, "word", "media", "image1.jpeg"), "\xff\xd8\xff\xe0");
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateContentTypes();
+                expect(result.issues.some((i) => i.code === "ct-undeclared-ext")).toBe(false);
+                expect(result.issues.some((i) => i.code === "ct-uncovered-part")).toBe(false);
+            });
+        });
+
+        it("covers a declarable XML root declared by an OPC case-variant Override PartName", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    `<?xml version="1.0"?>` +
+                        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+                        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+                        `<Override PartName="/Word/Document.XML" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>` +
+                        `</Types>`,
+                );
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateContentTypes();
+                expect(result.issues.some((i) => i.code === "ct-undeclared-part")).toBe(false);
+            });
+        });
+
+        it("still reports ct-undeclared-part when only a Default, not an Override, covers a declarable root", async () => {
+            await withTempDir(async (dir) => {
+                // document.xml is reachable through <Default Extension="xml">
+                // but has no Override — the declarable-root check keys on
+                // Override coverage, so this stays a defect.
+                await writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    `<?xml version="1.0"?>` +
+                        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+                        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+                        `<Default Extension="xml" ContentType="application/xml"/>` +
+                        `</Types>`,
+                );
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateContentTypes();
+                expect(result.issues.some((i) => i.code === "ct-undeclared-part" && i.path === "word/document.xml")).toBe(true);
+            });
+        });
+
+        it("resolves an escaped Override PartName for media (percent-decoding)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    `<?xml version="1.0"?>` +
+                        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+                        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+                        `<Override PartName="/word/media/my%20img.jpeg" ContentType="image/jpeg"/>` +
+                        `</Types>`,
+                );
+                await writeFile(path.join(dir, "word", "media", "my img.jpeg"), "\xff\xd8\xff\xe0");
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateContentTypes();
+                expect(result.issues.some((i) => i.code === "ct-undeclared-ext")).toBe(false);
+                expect(result.issues.some((i) => i.code === "ct-uncovered-part")).toBe(false);
+            });
+        });
+
         it("treats _rels/.rels as extension 'rels' (OPC last-dot rule, not POSIX dotfile)", async () => {
             await withTempDir(async (dir) => {
                 // POSIX path.extname('.rels') is '' — a naive implementation
@@ -538,11 +1016,104 @@ describe("BaseSchemaValidator", () => {
                 expect(result.valid).toBe(true);
             });
         });
+
+        it("flags a duplicate rId in the sidecar of an owner not named *.xml (#618)", async () => {
+            await withTempDir(async (dir) => {
+                // Word reads a story root stored as word/document.bin and its
+                // sidecar (session 31, s31a), so the duplicate-Id walk must
+                // reach the sidecar whatever the owner's suffix — without
+                // starting to parse the owner as XML.
+                await writeFile(path.join(dir, "word", "document.bin"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.bin.rels"),
+                    `${RELS_HEADER}` +
+                        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+                        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>` +
+                        `</Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateAllRelationshipIds();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "rels-id-duplicate" && i.message.includes("rId1"))).toBe(true);
+                // The .bin owner is never parsed as XML: no r:id walk of its own.
+                expect(
+                    result.issues.some((i) =>
+                        ["rels-missing-sidecar", "rels-id-parse", "rels-id-missing", "rels-id-mismatch"].includes(i.code ?? ""),
+                    ),
+                ).toBe(false);
+            });
+        });
+
+        it("judges one relationships part exactly once for equivalent owner spellings (#618)", async () => {
+            await withTempDir(async (dir) => {
+                // `word/document.%78ml` is another spelling of
+                // `word/document.xml`; both reach the same stored sidecar, so
+                // the duplicate must be reported once, not once per owner.
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                await writeFile(
+                    path.join(dir, "word", "document.%78ml"),
+                    `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `${RELS_HEADER}` +
+                        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+                        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>` +
+                        `</Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateAllRelationshipIds();
+                expect(result.issues.filter((i) => i.code === "rels-id-duplicate")).toHaveLength(1);
+            });
+        });
+
+        it("reports nothing for an unparseable non-XML owner sidecar or a sidecar with no owner (#618)", async () => {
+            await withTempDir(async (dir) => {
+                // A sidecar that does not parse yields no finding here — the
+                // XML syntax checks own that diagnosis — and a sidecar whose
+                // owner is not in the package is never visited, as before.
+                await writeFile(path.join(dir, "word", "document.bin"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.bin.rels"),
+                    `${RELS_HEADER}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "_rels", "orphan.xml.rels"),
+                    `${RELS_HEADER}` +
+                        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+                        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>` +
+                        `</Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateAllRelationshipIds();
+                expect(result.issues).toEqual([]);
+            });
+        });
     });
 
     describe("validateRelationshipElements", () => {
         const REL_NS = `xmlns="http://schemas.openxmlformats.org/package/2006/relationships"`;
         const REL_TYPE = `http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles`;
+
+        it("registers the shape of each rels-empty-element finding (#735)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "_rels", ".rels"),
+                    `${RELS_HEADER}<Relationships ${REL_NS}>` +
+                        `<Relationship Type="${REL_TYPE}" Target="word/document.xml"/>` +
+                        `<Relationship Id="missing required attribute" Type="${REL_TYPE}" Target="word/document.xml">body</Relationship>` +
+                        `<Relationship Id="rId2" Type="${REL_TYPE}" Target="word/document.xml"/>` +
+                        `</Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateRelationshipElements();
+                expect(result.issues.every((i) => i.code === "rels-empty-element")).toBe(true);
+                expect(result.issues.map((i) => relsEmptyElementShape(i))).toEqual(["missing-attribute", "body-content"]);
+            });
+        });
 
         it("passes a well-formed self-closing <Relationship>", async () => {
             await withTempDir(async (dir) => {
@@ -780,6 +1351,19 @@ describe("BaseSchemaValidator", () => {
                 expect(result.issues).toEqual([]);
             });
         });
+
+        // #684: a Relationship outside the OPC namespace is not an empty part.
+        it.each(WRONG_NAMESPACE_RELS)(
+            "does not call a part empty when its children are in the wrong namespace (%s)",
+            async (_label, body) => {
+                await withTempDir(async (dir) => {
+                    await writeFile(path.join(dir, "word", "_rels", "document.xml.rels"), `${RELS_HEADER}\n${body}`);
+                    const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                    const result = await v.validateNoEmptyRelsParts();
+                    expect(result.issues.filter((i) => i.code === "rels-empty-part")).toEqual([]);
+                });
+            },
+        );
     });
 
     describe("repairEmptyRelsParts", () => {
@@ -826,27 +1410,170 @@ describe("BaseSchemaValidator", () => {
                 expect(v.xmlFiles.filter((f) => f.endsWith(".rels"))).toHaveLength(0);
             });
         });
+
+        // #684: the element-child guard is all that keeps repair from deleting these.
+        it.each(WRONG_NAMESPACE_RELS)("keeps a part whose children are in the wrong namespace (%s)", async (_label, body) => {
+            await withTempDir(async (dir) => {
+                const relsFile = path.join(dir, "word", "_rels", "document.xml.rels");
+                const content = `${RELS_HEADER}\n${body}`;
+                await writeFile(relsFile, content);
+                const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                expect(await v.repairEmptyRelsParts()).toBe(0);
+                expect(await fs.readFile(relsFile, "utf-8")).toBe(content);
+                expect(v.xmlFiles).toContain(relsFile);
+            });
+        });
+
+        it("repair() deletes the empty part and keeps the wrong-namespace one", async () => {
+            await withTempDir(async (dir) => {
+                const emptyFile = path.join(dir, "word", "_rels", "fontTable.xml.rels");
+                const foreignFile = path.join(dir, "word", "_rels", "document.xml.rels");
+                const foreign = `${RELS_HEADER}\n${WRONG_NAMESPACE_RELS[0]![1]}`;
+                await writeFile(emptyFile, `${RELS_HEADER}\n<Relationships ${PR_NS}/>`);
+                await writeFile(foreignFile, foreign);
+                const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                expect(await v.repair()).toBe(1);
+                await expect(fs.access(emptyFile)).rejects.toThrow();
+                expect(await fs.readFile(foreignFile, "utf-8")).toBe(foreign);
+            });
+        });
+    });
+
+    describe("hasAnyElementChild", () => {
+        const root = (xml: string): Element => {
+            const element = parseXml(xml).documentElement;
+            if (!element) throw new Error("no root");
+            return element;
+        };
+
+        it("is true for an element child in any namespace", () => {
+            expect(hasAnyElementChild(root(`<a><b/></a>`))).toBe(true);
+            expect(hasAnyElementChild(root(`<a xmlns="urn:x"><b xmlns="urn:y"/></a>`))).toBe(true);
+            expect(hasAnyElementChild(root(`<a>text<!-- c --><b/></a>`))).toBe(true);
+        });
+
+        it("is false for no children, or only text, whitespace, comments, CDATA and processing instructions", () => {
+            expect(hasAnyElementChild(root(`<a/>`))).toBe(false);
+            expect(hasAnyElementChild(root(`<a>\n  text\n</a>`))).toBe(false);
+            expect(hasAnyElementChild(root(`<a><!-- c --><![CDATA[<b/>]]><?pi data?></a>`))).toBe(false);
+        });
+
+        it("looks at children only, not deeper descendants", () => {
+            const outer = root(`<a><b><c/></b></a>`);
+            const inner = outer.firstChild as Element;
+            expect(hasAnyElementChild(inner)).toBe(true);
+            expect(hasAnyElementChild(inner.firstChild as Element)).toBe(false);
+        });
     });
 
     describe("validateRels path traversal mitigation", () => {
         const PR_NS = `xmlns="http://schemas.openxmlformats.org/package/2006/relationships"`;
         it("closes the existence oracle: an escaping target that EXISTS on disk is still broken", async () => {
             await withTempDir(async (dir) => {
-                // A real file outside the unpacked dir — pre-containment code
-                // would count it as "referenced" (the oracle leak).
+                // A real file outside the unpacked dir, exactly where the
+                // target's climb lands on disk — pre-containment code would
+                // count it as "referenced" (the oracle leak). The climb stops
+                // at the package root instead (#984), where nothing is stored.
+                const unpacked = path.join(dir, "unpacked");
                 await fs.writeFile(path.join(dir, "outside-secret.txt"), "secret", "utf-8");
-                const relsFile = path.join(dir, "word", "_rels", "document.xml.rels");
+                const relsFile = path.join(unpacked, "word", "_rels", "document.xml.rels");
                 const content =
                     `${RELS_HEADER}\n<Relationships ${PR_NS}>` +
                     `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="../../outside-secret.txt"/>` +
                     `</Relationships>`;
                 await writeFile(relsFile, content);
-                const v = new HarnessValidator({ unpackedDir: dir });
+                const v = new HarnessValidator({ unpackedDir: unpacked });
                 const result = await v.validateFileReferences();
                 expect(result.valid).toBe(false);
                 expect(result.issues.some((i) => i.code === "rels-broken" && i.message.includes("../../outside-secret.txt"))).toBe(true);
             });
         });
+
+        it("reads an escaping target's climb as stopped at the package root, where a stored part is the target's (#984)", async () => {
+            await withTempDir(async (dir) => {
+                // Word read a stored root part named by such a climb, for
+                // customXml, styles, header and notes targets (sessions 74
+                // to 76), as RFC 3986's dot-segment removal resolves it.
+                await fs.writeFile(path.join(dir, "root-part.xml"), "<root/>", "utf-8");
+                const relsFile = path.join(dir, "word", "_rels", "document.xml.rels");
+                const content =
+                    `${RELS_HEADER}\n<Relationships ${PR_NS}>` +
+                    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../../root-part.xml"/>` +
+                    `<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="/../../root-part.xml"/>` +
+                    `</Relationships>`;
+                await writeFile(relsFile, content);
+                const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                const result = await v.validateFileReferences();
+                expect(result.issues.filter((i) => i.code === "rels-broken" || i.path === "root-part.xml")).toEqual([]);
+            });
+        });
+
+        it("stops a climb at the package root before any file-system join, whatever the unpacked directory is called (CodeRabbit on #985)", async () => {
+            await withTempDir(async (dir) => {
+                // From word/, `../../pkg/word/styles.xml` climbs to the root
+                // and names `pkg/word/styles.xml`, as RFC 3986 resolves it.
+                // A file-system join first climbs above the unpacked
+                // directory and comes back into it through its own name,
+                // `pkg`, finding the stored word/styles.xml instead.
+                const unpacked = path.join(dir, "pkg");
+                await writeFile(path.join(unpacked, "word", "styles.xml"), "<styles/>");
+                const relsFile = path.join(unpacked, "word", "_rels", "document.xml.rels");
+                const content =
+                    `${RELS_HEADER}\n<Relationships ${PR_NS}>` +
+                    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="../../pkg/word/styles.xml"/>` +
+                    `</Relationships>`;
+                await writeFile(relsFile, content);
+                const v = new HarnessValidator({ unpackedDir: unpacked, profile: "strict" });
+                const result = await v.validateFileReferences();
+                expect(result.issues.map((i) => [i.code, i.message])).toEqual([
+                    ["rels-broken", "Broken reference to ../../pkg/word/styles.xml"],
+                    ["rels-unreferenced", "Unreferenced file: word/styles.xml"],
+                ]);
+            });
+        });
+
+        // `word/_rels/.rels` sits in a `_rels` folder, so its source part's
+        // folder is `word/`; `word/notes.rels` sits in none, so its own folder,
+        // `word/`, is the source folder. The orphan walk behind
+        // rels-target-missing (resolveRelationshipTargetPath) resolved both
+        // against `word/`, this walk against the package root (review 281, #990).
+        it.each([
+            ["word/_rels/.rels", "styles.xml", [], []],
+            ["word/notes.rels", "styles.xml", [], []],
+            [
+                "word/_rels/.rels",
+                "styles.xml/.",
+                [["Broken reference to styles.xml/.: it names a folder, not a part", "word/styles.xml/"]],
+                ["word/styles.xml"],
+            ],
+            [
+                "word/notes.rels",
+                "styles.xml/.",
+                [["Broken reference to styles.xml/.: it names a folder, not a part", "word/styles.xml/"]],
+                ["word/styles.xml"],
+            ],
+            ["word/_rels/.rels", "word/styles.xml", [["Broken reference to word/styles.xml", "word/word/styles.xml"]], ["word/styles.xml"]],
+            ["_rels/.rels", "word/styles.xml", [], []],
+        ])(
+            "resolves %s's target %s against the source part's folder, as the orphan walk does (#990)",
+            async (relsPart, target, broken, unreferenced) => {
+                await withTempDir(async (dir) => {
+                    await writeFile(path.join(dir, "word", "styles.xml"), "<styles/>");
+                    await writeFile(
+                        path.join(dir, relsPart),
+                        `${RELS_HEADER}\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                            `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="${target}"/>` +
+                            `</Relationships>`,
+                    );
+                    const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                    const result = await v.validateFileReferences();
+                    expect(result.issues.filter((i) => i.code === "rels-broken").map((i) => [i.message, relsBrokenTarget(i)])).toEqual(
+                        broken,
+                    );
+                    expect(result.issues.filter((i) => i.code === "rels-unreferenced").map((i) => i.path)).toEqual(unreferenced);
+                });
+            },
+        );
 
         it("rejects targets routed through a symlink that escapes the unpacked directory", async () => {
             await withTempDir(async (dir) => {
@@ -888,4 +1615,656 @@ describe("BaseSchemaValidator", () => {
             });
         });
     });
+});
+
+describe("withoutRestatedIgnorablePrefixes (#309)", () => {
+    const undeclared = (prefix: string, path = "word/document.xml") => ({
+        severity: "error" as const,
+        code: "ignorable-undeclared",
+        path,
+        message: `Namespace '${prefix}' in Ignorable but not declared`,
+    });
+    const unbound = (directive: string, prefix: string, path = "word/document.xml") => ({
+        severity: "error" as const,
+        code: "mce-unbound-prefix",
+        path,
+        message: `Unbound prefix in mc:${directive}: ${prefix}`,
+    });
+
+    it("drops one processor finding per namespace-check finding on the same part and prefix", () => {
+        const result = withoutRestatedIgnorablePrefixes({
+            valid: false,
+            issues: [undeclared("w15"), unbound("Ignorable", "w15"), unbound("Ignorable", "w15")],
+        });
+        expect(result.issues).toEqual([undeclared("w15"), unbound("Ignorable", "w15")]);
+        expect(result.valid).toBe(false);
+    });
+
+    it("keeps findings on another part, another prefix, or another directive", () => {
+        const issues = [
+            undeclared("w15"),
+            unbound("Ignorable", "w15", "word/styles.xml"),
+            unbound("Ignorable", "wp14"),
+            unbound("ProcessContent", "w15"),
+            unbound("MustUnderstand", "w15"),
+        ];
+        expect(withoutRestatedIgnorablePrefixes({ valid: false, issues }).issues).toEqual(issues);
+    });
+
+    it("matches a namespace-check path written with Windows separators (#310 review)", () => {
+        // validateNamespaces reports path.relative paths (backslashes on
+        // Windows); the Word rule reports the normalized part name.
+        const result = withoutRestatedIgnorablePrefixes({
+            valid: false,
+            issues: [undeclared("w15", "word\\document.xml"), unbound("Ignorable", "w15")],
+        });
+        expect(result.issues).toEqual([undeclared("w15", "word\\document.xml")]);
+    });
+
+    it("returns the result unchanged when the namespace check found nothing", () => {
+        const result = { valid: false, issues: [unbound("Ignorable", "w15")] };
+        expect(withoutRestatedIgnorablePrefixes(result)).toBe(result);
+    });
+});
+
+// Filesystem-backed integration regressions: packages are built here, never fixtures.
+describe("OPC-equivalent relationships parts (#398)", () => {
+    const variants = ["RELS", "Rels", "%72els", "%52ELS"];
+    const relationships = (body: string): string =>
+        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${body}</Relationships>`;
+
+    it.each(variants)("reports empty notes.%s like notes.rels, without repairing it", async (extension) => {
+        await withTempDir(async (dir) => {
+            const run = async (ext: string) => {
+                const root = path.join(dir, ext === "rels" ? "control" : "variant");
+                const part = `word/notes.${ext}`;
+                const xml = relationships("");
+                await writeFile(path.join(root, part), xml);
+                const validator = new HarnessValidator({ unpackedDir: root, profile: "strict" });
+                const result = await validator.validateNoEmptyRelsParts();
+                expect(await fs.readFile(path.join(root, part), "utf8")).toBe(xml);
+                return result;
+            };
+            const control = await run("rels");
+            expect(control).toMatchObject({
+                valid: false,
+                issues: [{ code: "rels-empty-part", severity: "error", path: "word/notes.rels" }],
+            });
+            const variant = await run(extension);
+            expect(variant).toEqual({ ...control, issues: control.issues.map((issue) => ({ ...issue, path: `word/notes.${extension}` })) });
+        });
+    });
+
+    it.each(variants)("checks Relationship element content in .%s", async (extension) => {
+        await withTempDir(async (dir) => {
+            const run = async (ext: string) => {
+                const root = path.join(dir, ext === "rels" ? "control" : "variant");
+                await writeFile(
+                    path.join(root, `word/_rels/document.xml.${ext}`),
+                    relationships(`<Relationship Id="rId1" Type="styles" Target="styles.xml"><child/></Relationship>`),
+                );
+                return new HarnessValidator({ unpackedDir: root, profile: "lenient" }).validateRelationshipElements();
+            };
+            const control = await run("rels");
+            expect(control).toMatchObject({ valid: false, issues: [{ code: "rels-empty-element" }] });
+            expect(await run(extension)).toEqual({
+                ...control,
+                issues: control.issues.map((issue) => ({ ...issue, path: `word/_rels/document.xml.${extension}` })),
+            });
+        });
+    });
+
+    it.each(variants)("schema-validates a bogus attribute in .%s", async (extension) => {
+        await withTempDir(async (dir) => {
+            const run = async (ext: string) => {
+                const root = path.join(dir, ext === "rels" ? "control" : "variant");
+                const part = `word/_rels/document.xml.${ext}`;
+                await writeFile(
+                    path.join(root, part),
+                    relationships(`<Relationship Id="rId1" Type="styles" Target="styles.xml" bogus="1"/>`),
+                );
+                const validator = new HarnessValidator({ unpackedDir: root, profile: "strict" });
+                const result = await validator.validateAgainstXsd();
+                return { result, validator, part };
+            };
+            const control = await run("rels");
+            expect(control.result.valid).toBe(false);
+            expect(control.result.issues).toContainEqual(expect.objectContaining({ code: "xsd-error", path: control.part }));
+            const variant = await run(extension);
+            expect(variant.result.valid).toBe(control.result.valid);
+            expect(variant.result.issues.map(({ code }) => code)).toEqual(control.result.issues.map(({ code }) => code));
+            expect(variant.result.issues.every(({ path: part }) => part === variant.part)).toBe(true);
+            expect(variant.validator.xsdWalk.parts).toEqual([variant.part]);
+        });
+    });
+
+    it.each(variants)("maps .%s to the relationships schema key", async (extension) => {
+        await withTempDir(async (dir) => {
+            const validator = new HarnessValidator({ unpackedDir: dir });
+            expect(validator.schemaMappingKey("word/_rels/document.xml.rels")).toBe(".rels");
+            expect(validator.schemaMappingKey(`word/_rels/document.xml.${extension}`)).toBe(".rels");
+            // Other mapping rules retain their existing spelling semantics.
+            expect(validator.schemaMappingKey("word/commentsIds.xml")).toBe("commentsIds.xml");
+            expect(validator.schemaMappingKey("customXml/itemProps1.%78ml")).toBeNull();
+        });
+    });
+
+    it.each(["RELS", "%72els", "%52ELS"])("reads a clean .%s sidecar without unreferenced findings", async (extension) => {
+        await withTempDir(async (dir) => {
+            const run = async (ext: string) => {
+                const root = path.join(dir, ext === "rels" ? "control" : "variant");
+                for (const [part, xml] of Object.entries(MINIMAL_PARTS)) {
+                    await writeFile(
+                        path.join(root, part === "word/_rels/document.xml.rels" ? `word/_rels/document.xml.${ext}` : part),
+                        xml,
+                    );
+                }
+                return new HarnessValidator({ unpackedDir: root }).validateFileReferences();
+            };
+            const control = await run("rels");
+            expect(control).toEqual({ valid: true, issues: [] });
+            expect(await run(extension)).toEqual(control);
+        });
+    });
+
+    it("includes .XML parts in the XSD walk and passes iterating xmlFiles", async () => {
+        await withTempDir(async (dir) => {
+            const run = async (extension: string) => {
+                const root = path.join(dir, extension === "xml" ? "control" : "variant");
+                const part = `word/comments.${extension}`;
+                await writeFile(
+                    path.join(root, part),
+                    `<w:comments ${W_NS} bogus="1"><w:comment w:id="0"/><w:comment w:id="0"/></w:comments>`,
+                );
+                await writeFile(path.join(root, "ignore.txt"), "not XML");
+                const validator = new HarnessValidator({ unpackedDir: root, profile: "strict" });
+                return { part, validator, schema: await validator.validateAgainstXsd(), ids: await validator.validateUniqueIds() };
+            };
+            const control = await run("xml");
+            expect(control.schema.valid).toBe(false);
+            expect(control.ids.issues).toContainEqual(expect.objectContaining({ code: "id-duplicate-file" }));
+            const variant = await run("XML");
+            expect(variant.schema.valid).toBe(control.schema.valid);
+            expect(variant.schema.issues.map(({ code }) => code)).toEqual(control.schema.issues.map(({ code }) => code));
+            expect(variant.schema.issues.every(({ path: part }) => part === variant.part)).toBe(true);
+            expect(variant.ids).toEqual({ ...control.ids, issues: control.ids.issues.map((issue) => ({ ...issue, path: variant.part })) });
+            expect(variant.validator.xsdWalk.parts).toEqual([variant.part]);
+            expect(variant.validator.xmlFiles).toEqual([path.join(dir, "variant", variant.part)]);
+        });
+    });
+
+    it.each(["RELS", "%72els"])("does not treat a .%s part as an XML source needing a sidecar", async (extension) => {
+        await withTempDir(async (dir) => {
+            const run = async (ext: string) => {
+                const root = path.join(dir, ext === "rels" ? "control" : "variant");
+                await writeFile(
+                    path.join(root, `word/notes.${ext}`),
+                    `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="unused"/>`,
+                );
+                const validator = new HarnessValidator({ unpackedDir: root });
+                // Exercise the source/sidecar discriminator independently of discovery.
+                if (validator.xmlFiles.length === 0) validator.xmlFiles.push(path.join(root, `word/notes.${ext}`));
+                return validator.validateAllRelationshipIds();
+            };
+            const control = await run("rels");
+            expect(control).toEqual({ valid: true, issues: [] });
+            expect(await run(extension)).toEqual(control);
+        });
+    });
+});
+
+describe("OPC-equivalent content-type relationship skip (#398)", () => {
+    it.each(["RELS", "%72els"])("skips .%s as .rels in the declarable-root pass", async (extension) => {
+        await withTempDir(async (dir) => {
+            const run = async (ext: string) => {
+                const root = path.join(dir, ext === "rels" ? "control" : "variant");
+                const part = `word/notes.${ext}`;
+                await writeFile(path.join(root, "[Content_Types].xml"), MINIMAL_PARTS["[Content_Types].xml"]);
+                await writeFile(path.join(root, part), `<w:document ${W_NS}><w:body/></w:document>`);
+                const validator = new HarnessValidator({ unpackedDir: root });
+                // Keep discovery independent: this pass must skip relationships
+                // parts even if their root resembles a declarable XML part.
+                if (!validator.xmlFiles.includes(path.join(root, part))) validator.xmlFiles.push(path.join(root, part));
+                return validator.validateContentTypes();
+            };
+            const control = await run("rels");
+            expect(control).toEqual({ valid: true, issues: [] });
+            expect(await run(extension)).toEqual(control);
+        });
+    });
+});
+
+describe("content-types stream directory lookup (#396)", () => {
+    it("reads the stored uppercase stream and excludes it from part coverage", async () => {
+        await withTempDir(async (dir) => {
+            const name = "[CONTENT_TYPES].XML";
+            const xml = `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>`;
+            await writeFile(path.join(dir, name), xml);
+            const result = await new HarnessValidator({ unpackedDir: dir }).validateContentTypes();
+            expect(result.issues).toEqual([]);
+            expect(result.valid).toBe(true);
+            expect(await fs.readdir(dir)).toEqual([name]);
+            expect(await fs.readFile(path.join(dir, name), "utf8")).toBe(xml);
+        });
+    });
+
+    it("reports ct-parse with the stored uppercase stream name", async () => {
+        await withTempDir(async (dir) => {
+            const name = "[CONTENT_TYPES].XML";
+            await writeFile(path.join(dir, name), "<broken");
+            const result = await new HarnessValidator({ unpackedDir: dir }).validateContentTypes();
+            expect(result.issues).toEqual([expect.objectContaining({ code: "ct-parse", path: name })]);
+            expect(result.issues[0].message).toContain(name);
+            expect(await fs.readFile(path.join(dir, name), "utf8")).toBe("<broken");
+        });
+    });
+
+    it("does not skip the percent-escaped part in coverage", async () => {
+        await withTempDir(async (dir) => {
+            await writeFile(
+                path.join(dir, "[CONTENT_TYPES].XML"),
+                `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>`,
+            );
+            await writeFile(path.join(dir, "%5BContent_Types%5D.xml"), "<x/>");
+            const result = await new HarnessValidator({ unpackedDir: dir }).validateContentTypes();
+            expect(result.issues).toEqual([expect.objectContaining({ code: "ct-uncovered-part", path: "%5BContent_Types%5D.xml" })]);
+        });
+    });
+
+    it("reports a folder named [Content_Types].xml as a missing stream, not a malformed one", async () => {
+        await withTempDir(async (dir) => {
+            // A folder holds no stream: the entries list files only, where
+            // existsSync matched the folder and readFile then failed (review S).
+            await fs.mkdir(path.join(dir, "[Content_Types].xml"));
+            const result = await new HarnessValidator({ unpackedDir: dir }).validateContentTypes();
+            expect(result.valid).toBe(false);
+            expect(result.issues.map((issue) => issue.code)).toEqual(["ct-missing"]);
+        });
+    });
+
+    it("does not classify the uppercase stream as an unreferenced part", async () => {
+        await withTempDir(async (dir) => {
+            await writeFile(path.join(dir, "[CONTENT_TYPES].XML"), MINIMAL_PARTS["[Content_Types].xml"]);
+            await writeFile(path.join(dir, "_rels/.rels"), MINIMAL_PARTS["_rels/.rels"]);
+            await writeFile(path.join(dir, "word/document.xml"), MINIMAL_PARTS["word/document.xml"]);
+            const result = await new HarnessValidator({ unpackedDir: dir }).validateFileReferences();
+            expect(result.issues.filter((issue) => issue.code === "rels-unreferenced")).toEqual([]);
+        });
+    });
+});
+
+describe("walkDirectory (#426, #543, #546, #573, #575, #576)", () => {
+    // chmod has no effect for root.
+    const runsAsRoot = process.getuid?.() === 0;
+
+    it.skipIf(runsAsRoot)(
+        "orders its unreadable entries by code unit, so the message never depends on the host locale (#575)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(path.join(root, "word", "ä"), { recursive: true });
+                await fs.mkdir(path.join(root, "word", "z"), { recursive: true });
+                await fs.chmod(path.join(root, "word", "ä"), 0o000);
+                await fs.chmod(path.join(root, "word", "z"), 0o000);
+                try {
+                    const walked = walkDirectory(root);
+                    // Code-unit order: "z" (U+007A) precedes "ä" (U+00E4). The
+                    // host locale never decides it.
+                    expect(walked.unreadable.map((entry) => path.basename(entry.file))).toEqual(["z", "ä"]);
+                    expect(walked.unreadable.every((entry) => entry.reason.includes("an unreadable directory"))).toBe(true);
+                } finally {
+                    await fs.chmod(path.join(root, "word", "ä"), 0o755);
+                    await fs.chmod(path.join(root, "word", "z"), 0o755);
+                }
+            });
+        },
+        60_000,
+    );
+    it.skipIf(process.platform === "win32")(
+        "refuses a directory link whose target lies outside the input root, at the link's stored name (#576)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(path.join(root, "word"), { recursive: true });
+                const outside = path.join(dir, "outside");
+                await fs.mkdir(outside, { recursive: true });
+                await fs.writeFile(path.join(outside, "note.txt"), "outside");
+                await fs.symlink(outside, path.join(root, "word", "ext"));
+                const walked = walkDirectory(root);
+                expect(walked.unreadable).toEqual([
+                    expect.objectContaining({
+                        file: path.join(root, "word", "ext"),
+                        reason: "a symbolic link outside the input directory",
+                    }),
+                ]);
+                // The foreign tree is never enumerated.
+                expect(walked.files.some((file) => file.includes("note.txt"))).toBe(false);
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "refuses a file link whose target lies outside the input root (#576)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(path.join(root, "word"), { recursive: true });
+                const outside = path.join(dir, "outside.txt");
+                await fs.writeFile(outside, "outside");
+                await fs.symlink(outside, path.join(root, "word", "linked.xml"));
+                const walked = walkDirectory(root);
+                expect(walked.unreadable).toEqual([
+                    expect.objectContaining({
+                        file: path.join(root, "word", "linked.xml"),
+                        reason: "a symbolic link outside the input directory",
+                    }),
+                ]);
+                expect(walked.files.some((file) => file.endsWith("linked.xml"))).toBe(false);
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "refuses a link to an ancestor of the input root, at the link's stored name (#576)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(path.join(root, "word"), { recursive: true });
+                await fs.symlink("..", path.join(root, "up"));
+                const walked = walkDirectory(root);
+                expect(walked.unreadable).toEqual([
+                    expect.objectContaining({
+                        file: path.join(root, "up"),
+                        reason: "a symbolic link outside the input directory",
+                    }),
+                ]);
+                // The parent is never enumerated.
+                expect(walked.files.some((file) => file.includes(`${path.sep}up${path.sep}`))).toBe(false);
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "keeps following a link that resolves inside the input root (#546, #576)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(path.join(root, "word"), { recursive: true });
+                await fs.mkdir(path.join(root, "real"), { recursive: true });
+                await fs.writeFile(path.join(root, "real", "note.txt"), "inside");
+                await fs.symlink("../real", path.join(root, "word", "inside"));
+                const walked = walkDirectory(root);
+                expect(walked.unreadable).toEqual([]);
+                expect(walked.files).toEqual([path.join(root, "real", "note.txt"), path.join(root, "word", "inside", "note.txt")]);
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "keeps reporting a link to its own directory as a symbolic link loop (#546, #576)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(path.join(root, "word"), { recursive: true });
+                await fs.symlink(".", path.join(root, "word", "self"));
+                const walked = walkDirectory(root);
+                expect(walked.unreadable).toEqual([
+                    expect.objectContaining({ file: path.join(root, "word", "self"), reason: "a symbolic link loop" }),
+                ]);
+            });
+        },
+        60_000,
+    );
+});
+
+/**
+ * `root` respelled in upper case, when the volume names the same directory
+ * that way; `undefined` on a case-sensitive volume, where it does not.
+ */
+const respelledRoot = async (root: string): Promise<string | undefined> => {
+    const respelled = path.join(path.dirname(root), path.basename(root).toUpperCase());
+    try {
+        const [stored, other] = await Promise.all([fs.stat(root), fs.stat(respelled)]);
+        return stored.dev === other.dev && stored.ino === other.ino ? respelled : undefined;
+    } catch {
+        return undefined;
+    }
+};
+
+/** An input root holding `word/media/a.png` and `word/m`, an absolute link to `word/media` spelled as stored. */
+const rootWithAbsoluteLink = async (dir: string): Promise<string> => {
+    const root = path.join(dir, "input.docx");
+    await fs.mkdir(path.join(root, "word", "media"), { recursive: true });
+    await fs.writeFile(path.join(root, "word", "media", "a.png"), "x");
+    await fs.symlink(path.join(root, "word", "media"), path.join(root, "word", "m"));
+    return root;
+};
+
+// Node's JS realpathSync resolves links but keeps the case a path is written
+// in, so on a case-insensitive volume a root spelled in another case than a
+// link's absolute target read the link as leaving the root.
+describe("canonical paths ignore how the input root is spelled (#576, #587)", () => {
+    it.skipIf(process.platform === "win32")(
+        "follows an in-root link when the root is spelled in another case (#576)",
+        async ({ skip }) => {
+            await withTempDir(async (dir) => {
+                const respelled = await respelledRoot(await rootWithAbsoluteLink(dir));
+                if (respelled === undefined) return skip();
+                const walked = walkDirectory(respelled);
+                expect(walked.unreadable).toEqual([]);
+                expect(walked.files).toEqual([path.join(respelled, "word", "m", "a.png"), path.join(respelled, "word", "media", "a.png")]);
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "keeps an in-root target contained when the root is spelled in another case, and an outside one escaped (#587)",
+        async ({ skip }) => {
+            await withTempDir(async (dir) => {
+                const root = await rootWithAbsoluteLink(dir);
+                await fs.mkdir(path.join(dir, "outside"));
+                await fs.writeFile(path.join(dir, "outside", "b.png"), "x");
+                await fs.symlink(path.join(dir, "outside"), path.join(root, "word", "out"));
+                const respelled = await respelledRoot(root);
+                if (respelled === undefined) return skip();
+                const inside = path.join(respelled, "word", "m", "a.png");
+                expect(containRelationshipTarget(respelled, inside)).toBe(inside);
+                expect(containRelationshipTarget(root, path.join(root, "word", "m", "a.png"))).toBe(path.join(root, "word", "m", "a.png"));
+                expect(containRelationshipTarget(respelled, path.join(respelled, "word", "out", "b.png"))).toBeNull();
+                expect(containRelationshipTarget(root, path.join(root, "word", "out", "b.png"))).toBeNull();
+            });
+        },
+        60_000,
+    );
+});
+
+// The lexical layer judged the spellings as passed, so on a case-insensitive
+// volume an in-root target spelled as `realpath(3)` spells it — not as the
+// root is spelled — read as an escape; containment is decided by canonical
+// paths, not by spelling (#594).
+describe("containment is decided by canonical paths, not by spelling (#594)", () => {
+    /** An input root named `pkg-crt.docx` on disk holding `word/document.xml`, beside an `other.docx` holding the same part. */
+    const rootWithRespellableName = async (dir: string): Promise<string> => {
+        const root = path.join(dir, "pkg-crt.docx");
+        await fs.mkdir(path.join(root, "word"), { recursive: true });
+        await fs.writeFile(path.join(root, "word", "document.xml"), "<w/>");
+        const other = path.join(dir, "other.docx");
+        await fs.mkdir(path.join(other, "word"), { recursive: true });
+        await fs.writeFile(path.join(other, "word", "document.xml"), "<w/>");
+        return root;
+    };
+
+    it.skipIf(process.platform === "win32")(
+        "keeps an in-root target contained when it is spelled in its on-disk case under a root spelled in another case (#594)",
+        async ({ skip }) => {
+            await withTempDir(async (dir) => {
+                const root = await rootWithRespellableName(dir);
+                const respelled = await respelledRoot(root);
+                if (respelled === undefined) return skip();
+                const onDisk = path.join(root, "word", "document.xml");
+                expect(containRelationshipTarget(respelled, onDisk)).toBe(onDisk);
+                expect(containRelationshipTarget(root, onDisk)).toBe(onDisk);
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "keeps a target that is outside the root under both spellings escaped (#594)",
+        async ({ skip }) => {
+            await withTempDir(async (dir) => {
+                const root = await rootWithRespellableName(dir);
+                const respelled = await respelledRoot(root);
+                if (respelled === undefined) return skip();
+                const outside = path.join(dir, "other.docx", "word", "document.xml");
+                expect(containRelationshipTarget(respelled, outside)).toBeNull();
+                expect(containRelationshipTarget(root, outside)).toBeNull();
+            });
+        },
+        60_000,
+    );
+
+    it("keeps a lexical .. escape to a non-existent path escaped (#594)", async () => {
+        await withTempDir(async (dir) => {
+            const root = path.join(dir, "input.docx");
+            await fs.mkdir(path.join(root, "word"), { recursive: true });
+            await fs.writeFile(path.join(root, "word", "document.xml"), "<w/>");
+            expect(containRelationshipTarget(root, path.join(root, "..", "no-such-file-outside.docx"))).toBeNull();
+        });
+    }, 60_000);
+
+    it.skipIf(process.platform === "win32")(
+        "keeps a symlink inside the root pointing outward escaped (#594)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(path.join(root, "word"), { recursive: true });
+                await fs.writeFile(path.join(root, "word", "document.xml"), "<w/>");
+                await fs.mkdir(path.join(dir, "outside"), { recursive: true });
+                await fs.writeFile(path.join(dir, "outside", "secret.txt"), "secret");
+                await fs.symlink(path.join(dir, "outside"), path.join(root, "word", "out"));
+                expect(containRelationshipTarget(root, path.join(root, "word", "out", "secret.txt"))).toBeNull();
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "lets the lexical verdict decide when the root itself cannot be canonicalized, failing closed for an escape (#594)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(path.join(root, "word"), { recursive: true });
+                await fs.writeFile(path.join(root, "word", "document.xml"), "<w/>");
+                const native = realpathSync.native;
+                const spy = vi.spyOn(realpathSync, "native").mockImplementation(((target: PathLike, options?: never) => {
+                    if (String(target) === root) throw Object.assign(new Error(`EACCES: realpath '${root}'`), { code: "EACCES" });
+                    return native(target, options);
+                }) as typeof realpathSync.native);
+                try {
+                    const inside = path.join(root, "word", "document.xml");
+                    expect(containRelationshipTarget(root, inside)).toBe(inside);
+                    expect(containRelationshipTarget(root, path.join(root, "..", "sibling.docx"))).toBeNull();
+                } finally {
+                    spy.mockRestore();
+                }
+            });
+        },
+        60_000,
+    );
+});
+
+// realpath(3) can fail where listing the directory still works; a bound that
+// cannot be computed must refuse, never let the walk run unbounded (#576).
+describe("the walk fails closed when a canonical path cannot be resolved (#576)", () => {
+    /** Make realpath(3) fail with EACCES for `failing`; every other path resolves as usual. */
+    const failRealpathFor = (failing: string) => {
+        const native = realpathSync.native;
+        return vi.spyOn(realpathSync, "native").mockImplementation(((target: PathLike, options?: never) => {
+            if (String(target) === failing) throw Object.assign(new Error(`EACCES: realpath '${failing}'`), { code: "EACCES" });
+            return native(target, options);
+        }) as typeof realpathSync.native);
+    };
+
+    /** An input root holding `word/document.xml` and `word/ext`, an absolute link to a directory outside it. */
+    const rootWithOutsideLink = async (dir: string): Promise<string> => {
+        const root = path.join(dir, "input.docx");
+        await fs.mkdir(path.join(root, "word"), { recursive: true });
+        await fs.writeFile(path.join(root, "word", "document.xml"), "<w/>");
+        await fs.mkdir(path.join(dir, "outside"));
+        await fs.writeFile(path.join(dir, "outside", "note.txt"), "outside");
+        await fs.symlink(path.join(dir, "outside"), path.join(root, "word", "ext"));
+        return root;
+    };
+
+    it.skipIf(process.platform === "win32")(
+        "refuses the input directory whose root cannot be canonicalized, and lists nothing",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = await rootWithOutsideLink(dir);
+                const spy = failRealpathFor(root);
+                try {
+                    const walked = walkDirectory(root);
+                    expect(walked.unreadable).toEqual([{ file: root, kind: "directory", reason: "an unreadable directory (EACCES)" }]);
+                    expect(walked.files).toEqual([]);
+                } finally {
+                    spy.mockRestore();
+                }
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "refuses a link whose target cannot be canonicalized instead of following it",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = await rootWithOutsideLink(dir);
+                const link = path.join(root, "word", "ext");
+                const spy = failRealpathFor(link);
+                try {
+                    const walked = walkDirectory(root);
+                    expect(walked.unreadable).toEqual([
+                        { file: link, kind: "directory", reason: "a symbolic link the walk cannot resolve (EACCES)" },
+                    ]);
+                    expect(walked.files).toEqual([path.join(root, "word", "document.xml")]);
+                } finally {
+                    spy.mockRestore();
+                }
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "fails validate() with the one package-extract-failed naming the input directory",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(root);
+                for (const [name, xml] of Object.entries(MINIMAL_PARTS)) {
+                    await fs.mkdir(path.dirname(path.join(root, name)), { recursive: true });
+                    await fs.writeFile(path.join(root, name), xml);
+                }
+                await fs.mkdir(path.join(dir, "outside"));
+                await fs.writeFile(path.join(dir, "outside", "note.xml"), "<x/>");
+                await fs.symlink(path.join(dir, "outside"), path.join(root, "word", "ext"));
+                const spy = failRealpathFor(root);
+                try {
+                    const result = await validate(root);
+                    expect(result.valid).toBe(false);
+                    expect(result.issues.map((issue) => issue.code)).toEqual(["package-extract-failed"]);
+                    expect(result.issues[0]!.message).toContain("an unreadable directory (EACCES)");
+                } finally {
+                    spy.mockRestore();
+                }
+            });
+        },
+        60_000,
+    );
 });

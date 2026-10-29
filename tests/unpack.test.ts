@@ -22,8 +22,36 @@ import { describe, expect, it } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
 import { unpack } from "../src/scripts/office/unpack";
+import { buildDocx as buildMinimalDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { buildRawZip } from "./support/raw-zip";
 
 const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+
+const MINIMAL_DOCUMENT = MINIMAL_PARTS["word/document.xml"]!;
+
+/** The minimal main part with its declaration naming the encoding it is stored in. */
+function minimalDocument(encoding: string): string {
+    return MINIMAL_DOCUMENT.replace('encoding="UTF-8"', `encoding="${encoding}"`);
+}
+
+/** A part stored in UTF-16, with the byte order mark that says which way round it is. */
+function utf16Part(text: string, endian: "le" | "be"): Buffer {
+    const body = Buffer.from(text, "utf16le");
+    if (endian === "be") body.swap16();
+    return Buffer.concat([Buffer.from(endian === "le" ? [0xff, 0xfe] : [0xfe, 0xff]), body]);
+}
+
+/** The text of a UTF-16 part, decoded in the byte order it was stored in. */
+function decodeUtf16(bytes: Buffer, endian: "le" | "be"): string {
+    const body = Buffer.from(bytes.subarray(2));
+    if (endian === "be") body.swap16();
+    return body.toString("utf16le");
+}
+
+/** A part's document, without the XML declaration that names its encoding. */
+function documentBody(text: string): string {
+    return text.slice(text.indexOf("<w:document"));
+}
 
 interface DocxParts {
     document: string;
@@ -60,6 +88,23 @@ async function buildDocx(target: string, parts: DocxParts): Promise<void> {
 }
 
 describe("unpack", () => {
+    it("keeps raw JSZip's UTF-8 fallback for flag-less CP437 names (#480)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "cp437.docx");
+            const outputDir = path.join(dir, "out");
+            await fs.writeFile(
+                inputFile,
+                buildRawZip([
+                    ...Object.entries(MINIMAL_PARTS).map(([name, content]) => ({ name, content })),
+                    { name: "café.xml", nameBytes: Uint8Array.from([0x63, 0x61, 0x66, 0x82, 0x2e, 0x78, 0x6d, 0x6c]), content: "<x/>" },
+                ]),
+            );
+            expect((await unpack(inputFile, outputDir, { mergeRuns: false, simplifyRedlines: false })).ok).toBe(true);
+            expect(await fs.readdir(outputDir)).toContain("caf�.xml");
+            expect(await fs.readdir(outputDir)).not.toContain("café.xml");
+        });
+    });
+
     it("returns an error when the input file does not exist", async () => {
         await withTempDir(async (dir) => {
             const result = await unpack(path.join(dir, "missing.docx"), path.join(dir, "out"));
@@ -215,6 +260,244 @@ describe("unpack", () => {
             } finally {
                 JSZip.loadAsync = originalLoadAsync;
             }
+        });
+    });
+
+    /** A minimal package plus one entry stored under `name`, written by a raw archiver. */
+    const withEntry = async (target: string, name: string): Promise<void> => {
+        const entries = Object.entries(MINIMAL_PARTS).map(([part, content]) => ({ name: part, content }));
+        await fs.writeFile(target, buildRawZip([...entries, { name, content: "x" }]));
+    };
+
+    it("leaves no output directory behind when it created one and the extraction is refused (#675)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "slip.docx");
+            await withEntry(inputFile, "../evil.txt");
+            const out = path.join(dir, "new", "out");
+
+            const result = await unpack(inputFile, out);
+            expect(result).toEqual({ ok: false, message: "Error unpacking: Refusing to extract entry outside output dir: ../evil.txt" });
+            await expect(fs.access(path.join(dir, "new"))).rejects.toThrow();
+            await expect(fs.access(path.join(dir, "evil.txt"))).rejects.toThrow();
+        });
+    });
+
+    it("keeps an existing output directory and its files when the extraction is refused (#675)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "slip.docx");
+            await withEntry(inputFile, "word/../../evil.txt");
+            const out = path.join(dir, "out");
+            await fs.mkdir(out);
+            await fs.writeFile(path.join(out, "notes.txt"), "mine");
+
+            expect((await unpack(inputFile, out)).ok).toBe(false);
+            expect(await fs.readdir(out)).toEqual(["notes.txt"]);
+        });
+    });
+
+    // JSZip keeps no unsafeOriginalName for a folder entry, and keys its view
+    // by the resolved name, so a later entry under that name replaces a
+    // traversal record: only the central directory still holds the stored
+    // names (#676 Codex P2s).
+    it("refuses a stored folder name that leaves the output directory, writing nothing (#676)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "slip.docx");
+            await withEntry(inputFile, "../../outside/");
+            const out = path.join(dir, "out");
+
+            const result = await unpack(inputFile, out);
+            expect(result).toEqual({
+                ok: false,
+                message: "Error unpacking: Refusing to extract entry outside output dir: ../../outside/",
+            });
+            await expect(fs.access(out)).rejects.toThrow();
+        });
+    });
+
+    it("refuses a traversal record a later entry under its resolved name shadows (#676)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "slip.docx");
+            const entries = Object.entries(MINIMAL_PARTS).map(([part, content]) => ({ name: part, content }));
+            await fs.writeFile(inputFile, buildRawZip([{ name: "../../word/document.xml", content: "x" }, ...entries]));
+            const out = path.join(dir, "out");
+
+            const result = await unpack(inputFile, out);
+            expect(result).toEqual({
+                ok: false,
+                message: "Error unpacking: Refusing to extract entry outside output dir: ../../word/document.xml",
+            });
+            await expect(fs.access(out)).rejects.toThrow();
+        });
+    });
+
+    it("prints a refused name's control characters as escapes (#675)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "slip.docx");
+            await withEntry(inputFile, "../\u001b]0;owned\u0007\r\nevil.txt");
+
+            const result = await unpack(inputFile, path.join(dir, "out"));
+            expect(result.ok).toBe(false);
+            expect(result.message).toBe(
+                "Error unpacking: Refusing to extract entry outside output dir: ../\\u{1b}]0;owned\\u{7}\\u{d}\\u{a}evil.txt",
+            );
+        });
+    });
+
+    it("leaves no output directory behind for a file that is not a ZIP archive (#675)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "fake.docx");
+            await fs.writeFile(inputFile, "not a zip");
+            const out = path.join(dir, "out");
+
+            expect((await unpack(inputFile, out)).ok).toBe(false);
+            await expect(fs.access(out)).rejects.toThrow();
+        });
+    });
+
+    it.each(["le", "be"] as const)("keeps a UTF-16%s main part in its own encoding (#866)", async (endian) => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "utf16.docx");
+            const outputDir = path.join(dir, "out");
+            const utf8File = path.join(dir, "utf8.docx");
+            const utf8Out = path.join(dir, "utf8-out");
+            await fs.writeFile(
+                inputFile,
+                await buildMinimalDocx({ ...MINIMAL_PARTS, "word/document.xml": utf16Part(minimalDocument("UTF-16"), endian) }),
+            );
+            await fs.writeFile(utf8File, await buildMinimalDocx({ ...MINIMAL_PARTS, "word/document.xml": MINIMAL_DOCUMENT }));
+
+            const result = await unpack(inputFile, outputDir);
+            expect(result.ok).toBe(true);
+            expect((await unpack(utf8File, utf8Out)).ok).toBe(true);
+
+            const bytes = await fs.readFile(path.join(outputDir, "word", "document.xml"));
+            expect([...bytes.subarray(0, 2)]).toEqual(endian === "le" ? [0xff, 0xfe] : [0xfe, 0xff]);
+            const decoded = decodeUtf16(bytes, endian);
+            expect(decoded).not.toContain("\uFFFD");
+            // The part reads exactly as the same package stored in UTF-8 does.
+            const utf8Text = await fs.readFile(path.join(utf8Out, "word", "document.xml"), "utf8");
+            expect(documentBody(decoded)).toBe(documentBody(utf8Text));
+        });
+    });
+
+    it.each(["le", "be"] as const)("keeps a UTF-16%s main part's text when both helpers are off (#866)", async (endian) => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "utf16.docx");
+            const outputDir = path.join(dir, "out");
+            const utf8File = path.join(dir, "utf8.docx");
+            const utf8Out = path.join(dir, "utf8-out");
+            await fs.writeFile(
+                inputFile,
+                await buildMinimalDocx({
+                    ...MINIMAL_PARTS,
+                    "word/document.xml": utf16Part(minimalDocument("UTF-16"), endian),
+                }),
+            );
+            await fs.writeFile(utf8File, await buildMinimalDocx({ ...MINIMAL_PARTS, "word/document.xml": MINIMAL_DOCUMENT }));
+
+            const result = await unpack(inputFile, outputDir, { mergeRuns: false, simplifyRedlines: false });
+            expect(result.ok).toBe(true);
+            expect((await unpack(utf8File, utf8Out, { mergeRuns: false, simplifyRedlines: false })).ok).toBe(true);
+
+            const bytes = await fs.readFile(path.join(outputDir, "word", "document.xml"));
+            expect([...bytes.subarray(0, 2)]).toEqual(endian === "le" ? [0xff, 0xfe] : [0xfe, 0xff]);
+            const decoded = decodeUtf16(bytes, endian);
+            expect(decoded).not.toContain("\uFFFD");
+            const utf8Text = await fs.readFile(path.join(utf8Out, "word", "document.xml"), "utf8");
+            expect(documentBody(decoded)).toBe(documentBody(utf8Text));
+        });
+    });
+
+    it("escapes a smart quote inside a UTF-16 part exactly as in a UTF-8 part (#866)", async () => {
+        await withTempDir(async (dir) => {
+            const body = "<w:t>“hi” ‘there’</w:t>";
+            const utf16File = path.join(dir, "utf16.docx");
+            const utf8File = path.join(dir, "utf8.docx");
+            await fs.writeFile(
+                utf16File,
+                await buildMinimalDocx({
+                    ...MINIMAL_PARTS,
+                    "word/document.xml": utf16Part(minimalDocument("UTF-16").replace("<w:t>Hello</w:t>", body), "le"),
+                }),
+            );
+            await fs.writeFile(
+                utf8File,
+                await buildMinimalDocx({
+                    ...MINIMAL_PARTS,
+                    "word/document.xml": MINIMAL_DOCUMENT.replace("<w:t>Hello</w:t>", body),
+                }),
+            );
+
+            const utf16Out = path.join(dir, "utf16-out");
+            const utf8Out = path.join(dir, "utf8-out");
+            expect((await unpack(utf16File, utf16Out, { mergeRuns: false, simplifyRedlines: false })).ok).toBe(true);
+            expect((await unpack(utf8File, utf8Out, { mergeRuns: false, simplifyRedlines: false })).ok).toBe(true);
+
+            const utf16Text = decodeUtf16(await fs.readFile(path.join(utf16Out, "word", "document.xml")), "le");
+            const utf8Text = await fs.readFile(path.join(utf8Out, "word", "document.xml"), "utf8");
+            // The declarations name the encoding each part is stored in; the
+            // bodies must read the same.
+            expect(utf16Text.slice(utf16Text.indexOf("<w:document"))).toBe(utf8Text.slice(utf8Text.indexOf("<w:document")));
+            expect(utf16Text).toContain("&#x201C;hi&#x201D; &#x2018;there&#x2019;");
+            expect(utf16Text).not.toMatch(/[“”‘’]/);
+        });
+    });
+
+    it("leaves a part in an encoding it cannot decode byte-for-byte (#866)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "macintosh.docx");
+            const outputDir = path.join(dir, "out");
+            const document = minimalDocument("macintosh");
+            await fs.writeFile(inputFile, await buildMinimalDocx({ ...MINIMAL_PARTS, "word/document.xml": document }));
+
+            const result = await unpack(inputFile, outputDir);
+            expect(result.ok).toBe(true);
+
+            const bytes = await fs.readFile(path.join(outputDir, "word", "document.xml"));
+            expect(bytes.equals(Buffer.from(document, "utf8"))).toBe(true);
+        });
+    });
+
+    it("leaves such a part byte-for-byte however long its declaration is (#881)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "macintosh-long.docx");
+            const outputDir = path.join(dir, "out");
+            // "Café" as Mac Roman stores it (é is 0x8E), behind a declaration longer than 200 bytes.
+            const document = Buffer.from(
+                MINIMAL_DOCUMENT.replace('encoding="UTF-8"', `${" ".repeat(240)}encoding="macintosh"`).replace("Hello", "Caf\u008e"),
+                "latin1",
+            );
+            await fs.writeFile(inputFile, await buildMinimalDocx({ ...MINIMAL_PARTS, "word/document.xml": document }));
+
+            const result = await unpack(inputFile, outputDir);
+            expect(result.ok).toBe(true);
+
+            const bytes = await fs.readFile(path.join(outputDir, "word", "document.xml"));
+            expect(bytes.equals(document)).toBe(true);
+        });
+    });
+
+    // #1139: mergeRuns and simplifyRedlines walk with their own stack, so a
+    // main document nested deeper than the call stack still unpacks.
+    it("unpacks a main document nested 50 000 elements deep, merging its runs and tracked changes (#1139)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "deep.docx");
+            const outputDir = path.join(dir, "out");
+            const depth = 50_000;
+            const document = MINIMAL_DOCUMENT.replace(
+                "<w:sectPr",
+                `${"<w:customXml>".repeat(depth)}<w:p>` +
+                    "<w:r><w:t>foo</w:t></w:r><w:r><w:t>bar</w:t></w:r>" +
+                    '<w:ins w:id="1" w:author="Alice"><w:r><w:t>x</w:t></w:r></w:ins>' +
+                    '<w:ins w:id="2" w:author="Alice"><w:r><w:t>y</w:t></w:r></w:ins>' +
+                    `</w:p>${"</w:customXml>".repeat(depth)}<w:sectPr`,
+            );
+            await fs.writeFile(inputFile, await buildMinimalDocx({ ...MINIMAL_PARTS, "word/document.xml": document }));
+
+            const result = await unpack(inputFile, outputDir);
+            expect(result.ok).toBe(true);
+            expect(result.message).toMatch(/simplified 1 tracked changes/);
+            expect(result.message).toMatch(/merged 2 runs/);
         });
     });
 });

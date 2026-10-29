@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
+import path from "node:path";
+
 import { describe, expect, it } from "vitest";
 
-import { resolveWordOutcome } from "../scripts/update-manifest";
+import { manifestKey, resolveWordColumn, resolveWordOutcome } from "../scripts/update-manifest";
+import type { WordHistoryEntry } from "../src/lib/word-provenance";
 
 describe("resolveWordOutcome", () => {
     const prior = new Map<string, string>([["broken/a.docx", "clean-open"]]);
@@ -31,5 +34,52 @@ describe("resolveWordOutcome", () => {
 
     it("is 'unknown' when neither probe nor prior value exists", () => {
         expect(resolveWordOutcome("broken/new.docx", undefined, prior)).toBe("unknown");
+    });
+});
+
+describe("resolveWordColumn", () => {
+    it("writes hash-bound structured observations and never discards prior evidence (#274)", () => {
+        // Unchanged hash: prior observation kept, now recorded bound to its bytes.
+        expect(resolveWordColumn({ outcome: "clean-open", sha256: "aaaa" }, [], undefined, "aaaa")).toEqual({
+            word: { outcome: "clean-open", sha256: "aaaa" },
+            history: [],
+        });
+
+        // Changed hash, no fresh probe: prior retired to history under its old
+        // hash; the current bytes carry no observation.
+        expect(resolveWordColumn({ outcome: "open-error", sha256: "aaaa" }, [], undefined, "bbbb")).toEqual({
+            word: { outcome: "unknown", sha256: "bbbb" },
+            history: [{ outcome: "open-error", sha256: "aaaa" }],
+        });
+
+        // Fresh probe outcome wins and is bound to the current bytes.
+        expect(resolveWordColumn({ outcome: "clean-open", sha256: "aaaa" }, [], "open-error", "bbbb")).toEqual({
+            word: { outcome: "open-error", sha256: "bbbb" },
+            history: [{ outcome: "clean-open", sha256: "aaaa" }],
+        });
+
+        // A legacy bare-string prior with no hash is preserved and adopts the
+        // current hash (the one-time binding migration).
+        expect(resolveWordColumn("clean-open", undefined, undefined, "aaaa")).toEqual({
+            word: { outcome: "clean-open", sha256: "aaaa" },
+            history: [],
+        });
+
+        // Pre-existing history survives every path.
+        const history: WordHistoryEntry[] = [{ outcome: "timeout", sha256: "0000" }];
+        expect(resolveWordColumn(undefined, history, undefined, "aaaa")).toEqual({
+            word: { outcome: "unknown", sha256: "aaaa" },
+            history,
+        });
+    });
+});
+
+describe("manifestKey", () => {
+    it("keys a fixture by its forward-slash path under the root on POSIX", () => {
+        expect(manifestKey("/repo/tests/fixtures", "/repo/tests/fixtures/broken/a.docx", path.posix)).toBe("broken/a.docx");
+    });
+
+    it("keys a fixture by its forward-slash path under the root on Windows", () => {
+        expect(manifestKey("C:\\repo\\tests\\fixtures", "C:\\repo\\tests\\fixtures\\broken\\a.docx", path.win32)).toBe("broken/a.docx");
     });
 });

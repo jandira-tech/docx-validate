@@ -51,9 +51,15 @@ describe("word-valid deleted text in a text box", { timeout: 30000 }, () => {
         expect(result.valid).toBe(true);
     });
 
-    it.each(["lenient", "strict"] as const)("does not report the cause on %s", async (profile) => {
-        const result = await validate(DEL_TEXT, { profile });
+    it("does not report the cause on lenient", async () => {
+        const result = await validate(DEL_TEXT, { profile: "lenient" });
         expect(result.issues.some((issue) => issue.code === "word-textbox-deleted-text")).toBe(false);
+    });
+
+    // strict includes every Word-valid check (validation contract, Task 1).
+    it("reports the cause on strict", async () => {
+        const result = await validate(DEL_TEXT, { profile: "strict" });
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-textbox-deleted-text")).toBe(true);
     });
 
     it("rejects w:delText inside an mc:Choice text box", async () => {
@@ -74,8 +80,14 @@ describe("word-valid deleted text in a text box", { timeout: 30000 }, () => {
         expect(result.valid).toBe(true);
     });
 
-    it.each(["lenient", "strict"] as const)("does not report the choice-box cause on %s", async (profile) => {
-        const result = await validate(CHOICE_DEL, { profile });
+    it("does not report the choice-box cause on lenient", async () => {
+        const result = await validate(CHOICE_DEL, { profile: "lenient" });
         expect(result.issues.some((issue) => issue.code === "word-textbox-deleted-text")).toBe(false);
+    });
+
+    // strict includes every Word-valid check (validation contract, Task 1).
+    it("reports the choice-box cause on strict", async () => {
+        const result = await validate(CHOICE_DEL, { profile: "strict" });
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-textbox-deleted-text")).toBe(true);
     });
 });

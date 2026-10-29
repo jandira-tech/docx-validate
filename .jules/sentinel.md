@@ -32,3 +32,15 @@
 
 **Learning:** JSZip 3.8+ (we pin 3.10.2) stores every entry under `utils.resolve(name)` on load and keeps the raw name in `unsafeOriginalName`: `../../evil.xml` loads as `evil.xml`, and `zip.file("../../evil.xml")` returns null. `_getOriginalFileErrors` looks entries up by name and returns before writing when the lookup fails, so the zip slip reported in PR #189 is unreachable; its test had to monkeypatch JSZip to recreate it. An absolute name (`/abs.xml`) is kept as is, but `path.join(tmpDir, rel)` cannot leave `tmpDir` with it.
 **Prevention:** Code that iterates `zip.files` or reads `unsafeOriginalName` to write files must still check containment with `path.relative`, as `extractZipEntries` does.
+
+## 2026-10-25 - What the salvage of PRs #204, #206, #207, #264 and #429 kept
+
+**Vulnerability:** `runGitDiff` in `redlining.ts` ran `git diff` through `spawnSync` with no timeout, on text taken from the documents under test.
+**Learning:** #207, #204 and #264 each proposed the same 10-second bound, but two fresh timeouts per diff could still block for 20 seconds (Sourcery on #207). Both attempts now share one budget, with a 10 MiB output cap. The gcc shim build compiles a constant source, so it got no bound. #429 is not a fix: as the 2026-10-11 entry shows, JSZip resolves `../` names before `extractZipEntries` sees them, so every written path stays inside the output directory. #206 landed as a consolidation, not a security fix, because the fixtures are repository files.
+**Prevention:** Give blocking calls on document-derived input one deadline that covers every retry. Before reporting a zip slip, show an entry name that would be written outside the output directory. Do not add review-rule files or quota notes to work around CI rate limits (#204).
+
+## 2026-10-28 - #676's check landed; #685 repeated it
+
+**Vulnerability:** `extractZipEntries` wrote each entry under the name JSZip had resolved, so a stored `../evil.txt` was extracted as `evil.txt` instead of being refused.
+**Learning:** 0a498a5b (#675, #676) passes every entry's stored `unsafeOriginalName` through `resolveSafeZipEntry` before the first write and refuses a name that leaves the output directory. #685 proposed refusing any name that contains `../`, `..\` or is absolute. That substring test also refuses `a/../b`, which resolves inside the directory (#1027).
+**Prevention:** Judge a stored name by where it resolves, not by the substrings it contains.

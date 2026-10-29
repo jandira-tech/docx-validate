@@ -15,7 +15,12 @@
  */
 
 /**
- * Validator for Word document XML files against XSD schemas.
+ * Validator for Word documents.
+ *
+ * The default (`word-valid`) profile judges a package by what Microsoft Word
+ * reads — the structural checks below plus the registered Word rules — and
+ * compiles no schema; the `lenient` and `strict` profiles also walk the XSD
+ * schemas.
  *
  * 1:1 TypeScript port of `src/docx-validate/scripts/office/validators/docx.py`
  * (task #10). Subclasses `BaseSchemaValidator` and adds DOCX-specific checks:
@@ -41,26 +46,95 @@
  * see `lib/xml-helpers.ts` for the convention.
  */
 
-import { default as JSZip } from "jszip";
-import { promises as fs, readFileSync } from "node:fs";
+import { constants as fsConstants, promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
+import {
+    canonicalPartName,
+    isRelationshipsFolderName,
+    isRelationshipsPartName,
+    relationshipTargetFolder,
+    resolvePartName,
+} from "../../../lib/content-types";
+import { opcNameIssueSeverity } from "../../../lib/mode-policy";
 import { nextSecureLongHexNumber } from "../../../lib/secure-id";
-import type { ValidationIssue, ValidationResult } from "../../../lib/types";
-import { mergeResults } from "../../../lib/types";
-import { getElementsByTagNameAll, getElementsByTagNameNSAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import type { PackageFormat, ValidationIssue, ValidationResult } from "../../../lib/types";
+import { withoutConsequentialParseFailures } from "../../../lib/parse-failures";
+import { mergeResults, NS } from "../../../lib/types";
+import { promoteFullCheckIssue } from "../../../lib/mode-policy";
+import { propertiesParts } from "../../../lib/properties-parts";
+import {
+    COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE,
+    COMMENTS_IDS_RELATIONSHIP_TYPE,
+    wordExactTypeTargets,
+    wordReferenceLoadedSources,
+    wordReadParts,
+    wordPossiblyReadParts,
+    wordStoryRootParts,
+    wordTypedRelationshipTargets,
+    wordUnobservedRelationshipTargets,
+    glossaryTypedRelationshipTargets,
+    wordMainReachedParts,
+} from "../../../lib/word-read-parts";
+import {
+    hasWordRelationshipReference,
+    isWordBlockingIssue,
+    isUnreadByWord,
+    needsPossiblyReadParts,
+    unobservedReferenceAttributeValues,
+    wordRelationshipReferenceIds,
+} from "./word-blocking";
+import {
+    decodeXmlBytes,
+    decodeXmlPart,
+    getElementsByTagNameAll,
+    getElementsByTagNameNSAll,
+    parseXml,
+    parseXmlBytes,
+} from "../../../lib/xml-helpers";
+import { writeXmlPart } from "../../../lib/xml-part-io";
 import {
     BaseSchemaValidator,
     collectDeclaredPrefixes,
     containRelationshipTarget,
-    OFFICE_RELATIONSHIPS_NAMESPACE,
-    PACKAGE_RELATIONSHIPS_NAMESPACE,
+    packageEntries,
+    packageTargetPath,
+    withoutRestatedIgnorablePrefixes,
     XML_NAMESPACE,
 } from "./base";
 
-export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
-export const WORD_STRICT_NAMESPACE = "http://purl.oclc.org/ooxml/wordprocessingml/main";
-/** Python: `WORD_PARAGRAPH_NAMESPACES = (WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE)` */
-export const WORD_PARAGRAPH_NAMESPACES: readonly [string, string] = [WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE];
+import { runChecks } from "../../../lib/check-scheduler";
+import { citesWordSession } from "../../../lib/conformance-class";
+import { normalizePartName, type ValidationContext } from "../../../lib/validation-context";
+import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
+import { xmlPartNames } from "../checks/xml";
+import { WORD_HEADER_FOOTER_RELATIONSHIP } from "../checks/word-header-footer";
+import { WORD_PART_REFERENCE_RELATIONSHIP } from "../checks/word-part-reference";
+import { WORD_ATTACHED_TOOLBAR_RELATIONSHIP } from "../checks/word-attached-toolbar";
+import { WORD_HYPERLINK_RELATIONSHIP } from "../checks/word-hyperlink";
+import { withoutHandedOffCopies } from "../story-reference-identity";
+import { WORD_PART_CONTENT_TYPE_GENERIC, wordPartContentTypeGenericFindings } from "../checks/word-part-content-type-generic";
+import { contextFromDirectory, openDirectoryContext, packageExtractFailedIssue, storedNamesRun } from "../package-context";
+import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
+import { WORD_PART_CONTENT_TYPE_MISMATCH, wordPartContentTypeMismatchFindings } from "../checks/word-part-content-type-mismatch";
+import { WORD_PART_CONTENT_TYPE_INEXACT, wordPartContentTypeInexactFindings } from "../checks/word-part-content-type-inexact";
+import { RELATIONSHIPS_UNDERSTOOD_NAMESPACES, understoodNamespacesForPart } from "../../../lib/markup-compatibility";
+/**
+ * The relationship-type segments whose targets can hold the user-text
+ * parts `userTextXmlFiles` and `documentXmlFiles` walk (#698): a reached
+ * glossary's story parts, judged against the glossary's own styles part
+ * rather than the main document's. A nested `glossaryDocument` stays in
+ * the set: reached only through the outer glossary's relationships, its
+ * references are that root's, not the main document's.
+ */
+const STORY_TEXT_SEGMENTS: ReadonlySet<string> = new Set(["comments", "endnotes", "footnotes", "footer", "glossaryDocument", "header"]);
+
+import {
+    WORD_PART_CONTENT_TYPE_UNRECOGNIZED,
+    wordObservedContentTypeParts,
+    wordPartContentTypeUnrecognizedFindings,
+} from "../checks/word-part-content-type-unrecognized";
+
+export { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 /** OpenXmlPowerTools DocumentBuilder Insert — `PtOpenXml.ptOpenXml` in PtOpenXmlUtil.cs */
 const DOCUMENT_BUILDER_INSERT_NAMESPACE = "http://powertools.codeplex.com/documentbuilder/2011/insert";
 const DOCUMENT_BUILDER_INSERT_NAMESPACES: ReadonlySet<string> = new Set([DOCUMENT_BUILDER_INSERT_NAMESPACE]);
@@ -114,12 +188,10 @@ const RUN_INNER_CONTENT_LOCALS: ReadonlySet<string> = new Set([
     "contentPart",
 ]);
 const W14_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordml";
+const XMLNS_NAMESPACE = "http://www.w3.org/2000/xmlns/";
 const W15_NAMESPACE = "http://schemas.microsoft.com/office/word/2012/wordml";
 const W16CEX_NAMESPACE = "http://schemas.microsoft.com/office/word/2018/wordml/cex";
 const W16CID_NAMESPACE = "http://schemas.microsoft.com/office/word/2016/wordml/cid";
-const MATH_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/math";
-const MC_NAMESPACE = "http://schemas.openxmlformats.org/markup-compatibility/2006";
-const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
 const VML_NAMESPACE = "urn:schemas-microsoft-com:vml";
 const WP_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
 const WP14_DRAWING_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing";
@@ -353,6 +425,9 @@ const collectDeletedRunText = (root: Document | Element, localName: string): Ele
 };
 
 export class DOCXSchemaValidator extends BaseSchemaValidator {
+    protected override get duplicateContentTypeSeverity(): "error" | "warning" {
+        return this.profile === "word-valid" ? "error" : super.duplicateContentTypeSeverity;
+    }
     /**
      * Element (lower-cased local name) → required `r:id` relationship-type suffix.
      * Enables the `rels-id-mismatch` check in `validateAllRelationshipIds`: an
@@ -376,12 +451,168 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     };
 
     /**
-     * Cached parse of `word/document.xml` from the original `.docx` zip.
-     * `null` means "not yet attempted"; `false` means "attempted and failed,
-     * don't try again".
+     * The package as the named checks see it, built once per `validate()` run
+     * so its read and parse caches never outlive the run (auto-repair rewrites
+     * parts between runs). Outside a run, a check method called directly
+     * reads the package as it is now.
      */
-    private originalDocumentRoot: Element | null = null;
-    private originalDocumentRootFailed = false;
+    private runContext: ValidationContext | undefined;
+    private inRun = false;
+
+    private context(): ValidationContext {
+        if (!this.inRun) return contextFromDirectory(this.unpackedDir);
+        this.runContext ??= contextFromDirectory(this.unpackedDir);
+        return this.runContext;
+    }
+
+    /**
+     * The main document's part reached by the relationship segment
+     * `segment` — Transitional or Strict — so a reached glossary's own
+     * part is never judged for the main document, wherever it is stored
+     * (#688, #690). `undefined` when such a relationship names a stored
+     * part that is not one of the XML parts: nothing is judged, and no
+     * other part stands in for it (#693). Only when no relationship names
+     * a stored part, or the package view cannot be read, the last file
+     * named `fallbackName` in the main document's folder (#699); `null`
+     * when there is none. A part stored elsewhere that no relationship
+     * names is not judged.
+     */
+    private async mainRelatedPath(segment: string, fallbackName: string): Promise<string | null | undefined> {
+        try {
+            const targets = await wordTypedRelationshipTargets(this.context(), new Set([segment]), this.profile);
+            if (targets.length > 0) return this.xmlFileOf(targets.map((target) => target.part));
+        } catch {
+            // An unreadable package view is reported by its own checks.
+        }
+        const folder = await this.mainDocumentFolder();
+        let byName: string | null = null;
+        for (const xmlFile of this.xmlFiles) {
+            if (
+                baseName(xmlFile) === fallbackName &&
+                canonicalPartName(path.posix.dirname(normalizePartName(this.entryName(xmlFile)))) === folder
+            )
+                byName = xmlFile;
+        }
+        return byName;
+    }
+
+    /**
+     * The folder the by-name fallback reads (#699): the folder of the
+     * first main document `wordTypedRelationshipTargets` names, or `word`
+     * when the package relationships name none or cannot be read. It reads
+     * the profile's relationship view, so under lenient an `officeDocument`
+     * relationship only a markup-compatibility branch carries names no
+     * folder and `word` is read.
+     */
+    private async mainDocumentFolder(): Promise<string> {
+        try {
+            const [first] = await wordTypedRelationshipTargets(this.context(), new Set(["officeDocument"]), this.profile);
+            if (first !== undefined) return canonicalPartName(path.posix.dirname(normalizePartName(first.part)));
+        } catch {
+            // An unreadable package view is reported by its own checks.
+        }
+        return "word";
+    }
+
+    /** The first of `parts` that names an XML part by OPC equivalence, or `undefined`. */
+    private xmlFileOf(parts: readonly string[]): string | undefined {
+        for (const part of parts) {
+            const file =
+                this.xmlFiles.find((xmlFile) => normalizePartName(this.entryName(xmlFile)) === normalizePartName(part)) ??
+                this.xmlFiles.find(
+                    (xmlFile) =>
+                        canonicalPartName(normalizePartName(this.entryName(xmlFile))) === canonicalPartName(normalizePartName(part)),
+                );
+            if (file !== undefined) return file;
+        }
+        return undefined;
+    }
+
+    private async mainStylesPath(): Promise<string | null | undefined> {
+        return this.mainRelatedPath("styles", "styles.xml");
+    }
+
+    /**
+     * The comment-thread part the main document's relationship of exactly
+     * `type` names (#690), as `wordExactTypeTargets` reads it: the Microsoft
+     * commentsIds/commentsExtensible types carry no Office relationship-type
+     * segment, so `mainRelatedPath` cannot reach them. When such a
+     * relationship names a stored part that is not one of the XML parts,
+     * `undefined` (#693); only when none names a stored part, the file
+     * named `name` in the chosen comments part's folder, or `null`.
+     */
+    private async mainThreadPath(type: string, commentsXml: string, name: string): Promise<string | null | undefined> {
+        try {
+            const parts = await wordExactTypeTargets(this.context(), type, this.profile);
+            if (parts.length > 0) return this.xmlFileOf(parts);
+        } catch {
+            // An unreadable package view is reported by its own checks.
+        }
+        return this.sameFolderByName(commentsXml, name);
+    }
+
+    /**
+     * The last file named `name` stored in the same folder as `partPath`:
+     * the by-name fallback of `repairCommentThreading`, which never pairs a
+     * commentsIds/commentsExtensible part with comments from another story
+     * root (#690). `null` when that folder holds none.
+     */
+    private sameFolderByName(partPath: string, name: string): string | null {
+        const folder = canonicalPartName(path.posix.dirname(normalizePartName(this.entryName(partPath))));
+        let byName: string | null = null;
+        for (const xmlFile of this.xmlFiles) {
+            if (baseName(xmlFile) === name && canonicalPartName(path.posix.dirname(normalizePartName(this.entryName(xmlFile)))) === folder)
+                byName = xmlFile;
+        }
+        return byName;
+    }
+
+    /**
+     * Sessions 65 and 67 stored Transitional packages, so the schema walk's
+     * markup-compatibility findings cite them only in a package with no
+     * Strict part (#1016). A package the context cannot read shows no class
+     * and cites nothing.
+     */
+    protected override citesWordSessions(): boolean {
+        try {
+            const context = this.context();
+            return citesWordSession(
+                context,
+                xmlPartNames(context.partNames, (name) => context.bytes(name)),
+            );
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * The `.rels` part as the non-lenient walks read it (#635): the run
+     * context's `effectiveXml` whenever `understoodNamespacesForPart`
+     * processes `part` with the same understood set `relationshipElements`
+     * applies — exactly the relationships parts — so markup compatibility
+     * runs once per part per run (#642). A part the context cannot supply
+     * (an unrecognized spelling, a part absent from the package view, or a
+     * refused directory) keeps the validator's own processed clone,
+     * memoized only within a run (#654). DOCX/DOCM only: PPTX keeps the
+     * stored view (#643).
+     */
+    protected override relationshipsView(document: Document, part: string): Document {
+        if (understoodNamespacesForPart(part) === RELATIONSHIPS_UNDERSTOOD_NAMESPACES) {
+            try {
+                const effective = this.context().effectiveXml(part);
+                if (effective?.ok === true) {
+                    return effective.document;
+                }
+            } catch {
+                // A refused directory view falls back to the processed clone.
+            }
+        }
+        // Outside a run a check method called directly reads the package as
+        // it is now, as `context()` does: a repair such as `repairIgnorable`
+        // can change which branch markup compatibility selects (#654).
+        if (!this.inRun) this.resetProcessedRelationships();
+        return this.processedRelationshipsView(document, part);
+    }
 
     // ----- top-level entry point ----------------------------------------------
 
@@ -390,1317 +621,304 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * does not affect the merged validity.
      */
     async validate(): Promise<ValidationResult> {
-        this.xsdWalk = { started: false, parts: [], eligible: 0 };
-        const xmlOk = await this.validateXml();
-        if (!xmlOk.valid && this.profile !== "word-valid") return xmlOk;
+        this.inRun = true;
+        this.runContext = undefined;
+        // A run re-reads the package: the processed relationship views of
+        // the previous run must not outlive it, as `runContext` does not.
+        this.resetProcessedRelationships();
+        try {
+            return this.withDeadlineFinding(await this.withinBaselineRun(() => this.runEveryCheck()));
+        } finally {
+            this.inRun = false;
+            this.runContext = undefined;
+        }
+    }
 
+    private async runEveryCheck(): Promise<ValidationResult> {
+        this.xsdWalk = { started: false, parts: [], eligible: 0 };
+        this.malformedParts = new Set();
+        this.resetExecutedChecks();
+        const opened = openDirectoryContext(this.unpackedDir);
+        if (opened.openError !== undefined) {
+            const diagnostic = await storedNamesRun(opened.context, "docx", this.profile, this.deadline);
+            this.recordExecutedChecks(diagnostic.executed);
+            return { valid: false, issues: [...diagnostic.issues, packageExtractFailedIssue(this.unpackedDir, opened.openError)] };
+        }
+        this.runContext = opened.context;
+        const rule = this.ruleScheduler();
+        const xmlOk = await rule("DOCX validateXml", () => this.validateXml());
+        // Only lenient stops at a malformed part. Word-valid and strict keep
+        // running the checks of every other part, so strict reports every
+        // code word-valid does. The malformed part itself is reported once,
+        // by its XML diagnostics.
+        if (!xmlOk.valid && this.profile === "lenient") return xmlOk;
+        this.malformedParts = new Set(
+            xmlOk.issues.flatMap((issue) => (issue.severity === "error" && issue.path !== undefined ? [issue.path] : [])),
+        );
+        const settle = async (pending: Array<Promise<ValidationResult>>): Promise<ValidationResult[]> =>
+            (await Promise.all(pending)).map((result) => ({
+                ...result,
+                issues: withoutConsequentialParseFailures(result.issues, this.malformedParts),
+            }));
+
+        const contentTypes = rule("DOCX validateContentTypes", () => this.validateContentTypes());
+        // #612: the relationship-id walk is captured by name because a full
+        // non-lenient run hands the story reference elements its Word rule
+        // already reported back to that rule, dropping rels-id-mismatch's —
+        // and, for an r:id naming no Relationship, rels-id-missing's (#619) —
+        // copy of each (withoutRepeatedHeaderFooterFindings). Called on its
+        // own, validateAllRelationshipIds keeps every finding.
+        const relationshipIds = rule("DOCX validateAllRelationshipIds", () => this.validateAllRelationshipIds());
         const checks: Array<Promise<ValidationResult>> = [
-            this.validateNamespaces(),
-            this.validateUniqueIds(),
-            this.validateFileReferences(),
-            this.validateRelationshipElements(),
-            this.validateContentTypes(),
-            this.validateWhitespacePreservation(),
-            this.validateDeletions(),
-            this.validateInsertions(),
-            this.validateAllRelationshipIds(),
-            this.validateIdConstraints(),
-            this.validateCommentMarkers(),
-            this.validateCommentThreading(),
-            this.validateNoTrackingTokens(),
-            this.validateAllParagraphsHaveParaId(),
-            this.validateRunContentPlacement(),
-            this.validateStyleReferences(),
-            this.validateStyleDefaults(),
-            this.validateDocumentBuilderInserts(),
-            this.validateDocPropsBooleans(),
-            this.validateNoBom(),
-            this.validateNoEmptyRelsParts(),
-            this.validateOrphanedRelationships(),
-            this.validateFontTable(),
-            this.validateLatentStyles(),
-            this.validateTableLook(),
-            this.validateTrackedChangeIds(),
-            this.validateRedundantCellBorders(),
-            this.validateRelationshipIdStability(),
-            this.validateRedundantRunProperties(),
+            rule("DOCX validateNamespaces", () => this.validateNamespaces()),
+            rule("DOCX validateUniqueIds", () => this.validateUniqueIds()),
+            rule("DOCX validateFileReferences", () => this.validateFileReferences()),
+            rule("DOCX validateRelationshipElements", () => this.validateRelationshipElements()),
+            contentTypes,
+            rule("DOCX validateOverridePartNames", () => this.validateOverridePartNames(this.context(), "docx", this.malformedParts)),
+            rule("DOCX validateContentTypesMarkupCompatibility", () =>
+                this.validateContentTypesMarkupCompatibility(this.context(), "docx", this.malformedParts),
+            ),
+            rule("DOCX validateWordPartContentTypes", () =>
+                this.validateWordPartContentTypes(this.context(), "docx", this.malformedParts, contentTypes),
+            ),
+            rule("DOCX validateWhitespacePreservation", () => this.validateWhitespacePreservation()),
+            rule("DOCX validateDeletions", () => this.validateDeletions()),
+            rule("DOCX validateInsertions", () => this.validateInsertions()),
+            relationshipIds,
+            rule("DOCX validateIdConstraints", () => this.validateIdConstraints()),
+            rule("DOCX validateCommentMarkers", () => this.validateCommentMarkers()),
+            rule("DOCX validateCommentThreading", () => this.validateCommentThreading()),
+            rule("DOCX validateNoTrackingTokens", () => this.validateNoTrackingTokens()),
+            rule("DOCX validateAllParagraphsHaveParaId", () => this.validateAllParagraphsHaveParaId()),
+            rule("DOCX validateRunContentPlacement", () => this.validateRunContentPlacement()),
+            rule("DOCX validateStyleReferences", () => this.validateStyleReferences()),
+            rule("DOCX validateStyleDefaults", () => this.validateStyleDefaults()),
+            rule("DOCX validateDocumentBuilderInserts", () => this.validateDocumentBuilderInserts()),
+            rule("DOCX validateDocPropsBooleans", () => this.validateDocPropsBooleans()),
+            rule("DOCX validateNoBom", () => this.validateNoBom()),
+            rule("DOCX validateNoEmptyRelsParts", () => this.validateNoEmptyRelsParts()),
+            rule("DOCX validateOrphanedRelationships", () => this.validateOrphanedRelationships()),
+            rule("DOCX validateFontTable", () => this.validateFontTable()),
+            rule("DOCX validateLatentStyles", () => this.validateLatentStyles()),
+            rule("DOCX validateTableLook", () => this.validateTableLook()),
+            rule("DOCX validateTrackedChangeIds", () => this.validateTrackedChangeIds()),
+            rule("DOCX validateRedundantCellBorders", () => this.validateRedundantCellBorders()),
+            rule("DOCX validateRelationshipIdStability", () => this.validateRelationshipIdStability()),
+            rule("DOCX validateRedundantRunProperties", () => this.validateRedundantRunProperties()),
         ];
+        // Strict runs the same Word-proven rules at their native severity.
+        const wordRules = this.profile === "lenient" ? undefined : rule("DOCX Word rules", () => this.validateRegisteredWordRules());
+        if (wordRules) checks.push(wordRules);
+        // #612: in a full non-lenient run each element the Word rule reported
+        // yields one finding, the Word rule's, so the settled relationship-id
+        // result drops its copy. Lenient runs no Word rule and keeps every
+        // mismatch.
+        const handOffStoryReferences = (results: ValidationResult[]): ValidationResult[] => {
+            if (wordRules === undefined) return results;
+            const rules = results[checks.indexOf(wordRules)]!;
+            const rels = results[checks.indexOf(relationshipIds)]!;
+            return results.map((result) => (result === rels ? withoutRepeatedHeaderFooterFindings(rels, rules) : result));
+        };
         if (this.profile === "word-valid") {
-            // Non-XSD checks first. A blocking no returns before XSD starts.
-            checks.push(this.validateWordOpenCompatibility());
-            const profiled = this.applyWordValidProfile(mergeResults(xmlOk, ...(await Promise.all(checks))));
-            if (!profiled.valid) return profiled;
-            const xsd = await this.validateAgainstXsd();
-            return this.applyWordValidProfile(mergeResults(profiled, xsd));
+            // Word-valid judges what Word reads through structural checks
+            // alone: no schema is compiled or walked.
+            return this.applyWordValidProfile(
+                withoutRestatedIgnorablePrefixes(mergeResults(xmlOk, ...handOffStoryReferences(await settle(checks)))),
+            );
         }
 
-        checks.push(this.validateAgainstXsd());
-        return mergeResults(xmlOk, ...(await Promise.all(checks)));
+        const xsd = rule("DOCX validateAgainstXsd", () => this.validateAgainstXsd());
+        checks.push(xsd);
+        const results = await settle(checks);
+        if (!wordRules) return withoutRestatedIgnorablePrefixes(mergeResults(xmlOk, ...results));
+        const rules = results[checks.indexOf(wordRules)]!;
+        const schema = results[checks.indexOf(xsd)]!;
+        return withoutRestatedIgnorablePrefixes(
+            mergeResults(
+                xmlOk,
+                ...handOffStoryReferences(results).map((result) =>
+                    result === schema ? withoutRepeatedCompatibilityFindings(schema, rules) : result,
+                ),
+            ),
+        );
     }
 
     /**
-     * Stop only when a Word-blocking schema error is one of the issues this
-     * part will actually return. The three-message cap used to stop on a
-     * later blocking error while emitting only tolerated ones, and the
-     * profile then downgraded those to warnings.
+     * Word rules registered in `WORD_RULE_CHECKS`, run through the shared
+     * context. Lenient output stays as it was, so they run under `word-valid`
+     * and `strict` only.
      */
-    protected override shouldStopXsdWalk(rel: string, errors: ReadonlySet<string>): boolean {
-        if (this.profile !== "word-valid") return false;
-        return this.xsdErrorsToReport(rel, errors).some((error) => this.wordBlocksXsdError(rel, error));
+    private async validateRegisteredWordRules(): Promise<ValidationResult> {
+        if (WORD_RULE_CHECKS.length === 0) return { valid: true, issues: [] };
+        const rules = new Set(WORD_RULE_CHECKS.map((check) => check.id));
+        const run = await runChecks(this.context(), createDefaultCheckRegistry(), {
+            format: "docx",
+            select: [...rules],
+            profile: this.profile,
+            deadline: this.deadline,
+        });
+        // xml-syntax runs as the rules' prerequisite; validateXml already
+        // reports its findings, so keep only the rules' own (#307).
+        const issues = run.outcomes.filter((outcome) => rules.has(outcome.id)).flatMap((outcome) => outcome.issues);
+        // Disclose the rules that really ran: a rule whose prerequisite
+        // failed was skipped, and a skipped rule did not run (#319).
+        this.recordExecutedChecks(run.executed);
+        return { valid: issues.every((issue) => issue.severity !== "error"), issues };
     }
 
-    protected override xsdErrorsToReport(rel: string, errors: ReadonlySet<string>): readonly string[] {
-        const all = [...errors];
-        const reported = all.slice(0, 3);
-        if (this.profile !== "word-valid") return reported;
-        if (reported.some((error) => this.wordBlocksXsdError(rel, error))) return reported;
-        const hidden = all.slice(3).find((error) => this.wordBlocksXsdError(rel, error));
-        if (hidden !== undefined) reported.push(hidden);
-        return reported;
+    /**
+     * The `word-part-content-type-generic` rule (#432) and the
+     * `word-part-content-type-inexact` rule (#540, widened by #550) over the shared
+     * context, at the severity the profile gives them: an error under
+     * word-valid (Word 16.115 offers to recover the package) and under
+     * strict (ECMA-376 Part 1, clause 11.3, gives every WordprocessingML
+     * part its own content type, so strict also judges the Part 1 types a
+     * check's probes have not observed; #506), a warning under lenient.
+     * Sessions 20 and 21 moved numbering and theme into the generic check's
+     * observed set (#571), and numbering, theme, footer, endnotes, footnotes
+     * and comments into the inexact check's (#570); sessions 21 and 22 moved
+     * a reached glossary's styles part and referenced header into the
+     * inexact check's (#579). Session 23 adds the glossary's generic theme
+     * (#595) and referenced footer, footnotes, endnotes and comments with
+     * inexact types (#596). Session 24 adds generic glossary styles (#601)
+     * and read header/footer content-type swaps (#600). Strict mismatch
+     * findings cover every mapped related part. Session 46 adds a part typed
+     * by an unrecognised media type — neither its own type, nor generic XML,
+     * nor another mapped Word type — which word-valid blocks only on the
+     * observed reach, the main document's `styles` relationship (#707).
+     * Strict's inexact findings cite clause 11.3
+     * with no recovery claim for a lazy part `wordReadParts` does not
+     * include — session 21 (s21b) observed those open clean (#589). A
+     * Default-typed main or theme finding is dropped only when strict
+     * actually reports ct-undeclared-part for that same part (#535, #571);
+     * a part reached by several relationship types counts as main or theme
+     * when any of its reaching segments says so, whichever segment the
+     * finding names (#593).
+     */
+    private async validateWordPartContentTypes(
+        context: ValidationContext,
+        format: PackageFormat,
+        malformed: ReadonlySet<string>,
+        contentTypes: Promise<ValidationResult>,
+    ): Promise<ValidationResult> {
+        const view = malformed.size > 0 ? context.withUnparseable(new Map([...malformed].map((part) => [part, "malformed"]))) : context;
+        // Strict judges the Part 1 WordprocessingML part types beyond the
+        // observed sets: for the generic check header, footer, endnotes,
+        // footnotes, comments and glossaryDocument (#506, #571), for the
+        // inexact check glossaryDocument only (#570). Word-valid and lenient
+        // keep the observed sets; under strict an unread lazy part keeps the
+        // clause-11.3 wording instead of the Word sentence (#589).
+        const found = await wordPartContentTypeGenericFindings(view, this.profile === "strict" ? "spec" : "observed", this.profile);
+        const inexact = await wordPartContentTypeInexactFindings(view, this.profile === "strict" ? "spec" : "observed", this.profile);
+        const mismatch = await wordPartContentTypeMismatchFindings(view, this.profile === "strict" ? "spec" : "observed", this.profile);
+        const unrecognized = await wordPartContentTypeUnrecognizedFindings(view, this.profile);
+        this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_GENERIC);
+        this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_INEXACT);
+        this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_MISMATCH);
+        this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_UNRECOGNIZED);
+        // The base pass skips non-XML names and docProps/. Suppress a
+        // Default-typed main or theme only if its own path has a replacement error;
+        // otherwise strict must retain the Word-blocking finding (#535). The
+        // part counts as main or theme when any reaching segment says so —
+        // the walk keeps every segment, so an earlier unrelated relationship
+        // cannot make the duplicate return (#593).
+        const replacements = this.profile === "strict" ? (await contentTypes).issues : [];
+        const judged = [...found, ...inexact].filter(
+            (finding) =>
+                !(
+                    (finding.segments.includes("officeDocument") || finding.segments.includes("theme")) &&
+                    finding.source === "default" &&
+                    replacements.some(
+                        (issue) => issue.code === "ct-undeclared-part" && issue.severity === "error" && issue.path === finding.issue.path,
+                    )
+                ),
+        );
+        const severity = opcNameIssueSeverity(this.profile, format);
+        return finalize(
+            [...judged, ...mismatch, ...unrecognized].map((finding): ValidationIssue =>
+                severity === "warning" ? { ...finding.issue, severity: "warning" } : finding.issue,
+            ),
+        );
     }
 
-    private wordBlocksXsdError(rel: string, error: string): boolean {
-        const truncated = error.length > 250 ? `${error.slice(0, 250)}...` : error;
-        const message = `  - ${truncated}`;
-        if (message.includes("Schema load failed") || message.includes("XSD engine failed:")) return true;
-        return isWordBlockingXsdIssue({ severity: "error", message, path: rel, code: "xsd-error" });
-    }
-
-    private applyWordValidProfile(result: ValidationResult): ValidationResult {
+    /**
+     * The `word-valid` view of a full run: every error that does not predict a
+     * Word refusal or recovery offer ({@link isWordBlockingIssue}) becomes a
+     * warning, judged against this package's properties parts, Word-read parts
+     * and story roots. Runs after the story-reference hand-off, so the
+     * pairing in `withoutRepeatedHeaderFooterFindings` sees the producers'
+     * own issue objects.
+     */
+    private async applyWordValidProfile(result: ValidationResult): Promise<ValidationResult> {
+        const context = this.context();
+        // Resolve each part set once per run and share the blocking predicate
+        // with partial validation (#381, #615, #617, #718, #1116).
+        const [properties, read, storyRoots, observedContentTypes, possiblyRead] = await Promise.all([
+            propertiesParts(context, this.profile),
+            wordReadParts(context, this.profile),
+            wordStoryRootParts(context, this.profile),
+            wordObservedContentTypeParts(context, this.profile),
+            needsPossiblyReadParts(result.issues) ? wordPossiblyReadParts(context, this.profile) : undefined,
+        ]);
+        const missingSidecarPart = (issue: ValidationIssue): string | undefined =>
+            issue.severity === "error" && issue.code === "rels-missing-sidecar" ? issue.path : undefined;
+        // Only a missing-sidecar error consults the unobserved-type targets.
+        const unobserved = result.issues.some((issue) => missingSidecarPart(issue) !== undefined)
+            ? await wordUnobservedRelationshipTargets(context, this.profile)
+            : new Set<string>();
+        // #645, session 36 s36b/s36d: a part every reaching relationship names
+        // through the chart type is loaded by Word only when a Word-read
+        // part's effective XML references one of those relationship Ids;
+        // #647, session 44: diagramData, oleObject and hdphoto match every
+        // attribute naming the Id but a picture's `a:blip r:embed`, which
+        // session 45 opened clean (#702 S1; the hdphoto reach again in
+        // session 52 D1); an image relationship is never
+        // a source, so an image reach alone warns (#706) — session 52's E1
+        // and E2 rows opened the same no-sidecar chart clean when a
+        // `w:name r:id` names the reach and when a VML `v:imagedata r:id`
+        // inside a selected `mc:Fallback` does.
+        const referenceLoadedReach = new Map<string, "referenced" | "unreferenced">();
+        for (const path of result.issues.flatMap((issue) => {
+            const part = missingSidecarPart(issue);
+            return part === undefined ? [] : [part];
+        })) {
+            const sources = await wordReferenceLoadedSources(context, path, this.profile);
+            if (sources === undefined) {
+                continue;
+            }
+            const referenced = sources.some(({ source, id, reference }) => {
+                if (source === undefined || !read.has(canonicalPartName(source))) {
+                    return false;
+                }
+                const xml = context.effectiveXml(source);
+                return (
+                    xml?.ok === true &&
+                    (reference === "declared"
+                        ? wordRelationshipReferenceIds(xml.document)
+                        : unobservedReferenceAttributeValues(xml.document)
+                    ).has(id)
+                );
+            });
+            referenceLoadedReach.set(path, referenced ? "referenced" : "unreferenced");
+        }
         const issues = result.issues.map((issue): ValidationIssue => {
-            if (issue.severity !== "error" || this.isWordBlockingIssue(issue)) return issue;
+            if (issue.severity !== "error") return issue;
+            // #638, session 35, chunks s35a/s35b: only a conservatively
+            // counted reference surviving Word's MC view makes this finding
+            // blocking. Keep the issue's identity and serialized shape intact.
+            const part = missingSidecarPart(issue);
+            const effective = part === undefined ? undefined : context.effectiveXml(part);
+            const facts = {
+                hasEffectiveRelationshipReference: effective?.ok === true && hasWordRelationshipReference(effective.document),
+                reachedByUnobservedRelationship: part !== undefined && unobserved.has(canonicalPartName(part.replace(/\\/g, "/"))),
+                referenceLoadedReach: part === undefined ? undefined : referenceLoadedReach.get(part),
+                unreadByWord: isUnreadByWord(issue, possiblyRead),
+            };
+            if (isWordBlockingIssue(issue, properties, read, storyRoots, observedContentTypes, facts)) return issue;
             return { ...issue, severity: "warning" };
         });
         return finalize(issues);
-    }
-
-    private isWordBlockingIssue(issue: ValidationIssue): boolean {
-        switch (issue.code) {
-            // NB: run-content-misplaced is NOT Word-blocking — a real Word probe
-            // (open -g, no focus steal) opens bare <w:tab>/<w:br>/<w:drawing> under
-            // <w:p> CLEANLY (Word silently relocates/drops the run content). It
-            // stays an error in lenient/strict (structural invalidity + silent
-            // data loss) but the word-valid openability profile tolerates it.
-            case "comment-thread-commentid-paraid-orphan":
-            case "comment-thread-commentid-missing-paraid":
-            case "comment-thread-commentid-missing-durableid":
-            case "comment-thread-commentid-duplicate-paraid":
-            case "comment-thread-commentid-duplicate-durableid":
-            case "comment-thread-durableid-orphan":
-            case "comment-thread-durableid-missing":
-            case "comment-thread-durableid-duplicate":
-            case "id-durable-overflow":
-            case "word-math-parse":
-            case "word-math-spre-body":
-            case "word-content-type-invalid":
-            // A part with no Override and no Default makes Word offer recovery
-            // ([trash]/0000.dat). A part that has a content type but no
-            // relationship is tolerated, so rels-unreferenced stays a warning.
-            case "ct-uncovered-part":
-            case "word-drawing-scalar-whitespace":
-            case "word-drawing-arc-radius":
-            case "word-empty-drawing":
-            // A wp:extent cx or cy that is a negative integer makes Word
-            // report an open error (fixture 2213). One negative attribute
-            // is enough. The same drawings with positive extents open clean.
-            // Zero and positive extents are not this defect.
-            case "word-drawing-extent-negative":
-            // A wp:anchor missing locked, layoutInCell, or allowOverlap makes
-            // Word refuse the file (fixture 1061). One missing attribute on
-            // one anchor is enough. Adding that attribute opens clean.
-            // simplePos, relativeHeight, and the wrap distances are not this
-            // defect.
-            case "word-anchor-missing-attribute":
-            // A wp:positionH or wp:positionV that contains both wp:posOffset
-            // and wp:align makes Word refuse the file (fixture 1061). One
-            // such element is enough. Either child alone opens clean.
-            case "word-position-offset-and-align":
-            // A w:sdtPr/w:id with w:val="" makes Word refuse the file (fixture
-            // 1830). Setting that value to a number opens clean.
-            case "word-sdt-id-empty":
-            // word/attachedToolbars.bin referenced by wne:toolbarData contains
-            // the UTF-8 replacement sequence EF BF BD (fixture 2130). One
-            // sequence is enough. The same bytes in a part toolbarData does
-            // not reference are tolerated. A toolbar whose sequences have
-            // been replaced, including button-flag bytes set to 0x10, opens
-            // clean.
-            case "word-attached-toolbar-utf8":
-            // A w:tr with no w:tc makes Word report an open error (fixture 1993).
-            // Removing w:gridBefore and leaving the row still errors. One cell
-            // opens clean, so gridBefore is not the cause.
-            case "word-row-without-cell":
-            // A w:tc whose last element child is w:tbl makes Word offer
-            // recovery (fixture 0792). One such cell is enough. Inserting
-            // an empty w:p after that table opens clean. Removing the
-            // trailing w:p from a cell Word opened clean makes it warn.
-            // A cell that already ends with w:p is not this defect.
-            case "word-cell-ends-with-table":
-            // w:delText or w:delInstrText inside w:txbxContent makes Word
-            // offer recovery when no w:del inside that text box wraps it.
-            // That content sits in a VML text box (fixture 0011) or a
-            // drawingML wps:txbx (fixture 0044). The same elements in the
-            // document body are tolerated. An mc:Fallback text box is
-            // tolerated (fixture 2054): Word uses the sibling mc:Choice.
-            // A w:del inside the text box is tolerated (fixture 0948).
-            // A w:del outside the text box does not cover the text-box story.
-            case "word-textbox-deleted-text":
-            // w:delText inside w:moveFrom makes Word offer recovery (fixture
-            // 0726). One such element is enough. w:t inside w:moveFrom opens
-            // clean, and w:delText in the document body is tolerated.
-            case "word-move-from-deleted-text":
-            // mc:Choice @Requires names a prefix that is not declared on
-            // that element or an ancestor (fixture 0508). Word offers
-            // recovery. A declaration on a descendant, or on the fallback
-            // sibling, does not put the prefix in scope.
-            case "word-choice-requires-undeclared":
-            case "word-text-contains-paragraph":
-            case "word-hyperlink-relationship":
-            case "word-duplicate-theme-relationship":
-            case "word-duplicate-font-table-relationship":
-            case "word-duplicate-web-settings-relationship":
-            // Two settings relationships in one .rels part make Word offer
-            // recovery (fixture 0689). A second relationship that targets
-            // the same settings.xml still warns. One settings relationship
-            // opens clean.
-            case "word-duplicate-settings-relationship":
-            // w:lvlPicBulletId whose value is not a w:numPicBullet id in the
-            // same numbering part makes Word offer recovery (fixture 1541).
-            // Removing that element opens clean. The p16 restart and durableId
-            // attributes on the same part stayed, and Word still opened clean.
-            case "word-numbering-picture-bullet":
-            // A w:footnoteReference whose w:id is not a w:footnote w:id makes
-            // Word offer recovery (fixture 1829). One such reference is enough.
-            // Removing it opens clean once text-box deleted text is also gone.
-            // A reference that names a present footnote opens clean. Duplicate
-            // footnote ids are not this defect.
-            case "word-footnote-reference-missing":
-            // Both root-caused against real Word (minimal-repair + re-probe) and
-            // verified disjoint from the Word-clean corpus (0/350): an unresolved
-            // DocumentBuilder <Insert> directive -> OPEN_ERROR; a docProps boolean
-            // with whitespace -> unreadable-content recovery prompt.
-            case "documentbuilder-insert-unresolved":
-            case "docprops-boolean-invalid":
-                return true;
-            // NB: comment-orphan-start/end and comment-marker-missing are NOT
-            // promoted here. Empirically Word TOLERATES an orphan comment-range
-            // marker (a commentRangeStart with no End, referencing a missing
-            // comment) — verified: comments.unmatched-comment-marker_from_html.docx
-            // carries the exact same orphan and opens cleanly in real Word. So an
-            // orphan marker does not predict Word rejection; keep it a warning.
-            case "rels-missing-sidecar":
-                return !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
-            case "xml-syntax":
-                return issue.path?.startsWith("word/") || issue.path === "[Content_Types].xml";
-            case "rels-broken":
-                // NB: a broken media/ rel (image Target absent) is NOT word-blocking:
-                // real Word shows a missing-image placeholder and opens cleanly
-                // (verified: word-tolerated-broken-media-rel.docx). Broken media alone
-                // does not predict rejection — files unreadable "with" a broken media
-                // ref fail for a separate, undetected reason. Stays an error in
-                // lenient/strict; only the word-valid openability profile tolerates it.
-                // Structural rels (customXml, nested .rels) remain word-blocking.
-                return issue.message.includes("../customXml/") || /\/_rels\/|\.rels$/i.test(issue.message);
-            case "rels-empty-element":
-                return issue.message.includes("missing required attribute");
-            case "xsd-error":
-                // A schema the engine could not load is not a Word-tolerated
-                // quirk. The ignore list already dropped the Dublin Core
-                // false positive before this issue was built.
-                if (issue.message.includes("Schema load failed") || issue.message.includes("XSD engine failed:")) return true;
-                return isWordBlockingXsdIssue(issue);
-            default:
-                return false;
-        }
-    }
-
-    private async validateWordOpenCompatibility(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        const documents = new Map<string, Promise<Document>>();
-        const readXml = (xmlFile: string): Promise<Document> => {
-            let document = documents.get(xmlFile);
-            if (!document) {
-                document = fs.readFile(xmlFile, "utf-8").then((source) => parseXml(source));
-                documents.set(xmlFile, document);
-            }
-            return document;
-        };
-        await this.validateWordContentTypes(issues, readXml);
-        await this.validateDrawingScalarTextWhitespace(issues, readXml);
-        await this.validateDrawingArcRadii(issues, readXml);
-        await this.validateDrawingExtentSigns(issues, readXml);
-        await this.validateEmptyDrawings(issues, readXml);
-        await this.validateAnchorRequiredAttributes(issues, readXml);
-        await this.validatePositionOffsetAndAlign(issues, readXml);
-        await this.validateRowsWithoutCells(issues, readXml);
-        await this.validateCellsEndingWithTable(issues, readXml);
-        await this.validateTextBoxDeletedText(issues, readXml);
-        await this.validateMoveFromDeletedText(issues, readXml);
-        await this.validateTextContainsParagraph(issues, readXml);
-        await this.validateHyperlinkRelationships(issues, readXml);
-        await this.validateDuplicateThemeRelationships(issues, readXml);
-        await this.validateDuplicateFontTableRelationships(issues, readXml);
-        await this.validateDuplicateWebSettingsRelationships(issues, readXml);
-        await this.validateDuplicateSettingsRelationships(issues, readXml);
-        await this.validateChoiceRequiresPrefixes(issues, readXml);
-        await this.validateSdtIdEmpty(issues, readXml);
-        await this.validateAttachedToolbarUtf8(issues, readXml);
-        await this.validateNumberingPictureBullets(issues, readXml);
-        await this.validateDanglingFootnoteReferences(issues, readXml);
-        const documentXml = this.xmlFiles.find(
-            (xmlFile) => baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
-        );
-        if (!documentXml) return finalize(issues);
-
-        let dom: Document;
-        try {
-            dom = await readXml(documentXml);
-        } catch (err) {
-            issues.push({
-                severity: "error",
-                message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
-                path: this.relPath(documentXml),
-                code: "word-math-parse",
-            });
-            return finalize(issues);
-        }
-
-        let body: Element | null = null;
-        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            const node = getElementsByTagNameNSAll(dom, ns, "body")[0];
-            if (node) {
-                body = node;
-                break;
-            }
-        }
-        if (!body) return finalize(issues);
-        for (let i = 0; i < body.childNodes.length; i += 1) {
-            const node = body.childNodes[i];
-            if (!node || node.nodeType !== 1) continue;
-            const elem = node as Element;
-            const tagName = elem.localName || elem.tagName.split(":").pop() || elem.tagName;
-            if (elem.namespaceURI !== MATH_NAMESPACE || tagName !== "oMathPara") continue;
-            if (getElementsByTagNameNSAll(elem, MATH_NAMESPACE, "sPre").length === 0) continue;
-            issues.push({
-                severity: "error",
-                message:
-                    "Microsoft Word refuses to open documents with a body-level <m:oMathPara> " +
-                    "that contains <m:sPre>; wrap it in a paragraph or avoid m:sPre in display math.",
-                path: this.relPath(documentXml),
-                code: "word-math-spre-body",
-            });
-        }
-        return finalize(issues);
-    }
-
-    private async validateWordContentTypes(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        const contentTypesFile = path.join(this.unpackedDir, "[Content_Types].xml");
-        let dom: Document;
-        try {
-            dom = await readXml(contentTypesFile);
-        } catch {
-            return;
-        }
-        const check = (elem: Element, attrName: "PartName" | "Extension"): void => {
-            const contentType = elem.getAttribute("ContentType");
-            if (!contentType || !contentType.startsWith("invalid-")) return;
-            const target = elem.getAttribute(attrName) ?? "";
-            issues.push({
-                severity: "error",
-                message: `Microsoft Word refuses content type '${contentType}' for ${target}`,
-                path: "[Content_Types].xml",
-                code: "word-content-type-invalid",
-            });
-        };
-
-        const overrides = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Override");
-        for (let i = 0; i < overrides.length; i += 1) {
-            const elem = overrides[i];
-            if (elem) check(elem, "PartName");
-        }
-        const defaults = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Default");
-        for (let i = 0; i < defaults.length; i += 1) {
-            const elem = defaults[i];
-            if (elem) check(elem, "Extension");
-        }
-    }
-
-    private async validateDrawingScalarTextWhitespace(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const { namespace, localName } of WORD_DRAWING_SCALAR_TEXT_ELEMENTS) {
-                const elems = getElementsByTagNameNSAll(dom, namespace, localName);
-                for (let i = 0; i < elems.length; i += 1) {
-                    const elem = elems[i];
-                    if (!elem) continue;
-                    for (let child = elem.firstChild; child; child = child.nextSibling) {
-                        if (child.nodeType !== 3) continue;
-                        const text = child as Text;
-                        const trimmed = text.data.trim();
-                        if (trimmed === text.data) continue;
-                        issues.push({
-                            severity: "error",
-                            message:
-                                `<${elem.tagName}> contains leading/trailing whitespace around scalar value ` +
-                                `${previewRepr(text.data, 80)}; Microsoft Word refuses this shape in drawing anchors.`,
-                            path: this.relPath(xmlFile),
-                            code: "word-drawing-scalar-whitespace",
-                        });
-                    }
-                }
-            }
-        }
-    }
-
-    private async validateDrawingArcRadii(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            const arcs = getElementsByTagNameNSAll(dom, DRAWINGML_NAMESPACE, "arcTo");
-            for (let i = 0; i < arcs.length; i += 1) {
-                const arc = arcs[i];
-                if (!arc) continue;
-                for (const attr of ["wR", "hR"] as const) {
-                    const value = arc.getAttribute(attr);
-                    if (value === null || /^[0-9]+$/.test(value)) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            `<a:arcTo> ${attr}="${value}" is not an integer. ` +
-                            "Microsoft Word cannot open the file. Use an integer radius.",
-                        path: this.relPath(xmlFile),
-                        code: "word-drawing-arc-radius",
-                    });
-                }
-            }
-        }
-    }
-
-    /**
-     * A `wp:extent` whose `cx` or `cy` is a negative integer makes Word
-     * report an open error (fixture 2213). One negative attribute is enough.
-     * The same drawing with a positive extent opens clean. Zero and positive
-     * extents are not this defect.
-     */
-    private async validateDrawingExtentSigns(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            const extents = getElementsByTagNameNSAll(dom, WP_NAMESPACE, "extent");
-            for (let i = 0; i < extents.length; i += 1) {
-                const extent = extents[i];
-                if (!extent) continue;
-                for (const attr of ["cx", "cy"] as const) {
-                    const value = extent.getAttribute(attr);
-                    if (value === null || !/^-\d+$/.test(value)) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            `<wp:extent> ${attr}="${value}" is negative. ` + "Microsoft Word cannot open the file. Use a positive extent.",
-                        path: this.relPath(xmlFile),
-                        code: "word-drawing-extent-negative",
-                    });
-                }
-            }
-        }
-    }
-
-    /**
-     * An empty `w:drawing` (no element child) is not a drawing Word can load.
-     * Inside `mc:Choice Requires="wps"` Word reports an open error. Inside a
-     * `w:r` Word offers to recover the file. One such element is enough.
-     * A drawing placed directly under `w:p` is a different case: Word drops
-     * that misplaced run content and opens clean, so it is not flagged here.
-     */
-    private async validateEmptyDrawings(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const drawings = getElementsByTagNameNSAll(dom, ns, "drawing");
-                for (let i = 0; i < drawings.length; i += 1) {
-                    const drawing = drawings[i];
-                    if (!drawing) continue;
-                    let hasElementChild = false;
-                    for (let child = drawing.firstChild; child; child = child.nextSibling) {
-                        if (child.nodeType === 1) {
-                            hasElementChild = true;
-                            break;
-                        }
-                    }
-                    if (hasElementChild) continue;
-                    const parent = drawing.parentNode;
-                    if (parent && parent.nodeType === 1) {
-                        const parentElem = parent as Element;
-                        const parentLocal = parentElem.localName || parentElem.tagName.split(":").pop() || "";
-                        if (parentLocal === "p" && WORD_PARAGRAPH_NAMESPACES.includes(parentElem.namespaceURI ?? "")) {
-                            continue;
-                        }
-                    }
-                    issues.push({
-                        severity: "error",
-                        message:
-                            "An empty <w:drawing> has no child element. Microsoft Word does not open the file cleanly. " +
-                            "Remove the drawing, or give it a wp:anchor or wp:inline child.",
-                        path: this.relPath(xmlFile),
-                        code: "word-empty-drawing",
-                    });
-                }
-            }
-        }
-    }
-
-    /**
-     * A `w:lvlPicBulletId` whose `w:val` is not the `w:numPicBulletId` of a
-     * `w:numPicBullet` in the same numbering part makes Word offer to recover
-     * the file. One such reference is enough. Removing the reference opens
-     * clean. The check does not flag a reference that names a picture bullet
-     * present in that part.
-     */
-    private async validateNumberingPictureBullets(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) !== "numbering.xml") continue;
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const defined = new Set<string>();
-                const bullets = getElementsByTagNameNSAll(dom, ns, "numPicBullet");
-                for (let i = 0; i < bullets.length; i += 1) {
-                    const id = bullets[i]?.getAttributeNS(ns, "numPicBulletId");
-                    if (id) defined.add(id);
-                }
-                const refs = getElementsByTagNameNSAll(dom, ns, "lvlPicBulletId");
-                for (let i = 0; i < refs.length; i += 1) {
-                    const val = refs[i]?.getAttributeNS(ns, "val");
-                    if (!val || defined.has(val)) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            `A numbering level references picture bullet ${val}, and this part has no w:numPicBullet with that id. ` +
-                            "Microsoft Word offers to recover the file. " +
-                            "Remove the w:lvlPicBulletId, or add the matching picture bullet.",
-                        path: this.relPath(xmlFile),
-                        code: "word-numbering-picture-bullet",
-                    });
-                }
-            }
-        }
-    }
-
-    /**
-     * A `w:footnoteReference` whose `w:id` is not the `w:id` of a `w:footnote`
-     * makes Word offer to recover the file. One such reference is enough.
-     * Removing the reference opens clean. A reference that names a footnote
-     * present in the footnotes part, including a separator, is not this defect.
-     * Two footnotes that share an id are not this defect.
-     */
-    private async validateDanglingFootnoteReferences(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        const defined = new Set<string>();
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) !== "footnotes.xml") continue;
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const notes = getElementsByTagNameNSAll(dom, ns, "footnote");
-                for (let i = 0; i < notes.length; i += 1) {
-                    const id = notes[i]?.getAttributeNS(ns, "id");
-                    if (id) defined.add(id);
-                }
-            }
-        }
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const refs = getElementsByTagNameNSAll(dom, ns, "footnoteReference");
-                for (let i = 0; i < refs.length; i += 1) {
-                    const id = refs[i]?.getAttributeNS(ns, "id");
-                    if (!id || defined.has(id)) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            `A footnote reference uses id ${id}, and this package has no w:footnote with that id. ` +
-                            "Microsoft Word offers to recover the file. " +
-                            "Remove the w:footnoteReference, or add the matching footnote.",
-                        path: this.relPath(xmlFile),
-                        code: "word-footnote-reference-missing",
-                    });
-                }
-            }
-        }
-    }
-
-    /**
-     * A `w:tr` with no `w:tc` descendant makes Word report an open error.
-     * One such row is enough. Removing `w:gridBefore` and leaving the row
-     * still errors. Inserting one `w:tc` opens clean. A cell inside
-     * `w:ins`, `w:del`, `w:sdt`, or a nested table still counts, because
-     * it is a descendant of that row.
-     */
-    private async validateRowsWithoutCells(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const rows = getElementsByTagNameNSAll(dom, ns, "tr");
-                for (let i = 0; i < rows.length; i += 1) {
-                    const row = rows[i];
-                    if (!row) continue;
-                    if (getElementsByTagNameNSAll(row, ns, "tc").length > 0) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            "A table row contains no w:tc cell. Microsoft Word cannot open the file. " + "Remove the row or add a cell.",
-                        path: this.relPath(xmlFile),
-                        code: "word-row-without-cell",
-                    });
-                }
-            }
-        }
-    }
-
-    /**
-     * A `wp:anchor` missing `locked`, `layoutInCell`, or `allowOverlap` makes
-     * Word refuse to open the file. One missing attribute on one anchor is
-     * enough. Adding that attribute opens clean. `simplePos`, `relativeHeight`,
-     * and the wrap distances are not this defect.
-     */
-    private async validateAnchorRequiredAttributes(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        const required = ["locked", "layoutInCell", "allowOverlap"] as const;
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            const anchors = getElementsByTagNameNSAll(dom, WP_NAMESPACE, "anchor");
-            for (let i = 0; i < anchors.length; i += 1) {
-                const anchor = anchors[i];
-                if (!anchor) continue;
-                for (const attr of required) {
-                    if (anchor.getAttribute(attr) !== null) continue;
-                    issues.push({
-                        severity: "error",
-                        message: `A wp:anchor is missing ${attr}. ` + "Microsoft Word cannot open the file. Add that attribute.",
-                        path: this.relPath(xmlFile),
-                        code: "word-anchor-missing-attribute",
-                    });
-                }
-            }
-        }
-    }
-
-    /**
-     * `wp:positionH` or `wp:positionV` containing both `wp:posOffset` and
-     * `wp:align` makes Word refuse to open the file. One such element is
-     * enough. Either child alone opens clean.
-     */
-    private async validatePositionOffsetAndAlign(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const localName of ["positionH", "positionV"] as const) {
-                const positions = getElementsByTagNameNSAll(dom, WP_NAMESPACE, localName);
-                for (let i = 0; i < positions.length; i += 1) {
-                    const position = positions[i];
-                    if (!position) continue;
-                    let hasOffset = false;
-                    let hasAlign = false;
-                    for (let j = 0; j < position.childNodes.length; j += 1) {
-                        const child = position.childNodes[j];
-                        if (!child || child.nodeType !== 1) continue;
-                        const element = child as Element;
-                        if (element.namespaceURI !== WP_NAMESPACE) continue;
-                        const local = element.localName || element.tagName.split(":").pop() || "";
-                        if (local === "posOffset") hasOffset = true;
-                        if (local === "align") hasAlign = true;
-                    }
-                    if (!hasOffset || !hasAlign) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            `A wp:${localName} contains both wp:posOffset and wp:align. ` +
-                            "Microsoft Word cannot open the file. Keep only one of those children.",
-                        path: this.relPath(xmlFile),
-                        code: "word-position-offset-and-align",
-                    });
-                }
-            }
-        }
-    }
-
-    /**
-     * A `w:tc` whose last element child is `w:tbl` makes Word offer to
-     * recover the file. One such cell is enough. The cell may contain a
-     * paragraph before that table. Inserting an empty `w:p` after the
-     * table opens clean. A cell that already ends with `w:p` is not this
-     * defect.
-     */
-    private async validateCellsEndingWithTable(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const cells = getElementsByTagNameNSAll(dom, ns, "tc");
-                for (let i = 0; i < cells.length; i += 1) {
-                    const cell = cells[i];
-                    if (!cell) continue;
-                    let last: Element | null = null;
-                    for (let j = 0; j < cell.childNodes.length; j += 1) {
-                        const child = cell.childNodes[j];
-                        if (!child || child.nodeType !== 1) continue;
-                        last = child as Element;
-                    }
-                    if (!last) continue;
-                    const local = last.localName || last.tagName.split(":").pop() || "";
-                    if (local !== "tbl" || last.namespaceURI !== ns) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            "A table cell ends with w:tbl and has no following w:p. " +
-                            "Microsoft Word offers to recover the file. Add a w:p after that table.",
-                        path: this.relPath(xmlFile),
-                        code: "word-cell-ends-with-table",
-                    });
-                }
-            }
-        }
-    }
-
-    /**
-     * `w:delText` or `w:delInstrText` inside `w:txbxContent` makes Word offer
-     * to recover the file when that text is not inside a `w:del` in the text
-     * box. One such element is enough. The text box may be a VML `v:textbox`
-     * or a drawingML `wps:txbx`. The same elements in the document body are
-     * tolerated, and a text box that contains only field characters opens
-     * clean. Deleted text whose text box sits inside `mc:Fallback` is not
-     * this defect: Word uses the sibling `mc:Choice`. A `w:del` that wraps
-     * the text inside the text box is not this defect either. A `w:del`
-     * outside the text box does not cover `w:delText` in the text-box story.
-     */
-    private async validateTextBoxDeletedText(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                for (const local of ["delText", "delInstrText"] as const) {
-                    const nodes = getElementsByTagNameNSAll(dom, ns, local);
-                    for (let i = 0; i < nodes.length; i += 1) {
-                        const node = nodes[i];
-                        if (!node || !this.hasTextBoxContentAncestor(node)) continue;
-                        if (this.hasMarkupCompatibilityFallbackAncestor(node)) continue;
-                        if (this.hasTextBoxDeletionAncestor(node)) continue;
-                        issues.push({
-                            severity: "error",
-                            message:
-                                "A text box contains deleted text. Microsoft Word offers to recover the file. " +
-                                "Remove the w:delText or w:delInstrText from the text box.",
-                            path: this.relPath(xmlFile),
-                            code: "word-textbox-deleted-text",
-                        });
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * `w:delText` inside `w:moveFrom` makes Word offer to recover the file.
-     * One such element is enough. `w:t` inside `w:moveFrom` opens clean.
-     * `w:delText` in the document body is tolerated.
-     */
-    private async validateMoveFromDeletedText(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const nodes = getElementsByTagNameNSAll(dom, ns, "delText");
-                for (let i = 0; i < nodes.length; i += 1) {
-                    const node = nodes[i];
-                    if (!node || !this.hasMoveFromAncestor(node)) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            "A move source contains deleted text. Microsoft Word offers to recover the file. " +
-                            "Use w:t inside w:moveFrom, not w:delText.",
-                        path: this.relPath(xmlFile),
-                        code: "word-move-from-deleted-text",
-                    });
-                }
-            }
-        }
-    }
-
-    private hasMoveFromAncestor(node: Node): boolean {
-        let parent = node.parentNode;
-        while (parent && parent.nodeType === 1) {
-            const elem = parent as Element;
-            const local = elem.localName || elem.tagName.split(":").pop() || "";
-            if (local === "moveFrom" && WORD_PARAGRAPH_NAMESPACES.includes(elem.namespaceURI ?? "")) return true;
-            parent = parent.parentNode;
-        }
-        return false;
-    }
-
-    /**
-     * `mc:Choice` `@Requires` names a prefix that is not declared on that
-     * element or an ancestor. One such prefix makes Word offer to recover
-     * the file. Declaring the prefix on a descendant of the choice, or only
-     * on the fallback sibling, still warns. Declaring it on the choice or
-     * on an ancestor opens clean.
-     */
-    private async validateChoiceRequiresPrefixes(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            const choices = getElementsByTagNameNSAll(dom, MC_NAMESPACE, "Choice");
-            for (let i = 0; i < choices.length; i += 1) {
-                const choice = choices[i];
-                if (!choice) continue;
-                const requires = choice.getAttribute("Requires");
-                if (requires === null) continue;
-                const missing: string[] = [];
-                for (const prefix of requires.split(/\s+/)) {
-                    if (prefix.length === 0) continue;
-                    if (this.prefixDeclaredInScope(choice, prefix)) continue;
-                    missing.push(prefix);
-                }
-                if (missing.length === 0) continue;
-                issues.push({
-                    severity: "error",
-                    message:
-                        `mc:Choice Requires lists undeclared prefix ${missing.join(", ")}. ` +
-                        "Microsoft Word offers to recover the file. " +
-                        "Declare the prefix on the Choice element or an ancestor.",
-                    path: this.relPath(xmlFile),
-                    code: "word-choice-requires-undeclared",
-                });
-            }
-        }
-    }
-
-    /**
-     * A `w:sdtPr`/`w:id` whose `w:val` is empty makes Word refuse to open
-     * the file. Setting that value to a number opens clean.
-     */
-    private async validateSdtIdEmpty(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const ids = getElementsByTagNameNSAll(dom, ns, "id");
-                for (let i = 0; i < ids.length; i += 1) {
-                    const id = ids[i];
-                    if (!id) continue;
-                    const parent = id.parentNode;
-                    if (!parent || parent.nodeType !== 1) continue;
-                    const parentElem = parent as Element;
-                    const parentLocal = parentElem.localName || parentElem.tagName.split(":").pop() || "";
-                    if (parentLocal !== "sdtPr" || !WORD_PARAGRAPH_NAMESPACES.includes(parentElem.namespaceURI ?? "")) {
-                        continue;
-                    }
-                    if (id.getAttributeNS(ns, "val") !== "") continue;
-                    issues.push({
-                        severity: "error",
-                        message: 'A w:sdt has w:id w:val="". Microsoft Word cannot open the file. Set w:val to a number.',
-                        path: this.relPath(xmlFile),
-                        code: "word-sdt-id-empty",
-                    });
-                }
-            }
-        }
-    }
-
-    /**
-     * `wne:toolbarData` points at an attached-toolbar part that contains the
-     * UTF-8 replacement sequence EF BF BD. One sequence makes Word offer to
-     * recover the file, or report that the custom toolbars are unsupported.
-     * Replacing the sequences opens clean. The same bytes in a part that
-     * `toolbarData` does not reference are left alone.
-     */
-    private async validateAttachedToolbarUtf8(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        const wordmlNs = "http://schemas.microsoft.com/office/word/2006/wordml";
-        const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
-        const needle = Buffer.from([0xef, 0xbf, 0xbd]);
-        for (const xmlFile of this.xmlFiles) {
-            if (!xmlFile.endsWith(".xml")) continue;
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            const toolbarData = getElementsByTagNameNSAll(dom, wordmlNs, "toolbarData");
-            if (toolbarData.length === 0) continue;
-            const relsFile = path.join(path.dirname(xmlFile), "_rels", `${path.basename(xmlFile)}.rels`);
-            let relDom: Document;
-            try {
-                relDom = await readXml(relsFile);
-            } catch {
-                continue;
-            }
-            const relationships = getElementsByTagNameNSAll(relDom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
-            for (let i = 0; i < toolbarData.length; i += 1) {
-                const elem = toolbarData[i];
-                if (!elem) continue;
-                let rid: string | null = null;
-                for (const relNs of relationshipNamespaces) {
-                    const value = elem.getAttributeNS(relNs, "id");
-                    if (value) {
-                        rid = value;
-                        break;
-                    }
-                }
-                if (!rid) rid = elem.getAttribute("r:id");
-                if (!rid) continue;
-                let target: string | null = null;
-                for (let r = 0; r < relationships.length; r += 1) {
-                    const rel = relationships[r];
-                    if (!rel || rel.getAttribute("Id") !== rid) continue;
-                    const type = rel.getAttribute("Type") ?? "";
-                    if (!type.endsWith("/attachedToolbars")) continue;
-                    target = rel.getAttribute("Target");
-                    break;
-                }
-                if (!target) continue;
-                const resolved = resolveRelationshipTargetPath(this.unpackedDir, relsFile, target);
-                if (!resolved) continue;
-                let bytes: Buffer;
-                try {
-                    bytes = await fs.readFile(resolved);
-                } catch {
-                    continue;
-                }
-                if (!bytes.includes(needle)) continue;
-                issues.push({
-                    severity: "error",
-                    message:
-                        `${this.relPath(resolved)} is referenced by wne:toolbarData and contains the UTF-8 replacement sequence EF BF BD. ` +
-                        "Microsoft Word offers to recover the file. One sequence is enough. " +
-                        "Replace each sequence with the original byte.",
-                    path: this.relPath(resolved),
-                    code: "word-attached-toolbar-utf8",
-                });
-                return;
-            }
-        }
-    }
-
-    private prefixDeclaredInScope(elem: Element, prefix: string): boolean {
-        // XML Namespaces predefines this binding, even without xmlns:xml.
-        if (prefix === "xml") return true;
-        const attrName = `xmlns:${prefix}`;
-        let current: Node | null = elem;
-        while (current && current.nodeType === 1) {
-            const attrs = (current as Element).attributes;
-            for (let i = 0; i < attrs.length; i += 1) {
-                const attr = attrs[i];
-                if (attr && attr.name === attrName) return true;
-            }
-            current = current.parentNode;
-        }
-        return false;
-    }
-
-    private hasTextBoxContentAncestor(node: Node): boolean {
-        let parent = node.parentNode;
-        while (parent && parent.nodeType === 1) {
-            const elem = parent as Element;
-            const local = elem.localName || elem.tagName.split(":").pop() || "";
-            if (local === "txbxContent" && WORD_PARAGRAPH_NAMESPACES.includes(elem.namespaceURI ?? "")) return true;
-            parent = parent.parentNode;
-        }
-        return false;
-    }
-
-    /**
-     * True when a `w:del` sits between this node and its `w:txbxContent`.
-     * Word accepts that deletion. A `w:del` outside the text box does not
-     * count, because the text-box story still contains bare `w:delText`.
-     */
-    private hasTextBoxDeletionAncestor(node: Node): boolean {
-        let parent = node.parentNode;
-        while (parent && parent.nodeType === 1) {
-            const elem = parent as Element;
-            const local = elem.localName || elem.tagName.split(":").pop() || "";
-            const ns = elem.namespaceURI ?? "";
-            if (local === "txbxContent" && WORD_PARAGRAPH_NAMESPACES.includes(ns)) return false;
-            if (local === "del" && WORD_PARAGRAPH_NAMESPACES.includes(ns)) return true;
-            parent = parent.parentNode;
-        }
-        return false;
-    }
-
-    /** True when an ancestor is `mc:Fallback`. Word ignores that branch. */
-    private hasMarkupCompatibilityFallbackAncestor(node: Node): boolean {
-        let parent = node.parentNode;
-        while (parent && parent.nodeType === 1) {
-            const elem = parent as Element;
-            const local = elem.localName || elem.tagName.split(":").pop() || "";
-            if (local === "Fallback" && elem.namespaceURI === MC_NAMESPACE) return true;
-            parent = parent.parentNode;
-        }
-        return false;
-    }
-
-    /**
-     * A `w:hyperlink` whose `r:id` does not name an external hyperlink
-     * relationship makes Word offer to recover the file. One such element is
-     * enough. Removing the `r:id`, or adding a Relationship with Type ending
-     * in `/hyperlink` and TargetMode `External`, opens clean. A hyperlink
-     * relationship without TargetMode, and an external relationship of
-     * another type, still warn. A hyperlink with no `r:id` is left alone.
-     */
-    private async validateHyperlinkRelationships(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            const rels = await this.externalHyperlinkRelationshipIds(xmlFile);
-            if (!rels) continue;
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const links = getElementsByTagNameNSAll(dom, ns, "hyperlink");
-                for (let i = 0; i < links.length; i += 1) {
-                    const link = links[i];
-                    if (!link) continue;
-                    let rid: string | null = null;
-                    for (const relNs of relationshipNamespaces) {
-                        const value = link.getAttributeNS(relNs, "id");
-                        if (value) {
-                            rid = value;
-                            break;
-                        }
-                    }
-                    if (!rid) continue;
-                    const rel = rels.get(rid);
-                    if (rel?.externalHyperlink) continue;
-                    let why: string;
-                    if (!rel) {
-                        why = `no Relationship with Id '${rid}'`;
-                    } else if (!rel.type.endsWith("/hyperlink")) {
-                        why = `Relationship '${rid}' has Type '${rel.type || "(none)"}'`;
-                    } else {
-                        why = `Relationship '${rid}' has TargetMode '${rel.targetMode || "(none)"}'`;
-                    }
-                    issues.push({
-                        severity: "error",
-                        message:
-                            `<w:hyperlink> r:id="${rid}" does not reference an external hyperlink relationship (${why}). ` +
-                            "Microsoft Word offers to recover the file. " +
-                            "Use a Relationship whose Type ends in /hyperlink and whose TargetMode is External, or remove the r:id.",
-                        path: this.relPath(xmlFile),
-                        code: "word-hyperlink-relationship",
-                    });
-                }
-            }
-        }
-    }
-
-    /**
-     * `null` when the sidecar exists but cannot be parsed (another check
-     * reports that). An absent sidecar is an empty map: every `r:id` is
-     * unresolved.
-     */
-    /**
-     * Two `theme` relationships in one `.rels` part make Word offer to
-     * recover the file. Either theme part alone opens clean. A second theme
-     * whose target is rewritten from `/word/theme/...` to a relative path
-     * still warns.
-     */
-    private async validateDuplicateThemeRelationships(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        for (const relsFile of this.xmlFiles) {
-            if (!relsFile.endsWith(".rels")) continue;
-            let dom: Document;
-            try {
-                dom = await readXml(relsFile);
-            } catch {
-                continue;
-            }
-            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
-            const themeIds: string[] = [];
-            for (let i = 0; i < rels.length; i += 1) {
-                const rel = rels[i];
-                if (!rel) continue;
-                const type = rel.getAttribute("Type") ?? "";
-                if (!type.endsWith("/theme")) continue;
-                themeIds.push(rel.getAttribute("Id") ?? "");
-            }
-            if (themeIds.length < 2) continue;
-            issues.push({
-                severity: "error",
-                message:
-                    `${this.relPath(relsFile)} contains ${themeIds.length} theme relationships ` +
-                    `(${themeIds.join(", ")}). Microsoft Word offers to recover the file. Keep one theme relationship.`,
-                path: this.relPath(relsFile),
-                code: "word-duplicate-theme-relationship",
-            });
-        }
-    }
-
-    /**
-     * Two `fontTable` relationships in one `.rels` part make Word offer to
-     * recover the file. A second relationship that targets the same
-     * `fontTable.xml` as the first still warns. Rewriting an absolute
-     * `/word/...` target to a relative path still warns. One font table
-     * relationship opens clean. The extra part and its content type are
-     * not required for the warning.
-     */
-    private async validateDuplicateFontTableRelationships(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        for (const relsFile of this.xmlFiles) {
-            if (!relsFile.endsWith(".rels")) continue;
-            let dom: Document;
-            try {
-                dom = await readXml(relsFile);
-            } catch {
-                continue;
-            }
-            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
-            const fontIds: string[] = [];
-            for (let i = 0; i < rels.length; i += 1) {
-                const rel = rels[i];
-                if (!rel) continue;
-                const type = rel.getAttribute("Type") ?? "";
-                if (!type.endsWith("/fontTable")) continue;
-                fontIds.push(rel.getAttribute("Id") ?? "");
-            }
-            if (fontIds.length < 2) continue;
-            issues.push({
-                severity: "error",
-                message:
-                    `${this.relPath(relsFile)} contains ${fontIds.length} font table relationships ` +
-                    `(${fontIds.join(", ")}). Microsoft Word offers to recover the file. Keep one font table relationship.`,
-                path: this.relPath(relsFile),
-                code: "word-duplicate-font-table-relationship",
-            });
-        }
-    }
-
-    /**
-     * Two `webSettings` relationships in one `.rels` part make Word offer to
-     * recover the file. A second relationship that targets the same
-     * `webSettings.xml` as the first still warns. One web settings
-     * relationship opens clean. The extra part is not required for the warning.
-     */
-    private async validateDuplicateWebSettingsRelationships(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        for (const relsFile of this.xmlFiles) {
-            if (!relsFile.endsWith(".rels")) continue;
-            let dom: Document;
-            try {
-                dom = await readXml(relsFile);
-            } catch {
-                continue;
-            }
-            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
-            const webIds: string[] = [];
-            for (let i = 0; i < rels.length; i += 1) {
-                const rel = rels[i];
-                if (!rel) continue;
-                const type = rel.getAttribute("Type") ?? "";
-                if (!type.endsWith("/webSettings")) continue;
-                webIds.push(rel.getAttribute("Id") ?? "");
-            }
-            if (webIds.length < 2) continue;
-            issues.push({
-                severity: "error",
-                message:
-                    `${this.relPath(relsFile)} contains ${webIds.length} web settings relationships ` +
-                    `(${webIds.join(", ")}). Microsoft Word offers to recover the file. Keep one web settings relationship.`,
-                path: this.relPath(relsFile),
-                code: "word-duplicate-web-settings-relationship",
-            });
-        }
-    }
-
-    /**
-     * Two `settings` relationships in one `.rels` part make Word offer to
-     * recover the file. A second relationship that targets the same
-     * `settings.xml` as the first still warns. One settings relationship
-     * opens clean. The extra part is not required for the warning.
-     */
-    private async validateDuplicateSettingsRelationships(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        for (const relsFile of this.xmlFiles) {
-            if (!relsFile.endsWith(".rels")) continue;
-            let dom: Document;
-            try {
-                dom = await readXml(relsFile);
-            } catch {
-                continue;
-            }
-            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
-            const settingsIds: string[] = [];
-            for (let i = 0; i < rels.length; i += 1) {
-                const rel = rels[i];
-                if (!rel) continue;
-                const type = rel.getAttribute("Type") ?? "";
-                if (!type.endsWith("/settings")) continue;
-                settingsIds.push(rel.getAttribute("Id") ?? "");
-            }
-            if (settingsIds.length < 2) continue;
-            issues.push({
-                severity: "error",
-                message:
-                    `${this.relPath(relsFile)} contains ${settingsIds.length} settings relationships ` +
-                    `(${settingsIds.join(", ")}). Microsoft Word offers to recover the file. Keep one settings relationship.`,
-                path: this.relPath(relsFile),
-                code: "word-duplicate-settings-relationship",
-            });
-        }
-    }
-
-    private async externalHyperlinkRelationshipIds(
-        xmlFile: string,
-    ): Promise<Map<string, { type: string; targetMode: string; externalHyperlink: boolean }> | null> {
-        const relsFile = path.join(path.dirname(xmlFile), "_rels", `${path.basename(xmlFile)}.rels`);
-        let text: string;
-        try {
-            text = await fs.readFile(relsFile, "utf-8");
-        } catch {
-            return new Map();
-        }
-        let dom: Document;
-        try {
-            dom = parseXml(text);
-        } catch {
-            return null;
-        }
-        const out = new Map<string, { type: string; targetMode: string; externalHyperlink: boolean }>();
-        const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
-        for (let i = 0; i < rels.length; i += 1) {
-            const rel = rels[i];
-            if (!rel) continue;
-            const id = rel.getAttribute("Id");
-            if (!id) continue;
-            const type = rel.getAttribute("Type") ?? "";
-            const targetMode = rel.getAttribute("TargetMode") ?? "";
-            out.set(id, {
-                type,
-                targetMode,
-                externalHyperlink: type.endsWith("/hyperlink") && targetMode === "External",
-            });
-        }
-        return out;
-    }
-
-    private async validateTextContainsParagraph(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const texts = getElementsByTagNameNSAll(dom, ns, "t");
-                for (let i = 0; i < texts.length; i += 1) {
-                    const text = texts[i];
-                    if (!text) continue;
-                    const nested = getElementsByTagNameNSAll(text, ns, "p");
-                    if (nested.length === 0) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            `A <w:t> element contains ${nested.length} <w:p> element(s). ` +
-                            "Microsoft Word cannot open the file. Move the paragraph out of the text run.",
-                        path: this.relPath(xmlFile),
-                        code: "word-text-contains-paragraph",
-                    });
-                }
-            }
-        }
     }
 
     // ----- whitespace ---------------------------------------------------------
@@ -1710,7 +928,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await this.readPartDom(xmlFile);
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -1750,7 +968,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await this.readPartDom(xmlFile);
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -1790,7 +1008,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await this.readPartDom(xmlFile);
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -1853,109 +1071,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     // ----- comment markers ----------------------------------------------------
 
     async validateCommentMarkers(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-
-        let documentXml: string | null = null;
-        let commentsXml: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            const base = baseName(xmlFile);
-            if (base === "document.xml" && xmlFile.includes("word")) {
-                documentXml = xmlFile;
-            } else if (base === "comments.xml") {
-                commentsXml = xmlFile;
-            }
-        }
-
-        if (!documentXml) {
-            // Mirrors Python: "no document.xml" is a pass.
-            return { valid: true, issues: [] };
-        }
-
-        let docDom: Document;
-        try {
-            docDom = parseXml(await fs.readFile(documentXml, "utf-8"));
-        } catch (err) {
-            issues.push({
-                severity: "error",
-                message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
-                path: this.relPath(documentXml),
-                code: "comment-marker-parse",
-            });
-            return finalize(issues);
-        }
-
-        const collectIds = (localName: string): Set<string> => {
-            const out = new Set<string>();
-            const list = getElementsByTagNameNSAll(docDom, WORD_2006_NAMESPACE, localName);
-            for (let i = 0; i < list.length; i += 1) {
-                const elem = list[i];
-                if (!elem) continue;
-                const id = elem.getAttributeNS(WORD_2006_NAMESPACE, "id");
-                out.add(id ?? "");
-            }
-            return out;
-        };
-
-        const rangeStarts = collectIds("commentRangeStart");
-        const rangeEnds = collectIds("commentRangeEnd");
-        const references = collectIds("commentReference");
-
-        const orphanedEnds = setDiff(rangeEnds, rangeStarts);
-        for (const id of sortIdsNumeric(orphanedEnds)) {
-            issues.push({
-                severity: "error",
-                message: `commentRangeEnd id="${id}" has no matching commentRangeStart`,
-                path: this.relPath(documentXml),
-                code: "comment-orphan-end",
-            });
-        }
-
-        const orphanedStarts = setDiff(rangeStarts, rangeEnds);
-        for (const id of sortIdsNumeric(orphanedStarts)) {
-            issues.push({
-                severity: "error",
-                message: `commentRangeStart id="${id}" has no matching commentRangeEnd`,
-                path: this.relPath(documentXml),
-                code: "comment-orphan-start",
-            });
-        }
-
-        if (commentsXml) {
-            let commentsDom: Document;
-            try {
-                commentsDom = parseXml(await fs.readFile(commentsXml, "utf-8"));
-            } catch (err) {
-                issues.push({
-                    severity: "error",
-                    message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
-                    path: this.relPath(commentsXml),
-                    code: "comment-marker-parse",
-                });
-                return finalize(issues);
-            }
-            const commentIds = new Set<string>();
-            const list = getElementsByTagNameNSAll(commentsDom, WORD_2006_NAMESPACE, "comment");
-            for (let i = 0; i < list.length; i += 1) {
-                const elem = list[i];
-                if (!elem) continue;
-                const id = elem.getAttributeNS(WORD_2006_NAMESPACE, "id");
-                if (id) commentIds.add(id);
-            }
-
-            const markerIds = new Set<string>([...rangeStarts, ...rangeEnds, ...references]);
-            const invalidRefs = setDiff(markerIds, commentIds);
-            for (const id of sortIdsNumeric(invalidRefs)) {
-                if (!id) continue;
-                issues.push({
-                    severity: "error",
-                    message: `marker id="${id}" references non-existent comment`,
-                    path: this.relPath(documentXml),
-                    code: "comment-marker-missing",
-                });
-            }
-        }
-
-        return finalize(issues);
+        const run = await runChecks(this.context(), createDefaultCheckRegistry(), {
+            format: "docx",
+            select: ["comment-markers"],
+            profile: this.profile,
+            deadline: this.deadline,
+        });
+        this.recordExecutedChecks(run.executed);
+        return finalize([...run.issues]);
     }
 
     // ----- style reference integrity ------------------------------------------
@@ -1964,7 +1087,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * Every `w:val` on a style-reference element (`w:pStyle`, `w:rStyle`,
      * `w:tblStyle`, `w:numStyle`, `w:tblpPr/w:tblStyle`, `w:linkedStyle`)
      * in document/header/footer/footnote/comment XML must resolve to a
-     * `<w:style w:styleId="...">` defined in `word/styles.xml`. Word
+     * `<w:style w:styleId="...">` defined in the styles part the story's
+     * root relates — the main document's (by name in its folder when
+     * none does, #688, #699) or a reached glossary's own (#698). Word
      * silently substitutes the default style for missing references but
      * pops a "this document needs to be repaired" dialog when opening
      * unfamiliar dangling references.
@@ -1979,7 +1104,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * Word's repaired version injects the canonical definition.
      */
     /**
-     * Verify `word/styles.xml` defines the four "implied default" styles
+     * Verify the styles part the main document relates (by name in its
+     * folder when none does, #688, #699) defines the four "implied default" styles
      * required by ECMA-376 §17.7.4.4 — `Normal` (paragraph), `DefaultParagraphFont`
      * (character), `TableNormal` (table), `NoList` (numbering). Word
      * looks these up by name when an element omits an explicit style and
@@ -1998,15 +1124,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validateStyleDefaults(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
-        let stylesPath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
-        }
+        const stylesPath = await this.mainStylesPath();
         if (!stylesPath) return { valid: true, issues: [] };
 
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+            dom = await this.readPartDom(stylesPath);
         } catch {
             return { valid: true, issues: [] };
         }
@@ -2025,7 +1148,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 issues.push({
                     severity,
                     message:
-                        `word/styles.xml is missing the implied-default style '${required.styleId}' ` +
+                        `${this.relPath(stylesPath)} is missing the implied-default style '${required.styleId}' ` +
                         `(type='${required.type}'). ECMA-376 §17.7.4.4 requires a default for each of the ` +
                         `four style types; missing 'TableNormal' in particular triggers Word's ` +
                         `"Document Recovery — Table Properties" dialog on open.`,
@@ -2060,7 +1183,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
             let content: string;
             try {
-                content = await fs.readFile(xmlFile, "utf-8");
+                content = decodeXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -2110,7 +1233,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const appXml = path.join(this.unpackedDir, "docProps", "app.xml");
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(appXml, "utf-8"));
+            dom = await this.readPartDom(appXml);
         } catch {
             return { valid: true, issues: [] };
         }
@@ -2139,40 +1262,47 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
         const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
 
-        // Find styles.xml; if absent, every reference is dangling — but
-        // most documents lacking styles.xml are abnormal in other ways
-        // already detected.
-        let stylesPath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
-        }
-        const defined = new Set<string>();
-        if (stylesPath) {
-            try {
-                const dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
-                for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                    const list = getElementsByTagNameNSAll(dom, ns, "style");
-                    for (let i = 0; i < list.length; i += 1) {
-                        const elem = list[i];
-                        if (!elem) continue;
-                        const id = elem.getAttributeNS(ns, "styleId");
-                        if (id) defined.add(id);
-                    }
-                }
-            } catch {
-                // styles.xml malformed — covered by xml-syntax check.
-                return finalize(issues);
+        // If the main document relates no styles part, every main-story
+        // reference is dangling — but most documents lacking one are
+        // abnormal in other ways already detected. A related styles part
+        // that is not XML defines what this check cannot read, so the main
+        // story is not judged (#693). A reached glossary's story is judged
+        // against the glossary's own styles part, or not judged when it
+        // relates none (#698).
+        const stylesPath = await this.mainStylesPath();
+        const glossaryStyles = await this.glossaryStoryStylesFiles();
+        const definedByStyles = new Map<string | null, ReadonlySet<string> | undefined>();
+        const definedFor = async (styles: string | null): Promise<ReadonlySet<string> | undefined> => {
+            if (!definedByStyles.has(styles)) {
+                definedByStyles.set(styles, await this.definedStyleIds(styles));
             }
-        }
+            return definedByStyles.get(styles);
+        };
 
         const refTags = ["pStyle", "rStyle", "tblStyle", "numStyle", "linkedStyle"] as const;
         // Track each (file, styleId) pair so we don't spam multiple
         // issues for the same dangling reference repeated 100 times.
         const reported = new Set<string>();
         for (const xmlFile of this.userTextXmlFiles()) {
+            let styles: string | null;
+            let stylesLabel: string;
+            if (glossaryStyles.has(xmlFile)) {
+                const glossaryPath = glossaryStyles.get(xmlFile);
+                if (glossaryPath === undefined) continue;
+                styles = glossaryPath;
+                stylesLabel = this.relPath(glossaryPath);
+            } else {
+                if (stylesPath === undefined) continue;
+                styles = stylesPath;
+                // `null` means no styles part was found, so every
+                // reference dangles against none (#695).
+                stylesLabel = stylesPath === null ? "any styles part" : this.relPath(stylesPath);
+            }
+            const defined = await definedFor(styles);
+            if (defined === undefined) continue;
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
@@ -2191,7 +1321,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         issues.push({
                             severity,
                             message:
-                                `<w:${tag} w:val='${val}'/> references a style not defined in word/styles.xml. ` +
+                                `<w:${tag} w:val='${val}'/> references a style not defined in ${stylesLabel}. ` +
                                 `Word substitutes the default style and triggers a repair dialog.`,
                             path: this.relPath(xmlFile),
                             code: "style-reference-undefined",
@@ -2234,7 +1364,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
@@ -2304,7 +1434,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
@@ -2373,351 +1503,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * threaded-comments extension surface.
      */
     async validateCommentThreading(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-
-        let documentXml: string | null = null;
-        let commentsXml: string | null = null;
-        let commentsExtendedXml: string | null = null;
-        let commentsIdsXml: string | null = null;
-        let commentsExtensibleXml: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            const base = baseName(xmlFile);
-            if (base === "document.xml" && xmlFile.includes("word")) {
-                documentXml = xmlFile;
-            } else if (base === "comments.xml") {
-                commentsXml = xmlFile;
-            } else if (base === "commentsExtended.xml") {
-                commentsExtendedXml = xmlFile;
-            } else if (base === "commentsIds.xml") {
-                commentsIdsXml = xmlFile;
-            } else if (base === "commentsExtensible.xml") {
-                commentsExtensibleXml = xmlFile;
-            }
-        }
-
-        // No comments.xml → no threading to check.
-        if (!commentsXml) return { valid: true, issues: [] };
-
-        let commentsDom: Document;
-        try {
-            commentsDom = parseXml(await fs.readFile(commentsXml, "utf-8"));
-        } catch (err) {
-            issues.push({
-                severity: "error",
-                message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
-                path: this.relPath(commentsXml),
-                code: "comment-thread-parse",
-            });
-            return finalize(issues);
-        }
-
-        // Build the comment-id → all-paragraph-paraIds map.
-        //
-        // Word's threading uses the LAST paragraph's paraId (the
-        // thread-anchor paragraph) in commentsExtended.xml, not the first.
-        // For a single-paragraph comment they're the same; for multi-
-        // paragraph comments (typical of replies) only the last paraId is
-        // referenced from the extension. So we collect every paraId on
-        // every <w:p> inside each <w:comment> and match against the full
-        // set rather than guessing first-vs-last.
-        //
-        // Both Transitional (`schemas.openxmlformats.org/.../2006/main`)
-        // and Strict (`purl.oclc.org/ooxml/wordprocessingml/main`)
-        // namespace URIs are queried because OOXML Strict-conformance
-        // documents use the latter and the rest of the validator pipeline
-        // already supports both.
-        const commentParaIds = new Map<string, string[]>();
-        for (const wNs of WORD_PARAGRAPH_NAMESPACES) {
-            const commentList = getElementsByTagNameNSAll(commentsDom, wNs, "comment");
-            for (let i = 0; i < commentList.length; i += 1) {
-                const elem = commentList[i];
-                if (!elem) continue;
-                const id = elem.getAttributeNS(wNs, "id");
-                if (!id) continue;
-                const ps = getElementsByTagNameNSAll(elem, wNs, "p");
-                const paraIds: string[] = [];
-                for (let j = 0; j < ps.length; j += 1) {
-                    const p = ps[j];
-                    if (!p) continue;
-                    const paraId = p.getAttributeNS(W14_NAMESPACE, "paraId");
-                    if (paraId) paraIds.push(paraId);
-                }
-                if (!commentParaIds.has(id)) commentParaIds.set(id, paraIds);
-            }
-        }
-        const allCommentParaIds = new Set<string>();
-        for (const v of commentParaIds.values()) {
-            for (const p of v) allCommentParaIds.add(p);
-        }
-
-        // ----- rule 4: marker counts ---------------------------------------
-        if (documentXml) {
-            try {
-                const docDom = parseXml(await fs.readFile(documentXml, "utf-8"));
-                const counts = (local: string): number => {
-                    let total = 0;
-                    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                        total += getElementsByTagNameNSAll(docDom, ns, local).length;
-                    }
-                    return total;
-                };
-                const startCount = counts("commentRangeStart");
-                const endCount = counts("commentRangeEnd");
-                const refCount = counts("commentReference");
-                const expected = commentParaIds.size;
-                if (startCount !== expected) {
-                    issues.push({
-                        severity: "error",
-                        message: `commentRangeStart count (${startCount}) does not match ` + `comment count in comments.xml (${expected})`,
-                        code: "comment-thread-count-mismatch",
-                        path: this.relPath(documentXml),
-                    });
-                }
-                if (endCount !== expected) {
-                    issues.push({
-                        severity: "error",
-                        message: `commentRangeEnd count (${endCount}) does not match ` + `comment count in comments.xml (${expected})`,
-                        path: this.relPath(documentXml),
-                        code: "comment-thread-count-mismatch",
-                    });
-                }
-                if (refCount !== expected) {
-                    issues.push({
-                        severity: "error",
-                        message: `commentReference count (${refCount}) does not match ` + `comment count in comments.xml (${expected})`,
-                        path: this.relPath(documentXml),
-                        code: "comment-thread-count-mismatch",
-                    });
-                }
-            } catch {
-                // document.xml parse failures are reported elsewhere.
-            }
-        }
-
-        const commentIdDurableIds = new Set<string>();
-        if (commentsIdsXml) {
-            let idsDom: Document;
-            try {
-                idsDom = parseXml(await fs.readFile(commentsIdsXml, "utf-8"));
-            } catch (err) {
-                issues.push({
-                    severity: "error",
-                    message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
-                    path: this.relPath(commentsIdsXml),
-                    code: "comment-thread-parse",
-                });
-                return finalize(issues);
-            }
-
-            const commentIds = getElementsByTagNameNSAll(idsDom, W16CID_NAMESPACE, "commentId");
-            const paraIdCounts = new Map<string, number>();
-            const durableIdCounts = new Map<string, number>();
-            for (let i = 0; i < commentIds.length; i += 1) {
-                const elem = commentIds[i];
-                if (!elem) continue;
-                const paraId = elem.getAttributeNS(W16CID_NAMESPACE, "paraId");
-                const durableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
-                if (paraId) {
-                    paraIdCounts.set(paraId, (paraIdCounts.get(paraId) ?? 0) + 1);
-                    if (!allCommentParaIds.has(paraId)) {
-                        issues.push({
-                            severity: "error",
-                            message:
-                                `<w16cid:commentId w16cid:paraId='${paraId}'> does not match any paragraph paraId ` +
-                                `in any <w:comment> in comments.xml`,
-                            path: this.relPath(commentsIdsXml),
-                            code: "comment-thread-commentid-paraid-orphan",
-                        });
-                    }
-                } else {
-                    issues.push({
-                        severity: "error",
-                        message: `<w16cid:commentId> is missing required w16cid:paraId`,
-                        path: this.relPath(commentsIdsXml),
-                        code: "comment-thread-commentid-missing-paraid",
-                    });
-                }
-
-                if (durableId) {
-                    durableIdCounts.set(durableId, (durableIdCounts.get(durableId) ?? 0) + 1);
-                    commentIdDurableIds.add(durableId);
-                } else {
-                    issues.push({
-                        severity: "error",
-                        message: `<w16cid:commentId> is missing required w16cid:durableId`,
-                        path: this.relPath(commentsIdsXml),
-                        code: "comment-thread-commentid-missing-durableid",
-                    });
-                }
-            }
-
-            for (const [paraId, count] of paraIdCounts) {
-                if (count > 1) {
-                    issues.push({
-                        severity: "error",
-                        message: `commentsIds.xml has ${count} entries with duplicate paraId='${paraId}'`,
-                        path: this.relPath(commentsIdsXml),
-                        code: "comment-thread-commentid-duplicate-paraid",
-                    });
-                }
-            }
-            for (const [durableId, count] of durableIdCounts) {
-                if (count > 1) {
-                    issues.push({
-                        severity: "error",
-                        message: `commentsIds.xml has ${count} entries with duplicate durableId='${durableId}'`,
-                        path: this.relPath(commentsIdsXml),
-                        code: "comment-thread-commentid-duplicate-durableid",
-                    });
-                }
-            }
-        }
-
-        if (commentsExtensibleXml) {
-            let cexDom: Document;
-            try {
-                cexDom = parseXml(await fs.readFile(commentsExtensibleXml, "utf-8"));
-            } catch (err) {
-                issues.push({
-                    severity: "error",
-                    message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
-                    path: this.relPath(commentsExtensibleXml),
-                    code: "comment-thread-parse",
-                });
-                return finalize(issues);
-            }
-
-            const extensibleEntries = getElementsByTagNameNSAll(cexDom, W16CEX_NAMESPACE, "commentExtensible");
-            const durableIdCounts = new Map<string, number>();
-            for (let i = 0; i < extensibleEntries.length; i += 1) {
-                const elem = extensibleEntries[i];
-                if (!elem) continue;
-                const durableId = elem.getAttributeNS(W16CEX_NAMESPACE, "durableId");
-                if (!durableId) {
-                    issues.push({
-                        severity: "error",
-                        message: `<w16cex:commentExtensible> is missing required w16cex:durableId`,
-                        path: this.relPath(commentsExtensibleXml),
-                        code: "comment-thread-durableid-missing",
-                    });
-                    continue;
-                }
-                durableIdCounts.set(durableId, (durableIdCounts.get(durableId) ?? 0) + 1);
-                if (!commentIdDurableIds.has(durableId)) {
-                    issues.push({
-                        severity: "error",
-                        message:
-                            `<w16cex:commentExtensible w16cex:durableId='${durableId}'> does not match any ` +
-                            `w16cid:durableId in commentsIds.xml`,
-                        path: this.relPath(commentsExtensibleXml),
-                        code: "comment-thread-durableid-orphan",
-                    });
-                }
-            }
-            for (const [durableId, count] of durableIdCounts) {
-                if (count > 1) {
-                    issues.push({
-                        severity: "error",
-                        message: `commentsExtensible.xml has ${count} entries with duplicate durableId='${durableId}'`,
-                        path: this.relPath(commentsExtensibleXml),
-                        code: "comment-thread-durableid-duplicate",
-                    });
-                }
-            }
-        }
-
-        // No commentsExtended.xml → rules 1–3 are vacuous, return now.
-        if (!commentsExtendedXml) return finalize(issues);
-
-        let extDom: Document;
-        try {
-            extDom = parseXml(await fs.readFile(commentsExtendedXml, "utf-8"));
-        } catch (err) {
-            issues.push({
-                severity: "error",
-                message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
-                path: this.relPath(commentsExtendedXml),
-                code: "comment-thread-parse",
-            });
-            return finalize(issues);
-        }
-
-        const extEntries = getElementsByTagNameNSAll(extDom, W15_NAMESPACE, "commentEx");
-        const extByParaId = new Map<string, number>();
-        const extParents: string[] = [];
-        for (let i = 0; i < extEntries.length; i += 1) {
-            const elem = extEntries[i];
-            if (!elem) continue;
-            const paraId = elem.getAttributeNS(W15_NAMESPACE, "paraId");
-            const parent = elem.getAttributeNS(W15_NAMESPACE, "paraIdParent");
-            if (paraId) {
-                extByParaId.set(paraId, (extByParaId.get(paraId) ?? 0) + 1);
-            }
-            if (parent) extParents.push(parent);
-        }
-
-        // Severity for soft-strict rules: strict profile reports an error,
-        // lenient profile records a warning so the integrity gap is visible
-        // without flunking real-world Word-emitted documents that omit
-        // commentsExtended entries on standalone (non-threaded) comments.
-        const softSeverity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
-
-        // ----- rule 3: no duplicate paraId entries (jubarte #153) ---------
-        // Always an error — duplicates are unambiguous writer bugs.
-        for (const [paraId, count] of extByParaId) {
-            if (count > 1) {
-                issues.push({
-                    severity: "error",
-                    message: `commentsExtended.xml has ${count} entries with duplicate paraId='${paraId}'`,
-                    path: this.relPath(commentsExtendedXml),
-                    code: "comment-thread-duplicate-paraid",
-                });
-            }
-        }
-
-        // ----- rule 1: every comment with paraIds has at least one matching commentEx --
-        for (const [commentId, paraIds] of commentParaIds) {
-            if (paraIds.length === 0) continue;
-            if (!paraIds.some((p) => extByParaId.has(p))) {
-                issues.push({
-                    severity: softSeverity,
-                    message:
-                        `comment id='${commentId}' has paraIds=[${paraIds.join(", ")}] in comments.xml ` +
-                        `but none match a <w15:commentEx w15:paraId='...'> entry in commentsExtended.xml`,
-                    path: this.relPath(commentsExtendedXml),
-                    code: "comment-thread-paraid-missing",
-                });
-            }
-        }
-
-        // ----- rule 2: every commentEx points at a real comment paragraph --
-        for (const paraId of extByParaId.keys()) {
-            if (!allCommentParaIds.has(paraId)) {
-                issues.push({
-                    severity: "error",
-                    message:
-                        `<w15:commentEx w15:paraId='${paraId}'> does not match any paragraph paraId ` +
-                        `in any <w:comment> in comments.xml`,
-                    path: this.relPath(commentsExtendedXml),
-                    code: "comment-thread-paraid-orphan",
-                });
-            }
-        }
-
-        // ----- rule 3: paraIdParent resolves -------------------------------
-        for (const parent of extParents) {
-            if (!extByParaId.has(parent)) {
-                issues.push({
-                    severity: "error",
-                    message:
-                        `<w15:commentEx w15:paraIdParent='${parent}'> does not resolve to any ` + `paraId declared in commentsExtended.xml`,
-                    path: this.relPath(commentsExtendedXml),
-                    code: "comment-thread-orphan-parent",
-                });
-            }
-        }
-
-        return finalize(issues);
+        const run = await runChecks(this.context(), createDefaultCheckRegistry(), {
+            format: "docx",
+            select: ["comment-threading"],
+            profile: this.profile,
+            deadline: this.deadline,
+        });
+        this.recordExecutedChecks(run.executed);
+        return finalize(run.issues.map((issue) => promoteFullCheckIssue(issue, this.profile, "docx")));
     }
 
     // ----- tracking-token leak detection --------------------------------------
@@ -2740,7 +1533,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let raw: string;
             try {
-                raw = await fs.readFile(xmlFile, "utf-8");
+                raw = decodeXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -2772,7 +1565,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 // Mirrors Python's bare except — silently skip.
                 continue;
@@ -2892,7 +1685,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             if (baseName(xmlFile) !== "document.xml") continue;
             try {
-                const dom = parseXml(readFileSync(xmlFile, "utf-8"));
+                const dom = parseXmlBytes(readFileSync(xmlFile));
                 count = countParagraphsInRoot(dom);
             } catch {
                 // mirrors Python catch-and-print; we just swallow
@@ -2931,27 +1724,35 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         return { original, modified, delta, originalUsesStrictNamespace: strict };
     }
 
+    /**
+     * Parse `word/document.xml` from the `--original` zip, memoized in the
+     * current baseline scope: one `validate()` run shares its parse, direct
+     * calls share the outside-run slot {@link BaseSchemaValidator.forgetOriginal}
+     * clears, and an overlapping run keeps its own (#481, #503, #520).
+     */
     private async loadOriginalDocumentRoot(): Promise<Element | null> {
-        if (this.originalDocumentRoot) return this.originalDocumentRoot;
-        if (this.originalDocumentRootFailed) return null;
+        const state = this.baselineState();
+        if (state.documentRoot) return state.documentRoot;
+        if (state.documentRootFailed) return null;
         if (!this.originalFile) {
-            this.originalDocumentRootFailed = true;
+            state.documentRootFailed = true;
             return null;
         }
         try {
-            const buf = await fs.readFile(this.originalFile);
-            const zip = await JSZip.loadAsync(buf);
-            const entry = zip.file("word/document.xml");
+            // Shares the archive `_getOriginalFileErrors` memoizes: one read
+            // and load per baseline scope instead of one per caller.
+            const zip = await this._loadOriginalArchive();
+            const entry = zip?.file("word/document.xml");
             if (!entry) {
-                this.originalDocumentRootFailed = true;
+                state.documentRootFailed = true;
                 return null;
             }
-            const text = await entry.async("text");
+            const text = decodeXmlBytes(await entry.async("uint8array"));
             const dom = parseXml(text);
-            this.originalDocumentRoot = dom.documentElement;
-            return this.originalDocumentRoot;
+            state.documentRoot = dom.documentElement;
+            return state.documentRoot;
         } catch {
-            this.originalDocumentRootFailed = true;
+            state.documentRootFailed = true;
             return null;
         }
     }
@@ -2969,26 +1770,46 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * target resolves to an existing file in the unpacked directory.
      * External (http/https) targets are skipped.
      *
-     * Reports `rels-target-missing` (error) when a target file is absent.
+     * Reports `rels-target-missing` (error) when a target file is absent,
+     * or when the target names a folder (#975).
      */
     async validateOrphanedRelationships(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        for (const xmlFile of this.xmlFiles) {
-            if (!xmlFile.endsWith(".rels")) continue;
+        const entries = packageEntries(this.unpackedDir);
+        const names = [...entries.keys()];
+        for (const [name, xmlFile] of entries) {
+            if (!isRelationshipsPartName(name)) continue;
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
-            const list = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const list = this.relationshipElements(dom, name);
             for (let i = 0; i < list.length; i += 1) {
                 const elem = list[i];
                 if (!elem) continue;
                 const target = elem.getAttribute("Target");
                 if (!target) continue;
                 if (isExternalRelationship(elem, target)) continue;
-                const resolved = resolveRelationshipTargetPath(this.unpackedDir, xmlFile, target);
+                // A final `.` or `..` segment, or a trailing `/`, names a
+                // folder, never the part its path spells, which the
+                // file-system resolution below would find (sessions 70 to
+                // 73, #975).
+                const relsFolder = path.posix.dirname(name);
+                const sourceFolder = isRelationshipsFolderName(path.posix.basename(relsFolder))
+                    ? path.posix.dirname(relsFolder)
+                    : relsFolder;
+                if (relationshipTargetFolder(sourceFolder, target) !== undefined) {
+                    issues.push({
+                        severity: "error",
+                        message: `Relationship target '${target}' names a folder, not a part`,
+                        path: this.relPath(xmlFile),
+                        code: "rels-target-missing",
+                    });
+                    continue;
+                }
+                const resolved = resolveRelationshipTargetPath(this.unpackedDir, path.join(this.unpackedDir, name), target);
                 if (!resolved) {
                     issues.push({
                         severity: "error",
@@ -2998,10 +1819,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     });
                     continue;
                 }
-                try {
-                    const stat = await fs.stat(resolved);
-                    if (!stat.isFile()) throw new Error("Target is not a file");
-                } catch {
+                // The target names a part by OPC equivalence (ASCII case,
+                // escapes of unreserved characters), not by a file-system
+                // lookup of its spelling (#346).
+                const part = resolvePartName(names, this.entryName(resolved));
+                const file = part === undefined ? undefined : entries.get(part);
+                if (file === undefined || containRelationshipTarget(this.unpackedDir, file) === null) {
                     issues.push({
                         severity: "error",
                         message: `Relationship target '${target}' resolves to '${this.relPath(resolved)}' which does not exist`,
@@ -3017,7 +1840,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     // ----- Plan 02: Font table retention --------------------------------------
 
     /**
-     * Check `word/fontTable.xml` for empty `<w:fonts>` (no `<w:font>` children).
+     * Check the font-table part the main document relates
+     * (by name in its folder when none does, #690, #699) for empty
+     * `<w:fonts>` (no `<w:font>` children).
      * An empty font table is XSD-valid but almost always indicates a repairer bug
      * that discards all font metadata.
      *
@@ -3025,15 +1850,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      */
     async validateFontTable(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        let fontTablePath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "fontTable.xml") fontTablePath = xmlFile;
-        }
+        const fontTablePath = await this.mainRelatedPath("fontTable", "fontTable.xml");
         if (!fontTablePath) return { valid: true, issues: [] };
 
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(fontTablePath, "utf-8"));
+            dom = await this.readPartDom(fontTablePath);
         } catch {
             return { valid: true, issues: [] };
         }
@@ -3049,7 +1871,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             issues.push({
                 severity: "warning",
                 message:
-                    "word/fontTable.xml contains zero <w:font> entries. " +
+                    `${this.relPath(fontTablePath)} contains zero <w:font> entries. ` +
                     "This causes Word to substitute all fonts with its default, " +
                     "silently changing document appearance.",
                 path: this.relPath(fontTablePath),
@@ -3062,22 +1884,20 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     // ----- Plan 03: Style passthrough -----------------------------------------
 
     /**
-     * Check `word/styles.xml` for the presence of `<w:latentStyles>`.
+     * Check the styles part the main document relates (by name in its
+     * folder when none does, #688, #699) for the presence of `<w:latentStyles>`.
      * Missing latent styles is XSD-valid but unusual for Word-generated files.
      *
      * Reports `latent-styles-missing` at `"info"` severity.
      */
     async validateLatentStyles(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        let stylesPath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
-        }
+        const stylesPath = await this.mainStylesPath();
         if (!stylesPath) return { valid: true, issues: [] };
 
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+            dom = await this.readPartDom(stylesPath);
         } catch {
             return { valid: true, issues: [] };
         }
@@ -3092,7 +1912,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             issues.push({
                 severity: "info",
                 message:
-                    "word/styles.xml has no <w:latentStyles> block. " +
+                    `${this.relPath(stylesPath)} has no <w:latentStyles> block. ` +
                     "This is unusual for Word-generated files and indicates " +
                     "the repairer may have regenerated styles from scratch.",
                 path: this.relPath(stylesPath),
@@ -3116,7 +1936,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
@@ -3160,7 +1980,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
@@ -3211,11 +2031,27 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      */
     async validateRedundantCellBorders(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const styleBordersById = await this.tableStyleBordersByStyleId();
+        // Each story's table styles come from the styles part its root
+        // relates (#698): a reached glossary's `document.xml` against the
+        // glossary's own — or not judged when it relates none — and every
+        // other `document.xml` against the main document's.
+        const stylesPath = await this.mainStylesPath();
+        const glossaryStyles = await this.glossaryStoryStylesFiles();
+        const bordersByStyles = new Map<string | null, Map<string, BorderSignature>>();
+        const bordersFor = async (styles: string | null): Promise<Map<string, BorderSignature>> => {
+            if (!bordersByStyles.has(styles)) {
+                bordersByStyles.set(styles, await this.tableStyleBordersByStyleId(styles));
+            }
+            return bordersByStyles.get(styles)!;
+        };
         for (const xmlFile of this.documentXmlFiles()) {
+            const inGlossary = glossaryStyles.has(xmlFile);
+            const styles = inGlossary ? glossaryStyles.get(xmlFile) : stylesPath;
+            if (inGlossary && styles === undefined) continue;
+            const styleBordersById = await bordersFor(styles ?? null);
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
@@ -3267,14 +2103,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validateRelationshipIdStability(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         for (const xmlFile of this.xmlFiles) {
-            if (!xmlFile.endsWith(".rels")) continue;
+            const part = this.entryName(xmlFile);
+            if (!isRelationshipsPartName(part)) continue;
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
-            const relsList = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const relsList = this.relationshipElements(dom, part);
             const ids: number[] = [];
             let allIdsUseRidPattern = true;
             for (let i = 0; i < relsList.length; i += 1) {
@@ -3318,24 +2155,73 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validateRedundantRunProperties(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
 
-        // Find and parse styles.xml for docDefaults.
-        let stylesPath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
-        }
-        if (!stylesPath) return { valid: true, issues: [] };
+        // Each story's docDefaults come from the styles part its root
+        // relates (#698): a reached glossary's runs against the glossary's
+        // own styles part — or not judged when it relates none — and every
+        // other part against the main document's.
+        const stylesPath = await this.mainStylesPath();
+        const glossaryStyles = await this.glossaryStoryStylesFiles();
+        const defaultsByStyles = new Map<string, { ascii: string; hAnsi: string; cs: string } | undefined>();
+        const defaultsFor = async (styles: string): Promise<{ ascii: string; hAnsi: string; cs: string } | undefined> => {
+            if (!defaultsByStyles.has(styles)) {
+                defaultsByStyles.set(styles, await this.docDefaultRunFonts(styles));
+            }
+            return defaultsByStyles.get(styles);
+        };
 
+        // Check every user-text part; redundant run properties commonly show
+        // up in headers and footers as well as the main document body.
+        for (const xmlFile of this.userTextXmlFiles()) {
+            const styles = glossaryStyles.has(xmlFile) ? glossaryStyles.get(xmlFile) : stylesPath;
+            if (!styles) continue;
+            const defaults = await defaultsFor(styles);
+            if (defaults === undefined || (!defaults.ascii && !defaults.hAnsi && !defaults.cs)) continue;
+            let dom: Document;
+            try {
+                dom = await this.readPartDom(xmlFile);
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const runs = getElementsByTagNameNSAll(dom, ns, "r");
+                for (let i = 0; i < runs.length; i += 1) {
+                    const run = runs[i];
+                    if (!run) continue;
+                    const rPr = directChild(run, ns, "rPr");
+                    if (!rPr) continue;
+                    const rFonts = directChild(rPr, ns, "rFonts");
+                    if (!rFonts) continue;
+                    const ascii = rFonts.getAttributeNS(ns, "ascii") ?? "";
+                    const hAnsi = rFonts.getAttributeNS(ns, "hAnsi") ?? "";
+                    const cs = rFonts.getAttributeNS(ns, "cs") ?? "";
+                    if (ascii && ascii === defaults.ascii && hAnsi === defaults.hAnsi && cs === defaults.cs) {
+                        issues.push({
+                            severity: "info",
+                            message:
+                                `<w:rFonts w:ascii="${ascii}" w:hAnsi="${hAnsi}" w:cs="${cs}" /> ` +
+                                "on run duplicates <w:docDefaults>; redundant explicit property.",
+                            path: this.relPath(xmlFile),
+                            code: "run-props-redundant",
+                        });
+                    }
+                }
+            }
+        }
+        return finalize(issues);
+    }
+
+    /**
+     * The document-default run fonts of a styles part —
+     * `<w:docDefaults>/<w:rPrDefault>/<w:rPr>/<w:rFonts>` — or `undefined`
+     * when the part cannot be parsed or declares none.
+     */
+    private async docDefaultRunFonts(stylesPath: string): Promise<{ ascii: string; hAnsi: string; cs: string } | undefined> {
         let stylesDom: Document;
         try {
-            stylesDom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+            stylesDom = await this.readPartDom(stylesPath);
         } catch {
-            return { valid: true, issues: [] };
+            return undefined;
         }
-
-        // Extract default rFonts from docDefaults.
-        let defaultAscii = "";
-        let defaultHAnsi = "";
-        let defaultCs = "";
         for (const ns of WORD_PARAGRAPH_NAMESPACES) {
             const ddList = getElementsByTagNameNSAll(stylesDom, ns, "docDefaults");
             if (ddList.length === 0) continue;
@@ -3353,49 +2239,13 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             if (rFontsList.length === 0) continue;
             const rFonts = rFontsList[0];
             if (!rFonts) continue;
-            defaultAscii = rFonts.getAttributeNS(ns, "ascii") ?? "";
-            defaultHAnsi = rFonts.getAttributeNS(ns, "hAnsi") ?? "";
-            defaultCs = rFonts.getAttributeNS(ns, "cs") ?? "";
-            break;
+            return {
+                ascii: rFonts.getAttributeNS(ns, "ascii") ?? "",
+                hAnsi: rFonts.getAttributeNS(ns, "hAnsi") ?? "",
+                cs: rFonts.getAttributeNS(ns, "cs") ?? "",
+            };
         }
-
-        if (!defaultAscii && !defaultHAnsi && !defaultCs) return { valid: true, issues: [] };
-
-        // Check every user-text part; redundant run properties commonly show
-        // up in headers and footers as well as the main document body.
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const runs = getElementsByTagNameNSAll(dom, ns, "r");
-                for (let i = 0; i < runs.length; i += 1) {
-                    const run = runs[i];
-                    if (!run) continue;
-                    const rPr = directChild(run, ns, "rPr");
-                    if (!rPr) continue;
-                    const rFonts = directChild(rPr, ns, "rFonts");
-                    if (!rFonts) continue;
-                    const ascii = rFonts.getAttributeNS(ns, "ascii") ?? "";
-                    const hAnsi = rFonts.getAttributeNS(ns, "hAnsi") ?? "";
-                    const cs = rFonts.getAttributeNS(ns, "cs") ?? "";
-                    if (ascii && ascii === defaultAscii && hAnsi === defaultHAnsi && cs === defaultCs) {
-                        issues.push({
-                            severity: "info",
-                            message:
-                                `<w:rFonts w:ascii="${ascii}" w:hAnsi="${hAnsi}" w:cs="${cs}" /> ` +
-                                "on run duplicates <w:docDefaults>; redundant explicit property.",
-                            path: this.relPath(xmlFile),
-                            code: "run-props-redundant",
-                        });
-                    }
-                }
-            }
-        }
-        return finalize(issues);
+        return undefined;
     }
 
     // ----- repair -------------------------------------------------------------
@@ -3432,12 +2282,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
 
             let modified = false;
+            // Counted only after the write: a part whose encoding
+            // `writeXmlPart` refuses is left untouched (#880).
+            let partRepairs = 0;
             for (const { namespace, localName } of WORD_DRAWING_SCALAR_TEXT_ELEMENTS) {
                 const elems = getElementsByTagNameNSAll(dom, namespace, localName);
                 for (let i = 0; i < elems.length; i += 1) {
@@ -3449,14 +2302,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         const trimmed = text.data.trim();
                         if (trimmed === text.data) continue;
                         text.data = trimmed;
-                        repairs += 1;
+                        partRepairs += 1;
                         modified = true;
                     }
                 }
             }
 
-            if (modified) {
-                await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+            if (modified && (await writeXmlPart(xmlFile, dom))) {
+                repairs += partRepairs;
             }
         }
         return repairs;
@@ -3467,12 +2320,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
 
             let modified = false;
+            // Counted only after the write: a part whose encoding
+            // `writeXmlPart` refuses is left untouched (#880).
+            let partRepairs = 0;
             const usedDocPrIds = collectNumericAttributeValues(dom, WP_NAMESPACE, "docPr", "id");
             const allocateDocPrId = (): string => {
                 let candidate = 1;
@@ -3493,7 +2349,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     extent.setAttribute("cx", DEFAULT_PICTURE_EXTENT_EMU);
                     extent.setAttribute("cy", DEFAULT_PICTURE_EXTENT_EMU);
                     inline.insertBefore(extent, graphic);
-                    repairs += 1;
+                    partRepairs += 1;
                     modified = true;
                 }
 
@@ -3502,7 +2358,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     docPr.setAttribute("id", allocateDocPrId());
                     docPr.setAttribute("name", "Picture 1");
                     inline.insertBefore(docPr, graphic);
-                    repairs += 1;
+                    partRepairs += 1;
                     modified = true;
                 }
 
@@ -3521,7 +2377,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         nvPicPr.appendChild(cNvPr);
                         nvPicPr.appendChild(cNvPicPr);
                         pic.insertBefore(nvPicPr, blipFill ?? pic.firstChild);
-                        repairs += 1;
+                        partRepairs += 1;
                         modified = true;
                     }
 
@@ -3533,7 +2389,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         const stretch = dom.createElementNS(DRAWINGML_NAMESPACE, "a:stretch");
                         stretch.appendChild(dom.createElementNS(DRAWINGML_NAMESPACE, "a:fillRect"));
                         blipFill.appendChild(stretch);
-                        repairs += 1;
+                        partRepairs += 1;
                         modified = true;
                     }
 
@@ -3554,14 +2410,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         spPr.appendChild(xfrm);
                         spPr.appendChild(prstGeom);
                         pic.appendChild(spPr);
-                        repairs += 1;
+                        partRepairs += 1;
                         modified = true;
                     }
                 }
             }
 
-            if (modified) {
-                await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+            if (modified && (await writeXmlPart(xmlFile, dom))) {
+                repairs += partRepairs;
             }
         }
         return repairs;
@@ -3571,7 +2427,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const appXml = path.join(this.unpackedDir, "docProps", "app.xml");
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(appXml, "utf-8"));
+            dom = parseXmlBytes(await fs.readFile(appXml));
         } catch {
             return 0;
         }
@@ -3590,8 +2446,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 repairs += 1;
             }
         }
-        if (repairs > 0) {
-            await fs.writeFile(appXml, serializeXml(dom, "UTF-8"), "utf-8");
+        if (repairs > 0 && !(await writeXmlPart(appXml, dom))) {
+            // The part's encoding cannot be written back: nothing was repaired (#880).
+            return 0;
         }
         return repairs;
     }
@@ -3600,7 +2457,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const coreXml = path.join(this.unpackedDir, "docProps", "core.xml");
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(coreXml, "utf-8"));
+            dom = parseXmlBytes(await fs.readFile(coreXml));
         } catch {
             return 0;
         }
@@ -3622,29 +2479,35 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 repairs += 1;
             }
         }
-        if (repairs > 0) {
-            await fs.writeFile(coreXml, serializeXml(dom, "UTF-8"), "utf-8");
+        if (repairs > 0 && !(await writeXmlPart(coreXml, dom))) {
+            // The part's encoding cannot be written back: nothing was repaired (#880).
+            return 0;
         }
         return repairs;
     }
 
+    /**
+     * Align the threaded-comment parts, preflighting the encoding and
+     * writability of every part to be written before changing any of them.
+     * A failed or refused write returns only the repairs already written
+     * (#909, #920).
+     */
     async repairCommentThreading(): Promise<number> {
-        let commentsXml: string | null = null;
-        let commentsIdsXml: string | null = null;
-        let commentsExtensibleXml: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            const base = baseName(xmlFile);
-            if (base === "comments.xml") commentsXml = xmlFile;
-            else if (base === "commentsIds.xml") commentsIdsXml = xmlFile;
-            else if (base === "commentsExtensible.xml") commentsExtensibleXml = xmlFile;
-        }
-        if (!commentsXml || !commentsIdsXml) return 0;
+        const commentsXml = await this.mainRelatedPath("comments", "comments.xml");
+        if (!commentsXml) return 0;
+        const commentsIdsXml = await this.mainThreadPath(COMMENTS_IDS_RELATIONSHIP_TYPE, commentsXml, "commentsIds.xml");
+        const commentsExtensibleXml = await this.mainThreadPath(
+            COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE,
+            commentsXml,
+            "commentsExtensible.xml",
+        );
+        if (!commentsIdsXml) return 0;
 
         let commentsDom: Document;
         let idsDom: Document;
         try {
-            commentsDom = parseXml(await fs.readFile(commentsXml, "utf-8"));
-            idsDom = parseXml(await fs.readFile(commentsIdsXml, "utf-8"));
+            commentsDom = parseXmlBytes(await fs.readFile(commentsXml));
+            idsDom = parseXmlBytes(await fs.readFile(commentsIdsXml));
         } catch {
             return 0;
         }
@@ -3664,77 +2527,175 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         }
 
-        let repairs = 0;
-        let idsModified = false;
-        let canonicalDurableId: string | null = null;
+        // Work out, without mutating, which parts this repair would write and
+        // the durableIds commentsIds.xml would hold once its write lands: the
+        // extensible part is aligned to that in-memory result, so a part
+        // `writeXmlPart` would refuse must refuse the whole repair (#889).
         const commentIds = getElementsByTagNameNSAll(idsDom, W16CID_NAMESPACE, "commentId");
+        const commentId = commentIds[0];
+        let canonicalDurableId: string | null = null;
+        let retargetParaId = false;
+        let retargetDurableId = false;
         if (commentParaIds.size === 1 && commentIds.length === 1) {
             const targetParaId = [...commentParaIds][0];
             canonicalDurableId = targetParaId;
-            const commentId = commentIds[0];
             const currentParaId = commentId?.getAttributeNS(W16CID_NAMESPACE, "paraId");
-            if (commentId && currentParaId && currentParaId !== targetParaId && !commentParaIds.has(currentParaId)) {
-                commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:paraId", targetParaId);
-                repairs += 1;
-                idsModified = true;
-            }
+            retargetParaId =
+                commentId !== undefined && !!currentParaId && currentParaId !== targetParaId && !commentParaIds.has(currentParaId);
             const currentDurableId = commentId?.getAttributeNS(W16CID_NAMESPACE, "durableId");
-            if (commentId && currentDurableId && currentDurableId !== canonicalDurableId) {
-                commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", canonicalDurableId);
-                repairs += 1;
-                idsModified = true;
-            }
+            retargetDurableId = commentId !== undefined && !!currentDurableId && currentDurableId !== canonicalDurableId;
         }
 
         const durableIds = new Set<string>();
         for (let i = 0; i < commentIds.length; i += 1) {
-            const commentId = commentIds[i];
-            const durableId = commentId?.getAttributeNS(W16CID_NAMESPACE, "durableId");
+            const durableId = commentIds[i]?.getAttributeNS(W16CID_NAMESPACE, "durableId");
             if (durableId) durableIds.add(durableId);
         }
+        // The set the extensible part aligns to once the ids write lands: the
+        // same durableIds, with a retargeted single entry at the canonical
+        // value the write would leave there.
+        const writtenDurableIds = retargetDurableId && canonicalDurableId !== null ? new Set<string>([canonicalDurableId]) : durableIds;
+        const alignedDurableId = writtenDurableIds.size === 1 ? [...writtenDurableIds][0] : null;
 
-        if (idsModified) {
-            await fs.writeFile(commentsIdsXml, serializeXml(idsDom, "UTF-8"), "utf-8");
-        }
-
-        if (!commentsExtensibleXml || durableIds.size !== 1) return repairs;
-
-        try {
-            const cexDom = parseXml(await fs.readFile(commentsExtensibleXml, "utf-8"));
-            const entries = getElementsByTagNameNSAll(cexDom, W16CEX_NAMESPACE, "commentExtensible");
-            if (entries.length !== 1) return repairs;
-            const targetDurableId = [...durableIds][0];
-            const entry = entries[0];
-            const currentDurableId = entry?.getAttributeNS(W16CEX_NAMESPACE, "durableId");
-            if (entry && currentDurableId && currentDurableId !== targetDurableId && !durableIds.has(currentDurableId)) {
-                entry.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", targetDurableId);
-                await fs.writeFile(commentsExtensibleXml, serializeXml(cexDom, "UTF-8"), "utf-8");
-                repairs += 1;
+        let cexDom: Document | null = null;
+        let cexEntry: Element | null = null;
+        let retargetExtensible = false;
+        if (commentsExtensibleXml && alignedDurableId !== null) {
+            try {
+                cexDom = parseXmlBytes(await fs.readFile(commentsExtensibleXml));
+            } catch {
+                cexDom = null;
             }
-        } catch {
-            return repairs;
+            if (cexDom) {
+                const entries = getElementsByTagNameNSAll(cexDom, W16CEX_NAMESPACE, "commentExtensible");
+                cexEntry = entries.length === 1 ? (entries[0] ?? null) : null;
+                const currentDurableId = cexEntry?.getAttributeNS(W16CEX_NAMESPACE, "durableId");
+                retargetExtensible =
+                    cexEntry !== null &&
+                    !!currentDurableId &&
+                    currentDurableId !== alignedDurableId &&
+                    !writtenDurableIds.has(currentDurableId);
+            }
         }
 
+        // Preflight: decode and check writability of every part before mutating
+        // any DOM, so one refused write cannot split references that agreed
+        // before it ran. A part the repair would leave alone does not block
+        // it (#889).
+        const writeSet: string[] = [];
+        if (retargetParaId || retargetDurableId) writeSet.push(commentsIdsXml);
+        if (retargetExtensible && commentsExtensibleXml) writeSet.push(commentsExtensibleXml);
+        for (const part of writeSet) {
+            if (decodeXmlPart(await fs.readFile(part)) === undefined) return 0;
+            try {
+                await fs.access(part, fsConstants.W_OK);
+            } catch {
+                return 0;
+            }
+        }
+
+        // Counted only after the write: a part whose encoding `writeXmlPart`
+        // refuses is left untouched (#880).
+        let repairs = 0;
+        if (commentId && canonicalDurableId !== null) {
+            if (retargetParaId) {
+                commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:paraId", canonicalDurableId);
+            }
+            if (retargetDurableId) {
+                commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", canonicalDurableId);
+            }
+        }
+        const idsRepairs = (retargetParaId ? 1 : 0) + (retargetDurableId ? 1 : 0);
+        if (idsRepairs > 0) {
+            let written: boolean;
+            try {
+                written = await writeXmlPart(commentsIdsXml, idsDom);
+            } catch {
+                return repairs;
+            }
+            if (!written) return repairs;
+            repairs += idsRepairs;
+        }
+        if (retargetExtensible && cexDom && cexEntry && commentsExtensibleXml && alignedDurableId !== null) {
+            cexEntry.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", alignedDurableId);
+            let written: boolean;
+            try {
+                written = await writeXmlPart(commentsExtensibleXml, cexDom);
+            } catch {
+                return repairs;
+            }
+            if (written) repairs += 1;
+        }
         return repairs;
     }
 
     /**
-     * Inject canonical definitions into `word/styles.xml` for every
-     * well-known style ID referenced by document XML but not defined.
+     * Inject canonical definitions into each story root's styles part —
+     * the main document's (by name in its folder when none is related,
+     * #699), and a reached glossary's own for the references its
+     * story makes (#698) — for every well-known style ID referenced by
+     * document XML but not defined.
      * Only handles the small set of styles writers commonly leak —
      * unknown style IDs are NOT auto-defined (we don't know what they
      * mean). Pairs with `validateStyleReferences`.
      */
     async repairMissingStyleDefinitions(): Promise<number> {
-        let stylesPath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
-        }
-        if (!stylesPath) return 0;
+        const stylesPath = await this.mainStylesPath();
+        const glossaryStyles = await this.glossaryStoryStylesFiles();
 
+        // Collect each story's referenced IDs against the styles part its
+        // root relates (#698): a reached glossary's references belong to
+        // the glossary's own styles part — or are unrepaired when it
+        // relates none — never the main document's. A part both roots
+        // reach stays with the main document.
+        const referencedByStyles = new Map<string, Set<string>>();
+        if (stylesPath) referencedByStyles.set(stylesPath, new Set());
+        const refTags = ["pStyle", "rStyle", "tblStyle", "numStyle", "linkedStyle"] as const;
+        for (const xmlFile of this.userTextXmlFiles()) {
+            const styles = glossaryStyles.has(xmlFile) ? glossaryStyles.get(xmlFile) : stylesPath;
+            if (!styles) continue;
+            try {
+                const dom = parseXmlBytes(await fs.readFile(xmlFile));
+                const referenced = referencedByStyles.get(styles) ?? new Set<string>();
+                for (const tag of refTags) {
+                    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                        const list = getElementsByTagNameNSAll(dom, ns, tag);
+                        for (let i = 0; i < list.length; i += 1) {
+                            const elem = list[i];
+                            if (!elem) continue;
+                            const val = elem.getAttributeNS(ns, "val");
+                            if (val) referenced.add(val);
+                        }
+                    }
+                }
+                referencedByStyles.set(styles, referenced);
+            } catch {
+                // pass
+            }
+        }
+
+        let repairs = 0;
+        for (const [styles, referenced] of referencedByStyles) {
+            // Two sources of "needs to be defined": styles referenced by
+            // the story's XML, and the four ECMA-376 implied-defaults the
+            // main document's styles part must always carry.
+            const needed = new Set<string>(referenced);
+            if (styles === stylesPath) {
+                for (const def of REQUIRED_DEFAULT_STYLES) needed.add(def.styleId);
+            }
+            repairs += await this.writeMissingStyleDefinitions(styles, needed);
+        }
+        return repairs;
+    }
+
+    /**
+     * Write the `WELL_KNOWN_STYLE_DEFINITIONS` fragment of every `needed`
+     * styleId `stylesPath` does not define into it; returns the count.
+     */
+    private async writeMissingStyleDefinitions(stylesPath: string, needed: ReadonlySet<string>): Promise<number> {
         let stylesDom: Document;
         try {
-            stylesDom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+            stylesDom = parseXmlBytes(await fs.readFile(stylesPath));
         } catch {
             return 0;
         }
@@ -3752,40 +2713,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         }
 
-        // Collect all referenced IDs across all user-text XML files.
-        const referenced = new Set<string>();
-        const refTags = ["pStyle", "rStyle", "tblStyle", "numStyle", "linkedStyle"] as const;
-        for (const xmlFile of this.userTextXmlFiles()) {
-            try {
-                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-                for (const tag of refTags) {
-                    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                        const list = getElementsByTagNameNSAll(dom, ns, tag);
-                        for (let i = 0; i < list.length; i += 1) {
-                            const elem = list[i];
-                            if (!elem) continue;
-                            const val = elem.getAttributeNS(ns, "val");
-                            if (val) referenced.add(val);
-                        }
-                    }
-                }
-            } catch {
-                // pass
-            }
-        }
-
-        // Two sources of "needs to be defined": styles referenced by
-        // document XML, and the four ECMA-376 implied-defaults — Word
-        // looks these up implicitly so they must always be present.
-        const needed = new Set<string>(referenced);
-        for (const def of REQUIRED_DEFAULT_STYLES) needed.add(def.styleId);
-
         const missing = [...needed].filter((id) => !defined.has(id));
         if (missing.length === 0) return 0;
 
         let repairs = 0;
         for (const id of missing) {
-            const fragment = WELL_KNOWN_STYLE_DEFINITIONS[id];
+            // Object.hasOwn: a style id named for an Object.prototype key is
+            // not well known (#1071).
+            const fragment = Object.hasOwn(WELL_KNOWN_STYLE_DEFINITIONS, id) ? WELL_KNOWN_STYLE_DEFINITIONS[id] : undefined;
             if (!fragment) continue;
             // Append the fragment as a child of <w:styles>.
             const actualNamespace = stylesRoot.namespaceURI ?? WORD_2006_NAMESPACE;
@@ -3799,8 +2734,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             repairs += 1;
         }
 
-        if (repairs > 0) {
-            await fs.writeFile(stylesPath, serializeXml(stylesDom, "UTF-8"), "utf-8");
+        if (repairs > 0 && !(await writeXmlPart(stylesPath, stylesDom))) {
+            // The part's encoding cannot be written back: nothing was repaired (#880).
+            return 0;
         }
         return repairs;
     }
@@ -3837,7 +2773,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const domByFile = new Map<string, Document>();
         for (const xmlFile of this.userTextXmlFiles()) {
             try {
-                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                const dom = parseXmlBytes(await fs.readFile(xmlFile));
                 domByFile.set(xmlFile, dom);
                 const all = getElementsByTagNameAll(dom);
                 for (let i = 0; i < all.length; i += 1) {
@@ -3869,6 +2805,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const [xmlFile, dom] of domByFile) {
             try {
                 let modified = false;
+                // Counted only after the write: a part whose encoding
+                // `writeXmlPart` refuses is left untouched (#880).
+                let partRepairs = 0;
                 for (const local of ["p", "tr"] as const) {
                     for (const ns of WORD_PARAGRAPH_NAMESPACES) {
                         const list = getElementsByTagNameNSAll(dom, ns, local);
@@ -3881,17 +2820,17 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                                 // Case 1: stamp both as a pair.
                                 elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", allocate(usedParaIds));
                                 elem.setAttributeNS(W14_NAMESPACE, "w14:textId", allocate(usedTextIds));
-                                repairs += 2;
+                                partRepairs += 2;
                                 modified = true;
                             } else if (paraId && !textId) {
                                 // Case 2: asymmetric — stamp textId.
                                 elem.setAttributeNS(W14_NAMESPACE, "w14:textId", allocate(usedTextIds));
-                                repairs += 1;
+                                partRepairs += 1;
                                 modified = true;
                             } else if (!paraId && textId) {
                                 // Case 3: has textId but no paraId — stamp paraId.
                                 elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", allocate(usedParaIds));
-                                repairs += 1;
+                                partRepairs += 1;
                                 modified = true;
                             }
                             // Case 4: both present — nothing to do.
@@ -3899,7 +2838,13 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     }
                 }
                 if (modified) {
-                    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+                    // The stamps are w14 attributes: declare w14 on the root and
+                    // list it in mc:Ignorable, as Word writes it, so the repair
+                    // leaves no non-ignorable extension behind (#653).
+                    if (dom.documentElement) declareIgnorableW14(dom.documentElement);
+                    if (await writeXmlPart(xmlFile, dom)) {
+                        repairs += partRepairs;
+                    }
                 }
             } catch {
                 // pass
@@ -3928,7 +2873,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         let repairs = 0;
         for (const xmlFile of this.xmlFiles) {
             try {
-                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                const dom = parseXmlBytes(await fs.readFile(xmlFile));
                 const root = dom.documentElement;
                 if (!root) continue;
 
@@ -3948,6 +2893,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 }
                 if (ignorableAttrs.length === 0) continue;
 
+                // Counted only after the write: a part whose encoding
+                // `writeXmlPart` refuses is left untouched (#880).
                 let perFileMutations = 0;
                 for (const { name, value } of ignorableAttrs) {
                     const tokens = value.split(/\s+/).filter(Boolean);
@@ -3957,19 +2904,19 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                             surviving.push(prefix);
                             continue;
                         }
-                        const uri = KNOWN_OOXML_PREFIX_URIS[prefix];
+                        // Object.hasOwn: a token named for an Object.prototype
+                        // key is unknown, so it is dropped (#1071).
+                        const uri = Object.hasOwn(KNOWN_OOXML_PREFIX_URIS, prefix) ? KNOWN_OOXML_PREFIX_URIS[prefix] : undefined;
                         if (uri !== undefined) {
                             // Declare on the root and keep the Ignorable entry.
                             root.setAttribute(`xmlns:${prefix}`, uri);
                             declared.add(prefix);
                             surviving.push(prefix);
                             perFileMutations += 1;
-                            repairs += 1;
                         } else {
                             // Truly unknown — drop from Ignorable rather than
                             // guessing a URI.
                             perFileMutations += 1;
-                            repairs += 1;
                         }
                     }
                     const next = surviving.join(" ");
@@ -3981,8 +2928,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     }
                 }
 
-                if (perFileMutations > 0) {
-                    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+                if (perFileMutations > 0 && (await writeXmlPart(xmlFile, dom))) {
+                    repairs += perFileMutations;
                 }
             } catch {
                 // swallow — corrupted XML files surface elsewhere
@@ -3991,44 +2938,189 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         return repairs;
     }
 
+    /**
+     * Repair every over-cap `w16cid:durableId` (`>= 0x7FFFFFFF`) and
+     * propagate the renumbering into the threaded-comments extension, as
+     * `repairParaId` does for paraIds.
+     *
+     * Two-pass implementation:
+     *
+     *  Pass 1: scan all XML files, build a `Map<oldId, newId>` for every
+     *          over-cap hex `w16cid:durableId` outside `numbering.xml`.
+     *          Each old value gets one fresh in-range value that collides
+     *          with no durableId in use — `w16cid` anywhere outside
+     *          `numbering.xml`, and `w16cex` in `commentsExtensible.xml` —
+     *          so two over-cap ids can't land on the same fresh value and
+     *          none can land on a value an extensible entry already names.
+     *  Pass 2: walk every XML file again and rewrite (a) every
+     *          `w16cid:durableId` named in the map, AND (b) every
+     *          `w16cex:durableId` in any part that names a remapped value.
+     *          Without (b), `commentsExtensible.xml`'s references still
+     *          name the old values and every extensible entry is left
+     *          orphaned — surfaced by `validateCommentThreading`'s
+     *          `comment-thread-durableid-orphan` check.
+     *
+     * The map is keyed by the upper-cased value: both attributes are
+     * `xsd:hexBinary`, whose value ignores the case of its hex letters, so
+     * `ffffffff` in one part and `FFFFFFFF` in the other name one id and get
+     * one new value (#904).
+     *
+     * The decimal durableIds of `numbering.xml` are outside the remap: they
+     * are self-contained (no part references them), so each keeps its own
+     * per-element renumbering, independent of the preflight below. A hex
+     * durableId stored in `numbering.xml` is renamed like any other, which
+     * makes it a part carrying a hex rename (#942).
+     * Every part the hex rewrite would write must be decodable and writable;
+     * otherwise only the decimal renumbering runs. A failed or refused write
+     * of a part carrying a hex rename stops the remaining hex renames and
+     * counts only the repairs already written (#909, #920). A failed or
+     * refused write of a part carrying only the decimal renumbering counts
+     * nothing and stops nothing, and that renumbering runs whether the hex
+     * rewrite is refused by the preflight or stopped by a failed write
+     * (#925).
+     */
     async repairDurableId(): Promise<number> {
         let repairs = 0;
+        const remap = new Map<string, string>();
+        const usedDurableIds = new Set<string>();
+        const overCapIds = new Set<string>();
+
+        // Pass 1: discover every over-cap hex durableId and every value
+        // already in use, so a fresh value collides with neither.
+        const parsedDoms = new Map<string, Document>();
         for (const xmlFile of this.xmlFiles) {
             try {
-                const content = await fs.readFile(xmlFile, "utf-8");
-                const dom = parseXml(content);
-                let modified = false;
+                const dom = parseXmlBytes(await fs.readFile(xmlFile));
+                parsedDoms.set(xmlFile, dom);
                 const base = baseName(xmlFile);
                 const all = getElementsByTagNameAll(dom);
                 for (let i = 0; i < all.length; i += 1) {
                     const elem = all[i];
                     if (!elem) continue;
-                    const durableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
-                    if (!durableId) continue;
-
-                    let needsRepair: boolean;
-                    if (base === "numbering.xml") {
-                        const v = parseIdValue(durableId, 10);
-                        needsRepair = Number.isNaN(v) || v >= MAX_DURABLE_ID;
-                    } else {
-                        const v = parseIdValue(durableId, 16);
-                        needsRepair = Number.isNaN(v) || v >= MAX_DURABLE_ID;
+                    if (base !== "numbering.xml") {
+                        const durableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
+                        if (durableId) {
+                            usedDurableIds.add(durableId.toUpperCase());
+                            const v = parseIdValue(durableId, 16);
+                            if (Number.isNaN(v) || v >= MAX_DURABLE_ID) overCapIds.add(durableId.toUpperCase());
+                        }
                     }
-
-                    if (needsRepair) {
-                        const value = nextSecureLongHexNumber();
-                        const newId = base === "numbering.xml" ? String(value) : value.toString(16).toUpperCase().padStart(8, "0");
-                        // setAttributeNS keeps the prefix binding intact.
-                        elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", newId);
-                        repairs += 1;
-                        modified = true;
+                    if (base === "commentsExtensible.xml") {
+                        const durableId = elem.getAttributeNS(W16CEX_NAMESPACE, "durableId");
+                        if (durableId) usedDurableIds.add(durableId.toUpperCase());
                     }
-                }
-                if (modified) {
-                    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
                 }
             } catch {
-                // swallow — mirrors Python bare except
+                // pass — corrupted XML files surface elsewhere.
+            }
+        }
+
+        // One fresh in-range value per distinct over-cap id; the same old
+        // value always maps to the same new value.
+        for (const oldId of overCapIds) {
+            for (;;) {
+                const newId = nextSecureLongHexNumber().toString(16).toUpperCase().padStart(8, "0");
+                if (!usedDurableIds.has(newId)) {
+                    usedDurableIds.add(newId);
+                    remap.set(oldId, newId);
+                    break;
+                }
+            }
+        }
+
+        // Preflight: the same rename must land in every part that
+        // references it, so decode every part the hex rewrite would write
+        // before mutating any DOM. A part the rewrite would leave alone
+        // does not block it; one it cannot decode or write refuses
+        // the whole hex rewrite — the numbering renumbering below still
+        // runs — rather than splitting references that agreed before it
+        // ran (#889).
+        let hexRefused = false;
+        if (remap.size > 0) {
+            for (const [xmlFile, dom] of parsedDoms) {
+                const base = baseName(xmlFile);
+                let wouldWrite = false;
+                const all = getElementsByTagNameAll(dom);
+                for (let i = 0; i < all.length; i += 1) {
+                    const elem = all[i];
+                    if (!elem) continue;
+                    const w16cid = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
+                    if (w16cid && base !== "numbering.xml" && remap.has(w16cid.toUpperCase())) wouldWrite = true;
+                    const w16cex = elem.getAttributeNS(W16CEX_NAMESPACE, "durableId");
+                    if (w16cex && remap.has(w16cex.toUpperCase())) wouldWrite = true;
+                    if (wouldWrite) break;
+                }
+                if (!wouldWrite) continue;
+                if (decodeXmlPart(await fs.readFile(xmlFile)) === undefined) {
+                    hexRefused = true;
+                    break;
+                }
+                try {
+                    await fs.access(xmlFile, fsConstants.W_OK);
+                } catch {
+                    hexRefused = true;
+                    break;
+                }
+            }
+        }
+
+        // Pass 2: rewrite all references; numbering.xml keeps its own
+        // self-contained decimal renumbering.
+        let hexStopped = false;
+        for (const [xmlFile, dom] of parsedDoms) {
+            const base = baseName(xmlFile);
+            let modified = false;
+            // Counted only after the write: a part whose encoding
+            // `writeXmlPart` refuses is left untouched (#880).
+            let partRepairs = 0;
+            // A part the hex rewrite renames: its failed write stops the
+            // remaining hex renames, like the preflight refusal (#909, #920).
+            let hexPart = false;
+            const all = getElementsByTagNameAll(dom);
+            for (let i = 0; i < all.length; i += 1) {
+                const elem = all[i];
+                if (!elem) continue;
+                const cidDurableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
+                if (cidDurableId && base === "numbering.xml") {
+                    const v = parseIdValue(cidDurableId, 10);
+                    if (Number.isNaN(v) || v >= MAX_DURABLE_ID) {
+                        // setAttributeNS keeps the prefix binding intact.
+                        elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", String(nextSecureLongHexNumber()));
+                        partRepairs += 1;
+                        modified = true;
+                    }
+                } else if (cidDurableId && !hexRefused && !hexStopped && remap.has(cidDurableId.toUpperCase())) {
+                    // setAttributeNS keeps the prefix binding intact.
+                    elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", remap.get(cidDurableId.toUpperCase())!);
+                    partRepairs += 1;
+                    modified = true;
+                    hexPart = true;
+                }
+                const cexDurableId = elem.getAttributeNS(W16CEX_NAMESPACE, "durableId");
+                if (cexDurableId && !hexRefused && !hexStopped && remap.has(cexDurableId.toUpperCase())) {
+                    // setAttributeNS keeps the prefix binding intact.
+                    elem.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", remap.get(cexDurableId.toUpperCase())!);
+                    partRepairs += 1;
+                    modified = true;
+                    hexPart = true;
+                }
+            }
+            if (modified) {
+                let written: boolean;
+                try {
+                    written = await writeXmlPart(xmlFile, dom);
+                } catch {
+                    // A failed write of a hex part stops the remaining hex
+                    // renames; a decimal-only write is skipped, as numbering's
+                    // renumbering is independent of the hex rewrite (#925).
+                    if (hexPart) hexStopped = true;
+                    continue;
+                }
+                if (!written) {
+                    if (hexPart) hexStopped = true;
+                    continue;
+                }
+                repairs += partRepairs;
             }
         }
         return repairs;
@@ -4054,6 +3146,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      *          and Word's threading view shows no replies — surfaced by
      *          `validateCommentThreading`'s `comment-thread-paraid-orphan`
      *          check.
+     *
+     * Every part to be written must be decodable and writable before any
+     * write starts. A failed or refused write returns only the repairs already
+     * written (#909, #920).
      */
     async repairParaId(): Promise<number> {
         let repairs = 0;
@@ -4100,7 +3196,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const parsedDoms = new Map<string, Document>();
         for (const xmlFile of this.xmlFiles) {
             try {
-                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                const dom = parseXmlBytes(await fs.readFile(xmlFile));
                 parsedDoms.set(xmlFile, dom);
                 const all = getElementsByTagNameAll(dom);
                 for (let i = 0; i < all.length; i += 1) {
@@ -4157,44 +3253,80 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         if (remap.size === 0 && textIdRemap.size === 0) return 0;
 
+        // Preflight: the same rename must land in every part that references
+        // it, so decode every part pass 2 would rewrite before mutating any
+        // DOM. A part the pass would leave alone does not block the repair;
+        // one it cannot decode or write refuses all of it, rather than
+        // splitting references that agreed before it ran (#889).
+        for (const [xmlFile, dom] of parsedDoms) {
+            let wouldWrite = false;
+            const all = getElementsByTagNameAll(dom);
+            for (let i = 0; i < all.length; i += 1) {
+                const elem = all[i];
+                if (!elem) continue;
+                const w14Para = elem.getAttributeNS(W14_NAMESPACE, "paraId");
+                if (w14Para && remap.has(w14Para)) wouldWrite = true;
+                const w14Text = elem.getAttributeNS(W14_NAMESPACE, "textId");
+                if (w14Text && textIdRemap.has(w14Text)) wouldWrite = true;
+                const w15Para = elem.getAttributeNS(W15_NAMESPACE, "paraId");
+                if (w15Para && remap.has(w15Para)) wouldWrite = true;
+                const w15Parent = elem.getAttributeNS(W15_NAMESPACE, "paraIdParent");
+                if (w15Parent && remap.has(w15Parent)) wouldWrite = true;
+                if (wouldWrite) break;
+            }
+            if (!wouldWrite) continue;
+            if (decodeXmlPart(await fs.readFile(xmlFile)) === undefined) return 0;
+            try {
+                await fs.access(xmlFile, fsConstants.W_OK);
+            } catch {
+                return 0;
+            }
+        }
+
         // Pass 2: rewrite all references.
         for (const [xmlFile, dom] of parsedDoms) {
-            try {
-                let modified = false;
-                const all = getElementsByTagNameAll(dom);
-                for (let i = 0; i < all.length; i += 1) {
-                    const elem = all[i];
-                    if (!elem) continue;
-                    const w14Para = elem.getAttributeNS(W14_NAMESPACE, "paraId");
-                    if (w14Para && remap.has(w14Para)) {
-                        elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", remap.get(w14Para)!);
-                        repairs += 1;
-                        modified = true;
-                    }
-                    const w14Text = elem.getAttributeNS(W14_NAMESPACE, "textId");
-                    if (w14Text && textIdRemap.has(w14Text)) {
-                        elem.setAttributeNS(W14_NAMESPACE, "w14:textId", textIdRemap.get(w14Text)!);
-                        repairs += 1;
-                        modified = true;
-                    }
-                    const w15Para = elem.getAttributeNS(W15_NAMESPACE, "paraId");
-                    if (w15Para && remap.has(w15Para)) {
-                        elem.setAttributeNS(W15_NAMESPACE, "w15:paraId", remap.get(w15Para)!);
-                        repairs += 1;
-                        modified = true;
-                    }
-                    const w15Parent = elem.getAttributeNS(W15_NAMESPACE, "paraIdParent");
-                    if (w15Parent && remap.has(w15Parent)) {
-                        elem.setAttributeNS(W15_NAMESPACE, "w15:paraIdParent", remap.get(w15Parent)!);
-                        repairs += 1;
-                        modified = true;
-                    }
+            let modified = false;
+            // Counted only after the write: a part whose encoding
+            // `writeXmlPart` refuses is left untouched (#880).
+            let partRepairs = 0;
+            const all = getElementsByTagNameAll(dom);
+            for (let i = 0; i < all.length; i += 1) {
+                const elem = all[i];
+                if (!elem) continue;
+                const w14Para = elem.getAttributeNS(W14_NAMESPACE, "paraId");
+                if (w14Para && remap.has(w14Para)) {
+                    elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", remap.get(w14Para)!);
+                    partRepairs += 1;
+                    modified = true;
                 }
-                if (modified) {
-                    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+                const w14Text = elem.getAttributeNS(W14_NAMESPACE, "textId");
+                if (w14Text && textIdRemap.has(w14Text)) {
+                    elem.setAttributeNS(W14_NAMESPACE, "w14:textId", textIdRemap.get(w14Text)!);
+                    partRepairs += 1;
+                    modified = true;
                 }
-            } catch {
-                // swallow — mirrors Python bare except in repairDurableId
+                const w15Para = elem.getAttributeNS(W15_NAMESPACE, "paraId");
+                if (w15Para && remap.has(w15Para)) {
+                    elem.setAttributeNS(W15_NAMESPACE, "w15:paraId", remap.get(w15Para)!);
+                    partRepairs += 1;
+                    modified = true;
+                }
+                const w15Parent = elem.getAttributeNS(W15_NAMESPACE, "paraIdParent");
+                if (w15Parent && remap.has(w15Parent)) {
+                    elem.setAttributeNS(W15_NAMESPACE, "w15:paraIdParent", remap.get(w15Parent)!);
+                    partRepairs += 1;
+                    modified = true;
+                }
+            }
+            if (modified) {
+                let written: boolean;
+                try {
+                    written = await writeXmlPart(xmlFile, dom);
+                } catch {
+                    return repairs;
+                }
+                if (!written) return repairs;
+                repairs += partRepairs;
             }
         }
         return repairs;
@@ -4226,14 +3358,13 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
     }
 
-    private async tableStyleBordersByStyleId(): Promise<Map<string, BorderSignature>> {
+    private async tableStyleBordersByStyleId(stylesPath: string | null): Promise<Map<string, BorderSignature>> {
         const out = new Map<string, BorderSignature>();
-        const stylesPath = this.xmlFiles.find((xmlFile) => baseName(xmlFile) === "styles.xml");
         if (!stylesPath) return out;
 
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+            dom = await this.readPartDom(stylesPath);
         } catch {
             return out;
         }
@@ -4253,6 +3384,93 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
         return out;
     }
+
+    /**
+     * The user-text parts each reached glossary's story is judged against its
+     * own styles part for (#698): a reached glossary document — a
+     * `glossaryDocument` target of the main document's relationships — and
+     * every part only the glossary's own relationships reach
+     * (`glossaryTypedRelationshipTargets`, `via: "glossary"`), never the main
+     * document itself, wherever it is stored, nor a part the main document
+     * also reaches, which stays the main document's (`wordMainReachedParts`:
+     * every relationship's target, whatever its type, so a part the main
+     * document reaches through a non-story type cannot be claimed through a
+     * story one, #742). Each maps to
+     * the styles part that root relates; `undefined` when the root relates none
+     * — or relates one that is not XML — so the part is not judged. An empty
+     * map — no reached glossary, or a package view that cannot be read — keeps
+     * the by-name behaviour: every part judged against the main styles part.
+     */
+    private async glossaryStoryStylesFiles(): Promise<Map<string, string | undefined>> {
+        const files = new Map<string, string | undefined>();
+        try {
+            const context = this.context();
+            const roots = await wordTypedRelationshipTargets(context, new Set(["glossaryDocument"]), this.profile);
+            if (roots.length === 0) return files;
+            const stylesByRoot = new Map<string, string>();
+            for (const target of await glossaryTypedRelationshipTargets(context, new Set(["styles"]), this.profile)) {
+                if (target.root !== undefined && !stylesByRoot.has(canonicalPartName(target.root))) {
+                    stylesByRoot.set(canonicalPartName(target.root), target.part);
+                }
+            }
+            // Canonical part name to its root's canonical name, and to the
+            // part spelling `xmlFileOf` resolves by OPC equivalence.
+            const rootByPart = new Map<string, string>();
+            const storedByPart = new Map<string, string>();
+            for (const root of roots) {
+                rootByPart.set(canonicalPartName(root.part), canonicalPartName(root.part));
+                storedByPart.set(canonicalPartName(root.part), root.part);
+            }
+            // The main document is never a glossary's story part, wherever it
+            // is stored, and neither is any part the main document's own
+            // relationships reach, whatever their type (#742).
+            const mainReached = await wordMainReachedParts(context, this.profile);
+            for (const target of await glossaryTypedRelationshipTargets(context, STORY_TEXT_SEGMENTS, this.profile)) {
+                const part = canonicalPartName(target.part);
+                if (target.root === undefined || rootByPart.has(part) || mainReached.has(part)) continue;
+                rootByPart.set(part, canonicalPartName(target.root));
+                storedByPart.set(part, target.part);
+            }
+            for (const [part, root] of rootByPart) {
+                const file = this.xmlFileOf([storedByPart.get(part)!]);
+                if (file === undefined) continue;
+                const styles = stylesByRoot.get(root);
+                files.set(file, styles === undefined ? undefined : this.xmlFileOf([styles]));
+            }
+        } catch {
+            // An unreadable package view is reported by its own checks; every
+            // part keeps the by-name judgement against the main styles part.
+        }
+        return files;
+    }
+
+    /**
+     * The `w:styleId` values a styles part defines: the empty set when
+     * `stylesPath` is `null` — no styles part was found, so every reference
+     * dangles — and `undefined` when the part cannot be parsed, which the
+     * XML diagnostics already report.
+     */
+    private async definedStyleIds(stylesPath: string | null): Promise<ReadonlySet<string> | undefined> {
+        const defined = new Set<string>();
+        if (stylesPath === null) return defined;
+        let dom: Document;
+        try {
+            dom = await this.readPartDom(stylesPath);
+        } catch {
+            // A malformed styles part is covered by the xml-syntax check.
+            return undefined;
+        }
+        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+            const list = getElementsByTagNameNSAll(dom, ns, "style");
+            for (let i = 0; i < list.length; i += 1) {
+                const elem = list[i];
+                if (!elem) continue;
+                const id = elem.getAttributeNS(ns, "styleId");
+                if (id) defined.add(id);
+            }
+        }
+        return defined;
+    }
 }
 
 // ===== module-level helpers ===================================================
@@ -4265,58 +3483,81 @@ function finalize(issues: ValidationIssue[]): ValidationResult {
 }
 
 /**
- * Element local-names whose XSD "this element is not expected" (content-model)
- * violation makes real Microsoft Word refuse the file (OPEN_ERROR / unreadable),
- * as opposed to silently relocating it. Derived empirically from a real-Word
- * openability probe over a 1300+-file corpus; this set is DISJOINT from the
- * Word-tolerated misplacements (pgSz, headerReference, uiPriority, link, tr,
- * hyperlink, duplicate pPr, and EG_RunInnerContent under <w:p>), so promoting
- * only these keeps the word-valid profile free of false positives.
+ * Strict applies markup compatibility twice: the Word rules judge Word's view
+ * and the schema walk judges the schema's view. A finding both views make is
+ * reported once, by the Word rule; the schema walk keeps what only its view
+ * finds (a namespace Word understands but the schemas do not).
  */
-const WORD_BLOCKING_MISPLACED_LOCALS: ReadonlySet<string> = new Set([
-    "r", // a run misplaced (e.g. directly in the body where a sectPr is due)
-    "rPr", // run properties outside a run
-    // NB: pPr is intentionally NOT here. A duplicate <w:pPr> in one paragraph
-    // trips "pPr: not expected", but real Word silently merges/ignores it and
-    // opens cleanly (verified: superdoc exports, word-tolerated-duplicate-ppr.docx).
-    // The narrow line-3002 guard (pPr + "Expected is one of") still covers the
-    // genuinely Word-blocking pPr-misplacement variant.
-    "sectPr", // section properties misplaced
-    "extent", // drawing extent misplaced (corrupt <w:drawing> structure)
-    "tblBorders",
-    "tblCellSpacing", // table-property elements outside <w:tblPr>
-]);
-
-function isWordBlockingXsdIssue(issue: ValidationIssue): boolean {
-    if (issue.path && !issue.path.startsWith("word/") && issue.path !== "docProps/custom.xml") return false;
-    const msg = issue.message;
-    // Content-model violation ("Element '{ns}local': This element is not expected"):
-    // an element sits where the schema forbids it. Word's loader rejects a specific
-    // family of these (a misplaced run, run/paragraph/section/table-property block,
-    // or drawing extent) with OPEN_ERROR / unreadable; OTHER misplaced elements
-    // (sectPr CHILDREN like pgSz/headerReference, style children like uiPriority/
-    // link, table rows, hyperlinks, and run-inner-content under <w:p>) Word silently
-    // relocates and opens cleanly. The blocking allowlist below is derived
-    // empirically from a real-Word corpus probe (disjoint from the tolerated set);
-    // an allowlist keeps this false-positive-free (unknown elements stay warnings).
-    const notExpected = /Element '\{[^}]*\}([^']+)': This element is not expected/.exec(msg);
-    if (notExpected && WORD_BLOCKING_MISPLACED_LOCALS.has(notExpected[1])) return true;
-    return (
-        msg.includes("}p2': This element is not expected") ||
-        (msg.includes("}pPr': This element is not expected") && msg.includes("Expected is one of")) ||
-        msg.includes("}rPr': This element is not expected.") ||
-        msg.includes(
-            "}graphic': This element is not expected. Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}extent",
-        ) ||
-        msg.includes(
-            "}blipFill': This element is not expected. Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}nvPicPr",
-        ) ||
-        msg.includes("Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}spPr") ||
-        msg.includes("Element 'link': This element is not expected") ||
-        msg.includes("}u': This element is not expected") ||
-        msg.includes("}filetime': '' is not a valid value")
-    );
+export function withoutRepeatedCompatibilityFindings(schema: ValidationResult, rules: ValidationResult): ValidationResult {
+    // The schema walk's path is path.relative output (backslashes on Windows);
+    // the Word rule's is the normalized part name.
+    const key = (issue: ValidationIssue): string => `${issue.code}\u0000${(issue.path ?? "").replace(/\\/g, "/")}\u0000${issue.message}`;
+    const reported = new Map<string, number>();
+    for (const issue of rules.issues) {
+        if (!issue.code?.startsWith("mce-")) continue;
+        reported.set(key(issue), (reported.get(key(issue)) ?? 0) + 1);
+    }
+    const issues = schema.issues.filter((issue) => {
+        const remaining = reported.get(key(issue)) ?? 0;
+        if (remaining === 0) return true;
+        reported.set(key(issue), remaining - 1);
+        return false;
+    });
+    return { valid: schema.valid, issues };
 }
+
+/**
+ * A full non-lenient run reports each story `w:headerReference`/
+ * `w:footerReference` the `word-header-footer-relationship` rule judged
+ * once — through that rule — so the same run's `validateAllRelationshipIds`
+ * result drops its `rels-id-mismatch` copy, and for an `r:id` naming no
+ * Relationship its `rels-id-missing` copy, of each reported element (#612,
+ * #619); a dangling Transitional `r:id` on a `c:chart` or an
+ * `o:OLEObject` pairs the same way with `word-part-reference-relationship`
+ * (#705, sessions 45 and 46), a dangling `wne:toolbarData` `r:id` with
+ * `word-attached-toolbar-relationship` (#716, session 48), and a dangling
+ * or mistyped `w:hyperlink` `r:id` with `word-hyperlink-relationship`
+ * (#1089, session 28). The pairing is the structured identity both producers registered on
+ * the issue object when they created it (#616): part path (normalized on
+ * registration, as `withoutRepeatedCompatibilityFindings` compares paths),
+ * element namespace URI, local name and the raw `r:id` all match; a
+ * finding also lists the element's other ids (`otherRids`), so the
+ * legacy copy of an id in either relationships namespace pairs (#1074,
+ * #1079). The
+ * namespace URI the `r:id` was read in is deliberately not part of the
+ * pairing (#727): the Word rule reads the markup-compatibility view and the
+ * legacy walk the raw part, so an element with an `mc:Choice` and an
+ * `mc:Fallback` twin yields two legacy copies of the one defect the Word
+ * rule reports once, and a Strict-namespace `r:id` on the selected twin
+ * (review BE F1) is the same element name's other spelling. The key is the
+ * same element name — namespace URI and local name — with the same Id in
+ * the same part, not the element instance: every legacy copy of it is
+ * dropped, the unselected twin's copy with it. That holds through an
+ * `otherRids` key too, so a twin naming one of the element's other ids
+ * reads as that element's spelling and its copy is dropped (review 1084's
+ * S10). No finding is dropped for another part, another element name, or
+ * an Id that is neither the finding's `rid` nor one of its `otherRids`;
+ * and the legacy walk registers an identity only on an `r:id` copy, so an
+ * `r:embed` or `r:link` copy is never dropped (#1086). The former
+ * message-prose pairing let a quoted `r:id`
+ * double the report and a crafted `r:id` consume a foreign element's only
+ * mismatch. A finding without a registered identity — another producer, or
+ * a copy made between producer and helper — is never dropped. Where the
+ * Word rule stays silent — a foreign-namespace `x:headerReference`, a
+ * glossary no main-document relationship reaches — the legacy findings stay,
+ * and `validateAllRelationshipIds` called on its own reports every one.
+ */
+export function withoutRepeatedHeaderFooterFindings(relationshipIds: ValidationResult, rules: ValidationResult): ValidationResult {
+    return withoutHandedOffCopies(relationshipIds, rules, WORD_RULE_HAND_OFF_PRODUCERS);
+}
+
+/** The Word rules whose findings the legacy relationship-id copies are handed off to. */
+const WORD_RULE_HAND_OFF_PRODUCERS: ReadonlySet<string> = new Set([
+    WORD_HEADER_FOOTER_RELATIONSHIP,
+    WORD_PART_REFERENCE_RELATIONSHIP,
+    WORD_ATTACHED_TOOLBAR_RELATIONSHIP,
+    WORD_HYPERLINK_RELATIONSHIP,
+]);
 
 function directChild(parent: Element, namespaceURI: string, local: string): Element | null {
     for (let child = parent.firstChild; child; child = child.nextSibling) {
@@ -4339,6 +3580,35 @@ function directChildren(parent: Element, namespaceURI: string, local: string): E
     return out;
 }
 
+/**
+ * Declare `w14` on a part root and list it in the root's `mc:Ignorable`,
+ * reusing the prefix the root binds to the compatibility namespace, else
+ * declaring `mc`. A root that binds `w14` or `mc` to another namespace is
+ * left as it is (#653).
+ */
+function declareIgnorableW14(root: Element): void {
+    const bindings = new Map<string, string>();
+    for (let i = 0; i < root.attributes.length; i += 1) {
+        const attr = root.attributes[i];
+        if (attr?.name.startsWith("xmlns:")) bindings.set(attr.name.slice("xmlns:".length), attr.value);
+    }
+    const w14 = bindings.get("w14");
+    if (w14 !== undefined && w14 !== W14_NAMESPACE) return;
+    let mc = [...bindings].find(([, uri]) => uri === NS.MC)?.[0];
+    if (mc === undefined) {
+        if (bindings.has("mc")) return;
+        mc = "mc";
+        root.setAttributeNS(XMLNS_NAMESPACE, "xmlns:mc", NS.MC);
+    }
+    // A namespace-qualified declaration, so the serializer sees w14 in scope
+    // and stops declaring it again on each stamped element.
+    if (w14 === undefined) root.setAttributeNS(XMLNS_NAMESPACE, "xmlns:w14", W14_NAMESPACE);
+    const ignorable = root.getAttributeNodeNS(NS.MC, "Ignorable");
+    const tokens = (ignorable?.value ?? "").split(/\s+/).filter(Boolean);
+    if (tokens.includes("w14")) return;
+    root.setAttributeNS(NS.MC, ignorable?.name ?? `${mc}:Ignorable`, [...tokens, "w14"].join(" "));
+}
+
 function isExternalRelationship(rel: Element, target: string): boolean {
     if (rel.getAttribute("TargetMode") === "External") return true;
     return /^[a-z][a-z\d+.-]*:/i.test(target);
@@ -4348,16 +3618,15 @@ function resolveRelationshipTargetPath(unpackedDir: string, relsFile: string, ta
     const targetWithoutFragment = target.split("#", 1)[0];
     if (!targetWithoutFragment) return null;
 
-    let resolved: string;
-    if (targetWithoutFragment.startsWith("/")) {
-        resolved = path.resolve(unpackedDir, targetWithoutFragment.replace(/^\/+/, ""));
-    } else {
-        const relsDir = path.dirname(relsFile);
-        const baseDir = path.basename(relsDir) === "_rels" ? path.dirname(relsDir) : relsDir;
-        resolved = path.resolve(baseDir, targetWithoutFragment);
-    }
-
-    return containRelationshipTarget(unpackedDir, resolved);
+    const relsDir = path.dirname(relsFile);
+    // `_RELS` is the `_rels` folder: part names compare case-insensitively
+    // (#346), canonically in fact, so an escaped spelling of the folder
+    // resolves its targets against the source part's folder too (#781).
+    const baseDir = isRelationshipsFolderName(path.basename(relsDir)) ? path.dirname(relsDir) : relsDir;
+    // A climb above the package root stops at the root, as RFC 3986 and Word
+    // read it (#984), before any file-system join (CodeRabbit on #985); only
+    // a symbolic link can leave the tree.
+    return containRelationshipTarget(unpackedDir, packageTargetPath(unpackedDir, baseDir, targetWithoutFragment));
 }
 
 function borderSignature(borders: Element | null, namespaceURI: string): BorderSignature | null {
@@ -4426,20 +3695,6 @@ function pythonRepr(s: string): string {
         else out += ch;
     }
     return `'${out}'`;
-}
-
-function setDiff(a: Set<string>, b: Set<string>): Set<string> {
-    const out = new Set<string>();
-    for (const v of a) if (!b.has(v)) out.add(v);
-    return out;
-}
-
-function sortIdsNumeric(ids: Iterable<string>): string[] {
-    return [...ids].sort((x, y) => {
-        const a = /^\d+$/.test(x) ? Number.parseInt(x, 10) : 0;
-        const b = /^\d+$/.test(y) ? Number.parseInt(y, 10) : 0;
-        return a - b;
-    });
 }
 
 /**

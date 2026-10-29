@@ -32,10 +32,12 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import JSZip from "jszip";
+import type JSZip from "jszip";
 
 import { NS } from "../../../lib/types";
-import { getElementsByTagNameNSAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import { readXmlPart, writeXmlPart, type DecodedXmlPart } from "../../../lib/xml-part-io";
+import { decodeXmlPart, getElementsByTagNameNSAll, parseXml } from "../../../lib/xml-helpers";
+import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
 
 const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
@@ -52,15 +54,19 @@ export interface SimplifyRedlinesResult {
 export async function simplifyRedlines(inputDir: string): Promise<SimplifyRedlinesResult> {
     const docXml = path.join(inputDir, "word", "document.xml");
 
-    let text: string;
+    let part: DecodedXmlPart | undefined;
     try {
-        text = await fs.readFile(docXml, "utf8");
+        part = await readXmlPart(docXml);
     } catch {
         return { count: 0, message: `Error: ${docXml} not found` };
     }
+    if (part === undefined) {
+        // An encoding we cannot decode: leave the part's bytes untouched.
+        return { count: 0, message: "Simplified 0 tracked changes" };
+    }
 
     try {
-        const dom = parseXml(text);
+        const dom = parseXml(part.text);
         const root = dom.documentElement;
         if (!root) {
             return { count: 0, message: "Error: empty document" };
@@ -75,7 +81,7 @@ export async function simplifyRedlines(inputDir: string): Promise<SimplifyRedlin
             mergeCount += mergeTrackedChangesIn(container, "del");
         }
 
-        await fs.writeFile(docXml, serializeXml(dom, "UTF-8"), "utf8");
+        await writeXmlPart(docXml, dom, part);
         return {
             count: mergeCount,
             message: `Simplified ${mergeCount} tracked changes`,
@@ -133,13 +139,16 @@ export async function inferAuthor(modifiedDir: string, originalDocx: string, def
  * map for missing or unparseable files.
  */
 export async function getTrackedChangeAuthorsFromPath(docXmlPath: string): Promise<Map<string, number>> {
-    let text: string;
+    let part: DecodedXmlPart | undefined;
     try {
-        text = await fs.readFile(docXmlPath, "utf8");
+        part = await readXmlPart(docXmlPath);
     } catch {
         return new Map();
     }
-    return countAuthors(text);
+    if (part === undefined) {
+        return new Map();
+    }
+    return countAuthors(part.text);
 }
 
 function countAuthors(xmlText: string): Map<string, number> {
@@ -177,7 +186,7 @@ async function getAuthorsFromDocx(docxPath: string): Promise<Map<string, number>
 
     let zip: JSZip;
     try {
-        zip = await JSZip.loadAsync(buf);
+        zip = await loadCentralNamedArchive(buf);
     } catch {
         return new Map();
     }
@@ -187,24 +196,33 @@ async function getAuthorsFromDocx(docxPath: string): Promise<Map<string, number>
         return new Map();
     }
 
-    const text = await file.async("string");
-    return countAuthors(text);
+    const part = decodeXmlPart(await file.async("uint8array"));
+    if (part === undefined) {
+        return new Map();
+    }
+    return countAuthors(part.text);
 }
 
+/**
+ * `root` and its descendant elements named `tag`, in document order. The walk
+ * keeps its own stack, children pushed last first, so a part nested deeper
+ * than the call stack is walked as a shallow one is (#1139).
+ */
 function findElements(root: Node, tag: string): Element[] {
     const results: Element[] = [];
-    const traverse = (node: Node): void => {
-        if (node.nodeType === ELEMENT_NODE) {
-            const el = node as Element;
-            if (matchesTag(el, tag)) {
-                results.push(el);
-            }
-            for (let child = node.firstChild; child; child = child.nextSibling) {
-                traverse(child);
-            }
+    const stack: Node[] = [root];
+    while (stack.length > 0) {
+        const node = stack.pop()!;
+        if (node.nodeType !== ELEMENT_NODE) {
+            continue;
         }
-    };
-    traverse(root);
+        if (matchesTag(node as Element, tag)) {
+            results.push(node as Element);
+        }
+        for (let child = node.lastChild; child; child = child.previousSibling) {
+            stack.push(child);
+        }
+    }
     return results;
 }
 

@@ -20,11 +20,13 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
+import { extractZipEntries } from "../src/lib/zip-path";
 import {
     DOCXSchemaValidator,
     WORD_2006_NAMESPACE,
     WORD_PARAGRAPH_NAMESPACES,
     WORD_STRICT_NAMESPACE,
+    withoutRepeatedCompatibilityFindings,
 } from "../src/scripts/office/validators/docx";
 
 const W_NS = `xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"`;
@@ -41,6 +43,44 @@ async function writeFile(p: string, content: string): Promise<void> {
 function wrapDocument(body: string, extraNs = ""): string {
     return `<?xml version="1.0"?><w:document ${W_NS} ${extraNs}><w:body>${body}</w:body></w:document>`;
 }
+
+/**
+ * The same XML with its declaration naming `encoding`. The #880 specimens
+ * hold ASCII content, so a validator still decodes and judges them while
+ * `writeXmlPart` refuses to write them back.
+ */
+function declaring(xml: string, encoding: string): string {
+    return xml.replace(/^<\?xml[^>]*\?>/, `<?xml version="1.0" encoding="${encoding}"?>`);
+}
+
+describe("direct DOCX relationship diagnostics outside legacy lenient (#434)", () => {
+    it.each([
+        [
+            "validateOrphanedRelationships",
+            '<Relationship Id="nested" Type="urn:image" Target="missing.xml"/>',
+            "rels-target-missing",
+            "error",
+        ],
+        [
+            "validateRelationshipIdStability",
+            '<Relationship Id="rId2" Type="urn:styles" Target="styles.xml"/>',
+            "rel-ids-sequential",
+            "info",
+        ],
+    ] as const)("%s ignores nested entries and preserves lenient behavior", async (method, nested, code, severity) => {
+        await withTempDir(async (dir) => {
+            await writeFile(
+                path.join(dir, "_rels/.rels"),
+                `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="urn:main" Target="word/document.xml"/><x:Wrap xmlns:x="urn:x">${nested}</x:Wrap></Relationships>`,
+            );
+            await writeFile(path.join(dir, "word/document.xml"), wrapDocument(""));
+            const strict = await new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" })[method]();
+            expect(strict.issues.filter((issue) => issue.code === code)).toEqual([]);
+            const lenient = await new DOCXSchemaValidator({ unpackedDir: dir, profile: "lenient" })[method]();
+            expect(lenient.issues).toContainEqual(expect.objectContaining({ code, severity }));
+        });
+    });
+});
 
 describe("DOCXSchemaValidator", () => {
     describe("validateWhitespacePreservation", () => {
@@ -67,6 +107,53 @@ describe("DOCXSchemaValidator", () => {
                 const result = await v.validateWhitespacePreservation();
                 expect(result.valid).toBe(true);
             });
+        });
+    });
+
+    describe("repairWhitespacePreservation", () => {
+        it("counts, writes and reports the repair for a decodable part", async () => {
+            const lines: string[] = [];
+            const origWrite = process.stdout.write.bind(process.stdout);
+            process.stdout.write = (chunk: unknown) => {
+                if (typeof chunk === "string") lines.push(chunk);
+                return true;
+            };
+            try {
+                await withTempDir(async (dir) => {
+                    const filePath = path.join(dir, "word", "document.xml");
+                    await writeFile(filePath, declaring(wrapDocument(`<w:p><w:r><w:t> lead</w:t></w:r></w:p>`), "UTF-8"));
+                    const v = new DOCXSchemaValidator({ unpackedDir: dir, verbose: true });
+                    expect(await v.repairWhitespacePreservation()).toBe(1);
+                    expect(await fs.readFile(filePath, "utf-8")).toContain('xml:space="preserve"');
+                });
+            } finally {
+                process.stdout.write = origWrite;
+            }
+            expect(lines.filter((line) => line.includes("Repaired:"))).toEqual([
+                `  Repaired: document.xml: Added xml:space='preserve' to w:t: " lead"\n`,
+            ]);
+        });
+
+        it("counts no repair for a part whose encoding writeXmlPart refuses, and prints no Repaired: line (#880)", async () => {
+            const lines: string[] = [];
+            const origWrite = process.stdout.write.bind(process.stdout);
+            process.stdout.write = (chunk: unknown) => {
+                if (typeof chunk === "string") lines.push(chunk);
+                return true;
+            };
+            try {
+                await withTempDir(async (dir) => {
+                    const filePath = path.join(dir, "word", "document.xml");
+                    const before = declaring(wrapDocument(`<w:p><w:r><w:t> lead</w:t></w:r></w:p>`), "macintosh");
+                    await writeFile(filePath, before);
+                    const v = new DOCXSchemaValidator({ unpackedDir: dir, verbose: true });
+                    expect(await v.repairWhitespacePreservation()).toBe(0);
+                    expect(await fs.readFile(filePath, "utf-8")).toBe(before);
+                });
+            } finally {
+                process.stdout.write = origWrite;
+            }
+            expect(lines.filter((line) => line.includes("Repaired:"))).toEqual([]);
         });
     });
 
@@ -496,13 +583,7 @@ describe("DOCXSchemaValidator", () => {
             const fixturePath = path.join(__dirname, "fixtures/broken/endnotes.paraid-overflow.docx");
             await withTempDir(async (dir) => {
                 const buf = await fs.readFile(fixturePath);
-                const zip = await JSZip.loadAsync(buf);
-                for (const [entryName, entry] of Object.entries(zip.files)) {
-                    if (entry.dir) continue;
-                    const dest = path.join(dir, entryName);
-                    await fs.mkdir(path.dirname(dest), { recursive: true });
-                    await fs.writeFile(dest, await entry.async("nodebuffer"));
-                }
+                await extractZipEntries(await JSZip.loadAsync(buf), dir);
 
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const before = await v.validateIdConstraints();
@@ -540,9 +621,142 @@ describe("DOCXSchemaValidator", () => {
                 expect(paraIds).not.toContain("FFFFFFFF");
             });
         });
+
+        it("counts no repair for a part whose encoding writeXmlPart refuses (#880)", async () => {
+            await withTempDir(async (dir) => {
+                const filePath = path.join(dir, "word", "document.xml");
+                const before = declaring(
+                    `<?xml version="1.0"?><w:document ${W_NS} ${W14_NS}><w:body>` +
+                        `<w:p w14:paraId="FFFFFFFF"/>` +
+                        `</w:body></w:document>`,
+                    "macintosh",
+                );
+                await writeFile(filePath, before);
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairParaId()).toBe(0);
+                expect(await fs.readFile(filePath, "utf-8")).toBe(before);
+            });
+        });
+
+        it("still counts and writes the repair for a decodable twin (#880)", async () => {
+            await withTempDir(async (dir) => {
+                const filePath = path.join(dir, "word", "document.xml");
+                await writeFile(
+                    filePath,
+                    declaring(
+                        `<?xml version="1.0"?><w:document ${W_NS} ${W14_NS}><w:body>` +
+                            `<w:p w14:paraId="FFFFFFFF"/>` +
+                            `</w:body></w:document>`,
+                        "UTF-8",
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairParaId()).toBe(1);
+                // The stored value must be the replacement: the original
+                // FFFFFFFF is eight hex digits too (#894).
+                const paraIds = Array.from((await fs.readFile(filePath, "utf-8")).matchAll(/w14:paraId="([0-9A-F]{8})"/g)).map(
+                    (m) => m[1]!,
+                );
+                expect(paraIds).toHaveLength(1);
+                expect(paraIds[0]).not.toBe("FFFFFFFF");
+                expect(Number.parseInt(paraIds[0]!, 16)).toBeLessThan(0x80000000);
+            });
+        });
+
+        it.each(["document.xml", "comments.xml"])(
+            "writes no part of a remap spanning several parts when %s's encoding writeXmlPart refuses (#889)",
+            async (refused) => {
+                await withTempDir(async (dir) => {
+                    const docPath = path.join(dir, "word", "document.xml");
+                    const commentsPath = path.join(dir, "word", "comments.xml");
+                    const docBefore = declaring(
+                        `<?xml version="1.0"?><w:document ${W_NS} ${W14_NS}><w:body>` +
+                            `<w:p w14:paraId="FFFFFFFF"/>` +
+                            `</w:body></w:document>`,
+                        refused === "document.xml" ? "macintosh" : "UTF-8",
+                    );
+                    const commentsBefore = declaring(
+                        `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                            `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                            `<w:p w14:paraId="FFFFFFFF"/></w:comment></w:comments>`,
+                        refused === "comments.xml" ? "macintosh" : "UTF-8",
+                    );
+                    await writeFile(docPath, docBefore);
+                    await writeFile(commentsPath, commentsBefore);
+                    const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                    expect(await v.repairParaId()).toBe(0);
+                    expect(await fs.readFile(docPath, "utf-8")).toBe(docBefore);
+                    expect(await fs.readFile(commentsPath, "utf-8")).toBe(commentsBefore);
+                });
+            },
+        );
+
+        it.skipIf(process.getuid?.() === 0).each(["repairParaId", "repair"] as const)(
+            "writes no part of a remap when its second part is non-writable, through %s() (#909)",
+            async (method) => {
+                await withTempDir(async (dir) => {
+                    const docPath = path.join(dir, "word", "document.xml");
+                    const commentsPath = path.join(dir, "word", "comments.xml");
+                    await writeFile(docPath, wrapDocument(`<w:p w14:paraId="FFFFFFFF" w14:textId="11111111"/>`, W14_NS));
+                    await writeFile(
+                        commentsPath,
+                        `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                            `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                            `<w:p w14:paraId="FFFFFFFF" w14:textId="11111111"/></w:comment></w:comments>`,
+                    );
+                    const before = await Promise.all([fs.readFile(docPath), fs.readFile(commentsPath)]);
+                    const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                    expect(v.xmlFiles).toHaveLength(2);
+                    const refused = v.xmlFiles[1]!;
+                    const mode = (await fs.stat(refused)).mode;
+                    await fs.chmod(refused, 0o444);
+                    try {
+                        await expect(v[method]()).resolves.toBe(0);
+                        expect(await Promise.all([fs.readFile(docPath), fs.readFile(commentsPath)])).toEqual(before);
+                    } finally {
+                        await fs.chmod(refused, mode);
+                    }
+                });
+            },
+        );
+
+        it("still remaps every part for a decodable twin (#889)", async () => {
+            await withTempDir(async (dir) => {
+                const docPath = path.join(dir, "word", "document.xml");
+                const commentsPath = path.join(dir, "word", "comments.xml");
+                await writeFile(
+                    docPath,
+                    declaring(
+                        `<?xml version="1.0"?><w:document ${W_NS} ${W14_NS}><w:body>` +
+                            `<w:p w14:paraId="FFFFFFFF"/>` +
+                            `</w:body></w:document>`,
+                        "UTF-8",
+                    ),
+                );
+                await writeFile(
+                    commentsPath,
+                    declaring(
+                        `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                            `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                            `<w:p w14:paraId="FFFFFFFF"/></w:comment></w:comments>`,
+                        "UTF-8",
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairParaId()).toBe(2);
+                const docXml = await fs.readFile(docPath, "utf-8");
+                const commentsXml = await fs.readFile(commentsPath, "utf-8");
+                const newId = /w14:paraId="([0-9A-F]{8})"/.exec(docXml)?.[1];
+                expect(newId).toBeDefined();
+                expect(newId).not.toBe("FFFFFFFF");
+                expect(commentsXml).toContain(`w14:paraId="${newId}"`);
+            });
+        });
     });
 
     describe("repairDurableId", () => {
+        const W16CEX_NS = `xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex"`;
+
         it("rewrites an over-cap hex durableId in commentsIds.xml", async () => {
             await withTempDir(async (dir) => {
                 const filePath = path.join(dir, "word", "commentsIds.xml");
@@ -558,6 +772,376 @@ describe("DOCXSchemaValidator", () => {
                 const after = await fs.readFile(filePath, "utf-8");
                 expect(after).not.toContain('w16cid:durableId="FFFFFFFF"');
                 expect(after).toMatch(/w16cid:durableId="[0-9A-F]{8}"/);
+            });
+        });
+
+        it("counts no repair for a part whose encoding writeXmlPart refuses (#880)", async () => {
+            await withTempDir(async (dir) => {
+                const filePath = path.join(dir, "word", "commentsIds.xml");
+                const before = declaring(
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="00000001" w16cid:durableId="FFFFFFFF"/>` +
+                        `</w16cid:commentsIds>`,
+                    "macintosh",
+                );
+                await writeFile(filePath, before);
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairDurableId()).toBe(0);
+                expect(await fs.readFile(filePath, "utf-8")).toBe(before);
+            });
+        });
+
+        it("still counts and writes the repair for a decodable twin (#880)", async () => {
+            await withTempDir(async (dir) => {
+                const filePath = path.join(dir, "word", "commentsIds.xml");
+                await writeFile(
+                    filePath,
+                    declaring(
+                        `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                            `<w16cid:commentId w16cid:paraId="00000001" w16cid:durableId="FFFFFFFF"/>` +
+                            `</w16cid:commentsIds>`,
+                        "UTF-8",
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairDurableId()).toBe(1);
+                expect(await fs.readFile(filePath, "utf-8")).not.toContain('w16cid:durableId="FFFFFFFF"');
+            });
+        });
+
+        it("renumbers two over-cap durableIds and their commentsExtensible references together (#892)", async () => {
+            await withTempDir(async (dir) => {
+                const idsPath = path.join(dir, "word", "commentsIds.xml");
+                const cexPath = path.join(dir, "word", "commentsExtensible.xml");
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/>` +
+                            `<w:r><w:commentReference w:id="0"/></w:r></w:p>` +
+                            `<w:p><w:commentRangeStart w:id="1"/>x<w:commentRangeEnd w:id="1"/>` +
+                            `<w:r><w:commentReference w:id="1"/></w:r></w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="10000000"/></w:comment>` +
+                        `<w:comment w:id="1" w:author="B" w:date="2026-01-01T00:00:00Z" w:initials="B">` +
+                        `<w:p w14:paraId="10000001"/></w:comment></w:comments>`,
+                );
+                await writeFile(
+                    idsPath,
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="10000000" w16cid:durableId="80000001"/>` +
+                        `<w16cid:commentId w16cid:paraId="10000001" w16cid:durableId="80000002"/>` +
+                        `</w16cid:commentsIds>`,
+                );
+                await writeFile(
+                    cexPath,
+                    `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                        `<w16cex:commentExtensible w16cex:durableId="80000001" w16cex:dateUtc="2026-01-01T00:00:00Z"/>` +
+                        `<w16cex:commentExtensible w16cex:durableId="80000002" w16cex:dateUtc="2026-01-01T00:00:00Z"/>` +
+                        `</w16cex:commentsExtensible>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairDurableId()).toBe(4);
+
+                const idsXml = await fs.readFile(idsPath, "utf-8");
+                const cexXml = await fs.readFile(cexPath, "utf-8");
+                const newIds = [...idsXml.matchAll(/w16cid:durableId="([^"]+)"/g)].map((m) => m[1]);
+                const newCex = [...cexXml.matchAll(/w16cex:durableId="([^"]+)"/g)].map((m) => m[1]);
+                expect(newIds).toHaveLength(2);
+                expect(new Set(newIds).size).toBe(2);
+                for (const id of newIds) {
+                    expect(parseInt(id, 16)).toBeLessThan(0x7fffffff);
+                }
+                // Each extensible entry must name the new value of the
+                // commentsIds entry it named before the repair.
+                expect(newCex).toEqual(newIds);
+                const threadCheck = await v.validateCommentThreading();
+                expect(threadCheck.issues.filter((i) => i.code === "comment-thread-durableid-orphan")).toEqual([]);
+            });
+        });
+
+        it("leaves no orphaned commentsExtensible reference after a full repair() (#892)", async () => {
+            await withTempDir(async (dir) => {
+                const idsPath = path.join(dir, "word", "commentsIds.xml");
+                const cexPath = path.join(dir, "word", "commentsExtensible.xml");
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/>` +
+                            `<w:r><w:commentReference w:id="0"/></w:r></w:p>` +
+                            `<w:p><w:commentRangeStart w:id="1"/>x<w:commentRangeEnd w:id="1"/>` +
+                            `<w:r><w:commentReference w:id="1"/></w:r></w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="10000000"/></w:comment>` +
+                        `<w:comment w:id="1" w:author="B" w:date="2026-01-01T00:00:00Z" w:initials="B">` +
+                        `<w:p w14:paraId="10000001"/></w:comment></w:comments>`,
+                );
+                await writeFile(
+                    idsPath,
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="10000000" w16cid:durableId="80000001"/>` +
+                        `<w16cid:commentId w16cid:paraId="10000001" w16cid:durableId="80000002"/>` +
+                        `</w16cid:commentsIds>`,
+                );
+                await writeFile(
+                    cexPath,
+                    `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                        `<w16cex:commentExtensible w16cex:durableId="80000001" w16cex:dateUtc="2026-01-01T00:00:00Z"/>` +
+                        `<w16cex:commentExtensible w16cex:durableId="80000002" w16cex:dateUtc="2026-01-01T00:00:00Z"/>` +
+                        `</w16cex:commentsExtensible>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                await v.repair();
+
+                const idsXml = await fs.readFile(idsPath, "utf-8");
+                const cexXml = await fs.readFile(cexPath, "utf-8");
+                const newIds = [...idsXml.matchAll(/w16cid:durableId="([^"]+)"/g)].map((m) => m[1]);
+                const newCex = [...cexXml.matchAll(/w16cex:durableId="([^"]+)"/g)].map((m) => m[1]);
+                expect(newIds).toHaveLength(2);
+                expect(new Set(newIds).size).toBe(2);
+                for (const id of newIds) {
+                    expect(parseInt(id, 16)).toBeLessThan(0x7fffffff);
+                }
+                expect(newCex).toEqual(newIds);
+                const threadCheck = await v.validateCommentThreading();
+                expect(threadCheck.issues.filter((i) => i.code === "comment-thread-durableid-orphan")).toEqual([]);
+            });
+        });
+
+        // xsd:hexBinary values ignore the case of their hex letters, so the
+        // remap pairs the two parts' spellings of one value (#904).
+        it.each([
+            ["repairDurableId", "lower", "upper"],
+            ["repairDurableId", "upper", "lower"],
+            ["repair", "lower", "upper"],
+            ["repair", "upper", "lower"],
+        ] as const)(
+            "pairs over-cap durableIds the two parts spell in different case, through %s() (commentsIds %s case, commentsExtensible %s; #904)",
+            async (method, idsCase, cexCase) => {
+                const spell = (value: string, letters: "lower" | "upper") => (letters === "lower" ? value.toLowerCase() : value);
+                await withTempDir(async (dir) => {
+                    const idsPath = path.join(dir, "word", "commentsIds.xml");
+                    const cexPath = path.join(dir, "word", "commentsExtensible.xml");
+                    await writeFile(
+                        path.join(dir, "word", "document.xml"),
+                        wrapDocument(
+                            `<w:p><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/>` +
+                                `<w:r><w:commentReference w:id="0"/></w:r></w:p>` +
+                                `<w:p><w:commentRangeStart w:id="1"/>x<w:commentRangeEnd w:id="1"/>` +
+                                `<w:r><w:commentReference w:id="1"/></w:r></w:p>`,
+                        ),
+                    );
+                    await writeFile(
+                        path.join(dir, "word", "comments.xml"),
+                        `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                            `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                            `<w:p w14:paraId="10000000"/></w:comment>` +
+                            `<w:comment w:id="1" w:author="B" w:date="2026-01-01T00:00:00Z" w:initials="B">` +
+                            `<w:p w14:paraId="10000001"/></w:comment></w:comments>`,
+                    );
+                    await writeFile(
+                        idsPath,
+                        `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                            `<w16cid:commentId w16cid:paraId="10000000" w16cid:durableId="${spell("FFFFFFFF", idsCase)}"/>` +
+                            `<w16cid:commentId w16cid:paraId="10000001" w16cid:durableId="${spell("FFFFFFFE", idsCase)}"/>` +
+                            `</w16cid:commentsIds>`,
+                    );
+                    await writeFile(
+                        cexPath,
+                        `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                            `<w16cex:commentExtensible w16cex:durableId="${spell("FFFFFFFF", cexCase)}" w16cex:dateUtc="2026-01-01T00:00:00Z"/>` +
+                            `<w16cex:commentExtensible w16cex:durableId="${spell("FFFFFFFE", cexCase)}" w16cex:dateUtc="2026-01-01T00:00:00Z"/>` +
+                            `</w16cex:commentsExtensible>`,
+                    );
+                    const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                    if (method === "repairDurableId") {
+                        expect(await v.repairDurableId()).toBe(4);
+                    } else {
+                        await v.repair();
+                    }
+
+                    const newIds = [...(await fs.readFile(idsPath, "utf-8")).matchAll(/w16cid:durableId="([^"]+)"/g)].map((m) => m[1]);
+                    const newCex = [...(await fs.readFile(cexPath, "utf-8")).matchAll(/w16cex:durableId="([^"]+)"/g)].map((m) => m[1]);
+                    expect(newIds).toHaveLength(2);
+                    expect(new Set(newIds).size).toBe(2);
+                    for (const id of newIds) {
+                        expect(parseInt(id!, 16)).toBeLessThan(0x7fffffff);
+                    }
+                    expect(newCex).toEqual(newIds);
+                    const threadCheck = await v.validateCommentThreading();
+                    expect(threadCheck.issues.filter((i) => i.code === "comment-thread-durableid-orphan")).toEqual([]);
+                });
+            },
+        );
+
+        it.each(["commentsIds.xml", "commentsExtensible.xml"] as const)(
+            "refuses the remap when %s, spelling the ids in lower case, cannot be decoded (#889, #904)",
+            async (undecodable) => {
+                await withTempDir(async (dir) => {
+                    const lower = (part: string, xml: string) =>
+                        part === undecodable ? declaring(xml.replace('durableId="FFFFFFFF"', 'durableId="ffffffff"'), "macintosh") : xml;
+                    const idsPath = path.join(dir, "word", "commentsIds.xml");
+                    const cexPath = path.join(dir, "word", "commentsExtensible.xml");
+                    await writeFile(
+                        idsPath,
+                        lower(
+                            "commentsIds.xml",
+                            `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                                `<w16cid:commentId w16cid:paraId="10000000" w16cid:durableId="FFFFFFFF"/>` +
+                                `</w16cid:commentsIds>`,
+                        ),
+                    );
+                    await writeFile(
+                        cexPath,
+                        lower(
+                            "commentsExtensible.xml",
+                            `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                                `<w16cex:commentExtensible w16cex:durableId="FFFFFFFF" w16cex:dateUtc="2026-01-01T00:00:00Z"/>` +
+                                `</w16cex:commentsExtensible>`,
+                        ),
+                    );
+                    const idsBefore = await fs.readFile(idsPath, "utf-8");
+                    const cexBefore = await fs.readFile(cexPath, "utf-8");
+                    expect(idsBefore + cexBefore).toContain('durableId="ffffffff"');
+                    const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                    expect(await v.repairDurableId()).toBe(0);
+                    expect(await fs.readFile(idsPath, "utf-8")).toBe(idsBefore);
+                    expect(await fs.readFile(cexPath, "utf-8")).toBe(cexBefore);
+                });
+            },
+        );
+
+        it("writes no part of the durableId remap when commentsExtensible.xml's encoding writeXmlPart refuses (#889)", async () => {
+            await withTempDir(async (dir) => {
+                const idsPath = path.join(dir, "word", "commentsIds.xml");
+                const cexPath = path.join(dir, "word", "commentsExtensible.xml");
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/>` +
+                            `<w:r><w:commentReference w:id="0"/></w:r></w:p>` +
+                            `<w:p><w:commentRangeStart w:id="1"/>x<w:commentRangeEnd w:id="1"/>` +
+                            `<w:r><w:commentReference w:id="1"/></w:r></w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="10000000"/></w:comment>` +
+                        `<w:comment w:id="1" w:author="B" w:date="2026-01-01T00:00:00Z" w:initials="B">` +
+                        `<w:p w14:paraId="10000001"/></w:comment></w:comments>`,
+                );
+                await writeFile(
+                    idsPath,
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="10000000" w16cid:durableId="80000001"/>` +
+                        `<w16cid:commentId w16cid:paraId="10000001" w16cid:durableId="80000002"/>` +
+                        `</w16cid:commentsIds>`,
+                );
+                await writeFile(
+                    cexPath,
+                    declaring(
+                        `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                            `<w16cex:commentExtensible w16cex:durableId="80000001" w16cex:dateUtc="2026-01-01T00:00:00Z"/>` +
+                            `<w16cex:commentExtensible w16cex:durableId="80000002" w16cex:dateUtc="2026-01-01T00:00:00Z"/>` +
+                            `</w16cex:commentsExtensible>`,
+                        "macintosh",
+                    ),
+                );
+                const idsBefore = await fs.readFile(idsPath, "utf-8");
+                const cexBefore = await fs.readFile(cexPath, "utf-8");
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairDurableId()).toBe(0);
+                expect(await fs.readFile(idsPath, "utf-8")).toBe(idsBefore);
+                expect(await fs.readFile(cexPath, "utf-8")).toBe(cexBefore);
+            });
+        });
+
+        it.skipIf(process.getuid?.() === 0).each(["repairDurableId", "repair"] as const)(
+            "refuses the hex remap but still renumbers numbering.xml when commentsExtensible.xml is non-writable, through %s() (#909)",
+            async (method) => {
+                await withTempDir(async (dir) => {
+                    const numberingPath = path.join(dir, "word", "numbering.xml");
+                    const idsPath = path.join(dir, "word", "commentsIds.xml");
+                    const cexPath = path.join(dir, "word", "commentsExtensible.xml");
+                    await writeFile(
+                        numberingPath,
+                        `<?xml version="1.0"?><w:numbering ${W_NS} ${W16CID_NS}>` +
+                            `<w:abstractNum w16cid:durableId="2147483647"/></w:numbering>`,
+                    );
+                    await writeFile(
+                        idsPath,
+                        `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                            `<w16cid:commentId w16cid:paraId="10000000" w16cid:durableId="80000001"/></w16cid:commentsIds>`,
+                    );
+                    await writeFile(
+                        cexPath,
+                        `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                            `<w16cex:commentExtensible w16cex:durableId="80000001"/></w16cex:commentsExtensible>`,
+                    );
+                    const before = await Promise.all([fs.readFile(idsPath), fs.readFile(cexPath)]);
+                    const mode = (await fs.stat(cexPath)).mode;
+                    await fs.chmod(cexPath, 0o444);
+                    try {
+                        const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                        await expect(v[method]()).resolves.toBe(1);
+                        expect(await Promise.all([fs.readFile(idsPath), fs.readFile(cexPath)])).toEqual(before);
+                        const numberingXml = await fs.readFile(numberingPath, "utf-8");
+                        expect(numberingXml).not.toContain('w16cid:durableId="2147483647"');
+                        const newId = /w16cid:durableId="(\d+)"/.exec(numberingXml)?.[1];
+                        expect(newId).toBeDefined();
+                        expect(Number(newId)).toBeLessThan(0x7fffffff);
+                    } finally {
+                        await fs.chmod(cexPath, mode);
+                    }
+                });
+            },
+        );
+
+        it("still renumbers an over-cap decimal durableId in numbering.xml when the extensible part is undecodable (#892)", async () => {
+            await withTempDir(async (dir) => {
+                const numberingPath = path.join(dir, "word", "numbering.xml");
+                const idsPath = path.join(dir, "word", "commentsIds.xml");
+                await writeFile(
+                    numberingPath,
+                    `<?xml version="1.0"?><w:numbering ${W_NS} ${W16CID_NS}>` +
+                        `<w:abstractNum w16cid:durableId="2147483647"/>` +
+                        `</w:numbering>`,
+                );
+                await writeFile(
+                    idsPath,
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="10000000" w16cid:durableId="80000001"/>` +
+                        `</w16cid:commentsIds>`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "commentsExtensible.xml"),
+                    declaring(
+                        `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                            `<w16cex:commentExtensible w16cex:durableId="80000001" w16cex:dateUtc="2026-01-01T00:00:00Z"/>` +
+                            `</w16cex:commentsExtensible>`,
+                        "macintosh",
+                    ),
+                );
+                const idsBefore = await fs.readFile(idsPath, "utf-8");
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairDurableId()).toBe(1);
+                const numberingXml = await fs.readFile(numberingPath, "utf-8");
+                expect(numberingXml).not.toContain('w16cid:durableId="2147483647"');
+                const newId = /w16cid:durableId="(\d+)"/.exec(numberingXml)?.[1];
+                expect(newId).toBeDefined();
+                expect(Number(newId)).toBeLessThan(0x7fffffff);
+                expect(await fs.readFile(idsPath, "utf-8")).toBe(idsBefore);
             });
         });
     });
@@ -718,13 +1302,7 @@ describe("DOCXSchemaValidator", () => {
             const fixturePath = path.join(__dirname, "fixtures/broken/sample-document.id-overflow.docx");
             await withTempDir(async (dir) => {
                 const buf = await fs.readFile(fixturePath);
-                const zip = await JSZip.loadAsync(buf);
-                for (const [entryName, entry] of Object.entries(zip.files)) {
-                    if (entry.dir) continue;
-                    const dest = path.join(dir, entryName);
-                    await fs.mkdir(path.dirname(dest), { recursive: true });
-                    await fs.writeFile(dest, await entry.async("nodebuffer"));
-                }
+                await extractZipEntries(await JSZip.loadAsync(buf), dir);
 
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const repairs = await v.repairParaId();
@@ -917,17 +1495,40 @@ describe("DOCXSchemaValidator", () => {
             });
         });
 
+        it("counts no repair for a styles part whose encoding writeXmlPart refuses (#880)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(`<w:p><w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:t>x</w:t></w:r></w:p>`),
+                );
+                const stylesPath = path.join(dir, "word", "styles.xml");
+                const before = declaring(`<?xml version="1.0"?><w:styles ${W_NS}/>`, "macintosh");
+                await writeFile(stylesPath, before);
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairMissingStyleDefinitions()).toBe(0);
+                expect(await fs.readFile(stylesPath, "utf-8")).toBe(before);
+            });
+        });
+
+        it("still counts and writes the repair for a decodable twin (#880)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(`<w:p><w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:t>x</w:t></w:r></w:p>`),
+                );
+                const stylesPath = path.join(dir, "word", "styles.xml");
+                await writeFile(stylesPath, declaring(`<?xml version="1.0"?><w:styles ${W_NS}/>`, "UTF-8"));
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairMissingStyleDefinitions()).toBe(5);
+                expect(await fs.readFile(stylesPath, "utf-8")).toContain('w:styleId="CommentReference"');
+            });
+        });
+
         it("repairs sample-document.broken-tables fixture: injects CommentReference, validation passes", async () => {
             const fixturePath = path.join(__dirname, "fixtures/broken/sample-document.broken-tables.docx");
             await withTempDir(async (dir) => {
                 const buf = await fs.readFile(fixturePath);
-                const zip = await JSZip.loadAsync(buf);
-                for (const [entryName, entry] of Object.entries(zip.files)) {
-                    if (entry.dir) continue;
-                    const dest = path.join(dir, entryName);
-                    await fs.mkdir(path.dirname(dest), { recursive: true });
-                    await fs.writeFile(dest, await entry.async("nodebuffer"));
-                }
+                await extractZipEntries(await JSZip.loadAsync(buf), dir);
                 const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
                 const before = await v.validateStyleReferences();
                 expect(before.valid).toBe(false);
@@ -1077,6 +1678,33 @@ describe("DOCXSchemaValidator", () => {
             });
         });
 
+        it("counts no repair for a part whose encoding writeXmlPart refuses (#880)", async () => {
+            await withTempDir(async (dir) => {
+                const filePath = path.join(dir, "word", "document.xml");
+                const before = declaring(
+                    `<?xml version="1.0"?><w:document ${TBL_NS} ${W14_NS}><w:body><w:p/></w:body></w:document>`,
+                    "macintosh",
+                );
+                await writeFile(filePath, before);
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairMissingParaIds()).toBe(0);
+                expect(await fs.readFile(filePath, "utf-8")).toBe(before);
+            });
+        });
+
+        it("still counts and writes the repair for a decodable twin (#880)", async () => {
+            await withTempDir(async (dir) => {
+                const filePath = path.join(dir, "word", "document.xml");
+                await writeFile(
+                    filePath,
+                    declaring(`<?xml version="1.0"?><w:document ${TBL_NS} ${W14_NS}><w:body><w:p/></w:body></w:document>`, "UTF-8"),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairMissingParaIds()).toBe(2);
+                expect(await fs.readFile(filePath, "utf-8")).toMatch(/w14:paraId="[0-9A-F]{8}"/);
+            });
+        });
+
         it("validateAllParagraphsHaveParaId flags missing paraIds in headers and footers, not just documentXml", async () => {
             await withTempDir(async (dir) => {
                 // document.xml: fully stamped — no issues.
@@ -1162,6 +1790,81 @@ describe("DOCXSchemaValidator", () => {
                 expect(await fs.readFile(filePath, "utf-8")).toBe(before);
             });
         });
+
+        it("counts no repair for a part whose encoding writeXmlPart refuses (#880)", async () => {
+            await withTempDir(async (dir) => {
+                const filePath = path.join(dir, "word", "document.xml");
+                const mcNs = `xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"`;
+                const before = declaring(
+                    `<?xml version="1.0"?><w:document ${W_NS} ${mcNs} mc:Ignorable="w15 wp14"><w:body/></w:document>`,
+                    "macintosh",
+                );
+                await writeFile(filePath, before);
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairIgnorable()).toBe(0);
+                expect(await fs.readFile(filePath, "utf-8")).toBe(before);
+            });
+        });
+
+        it("still counts and writes the repair for a decodable twin (#880)", async () => {
+            await withTempDir(async (dir) => {
+                const filePath = path.join(dir, "word", "document.xml");
+                const mcNs = `xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"`;
+                await writeFile(
+                    filePath,
+                    declaring(`<?xml version="1.0"?><w:document ${W_NS} ${mcNs} mc:Ignorable="w15 wp14"><w:body/></w:document>`, "UTF-8"),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairIgnorable()).toBe(2);
+                expect(await fs.readFile(filePath, "utf-8")).toContain("xmlns:w15=");
+            });
+        });
+
+        // #1071: the well-known table is read by own key, so a token named for
+        // an Object.prototype key is unknown and dropped, never declared.
+        it.each(["constructor", "toString", "__proto__"])("drops an undeclared %s token instead of declaring it", async (token) => {
+            await withTempDir(async (dir) => {
+                const filePath = path.join(dir, "word", "document.xml");
+                const mcNs = `xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"`;
+                await writeFile(
+                    filePath,
+                    `<?xml version="1.0"?><w:document ${W_NS} ${mcNs} mc:Ignorable="${token}"><w:body/></w:document>`,
+                );
+                expect(await new DOCXSchemaValidator({ unpackedDir: dir }).repairIgnorable()).toBe(1);
+                const after = await fs.readFile(filePath, "utf-8");
+                expect(after).not.toContain(`xmlns:${token}`);
+                expect(after).not.toContain("mc:Ignorable=");
+            });
+        });
+    });
+
+    // #1071: the well-known style table is read by own key, so a reference
+    // named for an Object.prototype key gets no definition: the repair writes
+    // what it writes for the same package without that reference.
+    describe("repairMissingStyleDefinitions with a style id named for an Object.prototype key", () => {
+        const repaired = async (dir: string, extra: string): Promise<[number, string]> => {
+            await writeFile(
+                path.join(dir, "word", "document.xml"),
+                wrapDocument(`<w:p>${extra}<w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:t>x</w:t></w:r></w:p>`),
+            );
+            const stylesPath = path.join(dir, "word", "styles.xml");
+            await writeFile(
+                stylesPath,
+                `<?xml version="1.0"?><w:styles ${W_NS}><w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/></w:style></w:styles>`,
+            );
+            const repairs = await new DOCXSchemaValidator({ unpackedDir: dir }).repairMissingStyleDefinitions();
+            return [repairs, await fs.readFile(stylesPath, "utf-8")];
+        };
+
+        it.each(["constructor", "toString", "__proto__"])("writes for %s only what the package without it gets", async (id) => {
+            await withTempDir(async (base) => {
+                await withTempDir(async (dir) => {
+                    const [baseRepairs, baseStyles] = await repaired(base, "");
+                    expect(baseStyles).toContain('w:styleId="CommentReference"');
+                    expect(await repaired(dir, `<w:pPr><w:pStyle w:val="${id}"/></w:pPr>`)).toEqual([baseRepairs, baseStyles]);
+                });
+            });
+        });
     });
 
     describe("repairExtendedPropertiesWhitespace", () => {
@@ -1191,6 +1894,70 @@ describe("DOCXSchemaValidator", () => {
                 expect(after).toContain("<Pages>1</Pages>");
                 expect(after).toContain("<vt:lpstr>Title</vt:lpstr>");
                 expect(after).toContain("<vt:i4>1</vt:i4>");
+            });
+        });
+
+        it("counts no repair for a part whose encoding writeXmlPart refuses (#880)", async () => {
+            await withTempDir(async (dir) => {
+                const appXml = path.join(dir, "docProps", "app.xml");
+                const before = declaring(
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+                        `<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties">` +
+                        `<TotalTime>3\n  </TotalTime>` +
+                        `</Properties>`,
+                    "macintosh",
+                );
+                await writeFile(appXml, before);
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairExtendedPropertiesWhitespace()).toBe(0);
+                expect(await fs.readFile(appXml, "utf-8")).toBe(before);
+            });
+        });
+
+        it("still counts and writes the repair for a decodable twin (#880)", async () => {
+            await withTempDir(async (dir) => {
+                const appXml = path.join(dir, "docProps", "app.xml");
+                await writeFile(
+                    appXml,
+                    declaring(
+                        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+                            `<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties">` +
+                            `<TotalTime>3\n  </TotalTime>` +
+                            `</Properties>`,
+                        "UTF-8",
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairExtendedPropertiesWhitespace()).toBe(1);
+                expect(await fs.readFile(appXml, "utf-8")).toContain("<TotalTime>3</TotalTime>");
+            });
+        });
+    });
+
+    describe("repairCorePropertiesWhitespace", () => {
+        const coreProperties = (encoding: string): string =>
+            `<?xml version="1.0" encoding="${encoding}"?>` +
+            `<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties">` +
+            `<cp:lastModifiedBy>Author\n  </cp:lastModifiedBy>` +
+            `</cp:coreProperties>`;
+
+        it("counts no repair for a part whose encoding writeXmlPart refuses (#880)", async () => {
+            await withTempDir(async (dir) => {
+                const coreXml = path.join(dir, "docProps", "core.xml");
+                await writeFile(coreXml, coreProperties("macintosh"));
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairCorePropertiesWhitespace()).toBe(0);
+                expect(await fs.readFile(coreXml, "utf-8")).toBe(coreProperties("macintosh"));
+            });
+        });
+
+        it("still counts and writes the repair for a decodable twin (#880)", async () => {
+            await withTempDir(async (dir) => {
+                const coreXml = path.join(dir, "docProps", "core.xml");
+                await writeFile(coreXml, coreProperties("UTF-8"));
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairCorePropertiesWhitespace()).toBe(1);
+                expect(await fs.readFile(coreXml, "utf-8")).toContain("<cp:lastModifiedBy>Author</cp:lastModifiedBy>");
             });
         });
     });
@@ -1234,6 +2001,27 @@ describe("DOCXSchemaValidator", () => {
                 expect(after).toContain("<w:t>Datum plane\n  </w:t>");
             });
         });
+
+        it("counts no repair for a part whose encoding writeXmlPart refuses (#880)", async () => {
+            await withTempDir(async (dir) => {
+                const documentXml = path.join(dir, "word", "document.xml");
+                const before = declaring(wrapDocument(drawingBody, `${WP_NS} ${WP14_DRAWING_NS}`), "macintosh");
+                await writeFile(documentXml, before);
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
+                expect(await v.repairDrawingScalarTextWhitespace()).toBe(0);
+                expect(await fs.readFile(documentXml, "utf-8")).toBe(before);
+            });
+        });
+
+        it("still counts and writes the repair for a decodable twin (#880)", async () => {
+            await withTempDir(async (dir) => {
+                const documentXml = path.join(dir, "word", "document.xml");
+                await writeFile(documentXml, declaring(wrapDocument(drawingBody, `${WP_NS} ${WP14_DRAWING_NS}`), "UTF-8"));
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
+                expect(await v.repairDrawingScalarTextWhitespace()).toBe(4);
+                expect(await fs.readFile(documentXml, "utf-8")).toContain("<wp:align>center</wp:align>");
+            });
+        });
     });
 
     describe("inline picture scaffolds", () => {
@@ -1259,6 +2047,17 @@ describe("DOCXSchemaValidator", () => {
             `<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>` +
             `</pic:pic></a:graphicData></a:graphic>` +
             `</wp:inline></w:drawing></w:r></w:p></w:hdr>`;
+        const MINIMAL_CONTENT_TYPES =
+            `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+            `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+            `<Default Extension="xml" ContentType="application/xml"/>` +
+            `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>` +
+            `</Types>`;
+        const MINIMAL_PACKAGE_RELS =
+            `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+            `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>` +
+            `</Relationships>`;
+        const MINIMAL_DOCUMENT = `<w:document ${W_NS}><w:body/></w:document>`;
 
         it("treats an inline picture missing required scaffold children as word-blocking", async () => {
             await withTempDir(async (dir) => {
@@ -1266,10 +2065,26 @@ describe("DOCXSchemaValidator", () => {
 
                 const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
                 const result = await v.validate();
-                const issue = result.issues.find((i) => i.code === "xsd-error" && i.path === "word/header1.xml");
+                // Named structurally (Task 7), before and independent of XSD.
+                const issue = result.issues.find((i) => i.code === "word-drawing-extent-missing" && i.path === "word/header1.xml");
                 expect(issue?.severity).toBe("error");
-                expect(issue?.message).toContain("graphic");
+                expect(issue?.message).toContain("wp:extent");
                 expect(result.valid).toBe(false);
+            });
+        });
+
+        it("reports all three independent structural codes for the incomplete inline picture", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "header1.xml"), `<?xml version="1.0"?>${inlinePicture}`);
+                const result = await new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" }).validate();
+                expect(result.valid).toBe(false);
+                expect(result.issues).toEqual(
+                    expect.arrayContaining([
+                        expect.objectContaining({ code: "word-drawing-extent-missing", severity: "error", path: "word/header1.xml" }),
+                        expect.objectContaining({ code: "word-picture-nvpicpr-missing", severity: "error", path: "word/header1.xml" }),
+                        expect.objectContaining({ code: "word-picture-sppr-missing", severity: "error", path: "word/header1.xml" }),
+                    ]),
+                );
             });
         });
 
@@ -1295,8 +2110,36 @@ describe("DOCXSchemaValidator", () => {
             });
         });
 
+        it("counts no repair for a part whose encoding writeXmlPart refuses (#880)", async () => {
+            await withTempDir(async (dir) => {
+                const headerXml = path.join(dir, "word", "header1.xml");
+                const before = declaring(`<?xml version="1.0"?>${inlinePicture}`, "macintosh");
+                await writeFile(headerXml, before);
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
+                expect(await v.repairInlinePictureScaffolds()).toBe(0);
+                expect(await fs.readFile(headerXml, "utf-8")).toBe(before);
+            });
+        });
+
+        it("still counts and writes the repair for a decodable twin (#880)", async () => {
+            await withTempDir(async (dir) => {
+                const headerXml = path.join(dir, "word", "header1.xml");
+                await writeFile(headerXml, declaring(`<?xml version="1.0"?>${inlinePicture}`, "UTF-8"));
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
+                expect(await v.repairInlinePictureScaffolds()).toBe(5);
+                expect(await fs.readFile(headerXml, "utf-8")).toContain("<wp:extent");
+            });
+        });
+
         it("downgrades missing header image sidecars under word-valid because Word opens cleanly", async () => {
             await withTempDir(async (dir) => {
+                // A package scaffold: without [Content_Types].xml and a main
+                // part, word-valid now fails on ct-missing /
+                // word-main-document-part before the sidecar finding (#435,
+                // #380), which is what this test is about.
+                await writeFile(path.join(dir, "[Content_Types].xml"), `<?xml version="1.0"?>${MINIMAL_CONTENT_TYPES}`);
+                await writeFile(path.join(dir, "_rels", ".rels"), `<?xml version="1.0"?>${MINIMAL_PACKAGE_RELS}`);
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?>${MINIMAL_DOCUMENT}`);
                 await writeFile(path.join(dir, "word", "header1.xml"), `<?xml version="1.0"?>${completeInlinePicture}`);
 
                 const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
@@ -1574,6 +2417,195 @@ describe("DOCXSchemaValidator", () => {
                 const result = await v.validateCommentThreading();
                 expect(result.valid).toBe(false);
                 expect(result.issues.some((i) => i.code === "comment-thread-commentid-paraid-orphan")).toBe(true);
+            });
+        });
+
+        it("counts no repair for a commentsIds part whose encoding writeXmlPart refuses (#880)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/>` +
+                            `<w:r><w:commentReference w:id="0"/></w:r></w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="11111111"/></w:comment></w:comments>`,
+                );
+                const idsPath = path.join(dir, "word", "commentsIds.xml");
+                const before = declaring(
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="DEADBEEF" w16cid:durableId="22222222"/>` +
+                        `</w16cid:commentsIds>`,
+                    "macintosh",
+                );
+                await writeFile(idsPath, before);
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairCommentThreading()).toBe(0);
+                expect(await fs.readFile(idsPath, "utf-8")).toBe(before);
+            });
+        });
+
+        it("still counts and writes the repair for a decodable twin (#880)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/>` +
+                            `<w:r><w:commentReference w:id="0"/></w:r></w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="11111111"/></w:comment></w:comments>`,
+                );
+                const idsPath = path.join(dir, "word", "commentsIds.xml");
+                await writeFile(
+                    idsPath,
+                    declaring(
+                        `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                            `<w16cid:commentId w16cid:paraId="DEADBEEF" w16cid:durableId="22222222"/>` +
+                            `</w16cid:commentsIds>`,
+                        "UTF-8",
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairCommentThreading()).toBe(2);
+                expect(await fs.readFile(idsPath, "utf-8")).toContain('w16cid:paraId="11111111"');
+            });
+        });
+
+        it.each(["commentsIds.xml", "commentsExtensible.xml"])(
+            "leaves every part of a threading repair untouched when %s's encoding writeXmlPart refuses (#889)",
+            async (refused) => {
+                const W16CEX_NS = `xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex"`;
+                await withTempDir(async (dir) => {
+                    await writeFile(
+                        path.join(dir, "word", "document.xml"),
+                        wrapDocument(
+                            `<w:p><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/>` +
+                                `<w:r><w:commentReference w:id="0"/></w:r></w:p>`,
+                        ),
+                    );
+                    await writeFile(
+                        path.join(dir, "word", "comments.xml"),
+                        `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                            `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                            `<w:p w14:paraId="11111111"/></w:comment></w:comments>`,
+                    );
+                    const idsPath = path.join(dir, "word", "commentsIds.xml");
+                    const cexPath = path.join(dir, "word", "commentsExtensible.xml");
+                    // The parts agree on durableId 22222222 while the canonical
+                    // value is 11111111: a refused write of either part must not
+                    // leave the other moved to a value its partner never got.
+                    const idsBefore = declaring(
+                        `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                            `<w16cid:commentId w16cid:paraId="11111111" w16cid:durableId="22222222"/>` +
+                            `</w16cid:commentsIds>`,
+                        refused === "commentsIds.xml" ? "macintosh" : "UTF-8",
+                    );
+                    const cexBefore = declaring(
+                        `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                            `<w16cex:commentExtensible w16cex:durableId="22222222"/>` +
+                            `</w16cex:commentsExtensible>`,
+                        refused === "commentsExtensible.xml" ? "macintosh" : "UTF-8",
+                    );
+                    await writeFile(idsPath, idsBefore);
+                    await writeFile(cexPath, cexBefore);
+                    const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                    expect(await v.repairCommentThreading()).toBe(0);
+                    expect(await fs.readFile(idsPath, "utf-8")).toBe(idsBefore);
+                    expect(await fs.readFile(cexPath, "utf-8")).toBe(cexBefore);
+                });
+            },
+        );
+
+        it.skipIf(process.getuid?.() === 0).each([
+            ["repairCommentThreading", "commentsExtensible.xml"],
+            ["repairCommentThreading", "commentsIds.xml"],
+            ["repair", "commentsExtensible.xml"],
+            ["repair", "commentsIds.xml"],
+        ] as const)("leaves both threading parts untouched through %s() when %s is non-writable (#909)", async (method, refused) => {
+            const W16CEX_NS = `xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex"`;
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), wrapDocument(""));
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="11111111" w14:textId="11111111"/></w:comment></w:comments>`,
+                );
+                const idsPath = path.join(dir, "word", "commentsIds.xml");
+                const cexPath = path.join(dir, "word", "commentsExtensible.xml");
+                await writeFile(
+                    idsPath,
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="11111111" w16cid:durableId="22222222"/></w16cid:commentsIds>`,
+                );
+                await writeFile(
+                    cexPath,
+                    `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                        `<w16cex:commentExtensible w16cex:durableId="22222222"/></w16cex:commentsExtensible>`,
+                );
+                const before = await Promise.all([fs.readFile(idsPath), fs.readFile(cexPath)]);
+                const refusedPath = path.join(dir, "word", refused);
+                const mode = (await fs.stat(refusedPath)).mode;
+                await fs.chmod(refusedPath, 0o444);
+                try {
+                    const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                    await expect(v[method]()).resolves.toBe(0);
+                    expect(await Promise.all([fs.readFile(idsPath), fs.readFile(cexPath)])).toEqual(before);
+                } finally {
+                    await fs.chmod(refusedPath, mode);
+                }
+            });
+        });
+
+        it("still repairs both threading parts for a decodable twin (#889)", async () => {
+            const W16CEX_NS = `xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex"`;
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/>` +
+                            `<w:r><w:commentReference w:id="0"/></w:r></w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="11111111"/></w:comment></w:comments>`,
+                );
+                const idsPath = path.join(dir, "word", "commentsIds.xml");
+                const cexPath = path.join(dir, "word", "commentsExtensible.xml");
+                await writeFile(
+                    idsPath,
+                    declaring(
+                        `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                            `<w16cid:commentId w16cid:paraId="11111111" w16cid:durableId="22222222"/>` +
+                            `</w16cid:commentsIds>`,
+                        "UTF-8",
+                    ),
+                );
+                await writeFile(
+                    cexPath,
+                    declaring(
+                        `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                            `<w16cex:commentExtensible w16cex:durableId="22222222"/>` +
+                            `</w16cex:commentsExtensible>`,
+                        "UTF-8",
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                expect(await v.repairCommentThreading()).toBe(2);
+                expect(await fs.readFile(idsPath, "utf-8")).toContain('w16cid:durableId="11111111"');
+                expect(await fs.readFile(cexPath, "utf-8")).toContain('w16cex:durableId="11111111"');
             });
         });
 
@@ -2119,6 +3151,29 @@ describe("DOCXSchemaValidator", () => {
             });
         });
 
+        // #975: a final `.` or `..` segment, or a trailing `/`, names a folder,
+        // never the part the path spells, which Word refused whatever the
+        // relationship type (sessions 70 to 73).
+        it.each(["styles.xml/.", "styles.xml/x/..", "styles.xml/", "/word/styles.xml/.", ".", "../.."])(
+            "flags %s as naming a folder although word/styles.xml is stored",
+            async (target) => {
+                await withTempDir(async (dir) => {
+                    await writeFile(
+                        path.join(dir, "word", "_rels", "document.xml.rels"),
+                        `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                            `<Relationship Id="rId1" Type="http://..." Target="${target}"/>` +
+                            `</Relationships>`,
+                    );
+                    await writeFile(path.join(dir, "word", "styles.xml"), `<?xml version="1.0"?><w:styles ${W_NS}/>`);
+                    const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                    const result = await v.validateOrphanedRelationships();
+                    expect(result.issues.filter((i) => i.code === "rels-target-missing").map((i) => i.message)).toEqual([
+                        `Relationship target '${target}' names a folder, not a part`,
+                    ]);
+                });
+            },
+        );
+
         it("skips external targets and resolves absolute package paths", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(path.join(dir, "word", "media", "image1.png"), "not really a png");
@@ -2134,6 +3189,27 @@ describe("DOCXSchemaValidator", () => {
                 expect(result.valid).toBe(true);
             });
         });
+
+        // #781: the `_rels` folder segment compares canonically, so a relative
+        // target in a sidecar under an escaped spelling resolves against the
+        // source part's folder, not inside the sidecar folder.
+        it.each(["_rels", "_RELS", "_%72els", "%5Frels", "_r%65ls"] as const)(
+            "resolves a relative target from a sidecar stored under word/%s",
+            async (folder) => {
+                await withTempDir(async (dir) => {
+                    await writeFile(
+                        path.join(dir, "word", folder, "document.xml.rels"),
+                        `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                            `<Relationship Id="rId1" Type="http://..." Target="styles.xml"/>` +
+                            `</Relationships>`,
+                    );
+                    await writeFile(path.join(dir, "word", "styles.xml"), `<?xml version="1.0"?><w:styles ${W_NS}/>`);
+                    const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                    const result = await v.validateOrphanedRelationships();
+                    expect(result.issues.filter((i) => i.code === "rels-target-missing")).toEqual([]);
+                });
+            },
+        );
     });
 
     // ----- Plan 02: Font table retention --------------------------------------
@@ -2574,9 +3650,43 @@ describe("DOCXSchemaValidator", () => {
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateOrphanedRelationships();
                 expect(result.valid).toBe(false);
+                // The climb stops at the package root, as RFC 3986 and Word
+                // read it (#984), where nothing is stored.
                 expect(
-                    result.issues.some((i) => i.code === "rels-target-missing" && i.message.includes("escapes the unpacked directory")),
+                    result.issues.some(
+                        (i) => i.code === "rels-target-missing" && i.message.includes("resolves to 'etc/passwd' which does not exist"),
+                    ),
                 ).toBe(true);
+            });
+        });
+
+        it("stops a climb at the package root before any file-system join, whatever the unpacked directory is called (CodeRabbit on #985)", async () => {
+            const REL_NS = `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"`;
+            const DRAWING_NS = `xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"`;
+            await withTempDir(async (dir) => {
+                // From word/, `../../pkg/word/media/image1.png` climbs to the
+                // root and names `pkg/word/media/image1.png`, as RFC 3986
+                // resolves it; a file-system join first comes back into the
+                // unpacked directory through its own name and finds the
+                // stored word/media/image1.png instead.
+                const unpacked = path.join(dir, "pkg");
+                await fs.mkdir(path.join(unpacked, "word", "_rels"), { recursive: true });
+                await fs.mkdir(path.join(unpacked, "word", "media"), { recursive: true });
+                await fs.writeFile(path.join(unpacked, "word", "media", "image1.png"), "png", "utf-8");
+                await writeFile(
+                    path.join(unpacked, "word", "document.xml"),
+                    `<?xml version="1.0"?><w:document ${W_NS}><w:body><w:p><w:r><w:drawing><a:blip r:embed="rId1" ${REL_NS} ${DRAWING_NS}/></w:drawing></w:r></w:p></w:body></w:document>`,
+                );
+                await writeFile(
+                    path.join(unpacked, "word", "_rels", "document.xml.rels"),
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../../pkg/word/media/image1.png"/></Relationships>`,
+                );
+
+                const v = new DOCXSchemaValidator({ unpackedDir: unpacked });
+                const result = await v.validateOrphanedRelationships();
+                expect(result.issues.filter((i) => i.code === "rels-target-missing").map((i) => i.message)).toEqual([
+                    "Relationship target '../../pkg/word/media/image1.png' resolves to 'pkg/word/media/image1.png' which does not exist",
+                ]);
             });
         });
 
@@ -2617,8 +3727,17 @@ describe("DOCXSchemaValidator", () => {
                 const result = await v.validate();
                 expect(result.issues.some((i) => i.code === "rels-broken" && i.message.includes("../../../secret.txt"))).toBe(true);
                 expect(result.issues.some((i) => i.code === "rels-broken" && i.message.includes("/../../../secret2.txt"))).toBe(true);
+                // Both climbs stop at the package root (#984), where nothing
+                // is stored.
                 expect(
-                    result.issues.some((i) => i.code === "rels-target-missing" && i.message.includes("escapes the unpacked directory")),
+                    result.issues.some(
+                        (i) => i.code === "rels-target-missing" && i.message.includes("resolves to 'secret.txt' which does not exist"),
+                    ),
+                ).toBe(true);
+                expect(
+                    result.issues.some(
+                        (i) => i.code === "rels-target-missing" && i.message.includes("resolves to 'secret2.txt' which does not exist"),
+                    ),
                 ).toBe(true);
             });
         });
@@ -2641,6 +3760,56 @@ describe("DOCXSchemaValidator", () => {
                 const result = await v.validateDeletions();
                 expect(result.valid).toBe(false);
                 expect(result.issues.some((i) => i.code === "del-contains-t")).toBe(true);
+            });
+        });
+    });
+});
+
+describe("withoutRepeatedCompatibilityFindings (#310 review)", () => {
+    const finding = (path: string) => ({
+        severity: "error" as const,
+        code: "mce-unbound-prefix",
+        path,
+        message: "Unbound prefix in mc:Ignorable: w15",
+    });
+
+    it("drops a schema-walk finding the Word rule made, whatever separator the schema walk's path uses", () => {
+        // The schema walk's path comes from path.relative (backslashes on
+        // Windows); the Word rule's from the normalized part name.
+        for (const schemaPath of ["word/document.xml", "word\\document.xml"]) {
+            const schema = { valid: false, issues: [finding(schemaPath)] };
+            const rules = { valid: false, issues: [finding("word/document.xml")] };
+            expect(withoutRepeatedCompatibilityFindings(schema, rules).issues, schemaPath).toEqual([]);
+        }
+    });
+
+    it("keeps a finding only the schema walk made", () => {
+        const schema = { valid: false, issues: [finding("word/styles.xml")] };
+        const rules = { valid: false, issues: [finding("word/document.xml")] };
+        expect(withoutRepeatedCompatibilityFindings(schema, rules).issues).toEqual(schema.issues);
+    });
+});
+
+describe("OPC-equivalent relationship ID stability (#398)", () => {
+    it.each(["RELS", "Rels", "%72els", "%52ELS"])("reports sequential IDs in .%s as in .rels", async (extension) => {
+        await withTempDir(async (dir) => {
+            const run = async (ext: string) => {
+                const root = path.join(dir, ext === "rels" ? "control" : "variant");
+                await writeFile(
+                    path.join(root, `word/_rels/document.xml.${ext}`),
+                    `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1"/><Relationship Id="rId2"/></Relationships>`,
+                );
+                return new DOCXSchemaValidator({ unpackedDir: root }).validateRelationshipIdStability();
+            };
+            const control = await run("rels");
+            expect(control).toMatchObject({ valid: true, issues: [{ code: "rel-ids-sequential", severity: "info" }] });
+            expect(await run(extension)).toEqual({
+                ...control,
+                issues: control.issues.map((issue) => ({
+                    ...issue,
+                    path: `word/_rels/document.xml.${extension}`,
+                    message: issue.message.replace("document.xml.rels", `document.xml.${extension}`),
+                })),
             });
         });
     });
