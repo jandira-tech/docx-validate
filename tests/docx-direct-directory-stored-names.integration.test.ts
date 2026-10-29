@@ -205,6 +205,9 @@ describe("direct directory stored names (#700)", () => {
                 const comments = `<w:comments xmlns:w="${W}" xmlns:w14="${W14}"><w:comment w:id="0" w:author="A"><w:p w14:paraId="0000AAAA"><w:r><w:t>c</w:t></w:r></w:p></w:comment></w:comments>`;
                 const ids = `<w16cid:commentsIds xmlns:w16cid="${W16CID}"><w16cid:commentId w16cid:paraId="0000BBBB" w16cid:durableId="0000BBBB"/></w16cid:commentsIds>`;
                 const extensible = `<w16cex:commentsExtensible xmlns:w16cex="${W16CEX}"><w16cex:commentExtensible w16cex:durableId="0000BBBB"/></w16cex:commentsExtensible>`;
+                // The equivalent folder differs from word/sub by an escape only: a
+                // case change folds into word/ on a case-insensitive file system and is
+                // refused as a folder collision (#441) on a case-sensitive one.
                 const fallback = row === "folder" || row === "equivalent-folder";
                 const parts = {
                     ...MINIMAL_PARTS,
@@ -222,14 +225,14 @@ describe("direct directory stored names (#700)", () => {
                     [row === "ids"
                         ? "word/sub\\ids.xml"
                         : row === "equivalent-folder"
-                          ? "WORD/s%75b/commentsIds.xml"
+                          ? "word/s%75b/commentsIds.xml"
                           : fallback
                             ? "word/sub/commentsIds.xml"
                             : "word/sub/ids.xml"]: ids,
                     [row === "extensible"
                         ? "word/sub\\extensible.xml"
                         : row === "equivalent-folder"
-                          ? "WORD/s%75b/commentsExtensible.xml"
+                          ? "word/s%75b/commentsExtensible.xml"
                           : fallback
                             ? "word/sub/commentsExtensible.xml"
                             : "word/sub/extensible.xml"]: extensible,
