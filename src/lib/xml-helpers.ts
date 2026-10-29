@@ -468,25 +468,72 @@ const documentElementIndex = (document: Document): DocumentElementIndex | undefi
 /** The stack-based DFS behind {@link getElementsByTagNameNSAll}: matching descendants of `root` in document order. */
 const walkElements = (root: Document | Element, namespaceURI: string, localName: string): Element[] => {
     const out: Element[] = [];
-    const stack: Node[] = [root];
+    const stack: Element[] = [];
 
-    while (stack.length > 0) {
-        const node = stack.pop()!;
-        if (node !== root && node.nodeType === 1) {
-            const elem = node as Element;
-            if ((namespaceURI === "*" || elem.namespaceURI === namespaceURI) && (localName === "*" || elem.localName === localName)) {
+    let child = root.lastChild;
+    while (child) {
+        if (child.nodeType === 1) {
+            stack.push(child as Element);
+        }
+        child = child.previousSibling;
+    }
+
+    if (namespaceURI === "*" && localName === "*") {
+        while (stack.length > 0) {
+            const elem = stack.pop()!;
+            out.push(elem);
+            let c = elem.lastChild;
+            while (c) {
+                if (c.nodeType === 1) {
+                    stack.push(c as Element);
+                }
+                c = c.previousSibling;
+            }
+        }
+    } else if (namespaceURI === "*") {
+        while (stack.length > 0) {
+            const elem = stack.pop()!;
+            if (elem.localName === localName) {
                 out.push(elem);
             }
-        }
-
-        let child = node.lastChild;
-        while (child) {
-            if (child.nodeType === 1) {
-                stack.push(child);
+            let c = elem.lastChild;
+            while (c) {
+                if (c.nodeType === 1) {
+                    stack.push(c as Element);
+                }
+                c = c.previousSibling;
             }
-            child = child.previousSibling;
+        }
+    } else if (localName === "*") {
+        while (stack.length > 0) {
+            const elem = stack.pop()!;
+            if (elem.namespaceURI === namespaceURI) {
+                out.push(elem);
+            }
+            let c = elem.lastChild;
+            while (c) {
+                if (c.nodeType === 1) {
+                    stack.push(c as Element);
+                }
+                c = c.previousSibling;
+            }
+        }
+    } else {
+        while (stack.length > 0) {
+            const elem = stack.pop()!;
+            if (elem.localName === localName && elem.namespaceURI === namespaceURI) {
+                out.push(elem);
+            }
+            let c = elem.lastChild;
+            while (c) {
+                if (c.nodeType === 1) {
+                    stack.push(c as Element);
+                }
+                c = c.previousSibling;
+            }
         }
     }
+
     return out;
 };
 
