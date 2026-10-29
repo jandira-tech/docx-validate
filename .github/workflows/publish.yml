@@ -28,12 +28,12 @@ jobs:
             RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
             RELEASE_KIND: ${{ github.event_name == 'release' && (github.event.release.prerelease && 'prerelease' || 'stable') || '' }}
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@v5
               with:
                   ref: ${{ github.event.release.tag_name || inputs.tag }}
                   persist-credentials: false
 
-            - uses: actions/setup-node@v6
+            - uses: actions/setup-node@v5
               with:
                   node-version: "24"
                   registry-url: "https://registry.npmjs.org"

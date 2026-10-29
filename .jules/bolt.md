@@ -42,3 +42,11 @@
 
 **Learning:** Three PRs opened after the #674 salvage repeated changes the 2026-10-25 entry had already measured and rejected. #677 queried the `txbxContent`/`moveFrom` containers first, like #421, #200 and #202, though one walk for both checks had landed in 58e53b73. #686 and #936 replaced the `lastChild`/`previousSibling` walk in `getElementsByTagNameNSAll` with `childNodes` iteration, which is #633's change. None reported an end-to-end measurement. All three also edited workflow files (#1027).
 **Action:** Read this journal before proposing a change. A traversal rewrite that an entry here rejects needs interleaved end-to-end measurements that beat the A/A noise floor. A performance PR touches no workflow or rules file.
+
+## 2026-10-18 - Nested query parent-first optimization
+**Learning:** Checking for specific ancestors like `<w:txbxContent>` or `<w:moveFrom>` on every target element (like `<w:delText>`) by walking up the `parentNode` chain takes O(N*D) time and is a major bottleneck on large documents with many targets.
+**Action:** When validating nested structures where the target elements are common (e.g. `delText`) but the container is rare (`txbxContent`, `moveFrom`), query for the container first using `getElementsByTagNameNSAll`, then search for the targets inside the container. Deduplicate using a `Set<Element>` if containers can be nested.
+
+## 2026-10-25 - Github actions node deprecations
+**Learning:** Node.js 20 is deprecated on Github actions. The setup-node, setup-uv, cache and pnpm-setup actions all must be updated to run on Node 22+ when used in new repositories, or they will output warnings or fail to install packages correctly like `pnpm` under older runners.
+**Action:** When working with Github Actions, explicitly pin Node 22 (or whatever is the latest LTS) in `actions/setup-node` before running other setup scripts.
