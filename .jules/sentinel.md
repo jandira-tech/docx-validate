@@ -44,3 +44,18 @@
 **Vulnerability:** `extractZipEntries` wrote each entry under the name JSZip had resolved, so a stored `../evil.txt` was extracted as `evil.txt` instead of being refused.
 **Learning:** 0a498a5b (#675, #676) passes every entry's stored `unsafeOriginalName` through `resolveSafeZipEntry` before the first write and refuses a name that leaves the output directory. #685 proposed refusing any name that contains `../`, `..\` or is absolute. That substring test also refuses `a/../b`, which resolves inside the directory (#1027).
 **Prevention:** Judge a stored name by where it resolves, not by the substrings it contains.
+
+## 2026-10-18 - ZipSlip with Cross-Platform Path bypasses
+**Vulnerability:** Path Absolute checks for zip-slip were using `path.isAbsolute(relative)`, which on POSIX systems resolves strictly via posix logic. This means `path.isAbsolute('C:\\evil')` evaluates to `false` on a linux server, allowing a Windows absolute path traversal payload to bypass the check entirely.
+**Learning:** Checking for path absolutism on untrusted input must be done using cross-platform checks explicitly when the environment OS differs from the payload's potential target format.
+**Prevention:** When validating zip entry names and relative target paths from OpenXML relations, always perform an explicit check against `path.posix.isAbsolute` and `path.win32.isAbsolute` to ensure the input cannot be interpreted as an absolute path on any target filesystem.
+
+## 2026-10-18 - JSZip `unsafeOriginalName` ZipSlip Bypass
+**Vulnerability:** JSZip versions (3.8+) silently sanitize entry paths like `../../evil.xml` to `evil.xml` within their standard iteration and `.name` properties, which masks the path traversal from consumers doing manual ZipSlip validation after extraction unless they explicitly check for JSZip's undocumented `unsafeOriginalName` property on the `file` object.
+**Learning:** Relying solely on the default `.name` property when iterating through JSZip entries is dangerous because the library has already altered the input string.
+**Prevention:** In functions guarding against Zip Slip during `extractZipEntries`, check for literal traversal segments (`../`, `..\`) by asserting the unadulterated string from `(file as unknown as { unsafeOriginalName?: string }).unsafeOriginalName` if available.
+
+## 2026-10-18 - ZipSlip Fix Side Effects
+**Vulnerability:** Substring traversal checking (`includes("../")`) blocks legitimate nested files that resolve correctly inside the extraction directory (e.g. `a/../b.txt`).
+**Learning:** Using simple substring scanning to prevent zip slips creates false positives on standard relative path segments embedded within valid, contained names. `path.win32.isAbsolute` does not increase security on a POSIX environment, because `C:\evil` is evaluated as a literal file name under the root path, not an absolute escape.
+**Prevention:** Do not use `includes('../')` style validations on file path components. Defer to the OS's native `path.resolve` and verify containment with `path.relative` to allow legitimate non-escaping traversals. Always sanitize refusal messages (e.g. escaping control characters) to prevent log injection.

@@ -39,15 +39,34 @@ export const escapeControlCharacters = (text: string): string =>
  * Returns the absolute destination path when the entry stays inside the
  * output directory; throws otherwise.
  */
-export const resolveSafeZipEntry = (outputDir: string, entryName: string): string => {
+export const resolveSafeZipEntry = (outputDir: string, entryName: string, unsafeOriginalName?: string): string => {
+    const nameToCheck = unsafeOriginalName !== undefined ? unsafeOriginalName : entryName;
+    if (
+        nameToCheck === ".." ||
+        nameToCheck.includes(`..${path.sep}`) ||
+        nameToCheck.includes("../") ||
+        nameToCheck.includes("..\\") ||
+        path.isAbsolute(nameToCheck) ||
+        path.win32.isAbsolute(nameToCheck) ||
+        path.posix.isAbsolute(nameToCheck)
+    ) {
+        throw new Error(`Refusing to extract entry outside output dir: ${nameToCheck}`);
+    }
+
     const resolvedOut = path.resolve(outputDir);
     const resolved = path.resolve(resolvedOut, entryName);
     const relative = path.relative(resolvedOut, resolved);
     if (relative === "") {
         return resolved;
     }
-    if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
-        throw new Error(`Refusing to extract entry outside output dir: ${escapeControlCharacters(entryName)}`);
+    if (
+        relative === ".." ||
+        relative.startsWith(`..${path.sep}`) ||
+        path.isAbsolute(relative) ||
+        path.win32.isAbsolute(relative) ||
+        path.posix.isAbsolute(relative)
+    ) {
+        throw new Error(`Refusing to extract entry outside output dir: ${nameToCheck}`);
     }
     return resolved;
 };
@@ -111,7 +130,7 @@ export const extractZipEntries = async (zip: JSZip, outputDir: string, storedNam
         if (stored !== undefined) {
             resolveSafeZipEntry(root, stored);
         }
-        entries.push({ name: relativePath, resolved: resolveSafeZipEntry(root, relativePath), file });
+        entries.push({ name: relativePath, resolved: resolveSafeZipEntry(root, relativePath, stored), file });
     });
     for (const { name, resolved } of entries) {
         const link = await findLinkBelow(root, resolved);
