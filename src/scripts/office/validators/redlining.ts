@@ -33,6 +33,7 @@ import { withTempDir } from "../../../lib/run-cli";
 import type { ValidationResult } from "../../../lib/types";
 import { NS } from "../../../lib/types";
 import { decodeXmlBytes, getElementsByTagNameNSAll, parseXml, parseXmlBytes } from "../../../lib/xml-helpers";
+import { zipCentralDirectoryEntries } from "../../../lib/zip-central-directory";
 import { extractZipEntries } from "../../../lib/zip-path";
 import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
 
@@ -111,7 +112,11 @@ export async function validateRedlining(options: RedliningOptions): Promise<Vali
         try {
             const data = await fs.readFile(originalDocx);
             const zip = await loadCentralNamedArchive(data);
-            await extractZipEntries(zip, tempDir);
+            await extractZipEntries(
+                zip,
+                tempDir,
+                zipCentralDirectoryEntries(data)?.map((entry) => entry.name),
+            );
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
             return failure(`FAILED - Error unpacking original docx: ${message}`);

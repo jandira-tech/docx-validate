@@ -41,6 +41,7 @@ import JSZip from "jszip";
 import { commanderExitCode, runCli } from "../../lib/run-cli";
 import { readXmlPart, writeXmlText } from "../../lib/xml-part-io";
 import { parseXml, prettyXml } from "../../lib/xml-helpers";
+import { zipCentralDirectoryEntries } from "../../lib/zip-central-directory";
 import { escapeControlCharacters, extractZipEntries } from "../../lib/zip-path";
 import { mergeRuns } from "./helpers/merge-runs";
 import { simplifyRedlines } from "./helpers/simplify-redlines";
@@ -113,7 +114,7 @@ export async function unpack(inputFile: string, outputDir: string, opts: UnpackO
         }
 
         try {
-            await extractAll(zip, outputPath);
+            await extractAll(zip, outputPath, buf);
         } catch (err) {
             await removeCreatedOutput();
             throw err;
@@ -155,7 +156,8 @@ export async function unpack(inputFile: string, outputDir: string, opts: UnpackO
     }
 }
 
-const extractAll = (zip: JSZip, outputPath: string): Promise<void> => extractZipEntries(zip, outputPath);
+const extractAll = (zip: JSZip, outputPath: string, bytes: Uint8Array): Promise<void> =>
+    extractZipEntries(zip, outputPath, zipCentralDirectoryEntries(bytes)?.map((entry) => entry.name));
 
 async function collectXmlFiles(root: string): Promise<string[]> {
     const out: string[] = [];

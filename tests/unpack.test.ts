@@ -295,6 +295,41 @@ describe("unpack", () => {
         });
     });
 
+    // JSZip keeps no unsafeOriginalName for a folder entry, and keys its view
+    // by the resolved name, so a later entry under that name replaces a
+    // traversal record: only the central directory still holds the stored
+    // names (#676 Codex P2s).
+    it("refuses a stored folder name that leaves the output directory, writing nothing (#676)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "slip.docx");
+            await withEntry(inputFile, "../../outside/");
+            const out = path.join(dir, "out");
+
+            const result = await unpack(inputFile, out);
+            expect(result).toEqual({
+                ok: false,
+                message: "Error unpacking: Refusing to extract entry outside output dir: ../../outside/",
+            });
+            await expect(fs.access(out)).rejects.toThrow();
+        });
+    });
+
+    it("refuses a traversal record a later entry under its resolved name shadows (#676)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "slip.docx");
+            const entries = Object.entries(MINIMAL_PARTS).map(([part, content]) => ({ name: part, content }));
+            await fs.writeFile(inputFile, buildRawZip([{ name: "../../word/document.xml", content: "x" }, ...entries]));
+            const out = path.join(dir, "out");
+
+            const result = await unpack(inputFile, out);
+            expect(result).toEqual({
+                ok: false,
+                message: "Error unpacking: Refusing to extract entry outside output dir: ../../word/document.xml",
+            });
+            await expect(fs.access(out)).rejects.toThrow();
+        });
+    });
+
     it("prints a refused name's control characters as escapes (#675)", async () => {
         await withTempDir(async (dir) => {
             const inputFile = path.join(dir, "slip.docx");

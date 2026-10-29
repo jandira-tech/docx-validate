@@ -94,9 +94,17 @@ export const findLinkBelow = async (root: string, destination: string): Promise<
  * up front covers every write. When a write or an entry's read fails part
  * way, the files and folders this extraction created are removed; a file it
  * overwrote keeps the new bytes.
+ *
+ * `storedNames` are the archive's central-directory names, folders
+ * included: JSZip keeps no `unsafeOriginalName` for a folder entry, and a
+ * later entry under a traversal record's resolved name replaces it in the
+ * loaded view, so only these still show such a record (#676).
  */
-export const extractZipEntries = async (zip: JSZip, outputDir: string): Promise<void> => {
+export const extractZipEntries = async (zip: JSZip, outputDir: string, storedNames: Iterable<string> = []): Promise<void> => {
     const root = path.resolve(outputDir);
+    for (const stored of storedNames) {
+        resolveSafeZipEntry(root, stored);
+    }
     const entries: { name: string; resolved: string; file: JSZip.JSZipObject }[] = [];
     zip.forEach((relativePath, file) => {
         const stored = (file as JSZip.JSZipObject & { unsafeOriginalName?: string }).unsafeOriginalName;
