@@ -44,3 +44,8 @@
 **Vulnerability:** `extractZipEntries` wrote each entry under the name JSZip had resolved, so a stored `../evil.txt` was extracted as `evil.txt` instead of being refused.
 **Learning:** 0a498a5b (#675, #676) passes every entry's stored `unsafeOriginalName` through `resolveSafeZipEntry` before the first write and refuses a name that leaves the output directory. #685 proposed refusing any name that contains `../`, `..\` or is absolute. That substring test also refuses `a/../b`, which resolves inside the directory (#1027).
 **Prevention:** Judge a stored name by where it resolves, not by the substrings it contains.
+
+## 2025-10-25 - Prevent Zip Slip Vulnerability in Path Resolution
+**Vulnerability:** The codebase relied entirely on JSZip's internal normalization logic to sanitize malicious path traversals (e.g. `../../evil.txt`), completely silently omitting `../` instead of rejecting the payload explicitly. JSZip retains the unsanitized path in a hidden `unsafeOriginalName` property.
+**Learning:** JSZip's internal sanitization modifies both `file.name` and the `relativePath` passed to `zip.forEach`. We cannot just extract the `unsafeOriginalName` and blindly use it as the output name, since this breaks extraction of nested folder nodes which require relative context.
+**Prevention:** To catch malicious packages securely while preserving nested folder extraction, extract the raw `unsafeOriginalName`, test *it* against the boundary constraint (using our internal `resolveSafeZipEntry`), and then use the JSZip-provided `relativePath` for the actual final extraction.
