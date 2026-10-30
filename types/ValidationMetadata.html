@@ -20,7 +20,7 @@ still return a <code>ValidationResult</code> unchanged.</p>
 </div></section>
 <div class="tsd-signature"><span class="tsd-signature-keyword">type</span> <span class="tsd-kind-type-alias">ValidationMetadata</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#deadline">deadline</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">budgetMs</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">notRun</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#executedchecks">executedChecks</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-keyword">readonly</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#omittedchecks">omittedChecks</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-keyword">readonly</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#profile">profile</a><span class="tsd-signature-symbol">?:</span> <a href="Profile.html" class="tsd-signature-type tsd-kind-type-alias">Profile</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#schemacompleted">schemaCompleted</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#wordverification">wordVerification</a><span class="tsd-signature-symbol">?:</span> <a href="WordVerificationMetadata.html" class="tsd-signature-type tsd-kind-type-alias">WordVerificationMetadata</a><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/98624ec253c52fb8070e00a439b60fce54ba012d/src/lib/types.ts#L76">src/lib/types.ts:76</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/5c4a5bbc8eac5abac2e7a821ae56468824797c5b/src/lib/types.ts#L76">work/docx-validate/docx-validate/src/lib/types.ts:76</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -47,28 +47,28 @@ and the steps it stopped, in the order they were stopped. An empty
 error-severity <code>validation-deadline</code> finding.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/98624ec253c52fb8070e00a439b60fce54ba012d/src/lib/types.ts#L100">src/lib/types.ts:100</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/5c4a5bbc8eac5abac2e7a821ae56468824797c5b/src/lib/types.ts#L100">work/docx-validate/docx-validate/src/lib/types.ts:100</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="executedchecks"><code class="tsd-tag">Optional</code><span>executed<wbr/>Checks</span><a href="#executedchecks" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">executedChecks</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-keyword">readonly</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 <div class="tsd-comment tsd-typography"><p>Check ids this run covered, in registry order.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/98624ec253c52fb8070e00a439b60fce54ba012d/src/lib/types.ts#L80">src/lib/types.ts:80</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/5c4a5bbc8eac5abac2e7a821ae56468824797c5b/src/lib/types.ts#L80">work/docx-validate/docx-validate/src/lib/types.ts:80</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="omittedchecks"><code class="tsd-tag">Optional</code><span>omitted<wbr/>Checks</span><a href="#omittedchecks" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">omittedChecks</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-keyword">readonly</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 <div class="tsd-comment tsd-typography"><p>Applicable check ids the selection left out. Empty for a complete run.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/98624ec253c52fb8070e00a439b60fce54ba012d/src/lib/types.ts#L82">src/lib/types.ts:82</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/5c4a5bbc8eac5abac2e7a821ae56468824797c5b/src/lib/types.ts#L82">work/docx-validate/docx-validate/src/lib/types.ts:82</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="profile"><code class="tsd-tag">Optional</code><span>profile</span><a href="#profile" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">profile</span><span class="tsd-signature-symbol">?:</span> <a href="Profile.html" class="tsd-signature-type tsd-kind-type-alias">Profile</a></div>
 <div class="tsd-comment tsd-typography"><p>The profile the run was executed under.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/98624ec253c52fb8070e00a439b60fce54ba012d/src/lib/types.ts#L78">src/lib/types.ts:78</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/5c4a5bbc8eac5abac2e7a821ae56468824797c5b/src/lib/types.ts#L78">work/docx-validate/docx-validate/src/lib/types.ts:78</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="schemacompleted"><code class="tsd-tag">Optional</code><span>schema<wbr/>Completed</span><a href="#schemacompleted" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">schemaCompleted</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -80,14 +80,14 @@ package by structural Word checks and compiles no schema. A PPTX walks
 its schemas under every profile, <code>word-valid</code> included (#340).</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/98624ec253c52fb8070e00a439b60fce54ba012d/src/lib/types.ts#L91">src/lib/types.ts:91</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/5c4a5bbc8eac5abac2e7a821ae56468824797c5b/src/lib/types.ts#L91">work/docx-validate/docx-validate/src/lib/types.ts:91</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="wordverification"><code class="tsd-tag">Optional</code><span>word<wbr/>Verification</span><a href="#wordverification" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">wordVerification</span><span class="tsd-signature-symbol">?:</span> <a href="WordVerificationMetadata.html" class="tsd-signature-type tsd-kind-type-alias">WordVerificationMetadata</a></div>
 <div class="tsd-comment tsd-typography"><p>Present when real-Word verification ran.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/98624ec253c52fb8070e00a439b60fce54ba012d/src/lib/types.ts#L93">src/lib/types.ts:93</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/5c4a5bbc8eac5abac2e7a821ae56468824797c5b/src/lib/types.ts#L93">work/docx-validate/docx-validate/src/lib/types.ts:93</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
