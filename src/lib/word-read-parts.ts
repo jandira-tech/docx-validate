@@ -831,10 +831,16 @@ export const wordPossiblyReadParts = async (context: ValidationContext, profile?
     // read model or another relationship names. Word opened clean an unread
     // part's unknown MustUnderstand beside an unclosed sidecar of a part not
     // stored, and of a stored word/x.xml nothing relates (session 87, s87e,
-    // #1136).
+    // #1136). A `.rels` name of no `_rels/<owner>.rels` shape is no
+    // relationships part Word reads (#734), so it leaves the set decidable.
     for (const name of unreadable) {
-        const source = relationshipsSourcePart(name);
-        if (source === undefined || (lookup(source) !== undefined && named.has(canonicalPartName(lookup(source)!)))) {
+        const canonical = canonicalPartName(name);
+        if (canonical === "_rels/.rels") {
+            return undefined;
+        }
+        const source = relationshipsSourcePart(canonical);
+        const stored = source === undefined ? undefined : lookup(source);
+        if (stored !== undefined && named.has(canonicalPartName(stored))) {
             return undefined;
         }
     }
@@ -842,14 +848,14 @@ export const wordPossiblyReadParts = async (context: ValidationContext, profile?
 };
 
 /**
- * The source part a relationships part of the OPC `_rels/<owner>.rels` shape
- * describes, as its folder and owner name spell it; `undefined` for the
- * package relationships part and for a `.rels` name of no such shape.
+ * The source part a canonical relationships part name of the OPC
+ * `_rels/<owner>.rels` shape describes; `undefined` for the package
+ * relationships part and for a `.rels` name of no such shape.
  */
-const relationshipsSourcePart = (relsPart: string): string | undefined => {
-    const dir = path.posix.dirname(relsPart);
-    const owner = path.posix.basename(relsPart);
-    if (!isRelationshipsFolderName(path.posix.basename(dir)) || !/\.rels$/i.test(owner) || owner.length <= ".rels".length) {
+const relationshipsSourcePart = (canonical: string): string | undefined => {
+    const dir = path.posix.dirname(canonical);
+    const owner = path.posix.basename(canonical);
+    if (path.posix.basename(dir) !== "_rels" || !owner.endsWith(".rels") || owner.length <= ".rels".length) {
         return undefined;
     }
     const folder = path.posix.dirname(dir);

@@ -2628,8 +2628,19 @@ describe("wordPossiblyReadParts (#1116, #1125)", () => {
             expect(expected).toBeDefined();
             expect(await named(withHeaders({ [STRAY]: broken }))).toEqual(expected);
             expect(await named(withHeaders({ "word/_rels/header9.xml.rels": broken }))).toEqual(expected);
+            // A `.rels` name outside a `_rels` folder is no relationships
+            // part Word reads (#734), and an escaped suffix names the same
+            // unread sidecar (review of #1177).
+            expect(await named(withHeaders({ "word/stray.rels": broken }))).toEqual(expected);
+            expect(await named(withHeaders({ "word/_rels/header9.xml.%72els": broken }))).toEqual(expected);
         },
     );
+
+    it("knows nothing when the used header's sidecar, spelled with an escaped suffix, fails the byte-level XML checks", async () => {
+        const broken = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="${RELS_NS}">`;
+        const parts = withHeaders({ "word/document.xml": documentUsingHeader("rIdH"), "word/_rels/header1.xml.%72els": broken });
+        expect(await named(parts)).toBeUndefined();
+    });
 
     it("lists the canonical name of a part stored under another spelling", async () => {
         const stored = "word/Header7.xml";

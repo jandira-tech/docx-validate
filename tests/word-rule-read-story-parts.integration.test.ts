@@ -838,6 +838,8 @@ describe("a malformed relationships part Word never reads keeps the unread-part 
     it.each(RUNS)("%s run still blocks when the main document's own sidecar is unclosed", async (_label, checks) => {
         const parts = mustUnderstandHeader();
         parts.set("word/_rels/document.xml.rels", UNCLOSED);
-        expect((await mceRun(parts, "word-valid", checks)).valid).toBe(false);
+        const result = await mceRun(parts, "word-valid", checks);
+        expect(result.valid).toBe(false);
+        expect(result.mce).toContain(`mce-must-understand:error@${UNRELATED}`);
     });
 });
