@@ -250,6 +250,9 @@ export const isWordBlockingIssue = (
         case "ct-markup-compatibility":
         // paragraph-sectpr-breaks.docx: empty vt:filetime causes Word unreadable-content recovery; empty lpwstr in complex2.docx opens clean.
         case "word-custom-property-filetime-empty":
+        // #1186, sessions 89 and 90: PNG package thumbnails get recovery;
+        // JPEG thumbnails and unrelated PNG parts open clean.
+        case "word-package-thumbnail-type":
         // header-with-rid-no-sidecar.docx: Word open-error with missing wp:extent; the complete scaffold in validators-docx.test.ts opens clean.
         case "word-drawing-extent-missing":
         // Historical WORD_BLOCKING_MISPLACED_LOCALS extent probe comment: misplaced extents are rejected; positive-extent drawing control opens clean.
