@@ -32683,3 +32683,682 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed,", matches, 
 `````
 
 </details>
+
+### Session 87: 03:18Z–03:30Z on 2026-10-30, validator columns at eaf93885 and d589ca84
+
+Three questions word-valid decided without Word evidence: [#776](https://github.com/jandira-tech/docx-validate/issues/776), [#1127](https://github.com/jandira-tech/docx-validate/issues/1127) and [#1136](https://github.com/jandira-tech/docx-validate/issues/1136). Five chunks, on the minimal package.
+
+- **s87a, [#776](https://github.com/jandira-tech/docx-validate/issues/776).** `word/styles.xml` typed `…styles+xml; charset=utf-8` (s56a's spelling), also the target of a used header relationship, or of a comments, footnotes or endnotes relationship, in place of s56a's read footer (`styles-charset-<kind>-used`). The comments, footnotes and endnotes relationships are read with no body reference, so no dangling reference adds its own recovery defect. s56a's charset part alone is the calibration.
+- **s87b, [#776](https://github.com/jandira-tech/docx-validate/issues/776).** Each co-reach with the exact styles type, as calibrations.
+- **s87c, [#1127](https://github.com/jandira-tech/docx-validate/issues/1127).** A used header related through `ftp:header1.xml` or `httpfoo:header1.xml`, beside the stored `word/ftp:header1.xml` or `word/httpfoo:header1.xml` with an unclosed root (`-malformed-used`) or well-formed (`-wellformed-used-calibration`); the plain `header1.xml` with an unclosed root.
+- **s87d, [#1127](https://github.com/jandira-tech/docx-validate/issues/1127).** The styles relationship targeting `ftp:styles.xml`, beside a stored `word/ftp:styles.xml` with an unclosed root or well-formed; the plain styles part with an unclosed root.
+- **s87e, [#1136](https://github.com/jandira-tech/docx-validate/issues/1136).** s84a's `mu-stray-foo` (`word/foo.xml`, which no relationship names, with root `mc:MustUnderstand` naming an unknown `urn:foo`) beside an unclosed `word/_rels/stray.xml.rels` whose source part is not stored, or beside an unclosed sidecar of a stored `word/x.xml` nothing relates; each broken sidecar alone, and s84a's row alone, as calibrations.
+
+Each chunk ends with a minimal control. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 27 of 27 rows agree. The two times in Observed are the ends of the row's two runs. Shape is the builder's description of the specimen. The builder judged every row at `eaf93885ca9cf46503689206e54d1e14b54cf1a8`, before the fixes; `rejudge.mts` judged the same bytes at `d589ca84610db3cda4ea44749f6d6a30ee59ae2f`.
+
+Every control opened clean, and every PDF Word saved renders the main document's `Hello` alone (`pdftotext`). No refused row left a PDF.
+
+- **An inexact styles type is refused over every co-reach shown.** Word offered recovery for all four s87a co-reaches and for s56a's calibration again. With the exact type it opened the comments, footnotes and endnotes co-reaches clean, and offered recovery for the header one, the exact-typed header co-reach the mismatch check already reports.
+- **A target spelling a URI scheme names no part.** Word offered recovery for the used header related through `ftp:` or `httpfoo:` and for the styles part related through `ftp:`, the stored part malformed or well-formed. The plain-named malformed header drew an open error, and the plain-named malformed styles part a recovery offer.
+- **Word never reads a sidecar of a part not stored, or of a part nothing relates.** It opened clean both s87e rows with an unclosed sidecar beside s84a's unread MustUnderstand part, and every calibration.
+
+Word-valid at eaf93885 matches Word on 19 of 27 rows: it passed the six `ftp:` and `httpfoo:` rows and rejected the two broken-sidecar rows. At d589ca84 it matches on 27 of 27.
+
+| Run    | Observed             | Specimen                                     | Shape                                                                                                                                                                  | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at eaf93885                                     | word-valid at d589ca84                                     | strict at d589ca84                                                                                                                                                                                                                                |
+| ------ | -------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `s87a` | 03:18:29Z, 03:25:34Z | `styles-charset-header-used`                 | #776: word/styles.xml typed application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml; charset=utf-8, also the target of a used header relationship    | `ce476532990ddda0` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-inexact@word/styles.xml`  | invalid: `word-part-content-type-inexact@word/styles.xml`  | invalid: `word-part-content-type-inexact@word/styles.xml`, `word-part-content-type-mismatch@word/styles.xml`                                                                                                                                      |
+| `s87a` | 03:18:29Z, 03:25:34Z | `styles-charset-comments-used`               | #776: word/styles.xml typed application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml; charset=utf-8, also the target of a used comments relationship  | `16034634c739adcd` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-inexact@word/styles.xml`  | invalid: `word-part-content-type-inexact@word/styles.xml`  | invalid: `word-part-content-type-inexact@word/styles.xml`                                                                                                                                                                                         |
+| `s87a` | 03:18:29Z, 03:25:34Z | `styles-charset-footnotes-used`              | #776: word/styles.xml typed application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml; charset=utf-8, also the target of a used footnotes relationship | `70cd755b4432175d` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-inexact@word/styles.xml`  | invalid: `word-part-content-type-inexact@word/styles.xml`  | invalid: `word-part-content-type-inexact@word/styles.xml`                                                                                                                                                                                         |
+| `s87a` | 03:18:29Z, 03:25:34Z | `styles-charset-endnotes-used`               | #776: word/styles.xml typed application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml; charset=utf-8, also the target of a used endnotes relationship  | `7114038162924b39` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-inexact@word/styles.xml`  | invalid: `word-part-content-type-inexact@word/styles.xml`  | invalid: `word-part-content-type-inexact@word/styles.xml`                                                                                                                                                                                         |
+| `s87a` | 03:18:29Z, 03:25:34Z | `styles-charset-alone-calibration`           | calibration (s56a): the charset-typed styles part, related only as styles                                                                                              | `f1ac5344e6028f66` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-inexact@word/styles.xml`  | invalid: `word-part-content-type-inexact@word/styles.xml`  | invalid: `word-part-content-type-inexact@word/styles.xml`                                                                                                                                                                                         |
+| `s87a` | 03:18:29Z, 03:25:34Z | `s87a-control-minimal`                       | control                                                                                                                                                                | `d2c14de55f2a4031` | clean-open     | clean-open     | clean-open                 | valid                                                      | valid                                                      | valid                                                                                                                                                                                                                                             |
+| `s87b` | 03:18:48Z, 03:25:46Z | `styles-exact-header-used-calibration`       | calibration (#776): the exact-typed styles part, also the target of a used header relationship                                                                         | `85e5ca68601f17e4` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-content-type-mismatch@word/styles.xml` | invalid: `word-part-content-type-mismatch@word/styles.xml` | invalid: `word-part-content-type-mismatch@word/styles.xml`                                                                                                                                                                                        |
+| `s87b` | 03:18:48Z, 03:25:46Z | `styles-exact-comments-used-calibration`     | calibration (#776): the exact-typed styles part, also the target of a used comments relationship                                                                       | `955ebd34cd755af2` | clean-open     | clean-open     | clean-open                 | valid                                                      | valid                                                      | valid                                                                                                                                                                                                                                             |
+| `s87b` | 03:18:48Z, 03:25:46Z | `styles-exact-footnotes-used-calibration`    | calibration (#776): the exact-typed styles part, also the target of a used footnotes relationship                                                                      | `c7f48036ac59711c` | clean-open     | clean-open     | clean-open                 | valid                                                      | valid                                                      | valid                                                                                                                                                                                                                                             |
+| `s87b` | 03:18:48Z, 03:25:46Z | `styles-exact-endnotes-used-calibration`     | calibration (#776): the exact-typed styles part, also the target of a used endnotes relationship                                                                       | `5d1e64d0ba8226d7` | clean-open     | clean-open     | clean-open                 | valid                                                      | valid                                                      | valid                                                                                                                                                                                                                                             |
+| `s87b` | 03:18:48Z, 03:25:46Z | `s87b-control-minimal`                       | control                                                                                                                                                                | `d2c14de55f2a4031` | clean-open     | clean-open     | clean-open                 | valid                                                      | valid                                                      | valid                                                                                                                                                                                                                                             |
+| `s87c` | 03:19:42Z, 03:28:17Z | `header-ftp-malformed-used`                  | #1127: a used header related as ftp:header1.xml, stored word/ftp:header1.xml with an unclosed root                                                                     | `73148def6de84897` | repair-warning | repair-warning | unreadable-content-warning | valid                                                      | invalid: `rels-broken@word/_rels/document.xml.rels`        | invalid: `xml-syntax@word/ftp:header1.xml`, `rels-broken@word/_rels/document.xml.rels`, `rels-unreferenced@word/ftp:header1.xml`                                                                                                                  |
+| `s87c` | 03:19:42Z, 03:28:17Z | `header-httpfoo-malformed-used`              | #1127: a used header related as httpfoo:header1.xml, stored word/httpfoo:header1.xml with an unclosed root                                                             | `7ae336ff188e83d8` | repair-warning | repair-warning | unreadable-content-warning | valid                                                      | invalid: `rels-broken@word/_rels/document.xml.rels`        | invalid: `xml-syntax@word/httpfoo:header1.xml`, `rels-broken@word/_rels/document.xml.rels`, `rels-unreferenced@word/httpfoo:header1.xml`                                                                                                          |
+| `s87c` | 03:19:42Z, 03:28:17Z | `header-ftp-wellformed-used-calibration`     | calibration: the ftp:header1.xml header well-formed                                                                                                                    | `c8000841ac24be12` | repair-warning | repair-warning | unreadable-content-warning | valid                                                      | invalid: `rels-broken@word/_rels/document.xml.rels`        | invalid: `rels-broken@word/_rels/document.xml.rels`, `rels-unreferenced@word/ftp:header1.xml`                                                                                                                                                     |
+| `s87c` | 03:19:42Z, 03:28:17Z | `header-httpfoo-wellformed-used-calibration` | calibration: the httpfoo:header1.xml header well-formed                                                                                                                | `bbe868eb2411cfd6` | repair-warning | repair-warning | unreadable-content-warning | valid                                                      | invalid: `rels-broken@word/_rels/document.xml.rels`        | invalid: `rels-broken@word/_rels/document.xml.rels`, `rels-unreferenced@word/httpfoo:header1.xml`                                                                                                                                                 |
+| `s87c` | 03:19:42Z, 03:28:17Z | `header-plain-malformed-used-calibration`    | calibration: a used header related as header1.xml with an unclosed root                                                                                                | `06380daf430a3e98` | open-error     | open-error     | open-error                 | invalid: `xml-syntax@word/header1.xml`                     | invalid: `xml-syntax@word/header1.xml`                     | invalid: `xml-syntax@word/header1.xml`                                                                                                                                                                                                            |
+| `s87c` | 03:19:42Z, 03:28:17Z | `s87c-control-minimal`                       | control                                                                                                                                                                | `d2c14de55f2a4031` | clean-open     | clean-open     | clean-open                 | valid                                                      | valid                                                      | valid                                                                                                                                                                                                                                             |
+| `s87d` | 03:21:42Z, 03:30:26Z | `styles-ftp-malformed`                       | #1127: the styles relationship targets ftp:styles.xml, stored word/ftp:styles.xml with an unclosed root                                                                | `3d2dfd13cd0d78fa` | repair-warning | repair-warning | unreadable-content-warning | valid                                                      | invalid: `rels-broken@word/_rels/document.xml.rels`        | invalid: `xml-syntax@word/ftp:styles.xml`, `rels-broken@word/_rels/document.xml.rels`, `rels-unreferenced@word/ftp:styles.xml`                                                                                                                    |
+| `s87d` | 03:21:42Z, 03:30:26Z | `styles-ftp-wellformed-calibration`          | calibration: the ftp:styles.xml styles part well-formed                                                                                                                | `4877a675f50e60a6` | repair-warning | repair-warning | unreadable-content-warning | valid                                                      | invalid: `rels-broken@word/_rels/document.xml.rels`        | invalid: `rels-broken@word/_rels/document.xml.rels`, `rels-unreferenced@word/ftp:styles.xml`                                                                                                                                                      |
+| `s87d` | 03:21:42Z, 03:30:26Z | `styles-plain-malformed-calibration`         | calibration: the plain styles part with an unclosed root                                                                                                               | `ae093e15f3596d28` | repair-warning | repair-warning | unreadable-content-warning | invalid: `xml-syntax@word/styles.xml`                      | invalid: `xml-syntax@word/styles.xml`                      | invalid: `xml-syntax@word/styles.xml`                                                                                                                                                                                                             |
+| `s87d` | 03:21:42Z, 03:30:26Z | `s87d-control-minimal`                       | control                                                                                                                                                                | `21301e980729ae10` | clean-open     | clean-open     | clean-open                 | valid                                                      | valid                                                      | valid                                                                                                                                                                                                                                             |
+| `s87e` | 03:21:47Z, 03:30:31Z | `mu-stray-foo-broken-stray-sidecar`          | #1136: s84a's mu-stray-foo plus an unclosed word/_rels/stray.xml.rels with no source part                                                                              | `89c4393729e8a9d8` | clean-open     | clean-open     | clean-open                 | invalid: `mce-must-understand@word/foo.xml`                | valid                                                      | invalid: `xml-syntax@word/_rels/stray.xml.rels`, `rels-unreferenced@word/foo.xml`, `ct-undeclared-part@word/foo.xml`, `mce-must-understand@word/foo.xml`                                                                                          |
+| `s87e` | 03:21:47Z, 03:30:31Z | `mu-stray-foo-broken-existing-sidecar`       | #1136: s84a's mu-stray-foo plus an unclosed sidecar of a stored, unrelated word/x.xml                                                                                  | `9de4cea10437a77e` | clean-open     | clean-open     | clean-open                 | invalid: `mce-must-understand@word/foo.xml`                | valid                                                      | invalid: `xml-syntax@word/_rels/x.xml.rels`, `rels-unreferenced@word/foo.xml`, `rels-unreferenced@word/x.xml`, `ct-undeclared-part@word/foo.xml`, `ct-undeclared-part@word/x.xml`, `rels-id-parse@word/x.xml`, `mce-must-understand@word/foo.xml` |
+| `s87e` | 03:21:47Z, 03:30:31Z | `mu-stray-foo-calibration`                   | calibration (s84a): mu-stray-foo alone                                                                                                                                 | `f5be504c78a6591f` | clean-open     | clean-open     | clean-open                 | valid                                                      | valid                                                      | invalid: `rels-unreferenced@word/foo.xml`, `ct-undeclared-part@word/foo.xml`, `mce-must-understand@word/foo.xml`                                                                                                                                  |
+| `s87e` | 03:21:47Z, 03:30:31Z | `broken-stray-sidecar-calibration`           | calibration: the unclosed stray sidecar alone                                                                                                                          | `d313be3a5b1be800` | clean-open     | clean-open     | clean-open                 | valid                                                      | valid                                                      | invalid: `xml-syntax@word/_rels/stray.xml.rels`                                                                                                                                                                                                   |
+| `s87e` | 03:21:47Z, 03:30:31Z | `broken-existing-sidecar-calibration`        | calibration: word/x.xml and its unclosed sidecar alone                                                                                                                 | `f79e854567fc13bb` | clean-open     | clean-open     | clean-open                 | valid                                                      | valid                                                      | invalid: `xml-syntax@word/_rels/x.xml.rels`, `rels-unreferenced@word/x.xml`, `ct-undeclared-part@word/x.xml`, `rels-id-parse@word/x.xml`                                                                                                          |
+| `s87e` | 03:21:47Z, 03:30:31Z | `s87e-control-minimal`                       | control                                                                                                                                                                | `21301e980729ae10` | clean-open     | clean-open     | clean-open                 | valid                                                      | valid                                                      | valid                                                                                                                                                                                                                                             |
+
+<details><summary>Raw records, session 87</summary>
+
+```jsonl
+{"run": "s87a", "pass": 1, "name": "styles-charset-header-used", "sha256": "ce476532990ddda0e89517eb851a6cf15c7990e04acbf67ef77a6f3cdd627cfe", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:18:29+00:00", "staged": "00005__wfv__styles-charset-header-used.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:18:28.547 'Word found unreadable content in 00005__wfv__styles-charset-header-used.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-29 23:18:29.431 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00005__wfv__styles-charset-header-use...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87a", "pass": 2, "name": "styles-charset-header-used", "sha256": "ce476532990ddda0e89517eb851a6cf15c7990e04acbf67ef77a6f3cdd627cfe", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:25:34+00:00", "staged": "00005__wfv__styles-charset-header-used.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:25:33.610 Microsoft Word, Word found unreadable content in 00005__wfv__styles-charset-header-used.docx. Do you … t? If you trust the source of this document, click Yes."], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87a", "pass": 1, "name": "styles-charset-comments-used", "sha256": "16034634c739adcdea32a3e54a1569c542893639d2a5247d61328ade80112bb9", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:18:29+00:00", "staged": "00002__wfv__styles-charset-comments-used.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:18:06.887 'Word found unreadable content in 00002__wfv__styles-charset-comments-used.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-29 23:18:07.736 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__styles-charset-comments-u...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87a", "pass": 2, "name": "styles-charset-comments-used", "sha256": "16034634c739adcdea32a3e54a1569c542893639d2a5247d61328ade80112bb9", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:25:34+00:00", "staged": "00002__wfv__styles-charset-comments-used.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:22:59.090 Microsoft Word, Word found unreadable content in 00002__wfv__styles-charset-comments-used.docx. Do y … t? If you trust the source of this document, click Yes."], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87a", "pass": 1, "name": "styles-charset-footnotes-used", "sha256": "70cd755b4432175d9273933d07a84ad3b69046283d3cb6b1c19cd7fd8960a0c9", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:18:29+00:00", "staged": "00004__wfv__styles-charset-footnotes-used.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:18:21.329 'Word found unreadable content in 00004__wfv__styles-charset-footnotes-used.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'", "2026-10-29 23:18:22.204 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__styles-charset-footnotes-...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87a", "pass": 2, "name": "styles-charset-footnotes-used", "sha256": "70cd755b4432175d9273933d07a84ad3b69046283d3cb6b1c19cd7fd8960a0c9", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:25:34+00:00", "staged": "00004__wfv__styles-charset-footnotes-used.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:24:41.719 Microsoft Word, Word found unreadable content in 00004__wfv__styles-charset-footnotes-used.docx. Do  … t? If you trust the source of this document, click Yes."], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87a", "pass": 1, "name": "styles-charset-endnotes-used", "sha256": "7114038162924b39632c3ee87d6c2cf674c63f9dc94b4743be5ca1e0bcc629df", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:18:29+00:00", "staged": "00003__wfv__styles-charset-endnotes-used.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:18:14.099 'Word found unreadable content in 00003__wfv__styles-charset-endnotes-used.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-29 23:18:14.969 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__styles-charset-endnotes-u...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87a", "pass": 2, "name": "styles-charset-endnotes-used", "sha256": "7114038162924b39632c3ee87d6c2cf674c63f9dc94b4743be5ca1e0bcc629df", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:25:34+00:00", "staged": "00003__wfv__styles-charset-endnotes-used.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:23:51.132 Microsoft Word, Word found unreadable content in 00003__wfv__styles-charset-endnotes-used.docx. Do y … t? If you trust the source of this document, click Yes."], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00003__wfv__styles-charset-endnotes-used.docx; refusing to guess"}
+{"run": "s87a", "pass": 1, "name": "styles-charset-alone-calibration", "sha256": "f1ac5344e6028f663648990f49483049a05632d74134ee668290bc96c0fe4138", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:18:29+00:00", "staged": "00001__wfv__styles-charset-alone-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:18:00.252 \"Word found unreadable content in 00001__wfv__styles-charset-alone-calibration.docx. Do you want to  … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87a", "pass": 2, "name": "styles-charset-alone-calibration", "sha256": "f1ac5344e6028f663648990f49483049a05632d74134ee668290bc96c0fe4138", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:25:34+00:00", "staged": "00001__wfv__styles-charset-alone-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:22:08.533 'Word found unreadable content in 00001__wfv__styles-charset-alone-calibration.docx. Do you want to  … ? If you trust the source of this document, click Yes.'", "2026-10-29 23:22:09.103 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__styles-charset-alone-cali...)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__styles-charset-alone-calibration.docx; refusing to guess"}
+{"run": "s87a", "pass": 1, "name": "s87a-control-minimal", "sha256": "d2c14de55f2a40310fbe14d150285f5a7a6950aa4d841eb543f4a33000336a83", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:18:29+00:00", "staged": "00000__wfv__s87a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s87a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87a", "pass": 2, "name": "s87a-control-minimal", "sha256": "d2c14de55f2a40310fbe14d150285f5a7a6950aa4d841eb543f4a33000336a83", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:25:34+00:00", "staged": "00000__wfv__s87a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s87a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87b", "pass": 1, "name": "styles-exact-header-used-calibration", "sha256": "85e5ca68601f17e478fc81ef1fb0222f4dfe29ca1b7930b48e095674c50b8020", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:18:48+00:00", "staged": "00004__wfv__styles-exact-header-used-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:18:47.217 'Word found unreadable content in 00004__wfv__styles-exact-header-used-calibration.docx. Do you want … ? If you trust the source of this document, click Yes.'", "2026-10-29 23:18:48.016 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__styles-exact-header-used-...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87b", "pass": 2, "name": "styles-exact-header-used-calibration", "sha256": "85e5ca68601f17e478fc81ef1fb0222f4dfe29ca1b7930b48e095674c50b8020", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:25:46+00:00", "staged": "00004__wfv__styles-exact-header-used-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:25:45.801 'Word found unreadable content in 00004__wfv__styles-exact-header-used-calibration.docx. Do you want … ? If you trust the source of this document, click Yes.'", "2026-10-29 23:25:46.388 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__styles-exact-header-used-...)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00004__wfv__styles-exact-header-used-calibration.docx; refusing to guess"}
+{"run": "s87b", "pass": 1, "name": "styles-exact-comments-used-calibration", "sha256": "955ebd34cd755af2770963e51b0cff6af39e8f994534f748b4d47b9e040d6063", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:18:48+00:00", "staged": "00001__wfv__styles-exact-comments-used-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-exact-comments-used-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87b", "pass": 2, "name": "styles-exact-comments-used-calibration", "sha256": "955ebd34cd755af2770963e51b0cff6af39e8f994534f748b4d47b9e040d6063", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:25:46+00:00", "staged": "00001__wfv__styles-exact-comments-used-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-exact-comments-used-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87b", "pass": 1, "name": "styles-exact-footnotes-used-calibration", "sha256": "c7f48036ac59711c4759ad29f22f2816520ad5d7ee1ff8fb18d3814968dc9e3c", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:18:48+00:00", "staged": "00003__wfv__styles-exact-footnotes-used-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-exact-footnotes-used-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87b", "pass": 2, "name": "styles-exact-footnotes-used-calibration", "sha256": "c7f48036ac59711c4759ad29f22f2816520ad5d7ee1ff8fb18d3814968dc9e3c", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:25:46+00:00", "staged": "00003__wfv__styles-exact-footnotes-used-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-exact-footnotes-used-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87b", "pass": 1, "name": "styles-exact-endnotes-used-calibration", "sha256": "5d1e64d0ba8226d7cb31ecc29bbef7e1613c800b666323ef71c954ecf36770b1", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:18:48+00:00", "staged": "00002__wfv__styles-exact-endnotes-used-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-exact-endnotes-used-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87b", "pass": 2, "name": "styles-exact-endnotes-used-calibration", "sha256": "5d1e64d0ba8226d7cb31ecc29bbef7e1613c800b666323ef71c954ecf36770b1", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:25:46+00:00", "staged": "00002__wfv__styles-exact-endnotes-used-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-exact-endnotes-used-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87b", "pass": 1, "name": "s87b-control-minimal", "sha256": "d2c14de55f2a40310fbe14d150285f5a7a6950aa4d841eb543f4a33000336a83", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:18:48+00:00", "staged": "00000__wfv__s87b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s87b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87b", "pass": 2, "name": "s87b-control-minimal", "sha256": "d2c14de55f2a40310fbe14d150285f5a7a6950aa4d841eb543f4a33000336a83", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:25:46+00:00", "staged": "00000__wfv__s87b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s87b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87c", "pass": 1, "name": "header-ftp-malformed-used", "sha256": "73148def6de84897d710ee72b25b760728abe8d566cafd4c5a1489a9eafdfc8d", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:19:42+00:00", "staged": "00000__wfv__header-ftp-malformed-used.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:19:00.617 'Word found unreadable content in 00000__wfv__header-ftp-malformed-used.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-29 23:19:01.418 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__header-ftp-malformed-used...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87c", "pass": 2, "name": "header-ftp-malformed-used", "sha256": "73148def6de84897d710ee72b25b760728abe8d566cafd4c5a1489a9eafdfc8d", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:28:17+00:00", "staged": "00000__wfv__header-ftp-malformed-used.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:26:01.334 'Word found unreadable content in 00000__wfv__header-ftp-malformed-used.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-29 23:26:01.882 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__header-ftp-malformed-used...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87c", "pass": 1, "name": "header-httpfoo-malformed-used", "sha256": "7ae336ff188e83d81f693149fcf2f2999d59b2beec99440e93db5c6dffbc470e", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:19:42+00:00", "staged": "00002__wfv__header-httpfoo-malformed-used.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:19:15.028 'Word found unreadable content in 00002__wfv__header-httpfoo-malformed-used.docx. Do you want to rec … ? If you trust the source of this document, click Yes.'", "2026-10-29 23:19:15.827 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__header-httpfoo-malformed-...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87c", "pass": 2, "name": "header-httpfoo-malformed-used", "sha256": "7ae336ff188e83d81f693149fcf2f2999d59b2beec99440e93db5c6dffbc470e", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:28:17+00:00", "staged": "00002__wfv__header-httpfoo-malformed-used.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:27:42.258 Microsoft Word, Word found unreadable content in 00002__wfv__header-httpfoo-malformed-used.docx. Do  … t? If you trust the source of this document, click Yes."], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87c", "pass": 1, "name": "header-ftp-wellformed-used-calibration", "sha256": "c8000841ac24be12c1f14a58d93168726fe4648ff0476b35d07fc7ea2429cd5d", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:19:42+00:00", "staged": "00001__wfv__header-ftp-wellformed-used-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:19:07.809 'Word found unreadable content in 00001__wfv__header-ftp-wellformed-used-calibration.docx. Do you wa … ? If you trust the source of this document, click Yes.'", "2026-10-29 23:19:08.583 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__header-ftp-wellformed-use...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87c", "pass": 2, "name": "header-ftp-wellformed-used-calibration", "sha256": "c8000841ac24be12c1f14a58d93168726fe4648ff0476b35d07fc7ea2429cd5d", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:28:17+00:00", "staged": "00001__wfv__header-ftp-wellformed-used-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:26:52.248 \"Word found unreadable content in 00001__wfv__header-ftp-wellformed-used-calibration.docx. Do you wa … ? If you trust the source of this document, click Yes.\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87c", "pass": 1, "name": "header-httpfoo-wellformed-used-calibration", "sha256": "bbe868eb2411cfd60cc930e8fecea2b23e6a4690ede235ace798ab8f80c382f4", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:19:42+00:00", "staged": "00003__wfv__header-httpfoo-wellformed-used-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:19:22.213 'Word found unreadable content in 00003__wfv__header-httpfoo-wellformed-used-calibration.docx. Do yo … ? If you trust the source of this document, click Yes.'", "2026-10-29 23:19:23.017 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__header-httpfoo-wellformed...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87c", "pass": 2, "name": "header-httpfoo-wellformed-used-calibration", "sha256": "bbe868eb2411cfd60cc930e8fecea2b23e6a4690ede235ace798ab8f80c382f4", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:28:17+00:00", "staged": "00003__wfv__header-httpfoo-wellformed-used-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:27:50.967 'Word found unreadable content in 00003__wfv__header-httpfoo-wellformed-used-calibration.docx. Do yo … ? If you trust the source of this document, click Yes.'", "2026-10-29 23:27:51.509 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__header-httpfoo-wellformed...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87c", "pass": 1, "name": "header-plain-malformed-used-calibration", "sha256": "06380daf430a3e98642b606d3257cf2a57c1f65cfa7796f9ada1bbd25916d391", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:19:42+00:00", "staged": "00004__wfv__header-plain-malformed-used-calibration.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-29 23:19:29.415 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00004__wfv__header-plain-malformed-us...)'"], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00004__wfv__header-plain-malformed-used-calibration.docx; refusing to guess"}
+{"run": "s87c", "pass": 2, "name": "header-plain-malformed-used-calibration", "sha256": "06380daf430a3e98642b606d3257cf2a57c1f65cfa7796f9ada1bbd25916d391", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:28:17+00:00", "staged": "00004__wfv__header-plain-malformed-used-calibration.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-29 23:27:58.189 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00004__wfv__header-plain-malformed-us...)'"], "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00004__wfv__header-plain-malformed-used-calibration.docx; refusing to guess"}
+{"run": "s87c", "pass": 1, "name": "s87c-control-minimal", "sha256": "d2c14de55f2a40310fbe14d150285f5a7a6950aa4d841eb543f4a33000336a83", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:19:42+00:00", "staged": "00005__wfv__s87c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s87c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87c", "pass": 2, "name": "s87c-control-minimal", "sha256": "d2c14de55f2a40310fbe14d150285f5a7a6950aa4d841eb543f4a33000336a83", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:28:17+00:00", "staged": "00005__wfv__s87c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s87c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87d", "pass": 1, "name": "styles-ftp-malformed", "sha256": "3d2dfd13cd0d78fae9f7bbbf213e69f68a0721491755683399753d9c643f3220", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:21:42+00:00", "staged": "00001__wfv__styles-ftp-malformed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:19:59.367 'Word found unreadable content in 00001__wfv__styles-ftp-malformed.docx. Do you want to recover the  … ? If you trust the source of this document, click Yes.'", "2026-10-29 23:20:00.251 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ery converter. (00001__wfv__styles-ftp-malformed.docx)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__styles-ftp-malformed.docx; refusing to guess"}
+{"run": "s87d", "pass": 2, "name": "styles-ftp-malformed", "sha256": "3d2dfd13cd0d78fae9f7bbbf213e69f68a0721491755683399753d9c643f3220", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:30:26+00:00", "staged": "00001__wfv__styles-ftp-malformed.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:28:34.104 'Word found unreadable content in 00001__wfv__styles-ftp-malformed.docx. Do you want to recover the  … ? If you trust the source of this document, click Yes.'", "2026-10-29 23:28:34.972 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ery converter. (00001__wfv__styles-ftp-malformed.docx)\""], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__styles-ftp-malformed.docx; refusing to guess"}
+{"run": "s87d", "pass": 1, "name": "styles-ftp-wellformed-calibration", "sha256": "4877a675f50e60a6b8519787f6f8ba63278ec08d988a925691c3b48fe31a56d7", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:21:42+00:00", "staged": "00002__wfv__styles-ftp-wellformed-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:20:49.964 Microsoft Word, Word found unreadable content in 00002__wfv__styles-ftp-wellformed-calibration.docx. … t? If you trust the source of this document, click Yes."], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87d", "pass": 2, "name": "styles-ftp-wellformed-calibration", "sha256": "4877a675f50e60a6b8519787f6f8ba63278ec08d988a925691c3b48fe31a56d7", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:30:26+00:00", "staged": "00002__wfv__styles-ftp-wellformed-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:29:24.695 Microsoft Word, Word found unreadable content in 00002__wfv__styles-ftp-wellformed-calibration.docx. … t? If you trust the source of this document, click Yes."], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87d", "pass": 1, "name": "styles-plain-malformed-calibration", "sha256": "ae093e15f3596d28d6e02481301631e9de2369bf0c463305b04a3da166290d7f", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:21:42+00:00", "staged": "00003__wfv__styles-plain-malformed-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:21:41.892 Microsoft Word, Word found unreadable content in 00003__wfv__styles-plain-malformed-calibration.docx … t? If you trust the source of this document, click Yes."], "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00003__wfv__styles-plain-malformed-calibration.docx; refusing to guess"}
+{"run": "s87d", "pass": 2, "name": "styles-plain-malformed-calibration", "sha256": "ae093e15f3596d28d6e02481301631e9de2369bf0c463305b04a3da166290d7f", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:30:26+00:00", "staged": "00003__wfv__styles-plain-malformed-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-29 23:30:18.312 Microsoft Word, Word found unreadable content in 00003__wfv__styles-plain-malformed-calibration.docx … t? If you trust the source of this document, click Yes."], "error": "repair prompt declined; Word could not read it"}
+{"run": "s87d", "pass": 1, "name": "s87d-control-minimal", "sha256": "21301e980729ae10c120dbf2425eb36d47276f6cb8dcf849457b8590bb7a2d44", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:21:42+00:00", "staged": "00000__wfv__s87d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s87d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87d", "pass": 2, "name": "s87d-control-minimal", "sha256": "21301e980729ae10c120dbf2425eb36d47276f6cb8dcf849457b8590bb7a2d44", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:30:26+00:00", "staged": "00000__wfv__s87d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s87d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87e", "pass": 1, "name": "mu-stray-foo-broken-stray-sidecar", "sha256": "89c4393729e8a9d8b9a32b547c49ebdff9c5c3f24742e357d2e45c58206ef7f4", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:21:47+00:00", "staged": "00003__wfv__mu-stray-foo-broken-stray-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-stray-foo-broken-stray-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87e", "pass": 2, "name": "mu-stray-foo-broken-stray-sidecar", "sha256": "89c4393729e8a9d8b9a32b547c49ebdff9c5c3f24742e357d2e45c58206ef7f4", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:30:31+00:00", "staged": "00003__wfv__mu-stray-foo-broken-stray-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-stray-foo-broken-stray-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87e", "pass": 1, "name": "mu-stray-foo-broken-existing-sidecar", "sha256": "9de4cea10437a77e975a1fe397d2b41fee782ba4e641e7c3945d46caa59d66a1", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:21:47+00:00", "staged": "00002__wfv__mu-stray-foo-broken-existing-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-stray-foo-broken-existing-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87e", "pass": 2, "name": "mu-stray-foo-broken-existing-sidecar", "sha256": "9de4cea10437a77e975a1fe397d2b41fee782ba4e641e7c3945d46caa59d66a1", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:30:31+00:00", "staged": "00002__wfv__mu-stray-foo-broken-existing-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-stray-foo-broken-existing-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87e", "pass": 1, "name": "mu-stray-foo-calibration", "sha256": "f5be504c78a6591fc458097a9cea2e3b603dee324d1ea1ae3488c7093f966a27", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:21:47+00:00", "staged": "00004__wfv__mu-stray-foo-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-stray-foo-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87e", "pass": 2, "name": "mu-stray-foo-calibration", "sha256": "f5be504c78a6591fc458097a9cea2e3b603dee324d1ea1ae3488c7093f966a27", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:30:31+00:00", "staged": "00004__wfv__mu-stray-foo-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF mu-stray-foo-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87e", "pass": 1, "name": "broken-stray-sidecar-calibration", "sha256": "d313be3a5b1be800b9e4947b2660634548273a2526bd9d3a5ef2f29b251e5c11", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:21:47+00:00", "staged": "00001__wfv__broken-stray-sidecar-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-stray-sidecar-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87e", "pass": 2, "name": "broken-stray-sidecar-calibration", "sha256": "d313be3a5b1be800b9e4947b2660634548273a2526bd9d3a5ef2f29b251e5c11", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:30:31+00:00", "staged": "00001__wfv__broken-stray-sidecar-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-stray-sidecar-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87e", "pass": 1, "name": "broken-existing-sidecar-calibration", "sha256": "f79e854567fc13bb70d1b30fa408a5b26f7ffe4441608029a875a9c04c7ee87a", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:21:47+00:00", "staged": "00000__wfv__broken-existing-sidecar-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-existing-sidecar-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87e", "pass": 2, "name": "broken-existing-sidecar-calibration", "sha256": "f79e854567fc13bb70d1b30fa408a5b26f7ffe4441608029a875a9c04c7ee87a", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:30:31+00:00", "staged": "00000__wfv__broken-existing-sidecar-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-existing-sidecar-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87e", "pass": 1, "name": "s87e-control-minimal", "sha256": "21301e980729ae10c120dbf2425eb36d47276f6cb8dcf849457b8590bb7a2d44", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:21:47+00:00", "staged": "00005__wfv__s87e-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s87e-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s87e", "pass": 2, "name": "s87e-control-minimal", "sha256": "21301e980729ae10c120dbf2425eb36d47276f6cb8dcf849457b8590bb7a2d44", "validatorRevision": "eaf93885ca9cf46503689206e54d1e14b54cf1a8", "observedAt": "2026-10-30T03:30:31+00:00", "staged": "00005__wfv__s87e-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s87e-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 87 builder, re-judge, cross-check and section scripts</summary>
+
+Reading the logs used session 41's `logcheck.py`, above, unchanged. The builder and the re-judge ran in the committed worktree, `WT` naming it.
+
+`s87builder.mts`:
+
+```ts
+// Session 87 (2026-10-30): three questions word-valid decides without direct Word evidence, on the minimal package
+// (`tests/support/minimal-docx.ts`).
+// s87a (#776): word/styles.xml typed `…styles+xml; charset=utf-8` (s56a's inexact spelling) and also the target of a
+//   used header, comments, footnotes or endnotes relationship (`styles-charset-<kind>-used`); s56a's charset styles
+//   part alone (`styles-charset-alone-calibration`).
+// s87b (#776): each co-reach with the exact styles type (`styles-exact-<kind>-used-calibration`).
+// s87c (#1127): a used header related through a scheme-like internal target, `ftp:header1.xml` or
+//   `httpfoo:header1.xml`, beside a stored word/ftp:header1.xml or word/httpfoo:header1.xml with an unclosed root
+//   (`header-<scheme>-malformed-used`); the same part well-formed (`-wellformed-used-calibration`); the plain
+//   `header1.xml` with an unclosed root (`header-plain-malformed-used-calibration`).
+// s87d (#1127): the styles relationship's target spelled `ftp:styles.xml`, beside a stored word/ftp:styles.xml with an
+//   unclosed root (`styles-ftp-malformed`); the same part well-formed (`styles-ftp-wellformed-calibration`); the plain
+//   styles part with an unclosed root (`styles-plain-malformed-calibration`).
+// s87e (#1136): s84a's `mu-stray-foo` (word/foo.xml, no relationship names it, root MustUnderstand urn:foo) beside an
+//   unclosed word/_rels/stray.xml.rels whose source part does not exist (`mu-stray-foo-broken-stray-sidecar`), or
+//   beside an unclosed sidecar of a stored, unrelated word/x.xml (`mu-stray-foo-broken-existing-sidecar`); each broken
+//   sidecar alone, and s84a's row alone, as calibrations.
+// Every chunk ends with a minimal control. Every row records the validator revision it was judged at
+// (`validatorRevision`, `git -C <tree> rev-parse HEAD`).
+// Run: WT=<tree> CHUNK=s87a tsx <abs path to this file>
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const WT = process.env.WT ?? process.cwd();
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const { MINIMAL_PARTS, buildDocx } = await import(path.join(WT, "tests/support/minimal-docx.ts"));
+const REVISION = execFileSync("git", ["-C", WT, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const STYLES = `${WML}.styles+xml`;
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n`;
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
+const P = MINIMAL_PARTS as Record<string, string>;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+/** `parts` with `r:` declared on the main document, `run` appended inside its only paragraph and `sect` first in its w:sectPr. */
+const mainWith = (parts: Record<string, string>, run: string, sect = ""): Record<string, string> => ({
+    ...parts,
+    [MAIN]: replaceOnce(
+        replaceOnce(replaceOnce(parts[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`), "<w:sectPr>", `<w:sectPr>${sect}`),
+        "</w:r></w:p>",
+        `</w:r>${run}</w:p>`,
+    ),
+});
+/** The styles part's Override (or an added one) set to `type`. */
+const stylesTyped = (parts: Record<string, string>, type: string): Record<string, string> => {
+    const ct = parts[CT]!;
+    const existing = /<Override PartName="\/word\/styles\.xml" ContentType="[^"]*"\/>/;
+    return {
+        ...parts,
+        [CT]: existing.test(ct)
+            ? ct.replace(existing, `<Override PartName="/word/styles.xml" ContentType="${type}"/>`)
+            : overrides(ct, ["word/styles.xml", type]),
+    };
+};
+
+// s87a / s87b. Comments, footnotes and endnotes relationships are read with no body reference (eager); a dangling
+// reference would add its own recovery defect, so only the header is referenced.
+type CoReach = "header" | "comments" | "footnotes" | "endnotes";
+const CO_REACH: Record<CoReach, { id: string; sect: string; run: string }> = {
+    header: { id: "rIdH", sect: `<w:headerReference w:type="default" r:id="rIdH"/>`, run: "" },
+    comments: { id: "rIdC", sect: "", run: "" },
+    footnotes: { id: "rIdN", sect: "", run: "" },
+    endnotes: { id: "rIdE", sect: "", run: "" },
+};
+const coReach = (type: string, kind: CoReach) => {
+    const { id, sect, run } = CO_REACH[kind];
+    const parts = stylesTyped(P, type);
+    return mainWith(
+        { ...parts, [SIDECAR]: appendRels(parts[SIDECAR]!, relationship(id, kind === "header" ? "header" : kind, "styles.xml")) },
+        run,
+        sect,
+    );
+};
+const KINDS: CoReach[] = ["header", "comments", "footnotes", "endnotes"];
+
+// s87c / s87d
+const UNCLOSED_HEADER = `${XML_DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header 87</w:t></w:r></w:p>`;
+const HEADER = `${UNCLOSED_HEADER}</w:hdr>`;
+const usedHeader = (target: string, stored: string, xml: string) =>
+    mainWith(
+        {
+            ...P,
+            [`word/${stored}`]: xml,
+            [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", target)),
+            [CT]: overrides(P[CT]!, [`word/${stored}`, `${WML}.header+xml`]),
+        },
+        "",
+        `<w:headerReference w:type="default" r:id="rIdH"/>`,
+    );
+const STYLES_XML = P["word/styles.xml"]!;
+const UNCLOSED_STYLES = replaceOnce(STYLES_XML, "</w:styles>", "");
+const stylesAt = (target: string, xml: string) => {
+    if (target === "styles.xml") return { ...P, "word/styles.xml": xml };
+    const parts: Record<string, string> = { ...P, [`word/${target}`]: xml };
+    delete parts["word/styles.xml"];
+    parts[SIDECAR] = replaceOnce(P[SIDECAR]!, 'Target="styles.xml"', `Target="${target}"`);
+    parts[CT] = P[CT]!.includes('PartName="/word/styles.xml"')
+        ? replaceOnce(P[CT]!, 'PartName="/word/styles.xml"', `PartName="/word/${target}"`)
+        : overrides(P[CT]!, [`word/${target}`, STYLES]);
+    return parts;
+};
+
+// s87e
+const MU_FOO = `${XML_DECL}<w:document xmlns:w="${W}" xmlns:mc="${MC}" xmlns:foo="urn:foo" mc:MustUnderstand="foo"><w:body/></w:document>`;
+const UNCLOSED_RELS = `${XML_DECL}<Relationships xmlns="${PR}"><Relationship`;
+const X_XML = `${XML_DECL}<w:document xmlns:w="${W}"><w:body/></w:document>`;
+const stray = (opts: { foo: boolean; broken?: "stray" | "existing" }) => {
+    const parts: Record<string, string> = { ...P };
+    if (opts.foo) parts["word/foo.xml"] = MU_FOO;
+    if (opts.broken === "stray") parts["word/_rels/stray.xml.rels"] = UNCLOSED_RELS;
+    if (opts.broken === "existing") {
+        parts["word/x.xml"] = X_XML;
+        parts["word/_rels/x.xml.rels"] = UNCLOSED_RELS;
+    }
+    return parts;
+};
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const withControl = (chunk: string, rows: Row[]): Row[] => [...rows, [`${chunk}-control-minimal`, "control", () => buildDocx({ ...P })]];
+const chunks: Record<string, Row[]> = {
+    s87a: withControl("s87a", [
+        ...KINDS.map((kind): Row => [
+            `styles-charset-${kind}-used`,
+            `#776: word/styles.xml typed ${STYLES}; charset=utf-8, also the target of a used ${kind} relationship`,
+            () => buildDocx(coReach(`${STYLES}; charset=utf-8`, kind)),
+        ]),
+        [
+            "styles-charset-alone-calibration",
+            "calibration (s56a): the charset-typed styles part, related only as styles",
+            () => buildDocx(stylesTyped(P, `${STYLES}; charset=utf-8`)),
+        ],
+    ]),
+    s87b: withControl(
+        "s87b",
+        KINDS.map((kind): Row => [
+            `styles-exact-${kind}-used-calibration`,
+            `calibration (#776): the exact-typed styles part, also the target of a used ${kind} relationship`,
+            () => buildDocx(coReach(STYLES, kind)),
+        ]),
+    ),
+    s87c: withControl("s87c", [
+        [
+            "header-ftp-malformed-used",
+            "#1127: a used header related as ftp:header1.xml, stored word/ftp:header1.xml with an unclosed root",
+            () => buildDocx(usedHeader("ftp:header1.xml", "ftp:header1.xml", UNCLOSED_HEADER)),
+        ],
+        [
+            "header-httpfoo-malformed-used",
+            "#1127: a used header related as httpfoo:header1.xml, stored word/httpfoo:header1.xml with an unclosed root",
+            () => buildDocx(usedHeader("httpfoo:header1.xml", "httpfoo:header1.xml", UNCLOSED_HEADER)),
+        ],
+        [
+            "header-ftp-wellformed-used-calibration",
+            "calibration: the ftp:header1.xml header well-formed",
+            () => buildDocx(usedHeader("ftp:header1.xml", "ftp:header1.xml", HEADER)),
+        ],
+        [
+            "header-httpfoo-wellformed-used-calibration",
+            "calibration: the httpfoo:header1.xml header well-formed",
+            () => buildDocx(usedHeader("httpfoo:header1.xml", "httpfoo:header1.xml", HEADER)),
+        ],
+        [
+            "header-plain-malformed-used-calibration",
+            "calibration: a used header related as header1.xml with an unclosed root",
+            () => buildDocx(usedHeader("header1.xml", "header1.xml", UNCLOSED_HEADER)),
+        ],
+    ]),
+    s87d: withControl("s87d", [
+        [
+            "styles-ftp-malformed",
+            "#1127: the styles relationship targets ftp:styles.xml, stored word/ftp:styles.xml with an unclosed root",
+            () => buildDocx(stylesAt("ftp:styles.xml", UNCLOSED_STYLES)),
+        ],
+        [
+            "styles-ftp-wellformed-calibration",
+            "calibration: the ftp:styles.xml styles part well-formed",
+            () => buildDocx(stylesAt("ftp:styles.xml", STYLES_XML)),
+        ],
+        [
+            "styles-plain-malformed-calibration",
+            "calibration: the plain styles part with an unclosed root",
+            () => buildDocx(stylesAt("styles.xml", UNCLOSED_STYLES)),
+        ],
+    ]),
+    s87e: withControl("s87e", [
+        [
+            "mu-stray-foo-broken-stray-sidecar",
+            "#1136: s84a's mu-stray-foo plus an unclosed word/_rels/stray.xml.rels with no source part",
+            () => buildDocx(stray({ foo: true, broken: "stray" })),
+        ],
+        [
+            "mu-stray-foo-broken-existing-sidecar",
+            "#1136: s84a's mu-stray-foo plus an unclosed sidecar of a stored, unrelated word/x.xml",
+            () => buildDocx(stray({ foo: true, broken: "existing" })),
+        ],
+        ["mu-stray-foo-calibration", "calibration (s84a): mu-stray-foo alone", () => buildDocx(stray({ foo: true }))],
+        [
+            "broken-stray-sidecar-calibration",
+            "calibration: the unclosed stray sidecar alone",
+            () => buildDocx(stray({ foo: false, broken: "stray" })),
+        ],
+        [
+            "broken-existing-sidecar-calibration",
+            "calibration: word/x.xml and its unclosed sidecar alone",
+            () => buildDocx(stray({ foo: false, broken: "existing" })),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+// A rerun starts from an empty src, so a removed or renamed row leaves no stale specimen (CodeRabbit on #985).
+rmSync(dir, { recursive: true, force: true });
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+    }
+};
+
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        control: issue === "control",
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid}`,
+    );
+}
+```
+
+`rejudge.mts`:
+
+```ts
+// Judge the bytes session 87 showed Word (each chunk's src/) with the validator in WT, and record its revision per row.
+// Run: WT=<tree> tsx <abs path to this file>
+import { execFileSync } from "node:child_process";
+import { readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(path.dirname(new URL(import.meta.url).pathname));
+const WT = process.env.WT ?? process.cwd();
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const REVISION = execFileSync("git", ["-C", WT, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    const r = await validate(file, { profile });
+    return {
+        valid: r.valid,
+        errors: [
+            ...new Set(
+                r.issues
+                    .filter((x: { severity: string }) => x.severity === "error")
+                    .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+            ),
+        ],
+    };
+};
+const out: string[] = [];
+for (const chunk of ["s87a", "s87b", "s87c", "s87d", "s87e"]) {
+    for (const line of readFileSync(path.join(ROOT, chunk, "specimens.jsonl"), "utf8")
+        .trim()
+        .split("\n")) {
+        const spec = JSON.parse(line);
+        const file = path.join(ROOT, chunk, "src", spec.file);
+        out.push(
+            JSON.stringify({
+                chunk,
+                file: spec.file,
+                validatorRevision: REVISION,
+                wordValid: await verdict(file, "word-valid"),
+                strict: await verdict(file, "strict"),
+            }),
+        );
+    }
+}
+writeFileSync(path.join(ROOT, "s87", "rejudge.jsonl"), out.join("\n") + "\n");
+console.log(out.length, "rows at", REVISION);
+```
+
+`compare.py`:
+
+```python
+"""Join the two runs of the session-87 chunks: log verdicts, table verdicts, validator verdicts, hashes.
+
+Each row's runs are its chunk's first pass (the chunk folder) and second pass (`pass2`), separate driver runs of
+byte-identical copies. The validator verdicts come from the builder (`specimens.jsonl`, judged before the fixes) and
+from `rejudge.jsonl` (the same bytes judged at the branch head).
+"""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s87a", "s87b", "s87c", "s87d", "s87e")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+head = {(r["chunk"], r["file"]): r for r in map(json.loads, (ROOT / "s87/rejudge.jsonl").read_text().splitlines())}
+
+
+def checks(run):
+    return {json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()}
+
+
+def matches(readings, valid):
+    return (all(r in REJECTIONS for r in readings) and valid is False) or (all(r == "clean-open" for r in readings) and valid is True)
+
+
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    for name, spec in specs.items():
+        for run in runs:
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        p1, p2 = (checks(run)[name] for run in runs)
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        at_head = head[(label, name)]
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "runs": [str(r.relative_to(ROOT)) for r in runs],
+                     "readings": readings, "agreed": agreed, "outcome": TO_MANIFEST.get(readings[0], "unknown") if agreed else "unknown",
+                     "wordValidBefore": spec["wordValid"]["valid"], "wordValidHead": at_head["wordValid"]["valid"],
+                     "headRevision": at_head["validatorRevision"],
+                     "matchesBefore": agreed and matches(readings, spec["wordValid"]["valid"]),
+                     "matchesHead": agreed and matches(readings, at_head["wordValid"]["valid"])})
+(ROOT / "s87/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<48} {r['outcome']:<27} before={r['wordValidBefore']!s:<5} head={r['wordValidHead']!s:<5} match={r['matchesBefore']}/{r['matchesHead']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| matches before:", sum(r["matchesBefore"] for r in rows),
+      "| at head:", sum(r["matchesHead"] for r in rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-87 part of docs/plans/evidence/word-probes-2026-10-24.md into s87/section.md.
+
+Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+each run's logcheck.jsonl and pdf/manifest.jsonl, rejudge.jsonl (the same bytes judged at the branch head) and the
+results.json compare.py writes. Revisions come from the rows, never from this script. The text Word rendered is read
+from its own PDFs with pdftotext, so the narrative's "rendered" claim is checked here. The PDF paths the manifests
+record name the run folders before they moved into the chunk layout (`run1` is the chunk, `run2` its `pass2`); a
+symbolic link at each old name keeps them readable.
+"""
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s87a", "s87b", "s87c", "s87d", "s87e")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s87/results.json").read_text())}
+head = {(r["chunk"], r["file"]): r for r in map(json.loads, (ROOT / "s87/rejudge.jsonl").read_text().splitlines())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e}`" for e in v["errors"])
+
+
+def manifest(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return row
+    raise KeyError(file)
+
+
+def checks(run):
+    return {json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()}
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+def rendered(run, file):
+    pdf = run / "pdf" / (Path(file).stem + "_byword.pdf")
+    if not pdf.exists():
+        return None
+    return " ".join(subprocess.run(["pdftotext", str(pdf), "-"], check=True, capture_output=True, text=True).stdout.split())
+
+
+rows, raw, starts, ends, before, after = [], [], [], [], set(), set()
+for label in CHUNKS:
+    for s in map(json.loads, (ROOT / label / "specimens.jsonl").read_text().splitlines()):
+        result, h = results[(label, s["file"])], head[(label, s["file"])]
+        runs = [ROOT / label, ROOT / label / "pass2"]
+        before.add(s["validatorRevision"])
+        after.add(h["validatorRevision"])
+        times = [datetime.fromisoformat(manifest(r, s["file"])["run_at"]).astimezone(timezone.utc) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        cs = [checks(r)[s["file"]] for r in runs]
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {s['issue'].replace('|', chr(92) + '|')} | "
+            f"`{s['sha256'][:16]}` | {word_cell(cs[0])} | {word_cell(cs[1])} | {result['outcome']} | {cell(s['wordValid'])} | "
+            f"{cell(h['wordValid'])} | {cell(h['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, cs, times), start=1):
+            out = {"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"], "validatorRevision": s["validatorRevision"],
+                   "observedAt": t.isoformat(), "staged": c["staged"], "logVerdict": c["logVerdict"], "tableVerdict": c["outcomesVerdict"],
+                   "pdf": c["pdf"], "evidence": c["evidence"]}
+            if manifest(r, s["file"]).get("error"):
+                out["error"] = manifest(r, s["file"])["error"]
+            raw.append(json.dumps(out, ensure_ascii=False))
+
+assert len(before) == 1 and len(after) == 1, (before, after)
+b, a = next(iter(before))[:8], next(iter(after))[:8]
+OPEN_ERROR = {"header-plain-malformed-used-calibration.docx"}
+CLEAN = {"s87b": {"styles-exact-comments-used-calibration.docx", "styles-exact-footnotes-used-calibration.docx",
+                  "styles-exact-endnotes-used-calibration.docx"}}
+# The narrative's claims, checked against results.json: every row's four readings agree; Word opened clean exactly the
+# controls, the three exact-typed s87b co-reaches and every s87e row, refused the plain malformed header with an open
+# error, and offered recovery for every other row; word-valid at the head matches Word on every row, and before the
+# fixes it missed exactly the six s87c/s87d scheme rows and the two s87e sidecar rows.
+for (label, file), r in results.items():
+    assert r["agreed"], (label, file)
+    clean = "control" in file or label == "s87e" or file in CLEAN.get(label, set())
+    want = "clean-open" if clean else "open-error" if file in OPEN_ERROR else "unreadable-content-warning"
+    assert r["outcome"] == want, (label, file, r["outcome"], want)
+    assert r["matchesHead"], (label, file)
+    missed = (label in ("s87c", "s87d") and ("ftp" in file or "httpfoo" in file)) or file.startswith("mu-stray-foo-broken")
+    assert r["matchesBefore"] is not missed, (label, file)
+# The driver opens files in name order (#671), and every PDF Word saved renders the main document's "Hello" alone.
+for label in CHUNKS:
+    files = sorted(json.loads(l)["file"] for l in (ROOT / label / "specimens.jsonl").read_text().splitlines())
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        assert [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()] == files, run
+        for file in files:
+            text = rendered(run, file)
+            assert (text is None) is (results[(label, file)]["outcome"] != "clean-open"), (run, file)
+            assert text in (None, "Hello"), (run, file, text)
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}"
+n = len(rows)
+mb, ma = sum(r["matchesBefore"] for r in results.values()), sum(r["matchesHead"] for r in results.values())
+I = "https://github.com/jandira-tech/docx-validate/issues/"
+out = [
+    f"### Session 87: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {b} and {a}",
+    "",
+    f"Three questions word-valid decided without Word evidence: [#776]({I}776), [#1127]({I}1127) and [#1136]({I}1136). "
+    "Five chunks, on the minimal package.",
+    "",
+    f"- **s87a, [#776]({I}776).** `word/styles.xml` typed `…styles+xml; charset=utf-8` (s56a's spelling), also the target "
+    "of a used header relationship, or of a comments, footnotes or endnotes relationship, in place of s56a's read footer "
+    "(`styles-charset-<kind>-used`). The comments, footnotes and endnotes relationships are read with no body reference, so "
+    "no dangling reference adds its own recovery defect. s56a's charset part alone is the calibration.",
+    f"- **s87b, [#776]({I}776).** Each co-reach with the exact styles type, as calibrations.",
+    f"- **s87c, [#1127]({I}1127).** A used header related through `ftp:header1.xml` or `httpfoo:header1.xml`, beside the "
+    "stored `word/ftp:header1.xml` or `word/httpfoo:header1.xml` with an unclosed root (`-malformed-used`) or well-formed "
+    "(`-wellformed-used-calibration`); the plain `header1.xml` with an unclosed root.",
+    f"- **s87d, [#1127]({I}1127).** The styles relationship targeting `ftp:styles.xml`, beside a stored "
+    "`word/ftp:styles.xml` with an unclosed root or well-formed; the plain styles part with an unclosed root.",
+    f"- **s87e, [#1136]({I}1136).** s84a's `mu-stray-foo` (`word/foo.xml`, which no relationship names, with root "
+    "`mc:MustUnderstand` naming an unknown `urn:foo`) beside an unclosed `word/_rels/stray.xml.rels` whose source part is "
+    "not stored, or beside an unclosed sidecar of a stored `word/x.xml` nothing relates; each broken sidecar alone, and "
+    "s84a's row alone, as calibrations.",
+    "",
+    "Each chunk ends with a minimal control. Each chunk ran twice, as two separate driver runs of byte-identical copies, "
+    "and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by "
+    f"`wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` "
+    f"otherwise; {sum(r['agreed'] for r in results.values())} of {n} rows agree. The two times in Observed are the ends of "
+    "the row's two runs. Shape is the builder's description of the specimen. The builder judged every row at "
+    f"`{next(iter(before))}`, before the fixes; `rejudge.mts` judged the same bytes at `{next(iter(after))}`.",
+    "",
+    "Every control opened clean, and every PDF Word saved renders the main document's `Hello` alone (`pdftotext`). No "
+    "refused row left a PDF.",
+    "",
+    "- **An inexact styles type is refused over every co-reach shown.** Word offered recovery for all four s87a co-reaches "
+    "and for s56a's calibration again. With the exact type it opened the comments, footnotes and endnotes co-reaches clean, "
+    "and offered recovery for the header one, the exact-typed header co-reach the mismatch check already reports.",
+    "- **A target spelling a URI scheme names no part.** Word offered recovery for the used header related through "
+    "`ftp:` or `httpfoo:` and for the styles part related through `ftp:`, the stored part malformed or well-formed. The "
+    "plain-named malformed header drew an open error, and the plain-named malformed styles part a recovery offer.",
+    "- **Word never reads a sidecar of a part not stored, or of a part nothing relates.** It opened clean both s87e rows "
+    "with an unclosed sidecar beside s84a's unread MustUnderstand part, and every calibration.",
+    "",
+    f"Word-valid at {b} matches Word on {mb} of {n} rows: it passed the six `ftp:` and `httpfoo:` rows and rejected the two "
+    f"broken-sidecar rows. At {a} it matches on {ma} of {n}.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {b} | word-valid at {a} | strict at {a} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 87</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 87 builder, re-judge, cross-check and section scripts</summary>",
+    "",
+    "Reading the logs used session 41's `logcheck.py`, above, unchanged. The builder and the re-judge ran in the committed "
+    "worktree, `WT` naming it.",
+    "",
+]
+for name, path, lang in (("s87builder.mts", ROOT / "s87builder.mts", "ts"), ("rejudge.mts", ROOT / "s87/rejudge.mts", "ts"),
+                         ("compare.py", ROOT / "s87/compare.py", "python"), ("section.py", ROOT / "s87/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s87/section.md").write_text("\n".join(out))
+print(n, "rows,", len(raw), "raw records,", mb, "/", ma, "match")
+`````
+
+</details>

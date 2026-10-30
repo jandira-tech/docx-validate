@@ -283,11 +283,17 @@ Choice, and one a <code>w:hyperlink</code> names; these are the targets Word-val
 <code>s40a</code>/<code>s40b</code>). Lenient keeps its historical scan, which skips only <code>http…</code> and
 <code>mailto:</code> targets (<a href="https://github.com/jandira-tech/docx-validate/issues/665">#665</a>).
 Word-valid and strict skip only the <code>http:</code>, <code>https:</code> and <code>mailto:</code> schemes, so a
-relative target that merely starts with <code>http</code> resolves as a part, and so does
-another scheme that starts with <code>http</code> (<code>httpfoo:</code>), as <code>ftp:</code> does: Word refused <code>httpimage1.png/.</code> as a folder and opened the plain
+relative target that merely starts with <code>http</code> resolves as a part: Word refused <code>httpimage1.png/.</code> as a folder and opened the plain
 <code>httpimage1.png</code> clean (Word probes session 79), and word-valid used to accept the
 folder target
 (<a href="https://github.com/jandira-tech/docx-validate/issues/988">#988</a>).
+Any other scheme (<code>ftp:</code>, <code>httpfoo:</code>) makes the target an absolute URI that names
+no part, reported as <code>rels-broken</code>: Word offered recovery for a used header and the
+styles part related through one, beside the well-formed stored <code>word/ftp:…</code> part
+(Word probes session 87), so the styles type and a used header block word-valid
+in a story root's sidecar, and every unprobed placement (an unused header, the
+package relationships part, another type) keeps a warning
+(<a href="https://github.com/jandira-tech/docx-validate/issues/1127">#1127</a>).
 They read the scheme ASCII case-insensitively, as RFC 3986 does, so an <code>HTTP:</code> or
 <code>MAILTO:</code> target is skipped as its lowercase spelling is, where it used to be
 resolved as a part; lenient's scan stays case-sensitive. Word has been shown
@@ -1031,8 +1037,11 @@ nor hides a read one, because usage is decided per (part, type) pair
 (<a href="https://github.com/jandira-tech/docx-validate/issues/593">#593</a>); a read
 story relationship hides no eager one either — session 56 (s56a, 2026-10-26)
 observed Word recover the styles part typed <code>…styles+xml; charset=utf-8</code>
-with a read footer relationship also targeting it, so the spelling is
-judged over every reach the story roots read
+with a read footer relationship also targeting it, and session 87 (s87a,
+2026-10-30) the same part with a used header, comments, footnotes or endnotes
+relationship in place of the footer
+(<a href="https://github.com/jandira-tech/docx-validate/issues/776">#776</a>), so the
+spelling is judged over every reach the story roots read
 (<a href="https://github.com/jandira-tech/docx-validate/issues/760">#760</a>). Strict
 judges the same probed set — theme included, though it is a DrawingML part,
 not a clause-11.3 one — plus the unprobed Part 1 WordprocessingML

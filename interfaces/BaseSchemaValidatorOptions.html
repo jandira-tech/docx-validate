@@ -12,7 +12,7 @@
 <h1>Interface BaseSchemaValidatorOptions</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">BaseSchemaValidatorOptions</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#deadline">deadline</a><span class="tsd-signature-symbol">?:</span> <a href="../classes/RunDeadline.html" class="tsd-signature-type tsd-kind-class">RunDeadline</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#originalfile">originalFile</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#profile">profile</a><span class="tsd-signature-symbol">?:</span> <a href="../types/Profile.html" class="tsd-signature-type tsd-kind-type-alias">Profile</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#schemasdir">schemasDir</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#unpackeddir">unpackedDir</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#verbose">verbose</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#xsdvalidator">xsdValidator</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">XsdValidator</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/eaf93885ca9cf46503689206e54d1e14b54cf1a8/src/scripts/office/validators/base.ts#L281">src/scripts/office/validators/base.ts:281</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/98624ec253c52fb8070e00a439b60fce54ba012d/src/scripts/office/validators/base.ts#L284">src/scripts/office/validators/base.ts:284</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -41,21 +41,21 @@ stops are recorded on the deadline, and <code>validate()</code> reports them in 
 error-severity <code>validation-deadline</code> finding. Repairs never consult it.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/eaf93885ca9cf46503689206e54d1e14b54cf1a8/src/scripts/office/validators/base.ts#L313">src/scripts/office/validators/base.ts:313</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/98624ec253c52fb8070e00a439b60fce54ba012d/src/scripts/office/validators/base.ts#L316">src/scripts/office/validators/base.ts:316</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="originalfile"><code class="tsd-tag">Optional</code><span>original<wbr/>File</span><a href="#originalfile" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">originalFile</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
 <div class="tsd-comment tsd-typography"><p>Path to the original .docx/.pptx for &quot;ignore pre-existing errors&quot; diffing.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/eaf93885ca9cf46503689206e54d1e14b54cf1a8/src/scripts/office/validators/base.ts#L285">src/scripts/office/validators/base.ts:285</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/98624ec253c52fb8070e00a439b60fce54ba012d/src/scripts/office/validators/base.ts#L288">src/scripts/office/validators/base.ts:288</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="profile"><code class="tsd-tag">Optional</code><span>profile</span><a href="#profile" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">profile</span><span class="tsd-signature-symbol">?:</span> <a href="../types/Profile.html" class="tsd-signature-type tsd-kind-type-alias">Profile</a></div>
 <div class="tsd-comment tsd-typography"><p>Validation profile. Defaults to <code>&quot;lenient&quot;</code>. See <a href="../types/Profile.html" class="tsd-kind-type-alias">Profile</a>.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/eaf93885ca9cf46503689206e54d1e14b54cf1a8/src/scripts/office/validators/base.ts#L294">src/scripts/office/validators/base.ts:294</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/98624ec253c52fb8070e00a439b60fce54ba012d/src/scripts/office/validators/base.ts#L297">src/scripts/office/validators/base.ts:297</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="schemasdir"><code class="tsd-tag">Optional</code><span>schemas<wbr/>Dir</span><a href="#schemasdir" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">schemasDir</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
@@ -64,19 +64,19 @@ error-severity <code>validation-deadline</code> finding. Repairs never consult i
 them somewhere else.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/eaf93885ca9cf46503689206e54d1e14b54cf1a8/src/scripts/office/validators/base.ts#L291">src/scripts/office/validators/base.ts:291</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/98624ec253c52fb8070e00a439b60fce54ba012d/src/scripts/office/validators/base.ts#L294">src/scripts/office/validators/base.ts:294</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="unpackeddir"><span>unpacked<wbr/>Dir</span><a href="#unpackeddir" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">unpackedDir</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 <div class="tsd-comment tsd-typography"><p>Path to the unpacked OOXML directory.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/eaf93885ca9cf46503689206e54d1e14b54cf1a8/src/scripts/office/validators/base.ts#L283">src/scripts/office/validators/base.ts:283</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/98624ec253c52fb8070e00a439b60fce54ba012d/src/scripts/office/validators/base.ts#L286">src/scripts/office/validators/base.ts:286</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="verbose"><code class="tsd-tag">Optional</code><span>verbose</span><a href="#verbose" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">verbose</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/eaf93885ca9cf46503689206e54d1e14b54cf1a8/src/scripts/office/validators/base.ts#L292">src/scripts/office/validators/base.ts:292</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/98624ec253c52fb8070e00a439b60fce54ba012d/src/scripts/office/validators/base.ts#L295">src/scripts/office/validators/base.ts:295</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="xsdvalidator"><code class="tsd-tag">Optional</code><span>xsd<wbr/>Validator</span><a href="#xsdvalidator" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">xsdValidator</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">XsdValidator</span></div>
@@ -89,7 +89,7 @@ replaced the retired libxmljs2 path outright (PR B Task B.2) — the
 native addon cannot build against Node 26.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/eaf93885ca9cf46503689206e54d1e14b54cf1a8/src/scripts/office/validators/base.ts#L305">src/scripts/office/validators/base.ts:305</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/98624ec253c52fb8070e00a439b60fce54ba012d/src/scripts/office/validators/base.ts#L308">src/scripts/office/validators/base.ts:308</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
