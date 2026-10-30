@@ -174,11 +174,14 @@ describe("unpack", () => {
             const inputFile = path.join(dir, "input.docx");
             const outputDir = path.join(dir, "out");
             const rels = MINIMAL_PARTS["_rels/.rels"]!.replace(/\n/g, "");
-            await fs.writeFile(inputFile, await buildMinimalDocx({
-                ...MINIMAL_PARTS,
-                "_rels/.rels": rels,
-                "word/_rels/document.xml.rels": rels,
-            }));
+            await fs.writeFile(
+                inputFile,
+                await buildMinimalDocx({
+                    ...MINIMAL_PARTS,
+                    "_rels/.rels": rels,
+                    "word/_rels/document.xml.rels": rels,
+                }),
+            );
 
             const result = await unpack(inputFile, outputDir, {
                 mergeRuns: false,

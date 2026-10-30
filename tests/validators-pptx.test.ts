@@ -1320,10 +1320,7 @@ describe("PPTX-specific checks when a part cannot be parsed", () => {
     it("validateUuidIds ignores attributes whose local name does not end in id", async () => {
         await withTempDir(async (dir) => {
             const badUuid = "1234567890abcdefGHIJKLMNOpqrstuv";
-            await writeFile(
-                path.join(dir, "ppt", "slides", "slide1.xml"),
-                presentationXml(`<p:custom title="${badUuid}"/>`),
-            );
+            await writeFile(path.join(dir, "ppt", "slides", "slide1.xml"), presentationXml(`<p:custom title="${badUuid}"/>`));
             expect(await makeValidator(dir).validateUuidIds()).toEqual({ valid: true, issues: [] });
         });
     });

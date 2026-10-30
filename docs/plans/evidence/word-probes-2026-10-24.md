@@ -33953,31 +33953,31 @@ Each chunk ends with a minimal control. Each chunk ran twice, as two separate dr
 
 Word-valid at 2a98048d matches Word on 16 of 23 rows: it warned on the six s89b and s89c `ftp:` rows and passed the thumbnail calibration. At 9f8ecef6 it matches on 22 of 23; the thumbnail calibration is #1186.
 
-| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at 2a98048d | word-valid at 9f8ecef6 | strict at 9f8ecef6 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-core-ftp` | #1184: _rels/.rels relates the core part through ftp:docProps/core.xml, stored /ftp:docProps/core.xml well-formed | `11d309251214f106` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-broken@_rels/.rels` | invalid: `rels-broken@_rels/.rels` | invalid: `rels-broken@_rels/.rels`, `rels-unreferenced@ftp:docProps/core.xml` |
-| `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-core-plain-calibration` | calibration: the same _rels/.rels core relationship through docProps/core.xml | `18beaffd786cee52` | clean-open | clean-open | clean-open | valid | valid | valid |
-| `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-app-ftp` | #1184: _rels/.rels relates the app part through ftp:docProps/app.xml, stored /ftp:docProps/app.xml well-formed | `ed9fef198491e862` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-broken@_rels/.rels` | invalid: `rels-broken@_rels/.rels` | invalid: `rels-broken@_rels/.rels`, `rels-unreferenced@ftp:docProps/app.xml` |
-| `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-app-plain-calibration` | calibration: the same _rels/.rels app relationship through docProps/app.xml | `019f53efe4035662` | clean-open | clean-open | clean-open | valid | valid | valid |
-| `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-custom-ftp` | #1184: _rels/.rels relates the custom part through ftp:docProps/custom.xml, stored /ftp:docProps/custom.xml well-formed | `3f9bc7afbcc188b2` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-broken@_rels/.rels` | invalid: `rels-broken@_rels/.rels` | invalid: `rels-broken@_rels/.rels`, `rels-unreferenced@ftp:docProps/custom.xml` |
-| `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-custom-plain-calibration` | calibration: the same _rels/.rels custom relationship through docProps/custom.xml | `b61ed8e8c970152d` | clean-open | clean-open | clean-open | valid | valid | valid |
-| `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-thumbnail-ftp` | #1184: _rels/.rels relates the thumbnail part through ftp:docProps/thumbnail.png, stored /ftp:docProps/thumbnail.png well-formed | `da702f369758adbb` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-broken@_rels/.rels` | invalid: `rels-broken@_rels/.rels` | invalid: `rels-broken@_rels/.rels`, `rels-unreferenced@ftp:docProps/thumbnail.png` |
-| `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-thumbnail-plain-calibration` | calibration: the same _rels/.rels thumbnail relationship through docProps/thumbnail.png | `c5e9ad3476b81e00` | repair-warning | repair-warning | unreadable-content-warning | valid | valid | valid |
-| `s89a` | 19:26:47Z, 19:27:26Z | `s89a-control-minimal` | control | `fa0ecd0965d0ed8d` | clean-open | clean-open | clean-open | valid | valid | valid |
-| `s89b` | 19:27:46Z, 19:28:03Z | `header-image-used-ftp` | #1184: a used header's own sidecar relates an image the header uses through r:embed through ftp:image1.png, stored word/ftp:image1.png | `09f69bbafb80b9e1` | repair-warning | repair-warning | unreadable-content-warning | valid | invalid: `rels-broken@word/_rels/header1.xml.rels` | invalid: `rels-broken@word/_rels/header1.xml.rels`, `rels-unreferenced@word/ftp:image1.png`, `paraid-missing-element@word/header1.xml` |
-| `s89b` | 19:27:46Z, 19:28:03Z | `header-image-used-plain-calibration` | calibration: the same header-sidecar image relationship through image1.png | `c165c231874524f1` | clean-open | clean-open | clean-open | valid | valid | invalid: `paraid-missing-element@word/header1.xml` |
-| `s89b` | 19:27:46Z, 19:28:03Z | `header-image-unused-ftp` | #1184: a used header's own sidecar relates an image the header does not use through ftp:image1.png, stored word/ftp:image1.png | `cbe17bbe3b293aa5` | repair-warning | repair-warning | unreadable-content-warning | valid | invalid: `rels-broken@word/_rels/header1.xml.rels` | invalid: `rels-broken@word/_rels/header1.xml.rels`, `rels-unreferenced@word/ftp:image1.png`, `paraid-missing-element@word/header1.xml` |
-| `s89b` | 19:27:46Z, 19:28:03Z | `header-image-unused-plain-calibration` | calibration: the same header-sidecar image relationship through image1.png | `4ce68e7f528df9a7` | clean-open | clean-open | clean-open | valid | valid | invalid: `paraid-missing-element@word/header1.xml` |
-| `s89b` | 19:27:46Z, 19:28:03Z | `s89b-control-minimal` | control | `fa0ecd0965d0ed8d` | clean-open | clean-open | clean-open | valid | valid | valid |
-| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-footer-used-ftp` | #1184: the footer used part's own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png | `a9c23ef912780053` | repair-warning | repair-warning | unreadable-content-warning | valid | invalid: `rels-broken@word/_rels/footer1.xml.rels` | invalid: `rels-broken@word/_rels/footer1.xml.rels`, `rels-unreferenced@word/ftp:image1.png`, `paraid-missing-element@word/footer1.xml` |
-| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-footer-used-plain-calibration` | calibration: the same sidecar image relationship through image1.png | `eee1d2025084e159` | clean-open | clean-open | clean-open | valid | valid | invalid: `paraid-missing-element@word/footer1.xml` |
-| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-header-unused-ftp` | #1184: the header unused part's own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png | `334ff0d92d1a7412` | repair-warning | repair-warning | unreadable-content-warning | valid | invalid: `rels-broken@word/_rels/header1.xml.rels` | invalid: `rels-broken@word/_rels/header1.xml.rels`, `rels-unreferenced@word/ftp:image1.png`, `paraid-missing-element@word/header1.xml` |
-| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-header-unused-plain-calibration` | calibration: the same sidecar image relationship through image1.png | `0b87b188021f58e2` | clean-open | clean-open | clean-open | valid | valid | invalid: `paraid-missing-element@word/header1.xml` |
-| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-styles-ftp` | #1184: the styles part's own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png | `39da0788a7ae6307` | repair-warning | repair-warning | unreadable-content-warning | valid | invalid: `rels-broken@word/_rels/styles.xml.rels` | invalid: `rels-broken@word/_rels/styles.xml.rels`, `rels-unreferenced@word/ftp:image1.png` |
-| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-styles-plain-calibration` | calibration: the same sidecar image relationship through image1.png | `ea103d716eadf5b7` | clean-open | clean-open | clean-open | valid | valid | valid |
-| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-unreferenced-ftp` | #1184: an unreferenced word/foo.xml's own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png | `8ff61ca0da5a6a4b` | repair-warning | repair-warning | unreadable-content-warning | valid | invalid: `rels-broken@word/_rels/foo.xml.rels` | invalid: `rels-broken@word/_rels/foo.xml.rels`, `rels-unreferenced@word/foo.xml`, `rels-unreferenced@word/ftp:image1.png`, `xsd-summary@word/foo.xml`, `xsd-error@word/foo.xml` |
-| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-unreferenced-plain-calibration` | calibration: the same sidecar image relationship through image1.png | `53b6333b156d7f28` | clean-open | clean-open | clean-open | valid | valid | invalid: `rels-unreferenced@word/foo.xml`, `xsd-summary@word/foo.xml`, `xsd-error@word/foo.xml` |
-| `s89c` | 19:41:45Z, 19:42:16Z | `s89c-control-minimal` | control | `0028ee126637f94f` | clean-open | clean-open | clean-open | valid | valid | valid |
+| Run    | Observed             | Specimen                                  | Shape                                                                                                                                  | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at 2a98048d             | word-valid at 9f8ecef6                             | strict at 9f8ecef6                                                                                                                                                              |
+| ------ | -------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ---------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-core-ftp`                        | #1184: _rels/.rels relates the core part through ftp:docProps/core.xml, stored /ftp:docProps/core.xml well-formed                      | `11d309251214f106` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-broken@_rels/.rels` | invalid: `rels-broken@_rels/.rels`                 | invalid: `rels-broken@_rels/.rels`, `rels-unreferenced@ftp:docProps/core.xml`                                                                                                   |
+| `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-core-plain-calibration`          | calibration: the same _rels/.rels core relationship through docProps/core.xml                                                          | `18beaffd786cee52` | clean-open     | clean-open     | clean-open                 | valid                              | valid                                              | valid                                                                                                                                                                           |
+| `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-app-ftp`                         | #1184: _rels/.rels relates the app part through ftp:docProps/app.xml, stored /ftp:docProps/app.xml well-formed                         | `ed9fef198491e862` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-broken@_rels/.rels` | invalid: `rels-broken@_rels/.rels`                 | invalid: `rels-broken@_rels/.rels`, `rels-unreferenced@ftp:docProps/app.xml`                                                                                                    |
+| `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-app-plain-calibration`           | calibration: the same _rels/.rels app relationship through docProps/app.xml                                                            | `019f53efe4035662` | clean-open     | clean-open     | clean-open                 | valid                              | valid                                              | valid                                                                                                                                                                           |
+| `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-custom-ftp`                      | #1184: _rels/.rels relates the custom part through ftp:docProps/custom.xml, stored /ftp:docProps/custom.xml well-formed                | `3f9bc7afbcc188b2` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-broken@_rels/.rels` | invalid: `rels-broken@_rels/.rels`                 | invalid: `rels-broken@_rels/.rels`, `rels-unreferenced@ftp:docProps/custom.xml`                                                                                                 |
+| `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-custom-plain-calibration`        | calibration: the same _rels/.rels custom relationship through docProps/custom.xml                                                      | `b61ed8e8c970152d` | clean-open     | clean-open     | clean-open                 | valid                              | valid                                              | valid                                                                                                                                                                           |
+| `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-thumbnail-ftp`                   | #1184: _rels/.rels relates the thumbnail part through ftp:docProps/thumbnail.png, stored /ftp:docProps/thumbnail.png well-formed       | `da702f369758adbb` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-broken@_rels/.rels` | invalid: `rels-broken@_rels/.rels`                 | invalid: `rels-broken@_rels/.rels`, `rels-unreferenced@ftp:docProps/thumbnail.png`                                                                                              |
+| `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-thumbnail-plain-calibration`     | calibration: the same _rels/.rels thumbnail relationship through docProps/thumbnail.png                                                | `c5e9ad3476b81e00` | repair-warning | repair-warning | unreadable-content-warning | valid                              | valid                                              | valid                                                                                                                                                                           |
+| `s89a` | 19:26:47Z, 19:27:26Z | `s89a-control-minimal`                    | control                                                                                                                                | `fa0ecd0965d0ed8d` | clean-open     | clean-open     | clean-open                 | valid                              | valid                                              | valid                                                                                                                                                                           |
+| `s89b` | 19:27:46Z, 19:28:03Z | `header-image-used-ftp`                   | #1184: a used header's own sidecar relates an image the header uses through r:embed through ftp:image1.png, stored word/ftp:image1.png | `09f69bbafb80b9e1` | repair-warning | repair-warning | unreadable-content-warning | valid                              | invalid: `rels-broken@word/_rels/header1.xml.rels` | invalid: `rels-broken@word/_rels/header1.xml.rels`, `rels-unreferenced@word/ftp:image1.png`, `paraid-missing-element@word/header1.xml`                                          |
+| `s89b` | 19:27:46Z, 19:28:03Z | `header-image-used-plain-calibration`     | calibration: the same header-sidecar image relationship through image1.png                                                             | `c165c231874524f1` | clean-open     | clean-open     | clean-open                 | valid                              | valid                                              | invalid: `paraid-missing-element@word/header1.xml`                                                                                                                              |
+| `s89b` | 19:27:46Z, 19:28:03Z | `header-image-unused-ftp`                 | #1184: a used header's own sidecar relates an image the header does not use through ftp:image1.png, stored word/ftp:image1.png         | `cbe17bbe3b293aa5` | repair-warning | repair-warning | unreadable-content-warning | valid                              | invalid: `rels-broken@word/_rels/header1.xml.rels` | invalid: `rels-broken@word/_rels/header1.xml.rels`, `rels-unreferenced@word/ftp:image1.png`, `paraid-missing-element@word/header1.xml`                                          |
+| `s89b` | 19:27:46Z, 19:28:03Z | `header-image-unused-plain-calibration`   | calibration: the same header-sidecar image relationship through image1.png                                                             | `4ce68e7f528df9a7` | clean-open     | clean-open     | clean-open                 | valid                              | valid                                              | invalid: `paraid-missing-element@word/header1.xml`                                                                                                                              |
+| `s89b` | 19:27:46Z, 19:28:03Z | `s89b-control-minimal`                    | control                                                                                                                                | `fa0ecd0965d0ed8d` | clean-open     | clean-open     | clean-open                 | valid                              | valid                                              | valid                                                                                                                                                                           |
+| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-footer-used-ftp`                 | #1184: the footer used part's own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png                   | `a9c23ef912780053` | repair-warning | repair-warning | unreadable-content-warning | valid                              | invalid: `rels-broken@word/_rels/footer1.xml.rels` | invalid: `rels-broken@word/_rels/footer1.xml.rels`, `rels-unreferenced@word/ftp:image1.png`, `paraid-missing-element@word/footer1.xml`                                          |
+| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-footer-used-plain-calibration`   | calibration: the same sidecar image relationship through image1.png                                                                    | `eee1d2025084e159` | clean-open     | clean-open     | clean-open                 | valid                              | valid                                              | invalid: `paraid-missing-element@word/footer1.xml`                                                                                                                              |
+| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-header-unused-ftp`               | #1184: the header unused part's own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png                 | `334ff0d92d1a7412` | repair-warning | repair-warning | unreadable-content-warning | valid                              | invalid: `rels-broken@word/_rels/header1.xml.rels` | invalid: `rels-broken@word/_rels/header1.xml.rels`, `rels-unreferenced@word/ftp:image1.png`, `paraid-missing-element@word/header1.xml`                                          |
+| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-header-unused-plain-calibration` | calibration: the same sidecar image relationship through image1.png                                                                    | `0b87b188021f58e2` | clean-open     | clean-open     | clean-open                 | valid                              | valid                                              | invalid: `paraid-missing-element@word/header1.xml`                                                                                                                              |
+| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-styles-ftp`                      | #1184: the styles part's own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png                        | `39da0788a7ae6307` | repair-warning | repair-warning | unreadable-content-warning | valid                              | invalid: `rels-broken@word/_rels/styles.xml.rels`  | invalid: `rels-broken@word/_rels/styles.xml.rels`, `rels-unreferenced@word/ftp:image1.png`                                                                                      |
+| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-styles-plain-calibration`        | calibration: the same sidecar image relationship through image1.png                                                                    | `ea103d716eadf5b7` | clean-open     | clean-open     | clean-open                 | valid                              | valid                                              | valid                                                                                                                                                                           |
+| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-unreferenced-ftp`                | #1184: an unreferenced word/foo.xml's own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png           | `8ff61ca0da5a6a4b` | repair-warning | repair-warning | unreadable-content-warning | valid                              | invalid: `rels-broken@word/_rels/foo.xml.rels`     | invalid: `rels-broken@word/_rels/foo.xml.rels`, `rels-unreferenced@word/foo.xml`, `rels-unreferenced@word/ftp:image1.png`, `xsd-summary@word/foo.xml`, `xsd-error@word/foo.xml` |
+| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-unreferenced-plain-calibration`  | calibration: the same sidecar image relationship through image1.png                                                                    | `53b6333b156d7f28` | clean-open     | clean-open     | clean-open                 | valid                              | valid                                              | invalid: `rels-unreferenced@word/foo.xml`, `xsd-summary@word/foo.xml`, `xsd-error@word/foo.xml`                                                                                 |
+| `s89c` | 19:41:45Z, 19:42:16Z | `s89c-control-minimal`                    | control                                                                                                                                | `0028ee126637f94f` | clean-open     | clean-open     | clean-open                 | valid                              | valid                                              | valid                                                                                                                                                                           |
 
 <details><summary>Raw records, session 89</summary>
 
@@ -34038,7 +34038,7 @@ Reading the logs used session 41's `logcheck.py`, above, unchanged. The builder 
 
 `s89builder.mts`:
 
-````ts
+```ts
 // Session 89 (2026-10-30, #1184): the placements of a scheme-like internal target (`ftp:`) session 88 did not show
 // Word, on the minimal package (`tests/support/minimal-docx.ts`). Every ftp: row stores the part the path spells
 // well-formed, and each placement has a plain-target calibration.
@@ -34073,19 +34073,24 @@ const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const P = MINIMAL_PARTS as Record<string, string>;
 
 const replaceOnce = (text: string, from: string, to: string) => {
-  if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
-  return text.replace(from, to);
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
 };
-const relationship = (id: string, segment: string, target: string) => `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
 const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
 const overrides = (ct: string, ...entries: Array<[string, string]>) =>
-  replaceOnce(ct, "</Types>", `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`);
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
 const defaults = (ct: string, extension: string, type: string) =>
-  replaceOnce(ct, "<Default Extension=\"xml\"", `<Default Extension="${extension}" ContentType="${type}"/><Default Extension="xml"`);
+    replaceOnce(ct, '<Default Extension="xml"', `<Default Extension="${extension}" ContentType="${type}"/><Default Extension="xml"`);
 /** `parts` with `r:` declared on the main document and `sect` first in its w:sectPr. */
 const mainWith = (parts: Record<string, string | Uint8Array>, sect: string): Record<string, string | Uint8Array> => ({
-  ...parts,
-  [MAIN]: replaceOnce(replaceOnce(P[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`), "<w:sectPr>", `<w:sectPr>${sect}`),
+    ...parts,
+    [MAIN]: replaceOnce(replaceOnce(P[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`), "<w:sectPr>", `<w:sectPr>${sect}`),
 });
 
 const PKG = "http://schemas.openxmlformats.org/package/2006/relationships";
@@ -34097,49 +34102,64 @@ const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
 const CORE = `${XML_DECL}<cp:coreProperties xmlns:cp="${PKG.replace("relationships", "metadata/core-properties")}" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Probe 89</dc:title></cp:coreProperties>`;
 const APP = `${XML_DECL}<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>Microsoft Office Word</Application></Properties>`;
 const CUSTOM =
-  `${XML_DECL}<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">` +
-  `<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="Probe"><vt:lpwstr>89</vt:lpwstr></property></Properties>`;
+    `${XML_DECL}<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">` +
+    `<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="Probe"><vt:lpwstr>89</vt:lpwstr></property></Properties>`;
 
 type Prop = { type: string; file: string; xml: string | Uint8Array; contentType?: string };
 const PROPS: Record<string, Prop> = {
-  core: { type: `${PKG}/metadata/core-properties`, file: "core.xml", xml: CORE, contentType: "application/vnd.openxmlformats-package.core-properties+xml" },
-  app: { type: `${R}/extended-properties`, file: "app.xml", xml: APP, contentType: "application/vnd.openxmlformats-officedocument.extended-properties+xml" },
-  custom: { type: `${R}/custom-properties`, file: "custom.xml", xml: CUSTOM, contentType: "application/vnd.openxmlformats-officedocument.custom-properties+xml" },
-  thumbnail: { type: `${PKG}/metadata/thumbnail`, file: "thumbnail.png", xml: PNG },
+    core: {
+        type: `${PKG}/metadata/core-properties`,
+        file: "core.xml",
+        xml: CORE,
+        contentType: "application/vnd.openxmlformats-package.core-properties+xml",
+    },
+    app: {
+        type: `${R}/extended-properties`,
+        file: "app.xml",
+        xml: APP,
+        contentType: "application/vnd.openxmlformats-officedocument.extended-properties+xml",
+    },
+    custom: {
+        type: `${R}/custom-properties`,
+        file: "custom.xml",
+        xml: CUSTOM,
+        contentType: "application/vnd.openxmlformats-officedocument.custom-properties+xml",
+    },
+    thumbnail: { type: `${PKG}/metadata/thumbnail`, file: "thumbnail.png", xml: PNG },
 };
 /** `_rels/.rels` relating the `kind` part through `prefix + docProps/<file>`, stored at the package root under that spelling. */
 const pkgProp = (kind: string, prefix: string) => {
-  const prop = PROPS[kind]!;
-  const target = `${prefix}docProps/${prop.file}`;
-  return {
-    ...P,
-    [target]: prop.xml,
-    [PKG_RELS]: appendRels(P[PKG_RELS]!, `<Relationship Id="rIdP" Type="${prop.type}" Target="${target}"/>`),
-    [CT]: prop.contentType ? overrides(P[CT]!, [target, prop.contentType]) : defaults(P[CT]!, "png", "image/png"),
-  };
+    const prop = PROPS[kind]!;
+    const target = `${prefix}docProps/${prop.file}`;
+    return {
+        ...P,
+        [target]: prop.xml,
+        [PKG_RELS]: appendRels(P[PKG_RELS]!, `<Relationship Id="rIdP" Type="${prop.type}" Target="${target}"/>`),
+        [CT]: prop.contentType ? overrides(P[CT]!, [target, prop.contentType]) : defaults(P[CT]!, "png", "image/png"),
+    };
 };
 
 const DRAWING =
-  `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="95250" cy="95250"/><wp:docPr id="1" name="Picture 1"/>` +
-  `<a:graphic xmlns:a="${A}"><a:graphicData uri="${PIC}"><pic:pic xmlns:pic="${PIC}"><pic:nvPicPr><pic:cNvPr id="1" name="image1.png"/><pic:cNvPicPr/></pic:nvPicPr>` +
-  `<pic:blipFill><a:blip r:embed="rIdI"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
-  `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="95250" cy="95250"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
+    `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="95250" cy="95250"/><wp:docPr id="1" name="Picture 1"/>` +
+    `<a:graphic xmlns:a="${A}"><a:graphicData uri="${PIC}"><pic:pic xmlns:pic="${PIC}"><pic:nvPicPr><pic:cNvPr id="1" name="image1.png"/><pic:cNvPicPr/></pic:nvPicPr>` +
+    `<pic:blipFill><a:blip r:embed="rIdI"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
+    `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="95250" cy="95250"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
 const header = (used: boolean) =>
-  `${XML_DECL}<w:hdr xmlns:w="${W}" xmlns:r="${R}" xmlns:wp="${WP}"><w:p><w:r><w:t>Header 89</w:t></w:r>${used ? DRAWING : ""}</w:p></w:hdr>`;
+    `${XML_DECL}<w:hdr xmlns:w="${W}" xmlns:r="${R}" xmlns:wp="${WP}"><w:p><w:r><w:t>Header 89</w:t></w:r>${used ? DRAWING : ""}</w:p></w:hdr>`;
 /** A used header whose own sidecar relates an image through `prefix + image1.png`, stored at word/ under that spelling. */
 const headerImage = (used: boolean, prefix: string) => {
-  const target = `${prefix}image1.png`;
-  return mainWith(
-    {
-      ...P,
-      "word/header1.xml": header(used),
-      "word/_rels/header1.xml.rels": `${XML_DECL}<Relationships xmlns="${PKG}">${relationship("rIdI", "image", target)}</Relationships>`,
-      [`word/${target}`]: PNG,
-      [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
-      [CT]: defaults(overrides(P[CT]!, ["word/header1.xml", `${WML}.header+xml`]), "png", "image/png"),
-    },
-    `<w:headerReference w:type="default" r:id="rIdH"/>`,
-  );
+    const target = `${prefix}image1.png`;
+    return mainWith(
+        {
+            ...P,
+            "word/header1.xml": header(used),
+            "word/_rels/header1.xml.rels": `${XML_DECL}<Relationships xmlns="${PKG}">${relationship("rIdI", "image", target)}</Relationships>`,
+            [`word/${target}`]: PNG,
+            [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
+            [CT]: defaults(overrides(P[CT]!, ["word/header1.xml", `${WML}.header+xml`]), "png", "image/png"),
+        },
+        `<w:headerReference w:type="default" r:id="rIdH"/>`,
+    );
 };
 
 type Row = [string, string, () => Promise<Uint8Array>];
@@ -34148,40 +34168,81 @@ const HEADER89 = `${XML_DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header 89</w:t
 const imageRels = (target: string) => `${XML_DECL}<Relationships xmlns="${PKG}">${relationship("rIdI", "image", target)}</Relationships>`;
 /** A part whose own sidecar relates an unused image through `prefix + image1.png`, stored at word/ under that spelling. */
 const sidecarImage = (owner: string, prefix: string) => {
-  const target = `${prefix}image1.png`;
-  const base: Record<string, string | Uint8Array> = { ...P, [`word/${target}`]: PNG, [CT]: defaults(P[CT]!, "png", "image/png") };
-  if (owner === "footer-used")
-    return mainWith(
-      { ...base, "word/footer1.xml": FOOTER89, "word/_rels/footer1.xml.rels": imageRels(target), [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdF", "footer", "footer1.xml")), [CT]: overrides(base[CT] as string, ["word/footer1.xml", `${WML}.footer+xml`]) },
-      `<w:footerReference w:type="default" r:id="rIdF"/>`,
-    );
-  if (owner === "header-unused")
-    return { ...base, "word/header1.xml": HEADER89, "word/_rels/header1.xml.rels": imageRels(target), [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", "header1.xml")), [CT]: overrides(base[CT] as string, ["word/header1.xml", `${WML}.header+xml`]) };
-  if (owner === "styles") return { ...base, "word/_rels/styles.xml.rels": imageRels(target) };
-  // An unreferenced part: no relationship names word/foo.xml.
-  return { ...base, "word/foo.xml": `${XML_DECL}<foo/>`, "word/_rels/foo.xml.rels": imageRels(target) };
+    const target = `${prefix}image1.png`;
+    const base: Record<string, string | Uint8Array> = { ...P, [`word/${target}`]: PNG, [CT]: defaults(P[CT]!, "png", "image/png") };
+    if (owner === "footer-used")
+        return mainWith(
+            {
+                ...base,
+                "word/footer1.xml": FOOTER89,
+                "word/_rels/footer1.xml.rels": imageRels(target),
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdF", "footer", "footer1.xml")),
+                [CT]: overrides(base[CT] as string, ["word/footer1.xml", `${WML}.footer+xml`]),
+            },
+            `<w:footerReference w:type="default" r:id="rIdF"/>`,
+        );
+    if (owner === "header-unused")
+        return {
+            ...base,
+            "word/header1.xml": HEADER89,
+            "word/_rels/header1.xml.rels": imageRels(target),
+            [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
+            [CT]: overrides(base[CT] as string, ["word/header1.xml", `${WML}.header+xml`]),
+        };
+    if (owner === "styles") return { ...base, "word/_rels/styles.xml.rels": imageRels(target) };
+    // An unreferenced part: no relationship names word/foo.xml.
+    return { ...base, "word/foo.xml": `${XML_DECL}<foo/>`, "word/_rels/foo.xml.rels": imageRels(target) };
 };
 const sidecarPair = (owner: string): Row[] => [
-  [`sidecar-${owner}-ftp`, `#1184: ${owner === "unreferenced" ? "an unreferenced word/foo.xml" : `the ${owner.replace("-", " ")} part`}'s own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png`, () => buildDocx(sidecarImage(owner, "ftp:"))],
-  [`sidecar-${owner}-plain-calibration`, `calibration: the same sidecar image relationship through image1.png`, () => buildDocx(sidecarImage(owner, ""))],
+    [
+        `sidecar-${owner}-ftp`,
+        `#1184: ${owner === "unreferenced" ? "an unreferenced word/foo.xml" : `the ${owner.replace("-", " ")} part`}'s own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png`,
+        () => buildDocx(sidecarImage(owner, "ftp:")),
+    ],
+    [
+        `sidecar-${owner}-plain-calibration`,
+        `calibration: the same sidecar image relationship through image1.png`,
+        () => buildDocx(sidecarImage(owner, "")),
+    ],
 ];
 
 const propPair = (kind: string): Row[] => [
-  [`pkgrels-${kind}-ftp`, `#1184: _rels/.rels relates the ${kind} part through ftp:docProps/${PROPS[kind]!.file}, stored /ftp:docProps/${PROPS[kind]!.file} well-formed`, () => buildDocx(pkgProp(kind, "ftp:"))],
-  [`pkgrels-${kind}-plain-calibration`, `calibration: the same _rels/.rels ${kind} relationship through docProps/${PROPS[kind]!.file}`, () => buildDocx(pkgProp(kind, ""))],
+    [
+        `pkgrels-${kind}-ftp`,
+        `#1184: _rels/.rels relates the ${kind} part through ftp:docProps/${PROPS[kind]!.file}, stored /ftp:docProps/${PROPS[kind]!.file} well-formed`,
+        () => buildDocx(pkgProp(kind, "ftp:")),
+    ],
+    [
+        `pkgrels-${kind}-plain-calibration`,
+        `calibration: the same _rels/.rels ${kind} relationship through docProps/${PROPS[kind]!.file}`,
+        () => buildDocx(pkgProp(kind, "")),
+    ],
 ];
 const headerPair = (used: boolean): Row[] => {
-  const kind = used ? "used" : "unused";
-  return [
-    [`header-image-${kind}-ftp`, `#1184: a used header's own sidecar relates an image the header ${used ? "uses through r:embed" : "does not use"} through ftp:image1.png, stored word/ftp:image1.png`, () => buildDocx(headerImage(used, "ftp:"))],
-    [`header-image-${kind}-plain-calibration`, `calibration: the same header-sidecar image relationship through image1.png`, () => buildDocx(headerImage(used, ""))],
-  ];
+    const kind = used ? "used" : "unused";
+    return [
+        [
+            `header-image-${kind}-ftp`,
+            `#1184: a used header's own sidecar relates an image the header ${used ? "uses through r:embed" : "does not use"} through ftp:image1.png, stored word/ftp:image1.png`,
+            () => buildDocx(headerImage(used, "ftp:")),
+        ],
+        [
+            `header-image-${kind}-plain-calibration`,
+            `calibration: the same header-sidecar image relationship through image1.png`,
+            () => buildDocx(headerImage(used, "")),
+        ],
+    ];
 };
 const withControl = (chunk: string, rows: Row[]): Row[] => [...rows, [`${chunk}-control-minimal`, "control", () => buildDocx({ ...P })]];
 const chunks: Record<string, Row[]> = {
-  s89a: withControl("s89a", [...propPair("core"), ...propPair("app"), ...propPair("custom"), ...propPair("thumbnail")]),
-  s89b: withControl("s89b", [...headerPair(true), ...headerPair(false)]),
-  s89c: withControl("s89c", [...sidecarPair("footer-used"), ...sidecarPair("header-unused"), ...sidecarPair("styles"), ...sidecarPair("unreferenced")]),
+    s89a: withControl("s89a", [...propPair("core"), ...propPair("app"), ...propPair("custom"), ...propPair("thumbnail")]),
+    s89b: withControl("s89b", [...headerPair(true), ...headerPair(false)]),
+    s89c: withControl("s89c", [
+        ...sidecarPair("footer-used"),
+        ...sidecarPair("header-unused"),
+        ...sidecarPair("styles"),
+        ...sidecarPair("unreferenced"),
+    ]),
 };
 
 const chunk = process.env.CHUNK ?? "";
@@ -34195,33 +34256,57 @@ const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
 writeFileSync(jsonl, "");
 
 const verdict = async (file: string, profile: "word-valid" | "strict") => {
-  try {
-    const r = await validate(file, { profile });
-    return {
-      valid: r.valid,
-      errors: [...new Set(r.issues.filter((x: { severity: string }) => x.severity === "error").map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`))],
-      warnings: [...new Set(r.issues.filter((x: { severity: string }) => x.severity === "warning").map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`))],
-    };
-  } catch (error) {
-    return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`], warnings: [] };
-  }
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+            warnings: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "warning")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`], warnings: [] };
+    }
 };
 
 for (const [name, issue, make] of specimens) {
-  const bytes = await make();
-  const file = `${name}.docx`;
-  writeFileSync(path.join(dir, file), bytes);
-  const sha256 = createHash("sha256").update(bytes).digest("hex");
-  const target = path.join(dir, file);
-  const row = { name, issue, file, sha256, calibration: name.includes("calibration"), control: issue === "control", validatorRevision: REVISION, wordValid: await verdict(target, "word-valid"), strict: await verdict(target, "strict") };
-  appendFileSync(jsonl, JSON.stringify(row) + "\n");
-  console.log(`built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} warn=${row.wordValid.warnings.filter((w: string) => w.startsWith("rels")).join(",")} strict=${row.strict.valid}`);
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        control: issue === "control",
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} warn=${row.wordValid.warnings.filter((w: string) => w.startsWith("rels")).join(",")} strict=${row.strict.valid}`,
+    );
 }
-````
+```
 
 `rejudge.mts`:
 
-````ts
+```ts
 // Judge the bytes session 89 showed Word (each chunk's src/) with the validator in WT, and record its revision per row.
 // Run: WT=<tree> tsx <abs path to this file>
 import { execFileSync } from "node:child_process";
@@ -34233,24 +34318,43 @@ const WT = process.env.WT ?? process.cwd();
 const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
 const REVISION = execFileSync("git", ["-C", WT, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
 const verdict = async (file: string, profile: "word-valid" | "strict") => {
-  const r = await validate(file, { profile });
-  return { valid: r.valid, errors: [...new Set(r.issues.filter((x: { severity: string }) => x.severity === "error").map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`))] };
+    const r = await validate(file, { profile });
+    return {
+        valid: r.valid,
+        errors: [
+            ...new Set(
+                r.issues
+                    .filter((x: { severity: string }) => x.severity === "error")
+                    .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+            ),
+        ],
+    };
 };
 const out: string[] = [];
 for (const chunk of ["s89a", "s89b", "s89c"]) {
-  for (const line of readFileSync(path.join(ROOT, chunk, "specimens.jsonl"), "utf8").trim().split("\n")) {
-    const spec = JSON.parse(line);
-    const file = path.join(ROOT, chunk, "src", spec.file);
-    out.push(JSON.stringify({ chunk, file: spec.file, validatorRevision: REVISION, wordValid: await verdict(file, "word-valid"), strict: await verdict(file, "strict") }));
-  }
+    for (const line of readFileSync(path.join(ROOT, chunk, "specimens.jsonl"), "utf8")
+        .trim()
+        .split("\n")) {
+        const spec = JSON.parse(line);
+        const file = path.join(ROOT, chunk, "src", spec.file);
+        out.push(
+            JSON.stringify({
+                chunk,
+                file: spec.file,
+                validatorRevision: REVISION,
+                wordValid: await verdict(file, "word-valid"),
+                strict: await verdict(file, "strict"),
+            }),
+        );
+    }
 }
 writeFileSync(path.join(ROOT, "s89", "rejudge.jsonl"), out.join("\n") + "\n");
 console.log(out.length, "rows at", REVISION);
-````
+```
 
 `compare.py`:
 
-````python
+```python
 """Join the two runs of the session-89 chunks: log verdicts, table verdicts, validator verdicts, hashes.
 
 Each row's runs are its chunk's first pass (the chunk folder) and second pass (`pass2`), separate driver runs of
@@ -34299,11 +34403,11 @@ for r in rows:
     print(f"{r['chunk']} {r['file']:<40} {r['outcome']:<27} before={r['wordValidBefore']!s:<5} head={r['wordValidHead']!s:<5} match={r['matchesBefore']}/{r['matchesHead']}")
 print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| matches before:", sum(r["matchesBefore"] for r in rows),
       "| at head:", sum(r["matchesHead"] for r in rows))
-````
+```
 
 `section.py`:
 
-````python
+`````python
 """Render the session-89 part of docs/plans/evidence/word-probes-2026-10-24.md into s89/section.md.
 
 Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
@@ -34467,7 +34571,7 @@ for name, path, lang in (("s89builder.mts", ROOT / "s89builder.mts", "ts"), ("re
 out += ["</details>", ""]
 (ROOT / "s89/section.md").write_text("\n".join(out))
 print(n, "rows,", len(raw), "raw records,", mb, "/", ma, "match")
-````
+`````
 
 </details>
 
@@ -34483,15 +34587,15 @@ The chunk ends with a minimal control. It ran twice, as two separate driver runs
 
 Word-valid at 2a98048d matches Word on 4 of 7 rows: it passed the three related PNG rows. At dd43a20d the new `word-package-thumbnail-type` rule refuses them, and word-valid matches on 7 of 7, and on session 89's thumbnail calibration too.
 
-| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at 2a98048d | word-valid at dd43a20d | strict at dd43a20d |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `s90a` | 19:42:35Z, 19:45:04Z | `thumb-png1-default-s89a` | #1186: s89a's thumbnail calibration again: a 1x1 PNG at docProps/thumbnail.png, png Default | `6c086d771797abe4` | repair-warning | repair-warning | unreadable-content-warning | valid | invalid: `word-package-thumbnail-type@docProps/thumbnail.png` | invalid: `word-package-thumbnail-type@docProps/thumbnail.png` |
-| `s90a` | 19:42:35Z, 19:45:04Z | `thumb-png1-default-unrelated` | #1186: the same PNG and Default, but no relationship names the part | `635ebce8a431f217` | clean-open | clean-open | clean-open | valid | valid | invalid: `rels-unreferenced@docProps/thumbnail.png` |
-| `s90a` | 19:42:35Z, 19:45:04Z | `thumb-png96-default` | #1186: a 96x96 PNG at docProps/thumbnail.png, png Default | `9d8118cab1c746c8` | repair-warning | repair-warning | unreadable-content-warning | valid | invalid: `word-package-thumbnail-type@docProps/thumbnail.png` | invalid: `word-package-thumbnail-type@docProps/thumbnail.png` |
-| `s90a` | 19:42:35Z, 19:45:04Z | `thumb-png1-override` | #1186: the 1x1 PNG typed image/png by an Override | `529bcf2e7cf6b8c0` | repair-warning | repair-warning | unreadable-content-warning | valid | invalid: `word-package-thumbnail-type@docProps/thumbnail.png` | invalid: `word-package-thumbnail-type@docProps/thumbnail.png` |
-| `s90a` | 19:42:35Z, 19:45:04Z | `thumb-jpeg96-default` | #1186: a 96x96 JPEG at docProps/thumbnail.jpeg, jpeg Default | `f1974c0c313089bc` | clean-open | clean-open | clean-open | valid | valid | valid |
-| `s90a` | 19:42:35Z, 19:45:04Z | `thumb-jpeg96-override` | #1186: the same JPEG typed image/jpeg by an Override | `a44af1cb4f5e72c4` | clean-open | clean-open | clean-open | valid | valid | valid |
-| `s90a` | 19:42:35Z, 19:45:04Z | `s90a-control-minimal` | control | `52c5d69e80ae92ad` | clean-open | clean-open | clean-open | valid | valid | valid |
+| Run    | Observed             | Specimen                       | Shape                                                                                       | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at 2a98048d | word-valid at dd43a20d                                        | strict at dd43a20d                                            |
+| ------ | -------------------- | ------------------------------ | ------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ---------------------- | ------------------------------------------------------------- | ------------------------------------------------------------- |
+| `s90a` | 19:42:35Z, 19:45:04Z | `thumb-png1-default-s89a`      | #1186: s89a's thumbnail calibration again: a 1x1 PNG at docProps/thumbnail.png, png Default | `6c086d771797abe4` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `word-package-thumbnail-type@docProps/thumbnail.png` | invalid: `word-package-thumbnail-type@docProps/thumbnail.png` |
+| `s90a` | 19:42:35Z, 19:45:04Z | `thumb-png1-default-unrelated` | #1186: the same PNG and Default, but no relationship names the part                         | `635ebce8a431f217` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                         | invalid: `rels-unreferenced@docProps/thumbnail.png`           |
+| `s90a` | 19:42:35Z, 19:45:04Z | `thumb-png96-default`          | #1186: a 96x96 PNG at docProps/thumbnail.png, png Default                                   | `9d8118cab1c746c8` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `word-package-thumbnail-type@docProps/thumbnail.png` | invalid: `word-package-thumbnail-type@docProps/thumbnail.png` |
+| `s90a` | 19:42:35Z, 19:45:04Z | `thumb-png1-override`          | #1186: the 1x1 PNG typed image/png by an Override                                           | `529bcf2e7cf6b8c0` | repair-warning | repair-warning | unreadable-content-warning | valid                  | invalid: `word-package-thumbnail-type@docProps/thumbnail.png` | invalid: `word-package-thumbnail-type@docProps/thumbnail.png` |
+| `s90a` | 19:42:35Z, 19:45:04Z | `thumb-jpeg96-default`         | #1186: a 96x96 JPEG at docProps/thumbnail.jpeg, jpeg Default                                | `f1974c0c313089bc` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                         | valid                                                         |
+| `s90a` | 19:42:35Z, 19:45:04Z | `thumb-jpeg96-override`        | #1186: the same JPEG typed image/jpeg by an Override                                        | `a44af1cb4f5e72c4` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                         | valid                                                         |
+| `s90a` | 19:42:35Z, 19:45:04Z | `s90a-control-minimal`         | control                                                                                     | `52c5d69e80ae92ad` | clean-open     | clean-open     | clean-open                 | valid                  | valid                                                         | valid                                                         |
 
 <details><summary>Raw records, session 90</summary>
 
@@ -34520,7 +34624,7 @@ Reading the logs used session 41's `logcheck.py`, above, unchanged. The builder 
 
 `s89builder.mts`:
 
-````ts
+```ts
 // Session 89 (2026-10-30, #1184): the placements of a scheme-like internal target (`ftp:`) session 88 did not show
 // Word, on the minimal package (`tests/support/minimal-docx.ts`). Every ftp: row stores the part the path spells
 // well-formed, and each placement has a plain-target calibration.
@@ -34555,19 +34659,24 @@ const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const P = MINIMAL_PARTS as Record<string, string>;
 
 const replaceOnce = (text: string, from: string, to: string) => {
-  if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
-  return text.replace(from, to);
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
 };
-const relationship = (id: string, segment: string, target: string) => `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
 const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
 const overrides = (ct: string, ...entries: Array<[string, string]>) =>
-  replaceOnce(ct, "</Types>", `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`);
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
 const defaults = (ct: string, extension: string, type: string) =>
-  replaceOnce(ct, "<Default Extension=\"xml\"", `<Default Extension="${extension}" ContentType="${type}"/><Default Extension="xml"`);
+    replaceOnce(ct, '<Default Extension="xml"', `<Default Extension="${extension}" ContentType="${type}"/><Default Extension="xml"`);
 /** `parts` with `r:` declared on the main document and `sect` first in its w:sectPr. */
 const mainWith = (parts: Record<string, string | Uint8Array>, sect: string): Record<string, string | Uint8Array> => ({
-  ...parts,
-  [MAIN]: replaceOnce(replaceOnce(P[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`), "<w:sectPr>", `<w:sectPr>${sect}`),
+    ...parts,
+    [MAIN]: replaceOnce(replaceOnce(P[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`), "<w:sectPr>", `<w:sectPr>${sect}`),
 });
 
 const PKG = "http://schemas.openxmlformats.org/package/2006/relationships";
@@ -34579,49 +34688,64 @@ const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
 const CORE = `${XML_DECL}<cp:coreProperties xmlns:cp="${PKG.replace("relationships", "metadata/core-properties")}" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Probe 89</dc:title></cp:coreProperties>`;
 const APP = `${XML_DECL}<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>Microsoft Office Word</Application></Properties>`;
 const CUSTOM =
-  `${XML_DECL}<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">` +
-  `<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="Probe"><vt:lpwstr>89</vt:lpwstr></property></Properties>`;
+    `${XML_DECL}<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">` +
+    `<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="Probe"><vt:lpwstr>89</vt:lpwstr></property></Properties>`;
 
 type Prop = { type: string; file: string; xml: string | Uint8Array; contentType?: string };
 const PROPS: Record<string, Prop> = {
-  core: { type: `${PKG}/metadata/core-properties`, file: "core.xml", xml: CORE, contentType: "application/vnd.openxmlformats-package.core-properties+xml" },
-  app: { type: `${R}/extended-properties`, file: "app.xml", xml: APP, contentType: "application/vnd.openxmlformats-officedocument.extended-properties+xml" },
-  custom: { type: `${R}/custom-properties`, file: "custom.xml", xml: CUSTOM, contentType: "application/vnd.openxmlformats-officedocument.custom-properties+xml" },
-  thumbnail: { type: `${PKG}/metadata/thumbnail`, file: "thumbnail.png", xml: PNG },
+    core: {
+        type: `${PKG}/metadata/core-properties`,
+        file: "core.xml",
+        xml: CORE,
+        contentType: "application/vnd.openxmlformats-package.core-properties+xml",
+    },
+    app: {
+        type: `${R}/extended-properties`,
+        file: "app.xml",
+        xml: APP,
+        contentType: "application/vnd.openxmlformats-officedocument.extended-properties+xml",
+    },
+    custom: {
+        type: `${R}/custom-properties`,
+        file: "custom.xml",
+        xml: CUSTOM,
+        contentType: "application/vnd.openxmlformats-officedocument.custom-properties+xml",
+    },
+    thumbnail: { type: `${PKG}/metadata/thumbnail`, file: "thumbnail.png", xml: PNG },
 };
 /** `_rels/.rels` relating the `kind` part through `prefix + docProps/<file>`, stored at the package root under that spelling. */
 const pkgProp = (kind: string, prefix: string) => {
-  const prop = PROPS[kind]!;
-  const target = `${prefix}docProps/${prop.file}`;
-  return {
-    ...P,
-    [target]: prop.xml,
-    [PKG_RELS]: appendRels(P[PKG_RELS]!, `<Relationship Id="rIdP" Type="${prop.type}" Target="${target}"/>`),
-    [CT]: prop.contentType ? overrides(P[CT]!, [target, prop.contentType]) : defaults(P[CT]!, "png", "image/png"),
-  };
+    const prop = PROPS[kind]!;
+    const target = `${prefix}docProps/${prop.file}`;
+    return {
+        ...P,
+        [target]: prop.xml,
+        [PKG_RELS]: appendRels(P[PKG_RELS]!, `<Relationship Id="rIdP" Type="${prop.type}" Target="${target}"/>`),
+        [CT]: prop.contentType ? overrides(P[CT]!, [target, prop.contentType]) : defaults(P[CT]!, "png", "image/png"),
+    };
 };
 
 const DRAWING =
-  `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="95250" cy="95250"/><wp:docPr id="1" name="Picture 1"/>` +
-  `<a:graphic xmlns:a="${A}"><a:graphicData uri="${PIC}"><pic:pic xmlns:pic="${PIC}"><pic:nvPicPr><pic:cNvPr id="1" name="image1.png"/><pic:cNvPicPr/></pic:nvPicPr>` +
-  `<pic:blipFill><a:blip r:embed="rIdI"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
-  `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="95250" cy="95250"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
+    `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="95250" cy="95250"/><wp:docPr id="1" name="Picture 1"/>` +
+    `<a:graphic xmlns:a="${A}"><a:graphicData uri="${PIC}"><pic:pic xmlns:pic="${PIC}"><pic:nvPicPr><pic:cNvPr id="1" name="image1.png"/><pic:cNvPicPr/></pic:nvPicPr>` +
+    `<pic:blipFill><a:blip r:embed="rIdI"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
+    `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="95250" cy="95250"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
 const header = (used: boolean) =>
-  `${XML_DECL}<w:hdr xmlns:w="${W}" xmlns:r="${R}" xmlns:wp="${WP}"><w:p><w:r><w:t>Header 89</w:t></w:r>${used ? DRAWING : ""}</w:p></w:hdr>`;
+    `${XML_DECL}<w:hdr xmlns:w="${W}" xmlns:r="${R}" xmlns:wp="${WP}"><w:p><w:r><w:t>Header 89</w:t></w:r>${used ? DRAWING : ""}</w:p></w:hdr>`;
 /** A used header whose own sidecar relates an image through `prefix + image1.png`, stored at word/ under that spelling. */
 const headerImage = (used: boolean, prefix: string) => {
-  const target = `${prefix}image1.png`;
-  return mainWith(
-    {
-      ...P,
-      "word/header1.xml": header(used),
-      "word/_rels/header1.xml.rels": `${XML_DECL}<Relationships xmlns="${PKG}">${relationship("rIdI", "image", target)}</Relationships>`,
-      [`word/${target}`]: PNG,
-      [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
-      [CT]: defaults(overrides(P[CT]!, ["word/header1.xml", `${WML}.header+xml`]), "png", "image/png"),
-    },
-    `<w:headerReference w:type="default" r:id="rIdH"/>`,
-  );
+    const target = `${prefix}image1.png`;
+    return mainWith(
+        {
+            ...P,
+            "word/header1.xml": header(used),
+            "word/_rels/header1.xml.rels": `${XML_DECL}<Relationships xmlns="${PKG}">${relationship("rIdI", "image", target)}</Relationships>`,
+            [`word/${target}`]: PNG,
+            [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
+            [CT]: defaults(overrides(P[CT]!, ["word/header1.xml", `${WML}.header+xml`]), "png", "image/png"),
+        },
+        `<w:headerReference w:type="default" r:id="rIdH"/>`,
+    );
 };
 
 type Row = [string, string, () => Promise<Uint8Array>];
@@ -34630,40 +34754,81 @@ const HEADER89 = `${XML_DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header 89</w:t
 const imageRels = (target: string) => `${XML_DECL}<Relationships xmlns="${PKG}">${relationship("rIdI", "image", target)}</Relationships>`;
 /** A part whose own sidecar relates an unused image through `prefix + image1.png`, stored at word/ under that spelling. */
 const sidecarImage = (owner: string, prefix: string) => {
-  const target = `${prefix}image1.png`;
-  const base: Record<string, string | Uint8Array> = { ...P, [`word/${target}`]: PNG, [CT]: defaults(P[CT]!, "png", "image/png") };
-  if (owner === "footer-used")
-    return mainWith(
-      { ...base, "word/footer1.xml": FOOTER89, "word/_rels/footer1.xml.rels": imageRels(target), [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdF", "footer", "footer1.xml")), [CT]: overrides(base[CT] as string, ["word/footer1.xml", `${WML}.footer+xml`]) },
-      `<w:footerReference w:type="default" r:id="rIdF"/>`,
-    );
-  if (owner === "header-unused")
-    return { ...base, "word/header1.xml": HEADER89, "word/_rels/header1.xml.rels": imageRels(target), [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", "header1.xml")), [CT]: overrides(base[CT] as string, ["word/header1.xml", `${WML}.header+xml`]) };
-  if (owner === "styles") return { ...base, "word/_rels/styles.xml.rels": imageRels(target) };
-  // An unreferenced part: no relationship names word/foo.xml.
-  return { ...base, "word/foo.xml": `${XML_DECL}<foo/>`, "word/_rels/foo.xml.rels": imageRels(target) };
+    const target = `${prefix}image1.png`;
+    const base: Record<string, string | Uint8Array> = { ...P, [`word/${target}`]: PNG, [CT]: defaults(P[CT]!, "png", "image/png") };
+    if (owner === "footer-used")
+        return mainWith(
+            {
+                ...base,
+                "word/footer1.xml": FOOTER89,
+                "word/_rels/footer1.xml.rels": imageRels(target),
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdF", "footer", "footer1.xml")),
+                [CT]: overrides(base[CT] as string, ["word/footer1.xml", `${WML}.footer+xml`]),
+            },
+            `<w:footerReference w:type="default" r:id="rIdF"/>`,
+        );
+    if (owner === "header-unused")
+        return {
+            ...base,
+            "word/header1.xml": HEADER89,
+            "word/_rels/header1.xml.rels": imageRels(target),
+            [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
+            [CT]: overrides(base[CT] as string, ["word/header1.xml", `${WML}.header+xml`]),
+        };
+    if (owner === "styles") return { ...base, "word/_rels/styles.xml.rels": imageRels(target) };
+    // An unreferenced part: no relationship names word/foo.xml.
+    return { ...base, "word/foo.xml": `${XML_DECL}<foo/>`, "word/_rels/foo.xml.rels": imageRels(target) };
 };
 const sidecarPair = (owner: string): Row[] => [
-  [`sidecar-${owner}-ftp`, `#1184: ${owner === "unreferenced" ? "an unreferenced word/foo.xml" : `the ${owner.replace("-", " ")} part`}'s own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png`, () => buildDocx(sidecarImage(owner, "ftp:"))],
-  [`sidecar-${owner}-plain-calibration`, `calibration: the same sidecar image relationship through image1.png`, () => buildDocx(sidecarImage(owner, ""))],
+    [
+        `sidecar-${owner}-ftp`,
+        `#1184: ${owner === "unreferenced" ? "an unreferenced word/foo.xml" : `the ${owner.replace("-", " ")} part`}'s own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png`,
+        () => buildDocx(sidecarImage(owner, "ftp:")),
+    ],
+    [
+        `sidecar-${owner}-plain-calibration`,
+        `calibration: the same sidecar image relationship through image1.png`,
+        () => buildDocx(sidecarImage(owner, "")),
+    ],
 ];
 
 const propPair = (kind: string): Row[] => [
-  [`pkgrels-${kind}-ftp`, `#1184: _rels/.rels relates the ${kind} part through ftp:docProps/${PROPS[kind]!.file}, stored /ftp:docProps/${PROPS[kind]!.file} well-formed`, () => buildDocx(pkgProp(kind, "ftp:"))],
-  [`pkgrels-${kind}-plain-calibration`, `calibration: the same _rels/.rels ${kind} relationship through docProps/${PROPS[kind]!.file}`, () => buildDocx(pkgProp(kind, ""))],
+    [
+        `pkgrels-${kind}-ftp`,
+        `#1184: _rels/.rels relates the ${kind} part through ftp:docProps/${PROPS[kind]!.file}, stored /ftp:docProps/${PROPS[kind]!.file} well-formed`,
+        () => buildDocx(pkgProp(kind, "ftp:")),
+    ],
+    [
+        `pkgrels-${kind}-plain-calibration`,
+        `calibration: the same _rels/.rels ${kind} relationship through docProps/${PROPS[kind]!.file}`,
+        () => buildDocx(pkgProp(kind, "")),
+    ],
 ];
 const headerPair = (used: boolean): Row[] => {
-  const kind = used ? "used" : "unused";
-  return [
-    [`header-image-${kind}-ftp`, `#1184: a used header's own sidecar relates an image the header ${used ? "uses through r:embed" : "does not use"} through ftp:image1.png, stored word/ftp:image1.png`, () => buildDocx(headerImage(used, "ftp:"))],
-    [`header-image-${kind}-plain-calibration`, `calibration: the same header-sidecar image relationship through image1.png`, () => buildDocx(headerImage(used, ""))],
-  ];
+    const kind = used ? "used" : "unused";
+    return [
+        [
+            `header-image-${kind}-ftp`,
+            `#1184: a used header's own sidecar relates an image the header ${used ? "uses through r:embed" : "does not use"} through ftp:image1.png, stored word/ftp:image1.png`,
+            () => buildDocx(headerImage(used, "ftp:")),
+        ],
+        [
+            `header-image-${kind}-plain-calibration`,
+            `calibration: the same header-sidecar image relationship through image1.png`,
+            () => buildDocx(headerImage(used, "")),
+        ],
+    ];
 };
 const withControl = (chunk: string, rows: Row[]): Row[] => [...rows, [`${chunk}-control-minimal`, "control", () => buildDocx({ ...P })]];
 const chunks: Record<string, Row[]> = {
-  s89a: withControl("s89a", [...propPair("core"), ...propPair("app"), ...propPair("custom"), ...propPair("thumbnail")]),
-  s89b: withControl("s89b", [...headerPair(true), ...headerPair(false)]),
-  s89c: withControl("s89c", [...sidecarPair("footer-used"), ...sidecarPair("header-unused"), ...sidecarPair("styles"), ...sidecarPair("unreferenced")]),
+    s89a: withControl("s89a", [...propPair("core"), ...propPair("app"), ...propPair("custom"), ...propPair("thumbnail")]),
+    s89b: withControl("s89b", [...headerPair(true), ...headerPair(false)]),
+    s89c: withControl("s89c", [
+        ...sidecarPair("footer-used"),
+        ...sidecarPair("header-unused"),
+        ...sidecarPair("styles"),
+        ...sidecarPair("unreferenced"),
+    ]),
 };
 
 const chunk = process.env.CHUNK ?? "";
@@ -34677,33 +34842,57 @@ const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
 writeFileSync(jsonl, "");
 
 const verdict = async (file: string, profile: "word-valid" | "strict") => {
-  try {
-    const r = await validate(file, { profile });
-    return {
-      valid: r.valid,
-      errors: [...new Set(r.issues.filter((x: { severity: string }) => x.severity === "error").map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`))],
-      warnings: [...new Set(r.issues.filter((x: { severity: string }) => x.severity === "warning").map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`))],
-    };
-  } catch (error) {
-    return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`], warnings: [] };
-  }
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+            warnings: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "warning")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`], warnings: [] };
+    }
 };
 
 for (const [name, issue, make] of specimens) {
-  const bytes = await make();
-  const file = `${name}.docx`;
-  writeFileSync(path.join(dir, file), bytes);
-  const sha256 = createHash("sha256").update(bytes).digest("hex");
-  const target = path.join(dir, file);
-  const row = { name, issue, file, sha256, calibration: name.includes("calibration"), control: issue === "control", validatorRevision: REVISION, wordValid: await verdict(target, "word-valid"), strict: await verdict(target, "strict") };
-  appendFileSync(jsonl, JSON.stringify(row) + "\n");
-  console.log(`built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} warn=${row.wordValid.warnings.filter((w: string) => w.startsWith("rels")).join(",")} strict=${row.strict.valid}`);
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        control: issue === "control",
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} warn=${row.wordValid.warnings.filter((w: string) => w.startsWith("rels")).join(",")} strict=${row.strict.valid}`,
+    );
 }
-````
+```
 
 `rejudge.mts`:
 
-````ts
+```ts
 // Judge the bytes session 90 showed Word (each chunk's src/) with the validator in WT, and record its revision per row.
 // Run: WT=<tree> tsx <abs path to this file>
 import { execFileSync } from "node:child_process";
@@ -34715,24 +34904,43 @@ const WT = process.env.WT ?? process.cwd();
 const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
 const REVISION = execFileSync("git", ["-C", WT, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
 const verdict = async (file: string, profile: "word-valid" | "strict") => {
-  const r = await validate(file, { profile });
-  return { valid: r.valid, errors: [...new Set(r.issues.filter((x: { severity: string }) => x.severity === "error").map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`))] };
+    const r = await validate(file, { profile });
+    return {
+        valid: r.valid,
+        errors: [
+            ...new Set(
+                r.issues
+                    .filter((x: { severity: string }) => x.severity === "error")
+                    .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+            ),
+        ],
+    };
 };
 const out: string[] = [];
 for (const chunk of ["s90a"]) {
-  for (const line of readFileSync(path.join(ROOT, chunk, "specimens.jsonl"), "utf8").trim().split("\n")) {
-    const spec = JSON.parse(line);
-    const file = path.join(ROOT, chunk, "src", spec.file);
-    out.push(JSON.stringify({ chunk, file: spec.file, validatorRevision: REVISION, wordValid: await verdict(file, "word-valid"), strict: await verdict(file, "strict") }));
-  }
+    for (const line of readFileSync(path.join(ROOT, chunk, "specimens.jsonl"), "utf8")
+        .trim()
+        .split("\n")) {
+        const spec = JSON.parse(line);
+        const file = path.join(ROOT, chunk, "src", spec.file);
+        out.push(
+            JSON.stringify({
+                chunk,
+                file: spec.file,
+                validatorRevision: REVISION,
+                wordValid: await verdict(file, "word-valid"),
+                strict: await verdict(file, "strict"),
+            }),
+        );
+    }
 }
 writeFileSync(path.join(ROOT, "s90", "rejudge.jsonl"), out.join("\n") + "\n");
 console.log(out.length, "rows at", REVISION);
-````
+```
 
 `compare.py`:
 
-````python
+```python
 """Join the two runs of the session-90 chunks: log verdicts, table verdicts, validator verdicts, hashes.
 
 Each row's runs are its chunk's first pass (the chunk folder) and second pass (`pass2`), separate driver runs of
@@ -34781,11 +34989,11 @@ for r in rows:
     print(f"{r['chunk']} {r['file']:<40} {r['outcome']:<27} before={r['wordValidBefore']!s:<5} head={r['wordValidHead']!s:<5} match={r['matchesBefore']}/{r['matchesHead']}")
 print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| matches before:", sum(r["matchesBefore"] for r in rows),
       "| at head:", sum(r["matchesHead"] for r in rows))
-````
+```
 
 `section.py`:
 
-````python
+`````python
 """Render the session-90 part of docs/plans/evidence/word-probes-2026-10-24.md into s89/section.md.
 
 Reads each chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
@@ -34934,6 +35142,6 @@ for name, path, lang in (("s89builder.mts", ROOT / "s89builder.mts", "ts"), ("re
 out += ["</details>", ""]
 (ROOT / "s90/section.md").write_text("\n".join(out))
 print(n, "rows,", len(raw), "raw records,", mb, "/", ma, "match")
-````
+`````
 
 </details>
