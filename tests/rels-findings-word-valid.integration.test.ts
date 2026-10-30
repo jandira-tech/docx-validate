@@ -455,15 +455,19 @@ describe("a relative target that starts with http is resolved as a part (#988, s
     });
 
     // Word-valid and strict skip only the `http:` and `https:` schemes: another
-    // scheme that merely starts with `http` is resolved as a part, as `ftp:` is.
+    // scheme that merely starts with `http` names no part, as `ftp:` does
+    // (session 87, #1127). An image relationship to one keeps the broken-media
+    // warning under word-valid: only a header and the styles type were probed.
     it.each([
         ["httpfoo:bar", "word-valid", "warning"],
         ["httpfoo:bar", "strict", "error"],
         ["http+unix:/x", "word-valid", "warning"],
         ["http+unix:/x", "strict", "error"],
-    ] as const)("resolves %s as a part under %s, as ftp: is", async (target, profile, severity) => {
+    ] as const)("reports %s as naming no part under %s, as ftp: is", async (target, profile, severity) => {
         const { broken } = await run(withBrokenTarget(target), profile);
-        expect(broken.map((issue) => [issue.severity, issue.message])).toEqual([[severity, `Broken reference to ${target}`]]);
+        expect(broken.map((issue) => [issue.severity, issue.message])).toEqual([
+            [severity, `Broken reference to ${target}: it spells a URI scheme, which names no part`],
+        ]);
     });
 
     // #1008: a URI scheme is ASCII case-insensitive (RFC 3986 §3.1), so
@@ -636,5 +640,99 @@ describe("both file-reference walks read an off-convention relationships part fr
             ["rels-broken", relsPart],
             ["rels-target-missing", relsPart],
         ]);
+    });
+});
+
+// Session 87 (s87c, s87d; two runs each, every reading agreeing, docs/plans/evidence/word-probes-2026-10-24.md): Word
+// offered recovery for a used header related through `ftp:header1.xml` or `httpfoo:header1.xml`, and for the styles
+// relationship through `ftp:styles.xml`, beside the stored `word/ftp:…` part their path spells, malformed or
+// well-formed, and opened the plain-named control clean. A target spelling a URI scheme names no part (RFC 3986
+// §4.3: it is an absolute URI, never a relative reference), as the read model already reads it (#1127); the
+// file-reference walk resolved it as a relative reference and found the stored part, so word-valid and strict accepted
+// every refused well-formed row.
+describe("an internal target spelling a URI scheme names no part (#1127, session 87)", () => {
+    const CT = "[Content_Types].xml";
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const HEADER = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Head</w:t></w:r></w:p></w:hdr>`;
+    const override = (ct: string, part: string, type: string) =>
+        ct.replace("</Types>", `<Override PartName="/${part}" ContentType="${type}"/></Types>`);
+    const usedHeaderAt = (target: string) => ({
+        ...withRelationship(`<Relationship Id="rIdH" Type="${RELATIONSHIPS}/header" Target="${target}"/>`),
+        "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+            `xmlns:w="${W}"`,
+            `xmlns:w="${W}" xmlns:r="${RELATIONSHIPS}"`,
+        ).replace("<w:sectPr>", '<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>'),
+        [`word/${target}`]: HEADER,
+        [CT]: override(MINIMAL_PARTS[CT]!, `word/${target}`, "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"),
+    });
+    const stylesAt = (target: string) => {
+        const parts: Record<string, string> = {
+            ...MINIMAL_PARTS,
+            [SIDECAR]: MINIMAL_PARTS[SIDECAR]!.replace('Target="styles.xml"', `Target="${target}"`),
+            [`word/${target}`]: MINIMAL_PARTS["word/styles.xml"]!,
+        };
+        if (target !== "styles.xml") delete parts["word/styles.xml"];
+        return parts;
+    };
+
+    it.each([
+        ["s87c used header", usedHeaderAt("ftp:header1.xml")],
+        ["s87c used header", usedHeaderAt("httpfoo:header1.xml")],
+        ["s87c used header", usedHeaderAt("HTTPFOO:header1.xml")],
+        ["s87d styles", stylesAt("ftp:styles.xml")],
+    ])("blocks the %s row's scheme target beside its well-formed stored part, as Word refused it", async (_row, parts) => {
+        for (const profile of ["word-valid", "strict"] as const) {
+            const { valid, broken } = await run(parts, profile);
+            expect(broken.map((issue) => [issue.path, issue.severity, issue.message])).toEqual([
+                [SIDECAR, "error", expect.stringMatching(/: it spells a URI scheme, which names no part$/)],
+            ]);
+            expect(valid).toBe(false);
+        }
+    });
+
+    it.each([
+        ["s87c used header", usedHeaderAt("header1.xml")],
+        ["s87d styles", stylesAt("styles.xml")],
+    ])("accepts the %s control's plain target", async (_row, parts) => {
+        const { valid, broken } = await run(parts, "word-valid");
+        expect(broken).toEqual([]);
+        expect(valid).toBe(true);
+    });
+
+    // Unprobed placements keep the warning (review of #1177): a header the
+    // body does not use, and a styles relationship in the package
+    // relationships part beside the main document's own.
+    it.each([
+        [
+            "an unused header",
+            (() => {
+                const parts = usedHeaderAt("ftp:header1.xml");
+                parts["word/document.xml"] = MINIMAL_PARTS["word/document.xml"]!;
+                return parts;
+            })(),
+            SIDECAR,
+        ],
+        [
+            "a package-level styles relationship",
+            {
+                ...MINIMAL_PARTS,
+                "_rels/.rels": MINIMAL_PARTS["_rels/.rels"]!.replace(
+                    "</Relationships>",
+                    `<Relationship Id="rIdS" Type="${RELATIONSHIPS}/styles" Target="ftp:styles.xml"/></Relationships>`,
+                ),
+                "ftp:styles.xml": MINIMAL_PARTS["word/styles.xml"]!,
+            },
+            "_rels/.rels",
+        ],
+    ])("keeps %s through a scheme target a word-valid warning, as Word was not shown it", async (_row, parts, relsPart) => {
+        const { valid, broken } = await run(parts, "word-valid");
+        expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([[relsPart, "warning"]]);
+        expect(valid).toBe(true);
+        expect((await run(parts, "strict")).broken.map((issue) => issue.severity)).toEqual(["error"]);
+    });
+
+    it("keeps lenient's historical scan, which resolves ftp: as a part (#665)", async () => {
+        const { broken } = await run(stylesAt("ftp:styles.xml"), "lenient");
+        expect(broken).toEqual([]);
     });
 });

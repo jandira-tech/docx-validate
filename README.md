@@ -356,11 +356,17 @@ Choice, and one a `w:hyperlink` names; these are the targets Word-valid's
 `s40a`/`s40b`). Lenient keeps its historical scan, which skips only `http…` and
 `mailto:` targets ([#665](https://github.com/jandira-tech/docx-validate/issues/665)).
 Word-valid and strict skip only the `http:`, `https:` and `mailto:` schemes, so a
-relative target that merely starts with `http` resolves as a part, and so does
-another scheme that starts with `http` (`httpfoo:`), as `ftp:` does: Word refused `httpimage1.png/.` as a folder and opened the plain
+relative target that merely starts with `http` resolves as a part: Word refused `httpimage1.png/.` as a folder and opened the plain
 `httpimage1.png` clean (Word probes session 79), and word-valid used to accept the
 folder target
 ([#988](https://github.com/jandira-tech/docx-validate/issues/988)).
+Any other scheme (`ftp:`, `httpfoo:`) makes the target an absolute URI that names
+no part, reported as `rels-broken`: Word offered recovery for a used header and the
+styles part related through one, beside the well-formed stored `word/ftp:…` part
+(Word probes session 87), so the styles type and a used header block word-valid
+in a story root's sidecar, and every unprobed placement (an unused header, the
+package relationships part, another type) keeps a warning
+([#1127](https://github.com/jandira-tech/docx-validate/issues/1127)).
 They read the scheme ASCII case-insensitively, as RFC 3986 does, so an `HTTP:` or
 `MAILTO:` target is skipped as its lowercase spelling is, where it used to be
 resolved as a part; lenient's scan stays case-sensitive. Word has been shown
@@ -1101,8 +1107,11 @@ nor hides a read one, because usage is decided per (part, type) pair
 ([#593](https://github.com/jandira-tech/docx-validate/issues/593)); a read
 story relationship hides no eager one either — session 56 (s56a, 2026-10-26)
 observed Word recover the styles part typed `…styles+xml; charset=utf-8`
-with a read footer relationship also targeting it, so the spelling is
-judged over every reach the story roots read
+with a read footer relationship also targeting it, and session 87 (s87a,
+2026-10-30) the same part with a used header, comments, footnotes or endnotes
+relationship in place of the footer
+([#776](https://github.com/jandira-tech/docx-validate/issues/776)), so the
+spelling is judged over every reach the story roots read
 ([#760](https://github.com/jandira-tech/docx-validate/issues/760)). Strict
 judges the same probed set — theme included, though it is a DrawingML part,
 not a clause-11.3 one — plus the unprobed Part 1 WordprocessingML

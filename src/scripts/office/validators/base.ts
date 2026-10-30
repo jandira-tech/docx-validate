@@ -45,11 +45,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+    canonicalPartName,
     CT_DUPLICATE_DECLARATION,
     duplicateContentTypeDeclarations,
     equivalentPartLookup,
     findContentTypesStream,
     findEquivalentPart,
+    hasUriScheme,
     isContentTypesStreamName,
     isRelationshipsFolderName,
     isRelationshipsPartName,
@@ -59,6 +61,7 @@ import {
     resolveContentType,
     resolvePartName,
 } from "../../../lib/content-types";
+import { officeRelationshipTypeSegment } from "../../../lib/word-read-parts";
 import {
     applyMarkupCompatibility,
     isAlternateContentCharacterData,
@@ -94,7 +97,7 @@ import { CT_OVERRIDE_PARTNAME_WORD_REFUSED, ctOverridePartnameWordRefusedCheck }
 import { CT_OVERRIDE_PARTNAME_INVALID, ctOverridePartnameInvalidCheck } from "../checks/ct-override-partname";
 import { ctDuplicateDeclarationCheck } from "../checks/word-content-types";
 import { isStoryReferenceLocalName, registerStoryReferenceIdentity } from "../story-reference-identity";
-import { registerRelsBrokenTarget, registerRelsEmptyElementShape } from "../rels-finding-facts";
+import { registerRelsBrokenScheme, registerRelsBrokenTarget, registerRelsEmptyElementShape } from "../rels-finding-facts";
 import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
 import { CT_MARKUP_COMPATIBILITY, ctMarkupCompatibilityCheck } from "../checks/ct-markup-compatibility";
 import { globalElementKey, schemaGlobals } from "../schema-globals";
@@ -1036,7 +1039,7 @@ export class BaseSchemaValidator {
             // resolveRelationshipTargetPath reads it (#990).
             const relsFolder = path.posix.dirname(relsPart);
             const sourceFolder = isRelationshipsFolderName(path.posix.basename(relsFolder)) ? path.posix.dirname(relsFolder) : relsFolder;
-            const broken: Array<{ target: string; part: string; folder?: true }> = [];
+            const broken: Array<{ target: string; part: string; folder?: true; scheme?: string }> = [];
 
             const rels = this.relationshipElements(dom, relsPart);
             for (let i = 0; i < rels.length; i += 1) {
@@ -1049,7 +1052,7 @@ export class BaseSchemaValidator {
                 // target that merely starts with `http` resolves as a part:
                 // Word refused `httpimage1.png/.` as a folder (session 79,
                 // #988). Another scheme that starts with `http` (`httpfoo:`)
-                // resolves as a part too, as `ftp:` does. A scheme is ASCII
+                // names no part either, as `ftp:` does (below). A scheme is ASCII
                 // case-insensitive (RFC 3986 §3.1), so they read `HTTP:` and
                 // `MAILTO:` as `http:` and `mailto:` (#1008). Lenient keeps
                 // its historical case-sensitive prefix scan (#665).
@@ -1062,6 +1065,22 @@ export class BaseSchemaValidator {
                 // a part (ECMA-376 Part 2 §9.3), so it is not resolved as one.
                 // Lenient keeps its historical scan, pinned byte for byte (#665).
                 if (this.profile !== "lenient" && rel.getAttribute("TargetMode") === "External") continue;
+                // Any other scheme (`ftp:`, `httpfoo:`) makes the target an
+                // absolute URI, never a relative reference (RFC 3986 §4.3),
+                // so it names no part either, as the read model reads it: Word
+                // offered recovery for a used header and the styles part
+                // related through one beside the well-formed `word/ftp:…`
+                // part its path spells (session 87, #1127). Lenient keeps
+                // resolving it as a part (#665).
+                if (this.profile !== "lenient" && hasUriScheme(target)) {
+                    const segment = officeRelationshipTypeSegment(rel.getAttribute("Type") ?? "") ?? "";
+                    // Word was shown a header the body uses (s87c): one no
+                    // markup references registers apart, to keep its warning.
+                    const used =
+                        segment !== "header" || (await this.sourceReferencesRelationship(entries, relsPart, rel.getAttribute("Id") ?? ""));
+                    broken.push({ target, part: target, scheme: used ? segment : "header-unused" });
+                    continue;
+                }
 
                 // A final `.` or `..` segment, or a trailing `/`, names a
                 // folder, never the part its path spells, which the
@@ -1105,16 +1124,21 @@ export class BaseSchemaValidator {
                 }
             }
 
-            for (const { target, part, folder } of broken) {
+            for (const { target, part, folder, scheme } of broken) {
                 const issue: ValidationIssue = {
                     severity: "error",
-                    message: folder ? `Broken reference to ${target}: it names a folder, not a part` : `Broken reference to ${target}`,
+                    message: folder
+                        ? `Broken reference to ${target}: it names a folder, not a part`
+                        : scheme !== undefined
+                          ? `Broken reference to ${target}: it spells a URI scheme, which names no part`
+                          : `Broken reference to ${target}`,
                     path: this.relPath(relsFile),
                     code: "rels-broken",
                 };
                 // The word-valid verdict reads the part the target resolved
                 // to, never the raw Target spelling the message embeds (#734).
                 registerRelsBrokenTarget(issue, part);
+                if (scheme !== undefined) registerRelsBrokenScheme(issue, scheme);
                 issues.push(issue);
             }
         }
@@ -1130,6 +1154,46 @@ export class BaseSchemaValidator {
         }
 
         return finalize(issues);
+    }
+
+    /**
+     * Whether the source part of `relsPart` (the folder above its `_rels`
+     * folder, the owner name less `.rels`) carries an attribute in an
+     * Office relationships namespace whose value is `id`: the markup that
+     * uses the relationship, such as a `w:headerReference r:id`. `false`
+     * when the source part is not stored or does not parse.
+     */
+    private async sourceReferencesRelationship(entries: ReadonlyMap<string, string>, relsPart: string, id: string): Promise<boolean> {
+        const canonical = canonicalPartName(relsPart);
+        const dir = path.posix.dirname(canonical);
+        if (id === "" || path.posix.basename(dir) !== "_rels") {
+            return false;
+        }
+        const folder = path.posix.dirname(dir);
+        const owner = path.posix.basename(canonical).slice(0, -".rels".length);
+        const source = resolvePartName([...entries.keys()], folder === "." ? owner : `${folder}/${owner}`);
+        const file = source === undefined ? undefined : entries.get(source);
+        if (file === undefined) {
+            return false;
+        }
+        let dom: Document;
+        try {
+            dom = await this.readPartDom(file);
+        } catch {
+            return false;
+        }
+        const namespaces = new Set([OFFICE_RELATIONSHIPS_NAMESPACE, STRICT_OFFICE_RELATIONSHIPS_NAMESPACE]);
+        const elements = dom.getElementsByTagName("*");
+        for (let i = 0; i < elements.length; i += 1) {
+            const attributes = elements[i]?.attributes;
+            for (let j = 0; attributes !== undefined && j < attributes.length; j += 1) {
+                const attribute = attributes[j];
+                if (attribute !== undefined && attribute.value === id && namespaces.has(attribute.namespaceURI ?? "")) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     async validateRelationshipElements(): Promise<ValidationResult> {

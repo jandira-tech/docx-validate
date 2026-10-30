@@ -14,7 +14,7 @@ import { canonicalPartName, isContentTypesStreamName, PART_NAME_FOLDER_SEGMENT_D
 import { sidecarOf } from "../../../lib/word-read-parts";
 import { NS, type ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameAll } from "../../../lib/xml-helpers";
-import { relsBrokenTarget, relsEmptyElementShape } from "../rels-finding-facts";
+import { relsBrokenScheme, relsBrokenTarget, relsEmptyElementShape } from "../rels-finding-facts";
 import { isCommentReferenceMissing } from "../comment-finding-facts";
 import {
     SCHEMA_DECLARED_ELEMENTS,
@@ -558,7 +558,23 @@ export const isWordBlockingIssue = (
             // the unreferenced part and of the used header, two runs each, all
             // readings agreeing (#987); the customXml shape in an unused
             // header's or the styles part's sidecar is unprobed (#1006).
+            // A target spelling a URI scheme names no part: Word offered
+            // recovery for a used header related through `ftp:header1.xml`
+            // or `httpfoo:header1.xml` and for the styles relationship
+            // through `ftp:styles.xml`, beside the well-formed stored part
+            // its path spells (session 87, s87c/s87d, #1127). Only those
+            // placements are probed: a header the body does not use, a
+            // scheme target in the package relationships part and another
+            // type keep their warning (review of #1177).
             const part = relsBrokenTarget(issue);
+            const scheme = relsBrokenScheme(issue);
+            if (scheme !== undefined) {
+                return (
+                    part !== undefined &&
+                    isDocumentRelationshipsPart(issue.path, storyRootParts) &&
+                    (scheme === "styles" || scheme === "header")
+                );
+            }
             return (
                 part !== undefined &&
                 (isPackageRelationshipsPart(issue.path) || isDocumentRelationshipsPart(issue.path, storyRootParts)) &&

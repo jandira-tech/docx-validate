@@ -810,3 +810,36 @@ describe("markup compatibility in a word/ part Word does not read warns under wo
         expect((await mceRun(choice, "strict")).mce).toContain(`mce-malformed:error@${UNRELATED}`);
     });
 });
+
+// #1136 (review 1126 F6): Word opened clean, two runs each (session 87, s87e), s84a's unrelated MustUnderstand header
+// beside an unclosed word/_rels/stray.xml.rels whose source part is not stored, and beside an unclosed sidecar of a
+// stored word/x.xml nothing relates. A relationships part Word never reads leaves the parts Word may read decidable,
+// so it no longer turns every unread part's markup-compatibility finding into an error.
+describe("a malformed relationships part Word never reads keeps the unread-part warning (#1136, session 87)", { timeout: 120_000 }, () => {
+    const UNCLOSED = `${DECL}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship`;
+    const withStraySidecar = (parts: Parts): Parts => new Map(parts).set("word/_rels/stray.xml.rels", UNCLOSED);
+    const withUnrelatedSidecar = (parts: Parts): Parts =>
+        new Map(parts).set("word/x.xml", `${DECL}<w:document xmlns:w="${W}"><w:body/></w:document>`).set("word/_rels/x.xml.rels", UNCLOSED);
+
+    it.each(
+        RUNS.flatMap(([label, checks]) =>
+            [
+                ["an unclosed sidecar of an unstored part", withStraySidecar],
+                ["an unclosed sidecar of a stored part nothing relates", withUnrelatedSidecar],
+            ].map(([placement, place]) => [placement, label, checks, place] as const),
+        ),
+    )("passes s84a's unrelated header beside %s (%s run), as Word opened it clean", async (_placement, _label, checks, place) => {
+        expect(await mceRun((place as (parts: Parts) => Parts)(mustUnderstandHeader()), "word-valid", checks)).toEqual({
+            valid: true,
+            mce: [`mce-must-understand:warning@${UNRELATED}`],
+        });
+    });
+
+    it.each(RUNS)("%s run still blocks when the main document's own sidecar is unclosed", async (_label, checks) => {
+        const parts = mustUnderstandHeader();
+        parts.set("word/_rels/document.xml.rels", UNCLOSED);
+        const result = await mceRun(parts, "word-valid", checks);
+        expect(result.valid).toBe(false);
+        expect(result.mce).toContain(`mce-must-understand:error@${UNRELATED}`);
+    });
+});

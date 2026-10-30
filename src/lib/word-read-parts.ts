@@ -754,13 +754,16 @@ export const wordReadTypedTargets = async (context: ValidationContext, profile?:
  * package-relationships `Relationship` children of a `Relationships` root in
  * that namespace, in its view, so it decides nothing about one in no namespace, in
  * another, or under a root outside it, and that one names its part (#1135). A
- * target spelling a URI scheme names the part word-valid's
- * file-reference walk resolves it to: every scheme but `http:`, `https:` and
- * `mailto:` reads as a relative reference (#988, #1008), which the read model
- * does not follow, so a story root's own story relationship to one counts
- * (#1127). `undefined` when that cannot be decided: the package
+ * target spelling a URI scheme other than `http:`, `https:` and `mailto:`
+ * names no part, and Word refused a package relating a used header or the
+ * styles part through one (session 87, #1127); the part its path spells
+ * still counts as possibly read, so a markup-compatibility finding in it
+ * keeps blocking whatever the relationship type. `undefined` when that cannot be decided: the package
  * relationships part is missing or does not parse, it names no stored main
- * document (#816), or a relationships part fails the byte-level XML checks.
+ * document (#816), or a relationships part Word may read fails the
+ * byte-level XML checks: the package relationships part, or the sidecar of a
+ * stored part the list names. A failing sidecar of a part not stored, or of
+ * one nothing names, leaves the list decidable (session 87, #1136).
  */
 export const wordPossiblyReadParts = async (context: ValidationContext, profile?: Profile): Promise<ReadonlySet<string> | undefined> => {
     const reach = await packageReach(context, profile);
@@ -773,6 +776,7 @@ export const wordPossiblyReadParts = async (context: ValidationContext, profile?
         read.filter((target) => target.segment === "relationships").map((target) => canonicalPartName(target.part)),
     );
     const named = new Set(read.map((target) => canonicalPartName(target.part)));
+    const unreadable: string[] = [];
     for (const name of names) {
         if (!isRelationshipsPartName(name)) {
             continue;
@@ -780,7 +784,8 @@ export const wordPossiblyReadParts = async (context: ValidationContext, profile?
         const bytes = context.bytes(name);
         const parsed = context.xml(name);
         if (bytes === undefined || !parsed?.ok || (await checkXmlSyntax(bytes, name)).some((issue) => issue.severity === "error")) {
-            return undefined;
+            unreadable.push(name);
+            continue;
         }
         const rootSidecar = rootSidecars.has(canonicalPartName(name));
         const baseDir = relationshipsBaseDir(name);
@@ -820,15 +825,51 @@ export const wordPossiblyReadParts = async (context: ValidationContext, profile?
             }
         }
     }
+    // A relationships part that fails the byte-level checks names parts no
+    // one can list, so the set is undecidable when Word may read it: the
+    // package relationships part, or the sidecar of a stored part that the
+    // read model or another relationship names. Word opened clean an unread
+    // part's unknown MustUnderstand beside an unclosed sidecar of a part not
+    // stored, and of a stored word/x.xml nothing relates (session 87, s87e,
+    // #1136). A `.rels` name of no `_rels/<owner>.rels` shape is no
+    // relationships part Word reads (#734), so it leaves the set decidable.
+    for (const name of unreadable) {
+        const canonical = canonicalPartName(name);
+        if (canonical === "_rels/.rels") {
+            return undefined;
+        }
+        const source = relationshipsSourcePart(canonical);
+        const stored = source === undefined ? undefined : lookup(source);
+        if (stored !== undefined && named.has(canonicalPartName(stored))) {
+            return undefined;
+        }
+    }
     return named;
 };
 
 /**
- * The part a target spelling a URI scheme names under word-valid's
- * file-reference walk, which skips only `http:`, `https:` and `mailto:`,
- * ASCII case-insensitively, and resolves any other scheme as a relative
- * reference (#988, #1008). `undefined` for those three schemes and for a
- * target with no scheme, which `resolveTarget` reads.
+ * The source part a canonical relationships part name of the OPC
+ * `_rels/<owner>.rels` shape describes; `undefined` for the package
+ * relationships part and for a `.rels` name of no such shape.
+ */
+const relationshipsSourcePart = (canonical: string): string | undefined => {
+    const dir = path.posix.dirname(canonical);
+    const owner = path.posix.basename(canonical);
+    if (path.posix.basename(dir) !== "_rels" || !owner.endsWith(".rels") || owner.length <= ".rels".length) {
+        return undefined;
+    }
+    const folder = path.posix.dirname(dir);
+    const source = owner.slice(0, -".rels".length);
+    return folder === "." ? source : `${folder}/${source}`;
+};
+
+/**
+ * The stored part a target spelling a URI scheme other than `http:`,
+ * `https:` and `mailto:` (ASCII case-insensitively, #1008) spells as a
+ * relative path. Such a target names no part (session 87, #1127); the part
+ * is still listed as possibly read, the conservative side for the findings
+ * this set demotes. `undefined` for those three schemes and for a target
+ * with no scheme, which `resolveTarget` reads.
  */
 const schemeTargetPart = (lookup: (partName: string) => string | undefined, baseDir: string, target: string): string | undefined =>
     hasUriScheme(target) && !/^(?:https?|mailto):/i.test(target) ? resolveTarget(lookup, baseDir, `./${target}`) : undefined;
