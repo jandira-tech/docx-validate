@@ -45,6 +45,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+    canonicalPartName,
     CT_DUPLICATE_DECLARATION,
     duplicateContentTypeDeclarations,
     equivalentPartLookup,
@@ -1072,7 +1073,12 @@ export class BaseSchemaValidator {
                 // part its path spells (session 87, #1127). Lenient keeps
                 // resolving it as a part (#665).
                 if (this.profile !== "lenient" && hasUriScheme(target)) {
-                    broken.push({ target, part: target, scheme: officeRelationshipTypeSegment(rel.getAttribute("Type") ?? "") ?? "" });
+                    const segment = officeRelationshipTypeSegment(rel.getAttribute("Type") ?? "") ?? "";
+                    // Word was shown a header the body uses (s87c): one no
+                    // markup references registers apart, to keep its warning.
+                    const used =
+                        segment !== "header" || (await this.sourceReferencesRelationship(entries, relsPart, rel.getAttribute("Id") ?? ""));
+                    broken.push({ target, part: target, scheme: used ? segment : "header-unused" });
                     continue;
                 }
 
@@ -1148,6 +1154,46 @@ export class BaseSchemaValidator {
         }
 
         return finalize(issues);
+    }
+
+    /**
+     * Whether the source part of `relsPart` (the folder above its `_rels`
+     * folder, the owner name less `.rels`) carries an attribute in an
+     * Office relationships namespace whose value is `id`: the markup that
+     * uses the relationship, such as a `w:headerReference r:id`. `false`
+     * when the source part is not stored or does not parse.
+     */
+    private async sourceReferencesRelationship(entries: ReadonlyMap<string, string>, relsPart: string, id: string): Promise<boolean> {
+        const canonical = canonicalPartName(relsPart);
+        const dir = path.posix.dirname(canonical);
+        if (id === "" || path.posix.basename(dir) !== "_rels") {
+            return false;
+        }
+        const folder = path.posix.dirname(dir);
+        const owner = path.posix.basename(canonical).slice(0, -".rels".length);
+        const source = resolvePartName([...entries.keys()], folder === "." ? owner : `${folder}/${owner}`);
+        const file = source === undefined ? undefined : entries.get(source);
+        if (file === undefined) {
+            return false;
+        }
+        let dom: Document;
+        try {
+            dom = await this.readPartDom(file);
+        } catch {
+            return false;
+        }
+        const namespaces = new Set([OFFICE_RELATIONSHIPS_NAMESPACE, STRICT_OFFICE_RELATIONSHIPS_NAMESPACE]);
+        const elements = dom.getElementsByTagName("*");
+        for (let i = 0; i < elements.length; i += 1) {
+            const attributes = elements[i]?.attributes;
+            for (let j = 0; attributes !== undefined && j < attributes.length; j += 1) {
+                const attribute = attributes[j];
+                if (attribute !== undefined && attribute.value === id && namespaces.has(attribute.namespaceURI ?? "")) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     async validateRelationshipElements(): Promise<ValidationResult> {

@@ -363,8 +363,9 @@ folder target
 Any other scheme (`ftp:`, `httpfoo:`) makes the target an absolute URI that names
 no part, reported as `rels-broken`: Word offered recovery for a used header and the
 styles part related through one, beside the well-formed stored `word/ftp:…` part
-(Word probes session 87), so those two types block word-valid and every unprobed
-type keeps a warning
+(Word probes session 87), so the styles type and a used header block word-valid
+in a story root's sidecar, and every unprobed placement (an unused header, the
+package relationships part, another type) keeps a warning
 ([#1127](https://github.com/jandira-tech/docx-validate/issues/1127)).
 They read the scheme ASCII case-insensitively, as RFC 3986 does, so an `HTTP:` or
 `MAILTO:` target is skipped as its lowercase spelling is, where it used to be

@@ -562,16 +562,23 @@ export const isWordBlockingIssue = (
             // recovery for a used header related through `ftp:header1.xml`
             // or `httpfoo:header1.xml` and for the styles relationship
             // through `ftp:styles.xml`, beside the well-formed stored part
-            // its path spells (session 87, s87c/s87d, #1127). Only those two
-            // types are probed: another type keeps its warning.
+            // its path spells (session 87, s87c/s87d, #1127). Only those
+            // placements are probed: a header the body does not use, a
+            // scheme target in the package relationships part and another
+            // type keep their warning (review of #1177).
             const part = relsBrokenTarget(issue);
             const scheme = relsBrokenScheme(issue);
+            if (scheme !== undefined) {
+                return (
+                    part !== undefined &&
+                    isDocumentRelationshipsPart(issue.path, storyRootParts) &&
+                    (scheme === "styles" || scheme === "header")
+                );
+            }
             return (
                 part !== undefined &&
                 (isPackageRelationshipsPart(issue.path) || isDocumentRelationshipsPart(issue.path, storyRootParts)) &&
-                (scheme !== undefined
-                    ? scheme === "styles" || scheme === "header"
-                    : part.endsWith("/") || isOpcRelationshipsPart(part) || canonicalPartName(part).startsWith("customxml/"))
+                (part.endsWith("/") || isOpcRelationshipsPart(part) || canonicalPartName(part).startsWith("customxml/"))
             );
         }
         case "rels-empty-element":

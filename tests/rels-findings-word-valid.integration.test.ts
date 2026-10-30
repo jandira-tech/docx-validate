@@ -699,6 +699,38 @@ describe("an internal target spelling a URI scheme names no part (#1127, session
         expect(valid).toBe(true);
     });
 
+    // Unprobed placements keep the warning (review of #1177): a header the
+    // body does not use, and a styles relationship in the package
+    // relationships part beside the main document's own.
+    it.each([
+        [
+            "an unused header",
+            (() => {
+                const parts = usedHeaderAt("ftp:header1.xml");
+                parts["word/document.xml"] = MINIMAL_PARTS["word/document.xml"]!;
+                return parts;
+            })(),
+            SIDECAR,
+        ],
+        [
+            "a package-level styles relationship",
+            {
+                ...MINIMAL_PARTS,
+                "_rels/.rels": MINIMAL_PARTS["_rels/.rels"]!.replace(
+                    "</Relationships>",
+                    `<Relationship Id="rIdS" Type="${RELATIONSHIPS}/styles" Target="ftp:styles.xml"/></Relationships>`,
+                ),
+                "ftp:styles.xml": MINIMAL_PARTS["word/styles.xml"]!,
+            },
+            "_rels/.rels",
+        ],
+    ])("keeps %s through a scheme target a word-valid warning, as Word was not shown it", async (_row, parts, relsPart) => {
+        const { valid, broken } = await run(parts, "word-valid");
+        expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([[relsPart, "warning"]]);
+        expect(valid).toBe(true);
+        expect((await run(parts, "strict")).broken.map((issue) => issue.severity)).toEqual(["error"]);
+    });
+
     it("keeps lenient's historical scan, which resolves ftp: as a part (#665)", async () => {
         const { broken } = await run(stylesAt("ftp:styles.xml"), "lenient");
         expect(broken).toEqual([]);

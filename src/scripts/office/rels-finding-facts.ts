@@ -49,7 +49,8 @@ export const relsBrokenTarget = (issue: ValidationIssue): string | undefined => 
 /**
  * Register that a broken target spells a URI scheme, which names no part
  * (#1127), with the relationship's Office type segment (`""` for another
- * type). The verdict never reads the raw Target or Type.
+ * type, `header-unused` for a header no markup in the source part
+ * references). The verdict never reads the raw Target or Type.
  */
 export const registerRelsBrokenScheme = (issue: ValidationIssue, typeSegment: string): void => {
     brokenSchemes.set(issue, typeSegment);
