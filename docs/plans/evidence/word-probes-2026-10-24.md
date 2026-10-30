@@ -33936,23 +33936,24 @@ print(n, "rows,", len(raw), "raw records,", mb, "/", ma, "match")
 
 </details>
 
-### Session 89: 19:26Z–19:28Z on 2026-10-30, validator columns at 2a98048d and 2889f3d0
+### Session 89: 19:26Z–19:42Z on 2026-10-30, validator columns at 2a98048d and 9f8ecef6
 
-The placements of a scheme-like internal target session 88 did not show Word ([#1184](https://github.com/jandira-tech/docx-validate/issues/1184), raised by the adversarial review of [#1182](https://github.com/jandira-tech/docx-validate/issues/1182)). Every `ftp:` row stores the part the path spells well-formed, and each placement has a calibration through its plain name. Two chunks, on the minimal package.
+The placements of a scheme-like internal target session 88 did not show Word ([#1184](https://github.com/jandira-tech/docx-validate/issues/1184), raised by the adversarial review of [#1182](https://github.com/jandira-tech/docx-validate/issues/1182)). Every `ftp:` row stores the part the path spells well-formed, and each placement has a calibration through its plain name. Three chunks, on the minimal package.
 
 - **s89a.** `_rels/.rels` relates the core, extended (app) and custom properties and the thumbnail through `ftp:docProps/…`, stored `/ftp:docProps/…`. #1182 blocked these by extrapolation from s88a's styles row.
 - **s89b.** A used header's own sidecar (`word/_rels/header1.xml.rels`) relates an image through `ftp:image1.png`, stored `word/ftp:image1.png`, which the header either embeds through `r:embed` in an inline drawing or does not use. #1182 kept these a warning.
+- **s89c.** The same unused `ftp:image1.png` image in other sidecars: a used footer's, an unused header's, the styles part's and an unreferenced part's (`word/foo.xml`, which no relationship names).
 
-Each chunk ends with a minimal control. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 14 of 14 rows agree. The two times in Observed are the ends of the row's two runs. Shape is the builder's description of the specimen. The builder judged every row at `2a98048de47687f7424fb6925b6fc5d8f377e11f`, before the fix; `rejudge.mts` judged the same bytes at `2889f3d06bbdbf2b211e4d0047f40073c24177ee`. A first attempt at s89a overlapped another session driving Word (its own `complex.docx` dialogs appear in that log), so it was set aside unread and both runs here were taken after that session's driver had exited.
+Each chunk ends with a minimal control. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 23 of 23 rows agree. The two times in Observed are the ends of the row's two runs. Shape is the builder's description of the specimen. The builder judged every row at `2a98048de47687f7424fb6925b6fc5d8f377e11f`, before the fix; `rejudge.mts` judged the same bytes at `9f8ecef6d44894cb43c345700b05e4a58fa83988`. First attempts at s89a and s89c overlapped another session driving Word (its own `complex.docx` dialogs appear in the s89a one), so they were set aside unread, and every run here was taken with no other Word driver running.
 
 - **The `_rels/.rels` block holds for the properties parts.** Word offered recovery for the core, extended and custom properties through `ftp:`, and opened each plain calibration clean, as #1182 predicted.
 - **The thumbnail row shows nothing about the scheme.** Word offered recovery for its plain calibration too, a PNG thumbnail at `docProps/thumbnail.png` typed by a `png` Default, which word-valid passes ([#1186](https://github.com/jandira-tech/docx-validate/issues/1186)).
-- **A scheme target blocks in a used header's own sidecar.** Word offered recovery for both s89b `ftp:` rows, the embedded image and the unused one, and opened both calibrations clean, rendering the header's `Header 89`. Session 80 had opened a folder target in the same sidecar clean, so only the scheme target extends there.
+- **A scheme target blocks in every relationships part Word was shown.** Word offered recovery for both s89b `ftp:` rows in a used header's sidecar, the embedded image and the unused one, and for all four s89c sidecars, and opened every calibration clean, rendering the header's `Header 89` and the used footer's `Footer 89`. Sessions 79 and 80 had opened a folder target in such sidecars clean, so only the scheme target extends there.
 - **Every control opened clean.** Every PDF Word saved renders the main document's `Hello` (`pdftotext`); no refused row left a PDF.
 
-Word-valid at 2a98048d matches Word on 11 of 14 rows: it warned on the two s89b `ftp:` rows and passed the thumbnail calibration. At 2889f3d0 it matches on 13 of 14; the thumbnail calibration is #1186.
+Word-valid at 2a98048d matches Word on 16 of 23 rows: it warned on the six s89b and s89c `ftp:` rows and passed the thumbnail calibration. At 9f8ecef6 it matches on 22 of 23; the thumbnail calibration is #1186.
 
-| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at 2a98048d | word-valid at 2889f3d0 | strict at 2889f3d0 |
+| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at 2a98048d | word-valid at 9f8ecef6 | strict at 9f8ecef6 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-core-ftp` | #1184: _rels/.rels relates the core part through ftp:docProps/core.xml, stored /ftp:docProps/core.xml well-formed | `11d309251214f106` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-broken@_rels/.rels` | invalid: `rels-broken@_rels/.rels` | invalid: `rels-broken@_rels/.rels`, `rels-unreferenced@ftp:docProps/core.xml` |
 | `s89a` | 19:26:47Z, 19:27:26Z | `pkgrels-core-plain-calibration` | calibration: the same _rels/.rels core relationship through docProps/core.xml | `18beaffd786cee52` | clean-open | clean-open | clean-open | valid | valid | valid |
@@ -33968,6 +33969,15 @@ Word-valid at 2a98048d matches Word on 11 of 14 rows: it warned on the two s89b 
 | `s89b` | 19:27:46Z, 19:28:03Z | `header-image-unused-ftp` | #1184: a used header's own sidecar relates an image the header does not use through ftp:image1.png, stored word/ftp:image1.png | `cbe17bbe3b293aa5` | repair-warning | repair-warning | unreadable-content-warning | valid | invalid: `rels-broken@word/_rels/header1.xml.rels` | invalid: `rels-broken@word/_rels/header1.xml.rels`, `rels-unreferenced@word/ftp:image1.png`, `paraid-missing-element@word/header1.xml` |
 | `s89b` | 19:27:46Z, 19:28:03Z | `header-image-unused-plain-calibration` | calibration: the same header-sidecar image relationship through image1.png | `4ce68e7f528df9a7` | clean-open | clean-open | clean-open | valid | valid | invalid: `paraid-missing-element@word/header1.xml` |
 | `s89b` | 19:27:46Z, 19:28:03Z | `s89b-control-minimal` | control | `fa0ecd0965d0ed8d` | clean-open | clean-open | clean-open | valid | valid | valid |
+| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-footer-used-ftp` | #1184: the footer used part's own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png | `a9c23ef912780053` | repair-warning | repair-warning | unreadable-content-warning | valid | invalid: `rels-broken@word/_rels/footer1.xml.rels` | invalid: `rels-broken@word/_rels/footer1.xml.rels`, `rels-unreferenced@word/ftp:image1.png`, `paraid-missing-element@word/footer1.xml` |
+| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-footer-used-plain-calibration` | calibration: the same sidecar image relationship through image1.png | `eee1d2025084e159` | clean-open | clean-open | clean-open | valid | valid | invalid: `paraid-missing-element@word/footer1.xml` |
+| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-header-unused-ftp` | #1184: the header unused part's own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png | `334ff0d92d1a7412` | repair-warning | repair-warning | unreadable-content-warning | valid | invalid: `rels-broken@word/_rels/header1.xml.rels` | invalid: `rels-broken@word/_rels/header1.xml.rels`, `rels-unreferenced@word/ftp:image1.png`, `paraid-missing-element@word/header1.xml` |
+| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-header-unused-plain-calibration` | calibration: the same sidecar image relationship through image1.png | `0b87b188021f58e2` | clean-open | clean-open | clean-open | valid | valid | invalid: `paraid-missing-element@word/header1.xml` |
+| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-styles-ftp` | #1184: the styles part's own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png | `39da0788a7ae6307` | repair-warning | repair-warning | unreadable-content-warning | valid | invalid: `rels-broken@word/_rels/styles.xml.rels` | invalid: `rels-broken@word/_rels/styles.xml.rels`, `rels-unreferenced@word/ftp:image1.png` |
+| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-styles-plain-calibration` | calibration: the same sidecar image relationship through image1.png | `ea103d716eadf5b7` | clean-open | clean-open | clean-open | valid | valid | valid |
+| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-unreferenced-ftp` | #1184: an unreferenced word/foo.xml's own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png | `8ff61ca0da5a6a4b` | repair-warning | repair-warning | unreadable-content-warning | valid | invalid: `rels-broken@word/_rels/foo.xml.rels` | invalid: `rels-broken@word/_rels/foo.xml.rels`, `rels-unreferenced@word/foo.xml`, `rels-unreferenced@word/ftp:image1.png`, `xsd-summary@word/foo.xml`, `xsd-error@word/foo.xml` |
+| `s89c` | 19:41:45Z, 19:42:16Z | `sidecar-unreferenced-plain-calibration` | calibration: the same sidecar image relationship through image1.png | `53b6333b156d7f28` | clean-open | clean-open | clean-open | valid | valid | invalid: `rels-unreferenced@word/foo.xml`, `xsd-summary@word/foo.xml`, `xsd-error@word/foo.xml` |
+| `s89c` | 19:41:45Z, 19:42:16Z | `s89c-control-minimal` | control | `0028ee126637f94f` | clean-open | clean-open | clean-open | valid | valid | valid |
 
 <details><summary>Raw records, session 89</summary>
 
@@ -34000,13 +34010,31 @@ Word-valid at 2a98048d matches Word on 11 of 14 rows: it warned on the two s89b 
 {"run": "s89b", "pass": 2, "name": "header-image-unused-plain-calibration", "sha256": "4ce68e7f528df9a7b0f4bed17adc689395083168331b4217ec1f85e6014d5362", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:28:03+00:00", "staged": "00001__wfv__header-image-unused-plain-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF header-image-unused-plain-calibration_byword.pdf (16216 bytes), no dialog named the file"]}
 {"run": "s89b", "pass": 1, "name": "s89b-control-minimal", "sha256": "fa0ecd0965d0ed8d173b5eec0a7ca776d618c635870f01545b376058eea9942d", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:27:46+00:00", "staged": "00004__wfv__s89b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s89b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
 {"run": "s89b", "pass": 2, "name": "s89b-control-minimal", "sha256": "fa0ecd0965d0ed8d173b5eec0a7ca776d618c635870f01545b376058eea9942d", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:28:03+00:00", "staged": "00004__wfv__s89b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s89b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s89c", "pass": 1, "name": "sidecar-footer-used-ftp", "sha256": "a9c23ef91278005319dce771af634627faf4cfc2f285d69f7949a5ebf8b716cb", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:41:45+00:00", "staged": "00001__wfv__sidecar-footer-used-ftp.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-30 15:41:31.102 'Word found unreadable content in 00001__wfv__sidecar-footer-used-ftp.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.'", "2026-10-30 15:41:31.923 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__sidecar-footer-used-ftp.docx)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s89c", "pass": 2, "name": "sidecar-footer-used-ftp", "sha256": "a9c23ef91278005319dce771af634627faf4cfc2f285d69f7949a5ebf8b716cb", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:42:16+00:00", "staged": "00001__wfv__sidecar-footer-used-ftp.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-30 15:42:02.898 'Word found unreadable content in 00001__wfv__sidecar-footer-used-ftp.docx. Do you want to recover t … ? If you trust the source of this document, click Yes.'", "2026-10-30 15:42:03.423 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__sidecar-footer-used-ftp.docx)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s89c", "pass": 1, "name": "sidecar-footer-used-plain-calibration", "sha256": "eee1d2025084e159faab653f4a7e3a4244385a1136b49ad3d136215a117fc661", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:41:45+00:00", "staged": "00002__wfv__sidecar-footer-used-plain-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF sidecar-footer-used-plain-calibration_byword.pdf (15661 bytes), no dialog named the file"]}
+{"run": "s89c", "pass": 2, "name": "sidecar-footer-used-plain-calibration", "sha256": "eee1d2025084e159faab653f4a7e3a4244385a1136b49ad3d136215a117fc661", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:42:16+00:00", "staged": "00002__wfv__sidecar-footer-used-plain-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF sidecar-footer-used-plain-calibration_byword.pdf (15661 bytes), no dialog named the file"]}
+{"run": "s89c", "pass": 1, "name": "sidecar-header-unused-ftp", "sha256": "334ff0d92d1a741294b6e797df2db1a0650716b1f6b5003b21989658bda57151", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:41:45+00:00", "staged": "00003__wfv__sidecar-header-unused-ftp.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-30 15:41:35.531 'Word found unreadable content in 00003__wfv__sidecar-header-unused-ftp.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-30 15:41:36.073 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__sidecar-header-unused-ftp...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s89c", "pass": 2, "name": "sidecar-header-unused-ftp", "sha256": "334ff0d92d1a741294b6e797df2db1a0650716b1f6b5003b21989658bda57151", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:42:16+00:00", "staged": "00003__wfv__sidecar-header-unused-ftp.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-30 15:42:07.119 'Word found unreadable content in 00003__wfv__sidecar-header-unused-ftp.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-30 15:42:07.656 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__sidecar-header-unused-ftp...)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s89c", "pass": 1, "name": "sidecar-header-unused-plain-calibration", "sha256": "0b87b188021f58e2d6babdc6e60a86511d8b29c5f47ffde896dc5b77c215558e", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:41:45+00:00", "staged": "00004__wfv__sidecar-header-unused-plain-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF sidecar-header-unused-plain-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s89c", "pass": 2, "name": "sidecar-header-unused-plain-calibration", "sha256": "0b87b188021f58e2d6babdc6e60a86511d8b29c5f47ffde896dc5b77c215558e", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:42:16+00:00", "staged": "00004__wfv__sidecar-header-unused-plain-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF sidecar-header-unused-plain-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s89c", "pass": 1, "name": "sidecar-styles-ftp", "sha256": "39da0788a7ae630765e2de1a03c99a1b8bc5e14318fd02a530ae0c965f7d703b", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:41:45+00:00", "staged": "00005__wfv__sidecar-styles-ftp.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-30 15:41:39.786 'Word found unreadable content in 00005__wfv__sidecar-styles-ftp.docx. Do you want to recover the co … ? If you trust the source of this document, click Yes.'", "2026-10-30 15:41:40.306 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … overy converter. (00005__wfv__sidecar-styles-ftp.docx)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s89c", "pass": 2, "name": "sidecar-styles-ftp", "sha256": "39da0788a7ae630765e2de1a03c99a1b8bc5e14318fd02a530ae0c965f7d703b", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:42:16+00:00", "staged": "00005__wfv__sidecar-styles-ftp.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-30 15:42:11.385 'Word found unreadable content in 00005__wfv__sidecar-styles-ftp.docx. Do you want to recover the co … ? If you trust the source of this document, click Yes.'", "2026-10-30 15:42:11.916 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … overy converter. (00005__wfv__sidecar-styles-ftp.docx)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s89c", "pass": 1, "name": "sidecar-styles-plain-calibration", "sha256": "ea103d716eadf5b783dfe5f0d952775db49329aab99feddb19b430ec371f5c99", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:41:45+00:00", "staged": "00006__wfv__sidecar-styles-plain-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF sidecar-styles-plain-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s89c", "pass": 2, "name": "sidecar-styles-plain-calibration", "sha256": "ea103d716eadf5b783dfe5f0d952775db49329aab99feddb19b430ec371f5c99", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:42:16+00:00", "staged": "00006__wfv__sidecar-styles-plain-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF sidecar-styles-plain-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s89c", "pass": 1, "name": "sidecar-unreferenced-ftp", "sha256": "8ff61ca0da5a6a4b51972de0a8263ed62d0f2923de0b373bf5b2db46379861d9", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:41:45+00:00", "staged": "00007__wfv__sidecar-unreferenced-ftp.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-30 15:41:44.048 'Word found unreadable content in 00007__wfv__sidecar-unreferenced-ftp.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-30 15:41:44.590 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__sidecar-unreferenced-ftp....)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s89c", "pass": 2, "name": "sidecar-unreferenced-ftp", "sha256": "8ff61ca0da5a6a4b51972de0a8263ed62d0f2923de0b373bf5b2db46379861d9", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:42:16+00:00", "staged": "00007__wfv__sidecar-unreferenced-ftp.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-30 15:42:15.637 'Word found unreadable content in 00007__wfv__sidecar-unreferenced-ftp.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-30 15:42:16.173 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00007__wfv__sidecar-unreferenced-ftp....)\""], "error": "repair prompt declined; Word could not read it"}
+{"run": "s89c", "pass": 1, "name": "sidecar-unreferenced-plain-calibration", "sha256": "53b6333b156d7f28661ba868587712c29a263d1679978e04f0a4c3cb3948ced3", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:41:45+00:00", "staged": "00008__wfv__sidecar-unreferenced-plain-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF sidecar-unreferenced-plain-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s89c", "pass": 2, "name": "sidecar-unreferenced-plain-calibration", "sha256": "53b6333b156d7f28661ba868587712c29a263d1679978e04f0a4c3cb3948ced3", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:42:16+00:00", "staged": "00008__wfv__sidecar-unreferenced-plain-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF sidecar-unreferenced-plain-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s89c", "pass": 1, "name": "s89c-control-minimal", "sha256": "0028ee126637f94fb1544361812bbc067cd45837f67673ce6bcce41c8023d472", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:41:45+00:00", "staged": "00000__wfv__s89c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s89c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s89c", "pass": 2, "name": "s89c-control-minimal", "sha256": "0028ee126637f94fb1544361812bbc067cd45837f67673ce6bcce41c8023d472", "validatorRevision": "2a98048de47687f7424fb6925b6fc5d8f377e11f", "observedAt": "2026-10-30T19:42:16+00:00", "staged": "00000__wfv__s89c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s89c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
 ```
 
 </details>
 
 <details><summary>Session 89 builder, re-judge, cross-check and section scripts</summary>
 
-The builder also defines chunk s89c (other sidecars), which has not run yet and is not reported here. Reading the logs used session 41's `logcheck.py`, above, unchanged. The builder ran from the root of the committed tree at the first revision, and the re-judge from the root of the committed tree at the second.
+Reading the logs used session 41's `logcheck.py`, above, unchanged. The builder ran from the root of the committed tree at the first revision, and the re-judge from the root of the committed tree at the second.
 
 `s89builder.mts`:
 
@@ -34209,7 +34237,7 @@ const verdict = async (file: string, profile: "word-valid" | "strict") => {
   return { valid: r.valid, errors: [...new Set(r.issues.filter((x: { severity: string }) => x.severity === "error").map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`))] };
 };
 const out: string[] = [];
-for (const chunk of ["s89a", "s89b"]) {
+for (const chunk of ["s89a", "s89b", "s89c"]) {
   for (const line of readFileSync(path.join(ROOT, chunk, "specimens.jsonl"), "utf8").trim().split("\n")) {
     const spec = JSON.parse(line);
     const file = path.join(ROOT, chunk, "src", spec.file);
@@ -34234,7 +34262,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CHUNKS = ("s89a", "s89b")
+CHUNKS = ("s89a", "s89b", "s89c")
 TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
 REJECTIONS = {"repair-warning", "open-error"}
 head = {(r["chunk"], r["file"]): r for r in map(json.loads, (ROOT / "s89/rejudge.jsonl").read_text().splitlines())}
@@ -34289,7 +34317,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CHUNKS = ("s89a", "s89b")
+CHUNKS = ("s89a", "s89b", "s89c")
 results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s89/results.json").read_text())}
 head = {(r["chunk"], r["file"]): r for r in map(json.loads, (ROOT / "s89/rejudge.jsonl").read_text().splitlines())}
 
@@ -34353,16 +34381,16 @@ b, a = next(iter(before))[:8], next(iter(after))[:8]
 # The narrative's claims, checked against results.json: every row's four readings agree; Word offered recovery for
 # every ftp: row and for the thumbnail calibration, and opened clean every other calibration and control; word-valid at
 # the head matches Word on every row but the thumbnail calibration (#1186), and before the fix it also missed exactly the
-# two s89b ftp: rows.
+# s89b and s89c ftp: rows.
 THUMB = "pkgrels-thumbnail-plain-calibration.docx"
 for (label, file), r in results.items():
     assert r["agreed"], (label, file)
     scheme = "-ftp" in file
     assert r["outcome"] == ("unreadable-content-warning" if scheme or file == THUMB else "clean-open"), (label, file, r["outcome"])
     assert r["matchesHead"] is (file != THUMB), (label, file)
-    assert r["matchesBefore"] is not (file == THUMB or (label == "s89b" and scheme)), (label, file)
-# The driver opens files in name order (#671). Every PDF Word saved renders the main document's "Hello", and the s89b
-# calibrations their header's "Header 89" too.
+    assert r["matchesBefore"] is not (file == THUMB or (label in ("s89b", "s89c") and scheme)), (label, file)
+# The driver opens files in name order (#671). Every PDF Word saved renders the main document's "Hello", the s89b
+# calibrations their header's "Header 89" too, and the s89c used footer's calibration its "Footer 89".
 for label in CHUNKS:
     files = sorted(json.loads(l)["file"] for l in (ROOT / label / "specimens.jsonl").read_text().splitlines())
     for run in (ROOT / label, ROOT / label / "pass2"):
@@ -34370,7 +34398,7 @@ for label in CHUNKS:
         for file in files:
             text = rendered(run, file)
             assert (text is None) is (results[(label, file)]["outcome"] != "clean-open"), (run, file)
-            want = "Header 89 Hello" if file.startswith("header-image-") else "Hello"
+            want = "Header 89 Hello" if file.startswith("header-image-") else "Hello Footer 89" if file == "sidecar-footer-used-plain-calibration.docx" else "Hello"
             assert text in (None, want), (run, file, text)
 day = f"{min(starts):%Y-%m-%d}"
 assert day == f"{max(ends):%Y-%m-%d}"
@@ -34382,35 +34410,38 @@ out = [
     "",
     f"The placements of a scheme-like internal target session 88 did not show Word ([#1184]({I}1184), raised by the "
     f"adversarial review of [#1182]({I}1182)). Every `ftp:` row stores the part the path spells well-formed, and each "
-    "placement has a calibration through its plain name. Two chunks, on the minimal package.",
+    "placement has a calibration through its plain name. Three chunks, on the minimal package.",
     "",
     "- **s89a.** `_rels/.rels` relates the core, extended (app) and custom properties and the thumbnail through "
     "`ftp:docProps/…`, stored `/ftp:docProps/…`. #1182 blocked these by extrapolation from s88a's styles row.",
     "- **s89b.** A used header's own sidecar (`word/_rels/header1.xml.rels`) relates an image through `ftp:image1.png`, "
     "stored `word/ftp:image1.png`, which the header either embeds through `r:embed` in an inline drawing or does not use. "
     "#1182 kept these a warning.",
+    "- **s89c.** The same unused `ftp:image1.png` image in other sidecars: a used footer's, an unused header's, the "
+    "styles part's and an unreferenced part's (`word/foo.xml`, which no relationship names).",
     "",
     "Each chunk ends with a minimal control. Each chunk ran twice, as two separate driver runs of byte-identical copies, "
     "and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by "
     f"`wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` "
     f"otherwise; {sum(r['agreed'] for r in results.values())} of {n} rows agree. The two times in Observed are the ends of "
     "the row's two runs. Shape is the builder's description of the specimen. The builder judged every row at "
-    f"`{next(iter(before))}`, before the fix; `rejudge.mts` judged the same bytes at `{next(iter(after))}`. A first "
-    "attempt at s89a overlapped another session driving Word (its own `complex.docx` dialogs appear in that log), so it "
-    "was set aside unread and both runs here were taken after that session's driver had exited.",
+    f"`{next(iter(before))}`, before the fix; `rejudge.mts` judged the same bytes at `{next(iter(after))}`. First "
+    "attempts at s89a and s89c overlapped another session driving Word (its own `complex.docx` dialogs appear in the "
+    "s89a one), so they were set aside unread, and every run here was taken with no other Word driver running.",
     "",
     "- **The `_rels/.rels` block holds for the properties parts.** Word offered recovery for the core, extended and "
     "custom properties through `ftp:`, and opened each plain calibration clean, as #1182 predicted.",
     "- **The thumbnail row shows nothing about the scheme.** Word offered recovery for its plain calibration too, a PNG "
     f"thumbnail at `docProps/thumbnail.png` typed by a `png` Default, which word-valid passes ([#1186]({I}1186)).",
-    "- **A scheme target blocks in a used header's own sidecar.** Word offered recovery for both s89b `ftp:` rows, the "
-    "embedded image and the unused one, and opened both calibrations clean, rendering the header's `Header 89`. Session 80 "
-    "had opened a folder target in the same sidecar clean, so only the scheme target extends there.",
+    "- **A scheme target blocks in every relationships part Word was shown.** Word offered recovery for both s89b `ftp:` "
+    "rows in a used header's sidecar, the embedded image and the unused one, and for all four s89c sidecars, and opened "
+    "every calibration clean, rendering the header's `Header 89` and the used footer's `Footer 89`. Sessions 79 and 80 had "
+    "opened a folder target in such sidecars clean, so only the scheme target extends there.",
     "- **Every control opened clean.** Every PDF Word saved renders the main document's `Hello` (`pdftotext`); no refused "
     "row left a PDF.",
     "",
-    f"Word-valid at {b} matches Word on {mb} of {n} rows: it warned on the two s89b `ftp:` rows and passed the thumbnail "
-    f"calibration. At {a} it matches on {ma} of {n}; the thumbnail calibration is #1186.",
+    f"Word-valid at {b} matches Word on {mb} of {n} rows: it warned on the six s89b and s89c `ftp:` rows and passed the "
+    f"thumbnail calibration. At {a} it matches on {ma} of {n}; the thumbnail calibration is #1186.",
     "",
     f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at {b} | word-valid at {a} | strict at {a} |",
     "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
@@ -34426,7 +34457,6 @@ out = [
     "",
     "<details><summary>Session 89 builder, re-judge, cross-check and section scripts</summary>",
     "",
-    "The builder also defines chunk s89c (other sidecars), which has not run yet and is not reported here. "
     "Reading the logs used session 41's `logcheck.py`, above, unchanged. The builder ran from the root of the committed "
     "tree at the first revision, and the re-judge from the root of the committed tree at the second.",
     "",
