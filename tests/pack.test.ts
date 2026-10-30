@@ -176,6 +176,30 @@ describe("pack", () => {
         });
     });
 
+    it.each([".rels", "payload.rels"])("preserves binary %s outside a relationships folder", async (name) => {
+        await withTempDir(async (dir) => {
+            const inputDir = path.join(dir, "src");
+            const outputFile = path.join(dir, "out.docx");
+            const part = `word/media/${name}`;
+            const payload = Buffer.from([0x80, 0xff, 0x01, 0xe2, 0x80, 0x9c, 0x02]);
+            const contentTypes = MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/${part}" ContentType="application/octet-stream"/></Types>`,
+            );
+            await writeUnpacked(inputDir, {
+                document: "<w:body><w:p><w:r><w:t>hello</w:t></w:r></w:p></w:body>",
+                contentTypes,
+            });
+            await fs.mkdir(path.join(inputDir, "word", "media"), { recursive: true });
+            await fs.writeFile(path.join(inputDir, part), payload);
+
+            await expect(pack(inputDir, outputFile, { validate: false })).resolves.toMatchObject({ ok: true });
+
+            const zip = await JSZip.loadAsync(await fs.readFile(outputFile));
+            expect(await zip.file(part)!.async("nodebuffer")).toEqual(payload);
+        });
+    });
+
     it("condenses whitespace-only text and strips comments from non-:t elements", async () => {
         await withTempDir(async (dir) => {
             const inputDir = path.join(dir, "src");

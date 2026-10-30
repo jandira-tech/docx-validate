@@ -174,11 +174,14 @@ describe("unpack", () => {
             const inputFile = path.join(dir, "input.docx");
             const outputDir = path.join(dir, "out");
             const rels = MINIMAL_PARTS["_rels/.rels"]!.replace(/\n/g, "");
-            await fs.writeFile(inputFile, await buildMinimalDocx({
-                ...MINIMAL_PARTS,
-                "_rels/.rels": rels,
-                "word/_rels/document.xml.rels": rels,
-            }));
+            await fs.writeFile(
+                inputFile,
+                await buildMinimalDocx({
+                    ...MINIMAL_PARTS,
+                    "_rels/.rels": rels,
+                    "word/_rels/document.xml.rels": rels,
+                }),
+            );
 
             const result = await unpack(inputFile, outputDir, {
                 mergeRuns: false,
@@ -191,6 +194,34 @@ describe("unpack", () => {
             expect(documentRels).toMatch(/\/>\n<\/Relationships>/);
             const rootRels = await fs.readFile(path.join(outputDir, "_rels", ".rels"), "utf8");
             expect(rootRels).toBe(documentRels);
+        });
+    });
+
+    it.each([".rels", "payload.rels"])("preserves binary %s outside a relationships folder", async (name) => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "input.docx");
+            const outputDir = path.join(dir, "out");
+            const part = `word/media/${name}`;
+            const payload = Buffer.from([0x80, 0xff, 0x01, 0xe2, 0x80, 0x9c, 0x02]);
+            const contentTypes = MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/${part}" ContentType="application/octet-stream"/></Types>`,
+            );
+            await fs.writeFile(
+                inputFile,
+                await buildMinimalDocx({
+                    ...MINIMAL_PARTS,
+                    "[Content_Types].xml": contentTypes,
+                    [part]: payload,
+                }),
+            );
+
+            const result = await unpack(inputFile, outputDir, {
+                mergeRuns: false,
+                simplifyRedlines: false,
+            });
+            expect(result.ok).toBe(true);
+            expect(await fs.readFile(path.join(outputDir, part))).toEqual(payload);
         });
     });
 

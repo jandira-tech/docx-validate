@@ -283,7 +283,7 @@ async function collectXmlFiles(root: string): Promise<string[]> {
                 await walk(full);
             } else if (entry.isFile()) {
                 const name = entry.name.toLowerCase();
-                if (name.endsWith(".xml") || name.endsWith(".rels")) {
+                if (name.endsWith(".xml") || (name.endsWith(".rels") && path.basename(dir) === "_rels")) {
                     out.push(full);
                 }
             }
