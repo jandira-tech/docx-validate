@@ -239,4 +239,129 @@ describe("mergeRuns", () => {
             expect(await fs.readFile(docPath, "utf8")).not.toContain("rsid");
         });
     });
+
+    it("returns an error message for a malformed main part", async () => {
+        await withTempDir(async (dir) => {
+            const docPath = await writeDoc(dir, "<w:body><w:p>");
+            const result = await mergeRuns(dir);
+            expect(result.count).toBe(0);
+            expect(result.message).toMatch(/^Error: /);
+            expect(await fs.readFile(docPath, "utf8")).toContain("<w:body><w:p>");
+        });
+    });
+
+    it("merges runs separated by stray paragraph text, keeping that text", async () => {
+        await withTempDir(async (dir) => {
+            const body = "<w:body><w:p>lead <w:r><w:t>a</w:t></w:r> tail<w:r><w:t>b</w:t></w:r></w:p></w:body>";
+            const docPath = await writeDoc(dir, body);
+
+            const result = await mergeRuns(dir);
+            expect(result.count).toBe(1);
+
+            const after = await fs.readFile(docPath, "utf8");
+            expect(after).toContain("ab");
+            expect(after).toContain("lead ");
+            expect(after).toContain(" tail");
+            expect((after.match(/<w:r[ >]/g) ?? []).length).toBe(1);
+        });
+    });
+
+    it("does not merge a styled run into an unstyled one", async () => {
+        await withTempDir(async (dir) => {
+            const body = "<w:body><w:p>" + "<w:r><w:rPr><w:b/></w:rPr><w:t>a</w:t></w:r>" + "<w:r><w:t>b</w:t></w:r>" + "</w:p></w:body>";
+            const docPath = await writeDoc(dir, body);
+
+            const result = await mergeRuns(dir);
+            expect(result.count).toBe(0);
+
+            const after = await fs.readFile(docPath, "utf8");
+            expect((after.match(/<w:r[ >]/g) ?? []).length).toBe(2);
+        });
+    });
+
+    it("keeps w:t elements separated by another element inside one run", async () => {
+        await withTempDir(async (dir) => {
+            const body = "<w:body><w:p><w:r><w:t>a</w:t><w:tab/><w:t>b</w:t></w:r></w:p></w:body>";
+            const docPath = await writeDoc(dir, body);
+
+            const result = await mergeRuns(dir);
+            expect(result.count).toBe(0);
+
+            const after = await fs.readFile(docPath, "utf8");
+            expect(after).toContain("<w:tab/>");
+            expect((after.match(/<w:t>/g) ?? []).length).toBe(2);
+        });
+    });
+
+    it("does not consolidate w:t elements separated by non-whitespace text", async () => {
+        await withTempDir(async (dir) => {
+            const body = "<w:body><w:p><w:r><w:t>a</w:t>stray<w:t>b</w:t></w:r></w:p></w:body>";
+            const docPath = await writeDoc(dir, body);
+
+            const result = await mergeRuns(dir);
+            expect(result.count).toBe(0);
+
+            const after = await fs.readFile(docPath, "utf8");
+            expect(after).toContain("stray");
+            expect((after.match(/<w:t>/g) ?? []).length).toBe(2);
+        });
+    });
+
+    it("consolidates w:t elements separated by whitespace inside one run", async () => {
+        await withTempDir(async (dir) => {
+            const body = "<w:body><w:p><w:r><w:t>a</w:t>\n      <w:t>b</w:t></w:r></w:p></w:body>";
+            const docPath = await writeDoc(dir, body);
+
+            const result = await mergeRuns(dir);
+            expect(result.count).toBe(0);
+
+            const after = await fs.readFile(docPath, "utf8");
+            expect(after).toContain("<w:t>ab</w:t>");
+            expect((after.match(/<w:t>/g) ?? []).length).toBe(1);
+        });
+    });
+
+    it("fills an empty leading w:t when its run merges", async () => {
+        await withTempDir(async (dir) => {
+            const body = "<w:body><w:p><w:r><w:t/></w:r><w:r><w:t>data</w:t></w:r></w:p></w:body>";
+            const docPath = await writeDoc(dir, body);
+
+            const result = await mergeRuns(dir);
+            expect(result.count).toBe(1);
+
+            const after = await fs.readFile(docPath, "utf8");
+            expect(after).toContain("<w:t>data</w:t>");
+            expect(after).not.toContain("<w:t/>");
+            expect((after.match(/<w:t>/g) ?? []).length).toBe(1);
+        });
+    });
+
+    it("drops a trailing empty w:t when its run merges", async () => {
+        await withTempDir(async (dir) => {
+            const body = "<w:body><w:p><w:r><w:t>a</w:t></w:r><w:r><w:t/></w:r></w:p></w:body>";
+            const docPath = await writeDoc(dir, body);
+
+            const result = await mergeRuns(dir);
+            expect(result.count).toBe(1);
+
+            const after = await fs.readFile(docPath, "utf8");
+            expect(after).toContain("<w:t>a</w:t>");
+            expect(after).not.toContain("<w:t/>");
+            expect((after.match(/<w:t>/g) ?? []).length).toBe(1);
+        });
+    });
+
+    it("removes xml:space from a merged w:t that no longer borders a space", async () => {
+        await withTempDir(async (dir) => {
+            const body = "<w:body><w:p>" + '<w:r><w:t xml:space="preserve">ab</w:t></w:r>' + "<w:r><w:t>cd</w:t></w:r>" + "</w:p></w:body>";
+            const docPath = await writeDoc(dir, body);
+
+            const result = await mergeRuns(dir);
+            expect(result.count).toBe(1);
+
+            const after = await fs.readFile(docPath, "utf8");
+            expect(after).toContain("abcd");
+            expect(after).not.toContain("xml:space");
+        });
+    });
 });
