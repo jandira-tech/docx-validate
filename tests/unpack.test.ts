@@ -169,6 +169,31 @@ describe("unpack", () => {
         });
     });
 
+    it("pretty-prints minified package-root relationships (#1198)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "input.docx");
+            const outputDir = path.join(dir, "out");
+            const rels = MINIMAL_PARTS["_rels/.rels"]!.replace(/\n/g, "");
+            await fs.writeFile(inputFile, await buildMinimalDocx({
+                ...MINIMAL_PARTS,
+                "_rels/.rels": rels,
+                "word/_rels/document.xml.rels": rels,
+            }));
+
+            const result = await unpack(inputFile, outputDir, {
+                mergeRuns: false,
+                simplifyRedlines: false,
+            });
+            expect(result.ok).toBe(true);
+
+            const documentRels = await fs.readFile(path.join(outputDir, "word", "_rels", "document.xml.rels"), "utf8");
+            expect(documentRels).toMatch(/<Relationships[^>]*>\n {2}<Relationship /);
+            expect(documentRels).toMatch(/\/>\n<\/Relationships>/);
+            const rootRels = await fs.readFile(path.join(outputDir, "_rels", ".rels"), "utf8");
+            expect(rootRels).toBe(documentRels);
+        });
+    });
+
     it("escapes smart quotes after pretty-printing", async () => {
         await withTempDir(async (dir) => {
             const inputFile = path.join(dir, "smart.docx");
