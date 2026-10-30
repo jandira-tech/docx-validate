@@ -108,11 +108,7 @@ export async function pack(inputDirectory: string, outputFile: string, opts: Pac
 
     const symbolicLink = await findSymbolicLink(inputDir);
     if (symbolicLink) {
-        const relativePath = path.relative(inputDir, symbolicLink).split(path.sep).join("/");
-        return {
-            ok: false,
-            message: `Error: ${relativePath} is a symbolic link`,
-        };
+        return symbolicLinkRefusal(inputDir, symbolicLink);
     }
 
     let validationLog: string | undefined;
@@ -153,9 +149,14 @@ export async function pack(inputDirectory: string, outputFile: string, opts: Pac
         }
     }
 
-    await withTempDir(async (tempDir) => {
+    const stagingRefusal = await withTempDir(async (tempDir): Promise<PackResult | undefined> => {
         const tempContentDir = path.join(tempDir, "content");
-        await copyDir(inputDir, tempContentDir);
+        // A link added after the preflight scan is refused here too, never
+        // staged and then left out of the archive (codex on #1200).
+        const stagedLink = await copyDir(inputDir, tempContentDir);
+        if (stagedLink) {
+            return symbolicLinkRefusal(inputDir, stagedLink);
+        }
 
         const xmlFiles = await collectXmlFiles(tempContentDir);
         for (const xmlFile of xmlFiles) {
@@ -176,7 +177,11 @@ export async function pack(inputDirectory: string, outputFile: string, opts: Pac
             compression: "DEFLATE",
         });
         await fs.writeFile(outputPath, buf);
+        return undefined;
     });
+    if (stagingRefusal) {
+        return stagingRefusal;
+    }
 
     return {
         ok: true,
@@ -280,21 +285,32 @@ async function findSymbolicLink(dir: string): Promise<string | undefined> {
     return undefined;
 }
 
-async function copyDir(src: string, dest: string): Promise<void> {
+function symbolicLinkRefusal(inputDir: string, link: string): PackResult {
+    const relativePath = path.relative(inputDir, link).split(path.sep).join("/");
+    return {
+        ok: false,
+        message: `Error: ${relativePath} is a symbolic link`,
+    };
+}
+
+/** Copies `src` into `dest`, stopping at the first symbolic link, which it returns uncopied. */
+async function copyDir(src: string, dest: string): Promise<string | undefined> {
     await fs.mkdir(dest, { recursive: true });
     const entries = await fs.readdir(src, { withFileTypes: true });
     for (const entry of entries) {
         const from = path.join(src, entry.name);
         const to = path.join(dest, entry.name);
+        if (entry.isSymbolicLink()) {
+            return from;
+        }
         if (entry.isDirectory()) {
-            await copyDir(from, to);
+            const link = await copyDir(from, to);
+            if (link) return link;
         } else if (entry.isFile()) {
             await fs.copyFile(from, to);
-        } else if (entry.isSymbolicLink()) {
-            const target = await fs.readlink(from);
-            await fs.symlink(target, to);
         }
     }
+    return undefined;
 }
 
 async function collectXmlFiles(root: string): Promise<string[]> {

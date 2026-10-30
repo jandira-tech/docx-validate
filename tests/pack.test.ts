@@ -161,6 +161,37 @@ describe("pack", () => {
         });
     });
 
+    it("refuses a symbolic link created after the preflight scan (#1199, codex on #1200)", async () => {
+        await withTempDir(async (dir) => {
+            const inputDir = path.join(dir, "src");
+            const outputFile = path.join(dir, "out.docx");
+            for (const [name, content] of Object.entries(MINIMAL_PARTS)) {
+                const file = path.join(inputDir, name);
+                await fs.mkdir(path.dirname(file), { recursive: true });
+                await fs.writeFile(file, content);
+            }
+            await fs.writeFile(path.join(dir, "outside.bin"), "outside");
+            // The second listing of the input root is staging's: a writer adds the link between the two.
+            const readdir = fs.readdir;
+            let listings = 0;
+            fs.readdir = (async (target: string, ...rest: unknown[]) => {
+                if (target === inputDir && ++listings === 2)
+                    await fs.symlink(path.join(dir, "outside.bin"), path.join(inputDir, "alias.bin"));
+                return (readdir as (...args: unknown[]) => unknown).call(fs, target, ...rest);
+            }) as typeof fs.readdir;
+            try {
+                const result = await pack(inputDir, outputFile, { validate: false });
+
+                expect(listings).toBe(2);
+                expect(result.ok).toBe(false);
+                expect(result.message).toBe("Error: alias.bin is a symbolic link");
+                await expect(fs.stat(outputFile)).rejects.toMatchObject({ code: "ENOENT" });
+            } finally {
+                fs.readdir = readdir;
+            }
+        });
+    });
+
     it("packs a directory into a .docx zip without validation", async () => {
         await withTempDir(async (dir) => {
             const inputDir = path.join(dir, "src");
