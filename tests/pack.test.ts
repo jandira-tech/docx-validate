@@ -18,13 +18,14 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import JSZip from "jszip";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
-import { pack } from "../src/scripts/office/pack";
+import { pack, runPackFromArgv } from "../src/scripts/office/pack";
 import { unpack } from "../src/scripts/office/unpack";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx as buildMinimalDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { MINIMAL_PPTX_PARTS } from "./support/minimal-pptx";
 
 const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
 
@@ -321,4 +322,224 @@ describe("pack", () => {
             });
         },
     );
+});
+
+/** Integration fixtures: exercise the real archive, filesystem and validators together. */
+async function writePackageParts(dir: string, parts: Readonly<Record<string, string>> = MINIMAL_PARTS): Promise<void> {
+    for (const [name, content] of Object.entries(parts)) {
+        const file = path.join(dir, name);
+        await fs.mkdir(path.dirname(file), { recursive: true });
+        await fs.writeFile(file, content);
+    }
+}
+
+describe("pack validation integration", () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it("rejects a regular file as the input directory", async () => {
+        await withTempDir(async (dir) => {
+            const input = path.join(dir, "input.docx");
+            const output = path.join(dir, "out.docx");
+            await fs.writeFile(input, await buildMinimalDocx());
+            expect(await pack(input, output)).toEqual({ ok: false, message: `Error: ${input} is not a directory` });
+            await expect(fs.access(output)).rejects.toThrow();
+        });
+    });
+
+    it.each(["missing", "directory"])("refuses a %s original before packing", async (kind) => {
+        await withTempDir(async (dir) => {
+            const input = path.join(dir, "input");
+            const original = path.join(dir, "original.docx");
+            const output = path.join(dir, "out.docx");
+            await writePackageParts(input);
+            if (kind === "directory") await fs.mkdir(original);
+            expect(await pack(input, output, { original })).toEqual({
+                ok: false,
+                message: `Error: original file not found: ${original}`,
+            });
+            await expect(fs.access(output)).rejects.toThrow();
+        });
+    });
+
+    it("uses the explicit author as the default inference fallback", async () => {
+        await withTempDir(async (dir) => {
+            const input = path.join(dir, "input");
+            const original = path.join(dir, "original.docx");
+            const output = path.join(dir, "out.docx");
+            await writePackageParts(input);
+            await fs.writeFile(original, await buildMinimalDocx());
+            const result = await pack(input, output, { original, author: "Alice" });
+            expect(result.ok).toBe(true);
+            expect(result.validationLog).toBe("All validations PASSED!");
+            const zip = await JSZip.loadAsync(await fs.readFile(output));
+            expect(await zip.file("word/document.xml")!.async("string")).toContain("Hello");
+        });
+    });
+
+    it("refuses an original comparison with no inferred or explicit author", async () => {
+        await withTempDir(async (dir) => {
+            const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+            const input = path.join(dir, "input");
+            const original = path.join(dir, "original.docx");
+            const output = path.join(dir, "out.docx");
+            await writePackageParts(input);
+            await fs.writeFile(original, await buildMinimalDocx());
+            const result = await pack(input, output, { original });
+            expect(result.ok).toBe(false);
+            expect(result.message).toBe(`Error: Validation failed for ${input}`);
+            expect(result.validationLog).toContain("Could not infer author and `author` was not provided.");
+            expect(stderr).toHaveBeenCalledWith(expect.stringContaining("Could not infer author"));
+            await expect(fs.access(output)).rejects.toThrow();
+        });
+    });
+
+    it.each([new Error("inference unavailable"), "inference unavailable"])("reports a rejected author callback (%s)", async (error) => {
+        await withTempDir(async (dir) => {
+            const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+            const input = path.join(dir, "input");
+            const original = path.join(dir, "original.docx");
+            const output = path.join(dir, "out.docx");
+            await writePackageParts(input);
+            await fs.writeFile(original, await buildMinimalDocx());
+            const result = await pack(input, output, {
+                original,
+                inferAuthorFunc: () => Promise.reject(error),
+            });
+            expect(result.ok).toBe(false);
+            expect(result.validationLog).toContain("inference unavailable");
+            expect(stderr).toHaveBeenCalledWith(expect.stringContaining("inference unavailable"));
+            await expect(fs.access(output)).rejects.toThrow();
+        });
+    });
+
+    it("returns the validator's issues and leaves the output absent when validation fails", async () => {
+        await withTempDir(async (dir) => {
+            const input = path.join(dir, "input");
+            const output = path.join(dir, "out.docx");
+            await writePackageParts(input, {
+                ...MINIMAL_PARTS,
+                "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace("<w:t>Hello</w:t>", '<w:commentReference w:id="99"/>'),
+            });
+            const result = await pack(input, output);
+            expect(result.ok).toBe(false);
+            expect(result.message).toBe(`Error: Validation failed for ${input}`);
+            expect(result.issues).toContainEqual(expect.objectContaining({ code: "comment-marker-missing", severity: "error" }));
+            expect(result.validationLog).toBeUndefined();
+            await expect(fs.access(output)).rejects.toThrow();
+        });
+    });
+
+    it("auto-repairs whitespace preservation before packaging and reports the repair", async () => {
+        await withTempDir(async (dir) => {
+            const input = path.join(dir, "input");
+            const output = path.join(dir, "out.docx");
+            await writePackageParts(input, {
+                ...MINIMAL_PARTS,
+                "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace("<w:t>Hello</w:t>", "<w:t> Hello </w:t>"),
+            });
+            const result = await pack(input, output);
+            expect(result.ok).toBe(true);
+            expect(result.validationLog).toBe("Auto-repaired 1 issue(s)\nAll validations PASSED!");
+            const zip = await JSZip.loadAsync(await fs.readFile(output));
+            expect(await zip.file("word/document.xml")!.async("string")).toContain('<w:t xml:space="preserve"> Hello </w:t>');
+        });
+    });
+
+    it("validates a PPTX with its presentation validator", async () => {
+        await withTempDir(async (dir) => {
+            const input = path.join(dir, "input");
+            const output = path.join(dir, "out.pptx");
+            await writePackageParts(input, MINIMAL_PPTX_PARTS);
+            const result = await pack(input, output);
+            expect(result.ok).toBe(true);
+            expect(result.validationLog).toBe("All validations PASSED!");
+            const zip = await JSZip.loadAsync(await fs.readFile(output));
+            expect(await zip.file("ppt/presentation.xml")!.async("string")).toContain("<p:presentation ");
+        });
+    });
+});
+
+describe("pack XML condensation integration", () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it("preserves unprefixed SpreadsheetML t text and binary parts when packing XLSX", async () => {
+        await withTempDir(async (dir) => {
+            const input = path.join(dir, "input");
+            const output = path.join(dir, "out.xlsx");
+            await writePackageParts(input, {
+                "xl/sharedStrings.xml":
+                    '<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">\n <si><t>   </t></si>\n</sst>',
+            });
+            const binary = Buffer.from([0, 0xff, 0x80, 0x42]);
+            await fs.writeFile(path.join(input, "xl", "image.bin"), binary);
+            const result = await pack(input, output);
+            expect(result.ok).toBe(true);
+            expect(result.validationLog).toBeUndefined();
+            const zip = await JSZip.loadAsync(await fs.readFile(output));
+            expect(await zip.file("xl/sharedStrings.xml")!.async("string")).toContain("<si><t>   </t></si></sst>");
+            expect(await zip.file("xl/image.bin")!.async("nodebuffer")).toEqual(binary);
+        });
+    });
+
+    it("leaves XML in an unsupported encoding byte-for-byte untouched", async () => {
+        await withTempDir(async (dir) => {
+            const input = path.join(dir, "input");
+            const output = path.join(dir, "out.docx");
+            const document = MINIMAL_PARTS["word/document.xml"]!.replace('encoding="UTF-8"', 'encoding="macintosh"');
+            await writePackageParts(input, { ...MINIMAL_PARTS, "word/document.xml": document });
+            expect((await pack(input, output, { validate: false })).ok).toBe(true);
+            const zip = await JSZip.loadAsync(await fs.readFile(output));
+            expect(await zip.file("word/document.xml")!.async("nodebuffer")).toEqual(Buffer.from(document));
+        });
+    });
+
+    it("reports malformed XML and rejects without producing an archive", async () => {
+        await withTempDir(async (dir) => {
+            const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+            const input = path.join(dir, "input");
+            const output = path.join(dir, "out.docx");
+            await writePackageParts(input, { ...MINIMAL_PARTS, "word/document.xml": '<w:document xmlns:w="urn:w"><w:body></w:document>' });
+            await expect(pack(input, output, { validate: false })).rejects.toThrow();
+            expect(stderr).toHaveBeenCalledWith(expect.stringContaining("ERROR: Failed to parse document.xml:"));
+            await expect(fs.access(output)).rejects.toThrow();
+        });
+    });
+});
+
+describe("pack CLI integration", () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it.each([
+        [[], 1, "missing required argument"],
+        [["--help"], 0, "Usage: pack"],
+    ] as const)("returns a clean exit code for %j", async (argv, code, message) => {
+        const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+        const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+        expect(await runPackFromArgv(argv)).toBe(code);
+        expect([...stdout.mock.calls, ...stderr.mock.calls].map(([text]) => String(text)).join("")).toContain(message);
+    });
+
+    it.each(["FALSE", "TrUe"])("parses --validate %s and prints the packing result", async (flag) => {
+        await withTempDir(async (dir) => {
+            const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            const input = path.join(dir, "input");
+            const output = path.join(dir, "out.docx");
+            await writePackageParts(input);
+            expect(await runPackFromArgv([input, output, "--validate", flag])).toBe(0);
+            expect(stdout).toHaveBeenCalledWith(`Successfully packed ${input} to ${output}\n`);
+            if (flag === "TrUe") expect(stdout).toHaveBeenCalledWith("All validations PASSED!\n");
+            else expect(stdout).toHaveBeenCalledTimes(1);
+            const zip = await JSZip.loadAsync(await fs.readFile(output));
+            expect(await zip.file("word/document.xml")!.async("string")).toContain("Hello");
+        });
+    });
+
+    it("prints a failed packing result and returns exit code 1", async () => {
+        await withTempDir(async (dir) => {
+            const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            const input = path.join(dir, "missing");
+            expect(await runPackFromArgv([input, path.join(dir, "out.docx")])).toBe(1);
+            expect(stdout).toHaveBeenCalledWith(`Error: ${input} is not a directory\n`);
+        });
+    });
 });
