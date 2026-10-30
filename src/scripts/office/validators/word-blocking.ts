@@ -14,7 +14,7 @@ import { canonicalPartName, isContentTypesStreamName, PART_NAME_FOLDER_SEGMENT_D
 import { sidecarOf } from "../../../lib/word-read-parts";
 import { NS, type ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameAll } from "../../../lib/xml-helpers";
-import { relsBrokenTarget, relsEmptyElementShape } from "../rels-finding-facts";
+import { relsBrokenScheme, relsBrokenTarget, relsEmptyElementShape } from "../rels-finding-facts";
 import { isCommentReferenceMissing } from "../comment-finding-facts";
 import {
     SCHEMA_DECLARED_ELEMENTS,
@@ -558,11 +558,20 @@ export const isWordBlockingIssue = (
             // the unreferenced part and of the used header, two runs each, all
             // readings agreeing (#987); the customXml shape in an unused
             // header's or the styles part's sidecar is unprobed (#1006).
+            // A target spelling a URI scheme names no part: Word offered
+            // recovery for a used header related through `ftp:header1.xml`
+            // or `httpfoo:header1.xml` and for the styles relationship
+            // through `ftp:styles.xml`, beside the well-formed stored part
+            // its path spells (session 87, s87c/s87d, #1127). Only those two
+            // types are probed: another type keeps its warning.
             const part = relsBrokenTarget(issue);
+            const scheme = relsBrokenScheme(issue);
             return (
                 part !== undefined &&
                 (isPackageRelationshipsPart(issue.path) || isDocumentRelationshipsPart(issue.path, storyRootParts)) &&
-                (part.endsWith("/") || isOpcRelationshipsPart(part) || canonicalPartName(part).startsWith("customxml/"))
+                (scheme !== undefined
+                    ? scheme === "styles" || scheme === "header"
+                    : part.endsWith("/") || isOpcRelationshipsPart(part) || canonicalPartName(part).startsWith("customxml/"))
             );
         }
         case "rels-empty-element":
