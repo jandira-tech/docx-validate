@@ -140,7 +140,7 @@ Under word-valid the content-type family blocks the scopes real-Word probes obse
 
 - **soffice end-to-end tests are gated on `process.env.SOFFICE_AVAILABLE`.** Both `tests/accept-changes.test.ts` and `tests/soffice.test.ts` skip real-LibreOffice invocations unless that env var is set; CI images typically don't include LibreOffice. Run with `SOFFICE_AVAILABLE=1 pnpm test` locally to exercise them.
 
-- **Three `eslint-plugin-functional` rules are disabled in `.oxlintrc.json`:** `functional/immutable-data`, `functional/no-mixed-types`, `functional/prefer-readonly-type`. All three are type-aware and call `getParserServices()`, but oxlint's JS-plugin runtime hard-codes `parserServices: ObjectFreeze({})` (see `node_modules/oxlint/dist/lint.js:13580`), so they crash the AST walker on any file containing a type alias / interface or an `arr.push(...)` call. `prefer-property-signatures` is the only functional rule left enabled because it's syntactic-only. Re-enable the three when oxlint either provides parser services to JS plugins or honors `requiresTypeChecking: true` for skip.
+- **`eslint-plugin-functional` is dropped.** It loads typescript-eslint, whose `ts-api-utils` needs TypeScript's JS compiler API, and TypeScript 7 (Go-native) ships none: the plugin crashes oxlint at startup. Its one enabled rule, `prefer-property-signatures`, is replaced in the `src/**` override by oxlint's native `typescript/method-signature-style: property`. Its three type-aware rules (`immutable-data`, `no-mixed-types`, `prefer-readonly-type`) were already off, since oxlint's JS-plugin runtime gives plugins no parser services.
 
 ## Verification
 
