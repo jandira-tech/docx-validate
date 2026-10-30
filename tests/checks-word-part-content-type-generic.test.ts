@@ -1917,7 +1917,7 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
     });
 
     /**
-     * Session 87 (2026-10-29, chunk s87a, Word 16.115, two runs, every
+     * Session 87 (2026-10-30, chunk s87a, Word 16.115, two runs, every
      * reading agreeing) offered recovery for the same charset-typed styles
      * part with a used header relationship, or a comments, footnotes or
      * endnotes relationship, targeting it in place of s56a's footer, and for

@@ -1107,7 +1107,7 @@ nor hides a read one, because usage is decided per (part, type) pair
 story relationship hides no eager one either — session 56 (s56a, 2026-10-26)
 observed Word recover the styles part typed `…styles+xml; charset=utf-8`
 with a read footer relationship also targeting it, and session 87 (s87a,
-2026-10-29) the same part with a used header, comments, footnotes or endnotes
+2026-10-30) the same part with a used header, comments, footnotes or endnotes
 relationship in place of the footer
 ([#776](https://github.com/jandira-tech/docx-validate/issues/776)), so the
 spelling is judged over every reach the story roots read
