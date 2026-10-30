@@ -994,12 +994,12 @@ export async function runCommentFromArgv(argv: readonly string[]): Promise<numbe
     const [unpackedDir, commentIdRaw, text] = cmd.args;
 
     const commentId = Number.parseInt(commentIdRaw, 10);
-    if (!Number.isFinite(commentId)) {
+    if (!/^[0-9]+$/.test(commentIdRaw) || !Number.isFinite(commentId)) {
         process.stderr.write(`Error: commentId must be an integer (got ${commentIdRaw})\n`);
         return 1;
     }
     const parent = opts.parent !== undefined ? Number.parseInt(opts.parent, 10) : undefined;
-    if (parent !== undefined && !Number.isFinite(parent)) {
+    if (opts.parent !== undefined && (!/^[0-9]+$/.test(opts.parent) || !Number.isFinite(parent))) {
         process.stderr.write(`Error: --parent must be an integer (got ${opts.parent})\n`);
         return 1;
     }

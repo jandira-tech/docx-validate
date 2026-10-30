@@ -32,7 +32,7 @@ import { withTempDir } from "../src/lib/run-cli";
 import { canonicalPartName, CONTENT_TYPES_NAMESPACE, parseContentTypes, resolveContentType } from "../src/lib/content-types";
 import { getElementsByTagNameNSAll, parseXml } from "../src/lib/xml-helpers";
 import { SECURE_LONG_HEX_EXCLUSIVE_MAX } from "../src/lib/secure-id";
-import { addComment, generateHexId } from "../src/scripts/comment";
+import { addComment, generateHexId, runCommentFromArgv } from "../src/scripts/comment";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
@@ -349,6 +349,48 @@ describe("generateHexId", () => {
     it("returns a zero-padded 8-digit uppercase hex string", () => {
         vi.mocked(crypto.randomInt).mockImplementation(() => 1);
         expect(generateHexId()).toMatch(/^[0-9A-F]{8}$/);
+    });
+});
+
+describe("runCommentFromArgv integration (#1203)", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it.each(["1x", "1.5", "2e3", "+1", "-1", "", " 1"])("refuses commentId %j, changing nothing", async (raw) => {
+        await withTempDir(async (dir) => {
+            await makeFixture(dir);
+            const before = await readTree(dir);
+            const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+
+            const code = await runCommentFromArgv(["--author", "Test", "--initials", "T", "--", dir, raw, "Comment"]);
+
+            expect(code).toBe(1);
+            expect(stderr).toHaveBeenCalledExactlyOnceWith(`Error: commentId must be an integer (got ${raw})\n`);
+            expect(stdout).not.toHaveBeenCalled();
+            expect(await readTree(dir)).toEqual(before);
+        });
+    });
+
+    it.each(["1x", "1.5", "2e3", "+1", "-1", "", " 1"])("refuses --parent %j, changing nothing", async (raw) => {
+        await withTempDir(async (dir) => {
+            await makeFixture(dir);
+            for (const commentId of [1, 2]) {
+                const result = await addComment({ unpackedDir: dir, commentId, text: "Parent", author: "Test", initials: "T" });
+                expect(result.message).toMatch(/^Added comment /);
+            }
+            const before = await readTree(dir);
+            const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+
+            const code = await runCommentFromArgv([dir, "3", "Reply", "--author", "Test", "--initials", "T", `--parent=${raw}`]);
+
+            expect(code).toBe(1);
+            expect(stderr).toHaveBeenCalledExactlyOnceWith(`Error: --parent must be an integer (got ${raw})\n`);
+            expect(stdout).not.toHaveBeenCalled();
+            expect(await readTree(dir)).toEqual(before);
+        });
     });
 });
 

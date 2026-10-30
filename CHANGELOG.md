@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- Refuse comment CLI `commentId` and `--parent` values containing anything other than ASCII decimal digits, with the existing integer error and no document changes ([#1203](https://github.com/jandira-tech/docx-validate/issues/1203)). Previously, `parseInt` accepted numeric prefixes, signs and leading whitespace.
+
 ## [0.54.0-rc.2] — 2026-10-30
 
 Changes since `v0.54.0-rc.1` (2026-10-29), from [#1172](https://github.com/jandira-tech/docx-validate/pull/1172) to [#1177](https://github.com/jandira-tech/docx-validate/pull/1177) and [#1180](https://github.com/jandira-tech/docx-validate/pull/1180). This prerelease is published under npm's `next` tag; it does not advance `latest`.
