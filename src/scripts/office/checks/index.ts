@@ -73,6 +73,10 @@ import { wordHeaderFooterRelationshipCheck } from "./word-header-footer";
 import { wordPartContentTypeUnrecognizedCheck } from "./word-part-content-type-unrecognized";
 import { wordPartReferenceRelationshipCheck } from "./word-part-reference";
 import { wordSharedStoryPartCheck } from "./word-shared-story-part";
+import { ctStaleOverrideCheck } from "./ct-stale-override";
+import { xmlPackageMarkupCompatibilityCheck } from "./xml-package-markup-compatibility";
+import { wordFieldBalanceCheck } from "./word-field-balance";
+import { wordMoveRangePairingCheck } from "./word-move-range-pairing";
 
 /**
  * Word rules that `DOCXSchemaValidator` runs through the registry under the
@@ -81,6 +85,10 @@ import { wordSharedStoryPartCheck } from "./word-shared-story-part";
  * do not parse; XML syntax is reported by its own check.
  */
 export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
+    ctStaleOverrideCheck,
+    xmlPackageMarkupCompatibilityCheck,
+    wordFieldBalanceCheck,
+    wordMoveRangePairingCheck,
     mathRunInsertionCheck,
     mathRunDeletionCheck,
     wordShadingColorCheck,
