@@ -2071,8 +2071,10 @@ share that identity, severity and count. Descendant-only findings keep
 `mce-unbound-prefix` ([#499](https://github.com/jandira-tech/docx-validate/issues/499)).
 
 Strict bundles both Transitional and ISO Strict schema trees, with local Dublin
-Core imports. Strict does not subtract errors shared with `original` or suppress
-messages in `IGNORED_VALIDATION_ERRORS`; only lenient retains those XSD behaviors.
+Core imports. Strict does not subtract errors shared with `original`; only
+lenient retains that XSD behavior. No profile suppresses schema messages by their
+text: `IGNORED_VALIDATION_ERRORS` is empty
+([#1209](https://github.com/jandira-tech/docx-validate/issues/1209)).
 Strict preserves each schema error occurrence and available engine line. If
 preprocessing changes the view, the message marks the line as referring to the
 preprocessed view. Schema-load failures remain blocking `xsd-schema-load-failed`

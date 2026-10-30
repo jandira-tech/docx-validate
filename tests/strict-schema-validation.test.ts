@@ -304,6 +304,19 @@ describe("strict profile — no message suppression, Strict-aware markup compati
         });
     }, 60_000);
 
+    it("lenient reports a misplaced w:hyphenationZone too: no message suppression (#1209)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PARTS,
+                "word/document.xml": inject(MINIMAL_PARTS["word/document.xml"]!, '<w:hyphenationZone w:val="1"/>'),
+            };
+            const file = await writeDocx(dir, "hyphenation-zone-misplaced-lenient.docx", parts);
+            const result = await validate(file, { profile: "lenient" });
+            expect(result.valid).toBe(false);
+            expect(result.issues.some((i) => i.severity === "error" && i.message.includes("hyphenationZone"))).toBe(true);
+        });
+    }, 60_000);
+
     it("treats a Strict part's own namespace as understood for mc:MustUnderstand", async () => {
         await withTempDir(async (dir) => {
             const parts = {

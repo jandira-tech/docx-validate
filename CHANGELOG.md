@@ -13,6 +13,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `pack` refuses symbolic links to files or directories before validation or staging, names the link relative to the input directory, and writes no output file ([#1199](https://github.com/jandira-tech/docx-validate/issues/1199)). Links were previously omitted from the archive while `pack` reported success.
 - Include the package-root `_rels/.rels` in `pack`'s XML condensing and `unpack`'s pretty-printing and smart-quote escaping ([#1198](https://github.com/jandira-tech/docx-validate/issues/1198)). Both file walks now match the lower-cased name's `.xml` or `.rels` suffix, so the dotfile is processed like `word/_rels/document.xml.rels`.
 - Refuse comment CLI `commentId` and `--parent` values containing anything other than ASCII decimal digits, with the existing integer error and no document changes ([#1203](https://github.com/jandira-tech/docx-validate/issues/1203)). Previously, `parseInt` accepted numeric prefixes, signs and leading whitespace.
+- Drop the last `IGNORED_VALIDATION_ERRORS` entry, `"hyphenationZone"`, inherited from the Python validator with no recorded reason: lenient no longer hides schema errors that mention `w:hyphenationZone`, as strict already did not. No fixture verdict changed ([#1209](https://github.com/jandira-tech/docx-validate/issues/1209)).
 
 ## [0.54.0-rc.2] — 2026-10-30
 
