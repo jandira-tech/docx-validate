@@ -135,7 +135,7 @@ describe("zipCentralDirectoryEntries", () => {
     it("lists a JSZip archive's entries, in central-directory order", async () => {
         const bytes = await buildDocx();
         // JSZip stores a folder entry for each implicit directory.
-        expect(fileNames(bytes)).toEqual([...Object.keys(MINIMAL_PARTS)].sort());
+        expect(fileNames(bytes)).toEqual(Object.keys(MINIMAL_PARTS).sort());
     });
 
     it("keeps duplicate names, in central-directory order", () => {
@@ -234,7 +234,7 @@ describe("zipCentralDirectoryEntries", () => {
 describe("zipBytesBeforeArchive: bytes in front of the archive JSZip loads (#464)", () => {
     const JUNK = Buffer.alloc(4096, 0x20);
     const FAKE_SIG_STUB = Buffer.concat([Buffer.from([0x50, 0x4b, 0x03, 0x04]), Buffer.alloc(4092)]);
-    const DOCX_NAMES = [...Object.keys(MINIMAL_PARTS)].sort();
+    const DOCX_NAMES = Object.keys(MINIMAL_PARTS).sort();
     const zipPrefix = () =>
         buildRawZip([
             { name: "pad.bin", content: Buffer.alloc(600) },
@@ -382,7 +382,7 @@ describe("the ZIP64 extra field's local-header offset (#490)", () => {
             .filter((name) => !files[name]!.dir)
             .sort();
     };
-    const DOCX_NAMES = [...Object.keys(MINIMAL_PARTS)].sort();
+    const DOCX_NAMES = Object.keys(MINIMAL_PARTS).sort();
     const JUNK = Buffer.alloc(4096, 0x20);
 
     it.each([1, 2, undefined] as const)(

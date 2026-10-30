@@ -831,7 +831,11 @@ Expected: FAIL — `src/measure.ts` doesn't exist.
 // 5 buckets from the spec; returns metrics.
 
 export type MeasureClassification =
-    "byte-equivalent" | "bailed-with-canonical-match" | "ast-equivalent-byte-differs" | "lossy-tracked" | "hard-fail";
+    | "byte-equivalent"
+    | "bailed-with-canonical-match"
+    | "ast-equivalent-byte-differs"
+    | "lossy-tracked"
+    | "hard-fail";
 
 export interface MeasureResult {
     classification: MeasureClassification;

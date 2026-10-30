@@ -825,7 +825,7 @@ function applyWordVerification(result: ValidateRunResult, verification: WordVeri
     return {
         ...result,
         valid: result.valid && verification.satisfied,
-        metadata: { ...(result.metadata ?? {}), wordVerification: { ...verification } },
+        metadata: { ...result.metadata, wordVerification: { ...verification } },
     };
 }
 

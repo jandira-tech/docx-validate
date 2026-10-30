@@ -195,11 +195,8 @@
                 "unicorn/filename-case": "error",
                 "unicorn/prefer-ternary": "error",
                 "jsdoc-js/check-alignment": "error",
+                "typescript/method-signature-style": ["error", "property"],
                 "valid-typeof": "off",
-                "functional/immutable-data": "off",
-                "functional/prefer-property-signatures": "error",
-                "functional/no-mixed-types": "off",
-                "functional/prefer-readonly-type": "off",
                 "no-unused-vars": [
                     "error",
                     {
@@ -296,7 +293,6 @@
             },
             "jsPlugins": [
                 "eslint-plugin-prefer-arrow",
-                "eslint-plugin-functional",
                 {
                     "name": "jsdoc-js",
                     "specifier": "eslint-plugin-jsdoc"
