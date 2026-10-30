@@ -171,12 +171,9 @@ const STRICT_SCHEMA_MAPPINGS: Record<string, string> = {
 };
 
 const IGNORED_VALIDATION_ERRORS: readonly string[] = [
-    // Inherited from the Python validator with no recorded reason or
-    // fixture; it hides every engine message that mentions the element.
-    // Lenient keeps it for compatibility. Strict never consults this list:
-    // its validity rests on unsuppressed schema issues. Word-valid runs no
-    // XSD at all, so it never consults the list either.
-    "hyphenationZone",
+    // The "hyphenationZone" entry inherited from the Python validator, with
+    // no recorded reason or fixture, hid every lenient engine message that
+    // mentioned the element; removing it changed no fixture verdict (#1209).
     // opc-coreProperties.xsd's Dublin Core imports resolve to the bundled
     // schemas/dublincore/ copies (SOURCES.md), so the libxmljs2-era
     // suppressions for the missing remote import ("purl.org/dc/terms",

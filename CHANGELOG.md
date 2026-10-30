@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- Drop the last `IGNORED_VALIDATION_ERRORS` entry, `"hyphenationZone"`, inherited from the Python validator with no recorded reason: lenient no longer hides schema errors that mention `w:hyphenationZone`, as strict already did not. No fixture verdict changed ([#1209](https://github.com/jandira-tech/docx-validate/issues/1209)).
+
 ## [0.54.0-rc.2] — 2026-10-30
 
 Changes since `v0.54.0-rc.1` (2026-10-29), from [#1172](https://github.com/jandira-tech/docx-validate/pull/1172) to [#1177](https://github.com/jandira-tech/docx-validate/pull/1177) and [#1180](https://github.com/jandira-tech/docx-validate/pull/1180). This prerelease is published under npm's `next` tag; it does not advance `latest`.
