@@ -34622,21 +34622,19 @@ Word-valid at 2a98048d matches Word on 4 of 7 rows: it passed the three related 
 
 Reading the logs used session 41's `logcheck.py`, above, unchanged. The builder ran from the root of the committed tree at the first revision, and the re-judge from the root of the committed tree at the second.
 
-`s89builder.mts`:
+`s90builder.mts`:
 
 ```ts
-// Session 89 (2026-10-30, #1184): the placements of a scheme-like internal target (`ftp:`) session 88 did not show
-// Word, on the minimal package (`tests/support/minimal-docx.ts`). Every ftp: row stores the part the path spells
-// well-formed, and each placement has a plain-target calibration.
-// s89a: `_rels/.rels` relates the core, extended (app) and custom properties and the thumbnail through `ftp:docProps/…`,
-//   stored /ftp:docProps/… (#1182 blocks these by extrapolation from s88a's styles row).
-// s89b: a used header's own sidecar (word/_rels/header1.xml.rels) relates an image through `ftp:image1.png`, stored
-//   word/ftp:image1.png, that the header uses through r:embed, and one it does not use (#1182 keeps these a warning).
-// s89c: the same unused image through `ftp:image1.png` in other sidecars: a used footer's, an unused header's, the
-//   styles part's and an unreferenced part's (word/foo.xml, no relationship names it).
+// Session 90 (2026-10-30, #1186): why Word refused session 89's plain thumbnail calibration (s89a), a 1x1 PNG at
+// docProps/thumbnail.png that _rels/.rels relates by the package thumbnail type and a png Default types. Every row is
+// the minimal package (`tests/support/minimal-docx.ts`) plus one thumbnail variant.
+// s90a: that s89a row again; the same bytes stored but related by nothing; a 96x96 PNG; the 1x1 PNG typed by an
+//   Override instead of a Default; a 96x96 JPEG at docProps/thumbnail.jpeg typed by a jpeg Default (the name and
+//   format Word for Mac writes); the same JPEG typed image/jpeg by an Override.
+// Assets: s90/assets (1x1.png from s89a's bytes; 96.png and 96.jpeg made with sips).
 // Every chunk ends with a minimal control. Every row records the validator revision it was judged at
 // (`validatorRevision`, `git -C <tree> rev-parse HEAD`).
-// Run: CHUNK=s89a pnpm exec node --import tsx <abs path to this file>  (from the committed tree's root)
+// Run: CHUNK=s90a pnpm exec node --import tsx <abs path to this file>  (from the committed tree's root)
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { appendFileSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
@@ -34679,155 +34677,65 @@ const mainWith = (parts: Record<string, string | Uint8Array>, sect: string): Rec
     [MAIN]: replaceOnce(replaceOnce(P[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`), "<w:sectPr>", `<w:sectPr>${sect}`),
 });
 
+import { readFileSync } from "node:fs";
 const PKG = "http://schemas.openxmlformats.org/package/2006/relationships";
-const A = "http://schemas.openxmlformats.org/drawingml/2006/main";
-const PIC = "http://schemas.openxmlformats.org/drawingml/2006/picture";
-const WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
-// A 1x1 transparent PNG.
-const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
-const CORE = `${XML_DECL}<cp:coreProperties xmlns:cp="${PKG.replace("relationships", "metadata/core-properties")}" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Probe 89</dc:title></cp:coreProperties>`;
-const APP = `${XML_DECL}<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>Microsoft Office Word</Application></Properties>`;
-const CUSTOM =
-    `${XML_DECL}<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">` +
-    `<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="Probe"><vt:lpwstr>89</vt:lpwstr></property></Properties>`;
-
-type Prop = { type: string; file: string; xml: string | Uint8Array; contentType?: string };
-const PROPS: Record<string, Prop> = {
-    core: {
-        type: `${PKG}/metadata/core-properties`,
-        file: "core.xml",
-        xml: CORE,
-        contentType: "application/vnd.openxmlformats-package.core-properties+xml",
-    },
-    app: {
-        type: `${R}/extended-properties`,
-        file: "app.xml",
-        xml: APP,
-        contentType: "application/vnd.openxmlformats-officedocument.extended-properties+xml",
-    },
-    custom: {
-        type: `${R}/custom-properties`,
-        file: "custom.xml",
-        xml: CUSTOM,
-        contentType: "application/vnd.openxmlformats-officedocument.custom-properties+xml",
-    },
-    thumbnail: { type: `${PKG}/metadata/thumbnail`, file: "thumbnail.png", xml: PNG },
-};
-/** `_rels/.rels` relating the `kind` part through `prefix + docProps/<file>`, stored at the package root under that spelling. */
-const pkgProp = (kind: string, prefix: string) => {
-    const prop = PROPS[kind]!;
-    const target = `${prefix}docProps/${prop.file}`;
+const THUMB = `${PKG}/metadata/thumbnail`;
+const asset = (name: string) => readFileSync(path.join(ROOT, "s90", "assets", name));
+type Variant = { file: string; bytes: Uint8Array; type: string; by: "default" | "override"; related?: boolean };
+const thumbnail = (v: Variant) => {
+    const ext = v.file.slice(v.file.lastIndexOf(".") + 1);
     return {
         ...P,
-        [target]: prop.xml,
-        [PKG_RELS]: appendRels(P[PKG_RELS]!, `<Relationship Id="rIdP" Type="${prop.type}" Target="${target}"/>`),
-        [CT]: prop.contentType ? overrides(P[CT]!, [target, prop.contentType]) : defaults(P[CT]!, "png", "image/png"),
+        [`docProps/${v.file}`]: v.bytes,
+        [PKG_RELS]:
+            v.related === false
+                ? P[PKG_RELS]!
+                : appendRels(P[PKG_RELS]!, `<Relationship Id="rIdT" Type="${THUMB}" Target="docProps/${v.file}"/>`),
+        [CT]: v.by === "default" ? defaults(P[CT]!, ext, v.type) : overrides(P[CT]!, [`docProps/${v.file}`, v.type]),
     };
 };
-
-const DRAWING =
-    `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="95250" cy="95250"/><wp:docPr id="1" name="Picture 1"/>` +
-    `<a:graphic xmlns:a="${A}"><a:graphicData uri="${PIC}"><pic:pic xmlns:pic="${PIC}"><pic:nvPicPr><pic:cNvPr id="1" name="image1.png"/><pic:cNvPicPr/></pic:nvPicPr>` +
-    `<pic:blipFill><a:blip r:embed="rIdI"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
-    `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="95250" cy="95250"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
-const header = (used: boolean) =>
-    `${XML_DECL}<w:hdr xmlns:w="${W}" xmlns:r="${R}" xmlns:wp="${WP}"><w:p><w:r><w:t>Header 89</w:t></w:r>${used ? DRAWING : ""}</w:p></w:hdr>`;
-/** A used header whose own sidecar relates an image through `prefix + image1.png`, stored at word/ under that spelling. */
-const headerImage = (used: boolean, prefix: string) => {
-    const target = `${prefix}image1.png`;
-    return mainWith(
-        {
-            ...P,
-            "word/header1.xml": header(used),
-            "word/_rels/header1.xml.rels": `${XML_DECL}<Relationships xmlns="${PKG}">${relationship("rIdI", "image", target)}</Relationships>`,
-            [`word/${target}`]: PNG,
-            [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
-            [CT]: defaults(overrides(P[CT]!, ["word/header1.xml", `${WML}.header+xml`]), "png", "image/png"),
-        },
-        `<w:headerReference w:type="default" r:id="rIdH"/>`,
-    );
-};
-
 type Row = [string, string, () => Promise<Uint8Array>];
-const FOOTER89 = `${XML_DECL}<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Footer 89</w:t></w:r></w:p></w:ftr>`;
-const HEADER89 = `${XML_DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header 89</w:t></w:r></w:p></w:hdr>`;
-const imageRels = (target: string) => `${XML_DECL}<Relationships xmlns="${PKG}">${relationship("rIdI", "image", target)}</Relationships>`;
-/** A part whose own sidecar relates an unused image through `prefix + image1.png`, stored at word/ under that spelling. */
-const sidecarImage = (owner: string, prefix: string) => {
-    const target = `${prefix}image1.png`;
-    const base: Record<string, string | Uint8Array> = { ...P, [`word/${target}`]: PNG, [CT]: defaults(P[CT]!, "png", "image/png") };
-    if (owner === "footer-used")
-        return mainWith(
-            {
-                ...base,
-                "word/footer1.xml": FOOTER89,
-                "word/_rels/footer1.xml.rels": imageRels(target),
-                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdF", "footer", "footer1.xml")),
-                [CT]: overrides(base[CT] as string, ["word/footer1.xml", `${WML}.footer+xml`]),
-            },
-            `<w:footerReference w:type="default" r:id="rIdF"/>`,
-        );
-    if (owner === "header-unused")
-        return {
-            ...base,
-            "word/header1.xml": HEADER89,
-            "word/_rels/header1.xml.rels": imageRels(target),
-            [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
-            [CT]: overrides(base[CT] as string, ["word/header1.xml", `${WML}.header+xml`]),
-        };
-    if (owner === "styles") return { ...base, "word/_rels/styles.xml.rels": imageRels(target) };
-    // An unreferenced part: no relationship names word/foo.xml.
-    return { ...base, "word/foo.xml": `${XML_DECL}<foo/>`, "word/_rels/foo.xml.rels": imageRels(target) };
-};
-const sidecarPair = (owner: string): Row[] => [
-    [
-        `sidecar-${owner}-ftp`,
-        `#1184: ${owner === "unreferenced" ? "an unreferenced word/foo.xml" : `the ${owner.replace("-", " ")} part`}'s own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png`,
-        () => buildDocx(sidecarImage(owner, "ftp:")),
-    ],
-    [
-        `sidecar-${owner}-plain-calibration`,
-        `calibration: the same sidecar image relationship through image1.png`,
-        () => buildDocx(sidecarImage(owner, "")),
-    ],
-];
-
-const propPair = (kind: string): Row[] => [
-    [
-        `pkgrels-${kind}-ftp`,
-        `#1184: _rels/.rels relates the ${kind} part through ftp:docProps/${PROPS[kind]!.file}, stored /ftp:docProps/${PROPS[kind]!.file} well-formed`,
-        () => buildDocx(pkgProp(kind, "ftp:")),
-    ],
-    [
-        `pkgrels-${kind}-plain-calibration`,
-        `calibration: the same _rels/.rels ${kind} relationship through docProps/${PROPS[kind]!.file}`,
-        () => buildDocx(pkgProp(kind, "")),
-    ],
-];
-const headerPair = (used: boolean): Row[] => {
-    const kind = used ? "used" : "unused";
-    return [
-        [
-            `header-image-${kind}-ftp`,
-            `#1184: a used header's own sidecar relates an image the header ${used ? "uses through r:embed" : "does not use"} through ftp:image1.png, stored word/ftp:image1.png`,
-            () => buildDocx(headerImage(used, "ftp:")),
-        ],
-        [
-            `header-image-${kind}-plain-calibration`,
-            `calibration: the same header-sidecar image relationship through image1.png`,
-            () => buildDocx(headerImage(used, "")),
-        ],
-    ];
-};
+const row = (name: string, issue: string, v: Variant): Row => [name, issue, () => buildDocx(thumbnail(v))];
 const withControl = (chunk: string, rows: Row[]): Row[] => [...rows, [`${chunk}-control-minimal`, "control", () => buildDocx({ ...P })]];
 const chunks: Record<string, Row[]> = {
-    s89a: withControl("s89a", [...propPair("core"), ...propPair("app"), ...propPair("custom"), ...propPair("thumbnail")]),
-    s89b: withControl("s89b", [...headerPair(true), ...headerPair(false)]),
-    s89c: withControl("s89c", [
-        ...sidecarPair("footer-used"),
-        ...sidecarPair("header-unused"),
-        ...sidecarPair("styles"),
-        ...sidecarPair("unreferenced"),
+    s90a: withControl("s90a", [
+        row("thumb-png1-default-s89a", "#1186: s89a's thumbnail calibration again: a 1x1 PNG at docProps/thumbnail.png, png Default", {
+            file: "thumbnail.png",
+            bytes: asset("1x1.png"),
+            type: "image/png",
+            by: "default",
+        }),
+        row("thumb-png1-default-unrelated", "#1186: the same PNG and Default, but no relationship names the part", {
+            file: "thumbnail.png",
+            bytes: asset("1x1.png"),
+            type: "image/png",
+            by: "default",
+            related: false,
+        }),
+        row("thumb-png96-default", "#1186: a 96x96 PNG at docProps/thumbnail.png, png Default", {
+            file: "thumbnail.png",
+            bytes: asset("96.png"),
+            type: "image/png",
+            by: "default",
+        }),
+        row("thumb-png1-override", "#1186: the 1x1 PNG typed image/png by an Override", {
+            file: "thumbnail.png",
+            bytes: asset("1x1.png"),
+            type: "image/png",
+            by: "override",
+        }),
+        row("thumb-jpeg96-default", "#1186: a 96x96 JPEG at docProps/thumbnail.jpeg, jpeg Default", {
+            file: "thumbnail.jpeg",
+            bytes: asset("96.jpeg"),
+            type: "image/jpeg",
+            by: "default",
+        }),
+        row("thumb-jpeg96-override", "#1186: the same JPEG typed image/jpeg by an Override", {
+            file: "thumbnail.jpeg",
+            bytes: asset("96.jpeg"),
+            type: "image/jpeg",
+            by: "override",
+        }),
     ]),
 };
 
@@ -35136,7 +35044,7 @@ out = [
     "tree at the first revision, and the re-judge from the root of the committed tree at the second.",
     "",
 ]
-for name, path, lang in (("s89builder.mts", ROOT / "s89builder.mts", "ts"), ("rejudge.mts", ROOT / "s90/rejudge.mts", "ts"),
+for name, path, lang in (("s90builder.mts", ROOT / "s90builder.mts", "ts"), ("rejudge.mts", ROOT / "s90/rejudge.mts", "ts"),
                          ("compare.py", ROOT / "s90/compare.py", "python"), ("section.py", ROOT / "s90/section.py", "python")):
     out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
 out += ["</details>", ""]
