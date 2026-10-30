@@ -95,7 +95,7 @@ No additional validator changes needed beyond what this PR adds.
   `comment-thread-commentid-paraid-orphan` or `comment-thread-durableid-orphan`
   errors.
 - Existing test `"word-valid profile keeps commentsIds/commentsExtensible
-mismatches fatal"` in `tests/validate.test.ts` continues to pass against
+  mismatches fatal"` in `tests/validate.test.ts` continues to pass against
   the broken fixture and the fixed output passes.
 
 ## Test fixture reference

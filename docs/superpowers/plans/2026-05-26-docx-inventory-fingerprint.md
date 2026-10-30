@@ -571,7 +571,13 @@ Add to `docx-diagnostics.ts`:
 
 ```ts
 export type InventorySeverityClass =
-    "content" | "table-shape" | "section-geometry" | "image-shape" | "formatting" | "atomic-marks" | "bookkeeping";
+    | "content"
+    | "table-shape"
+    | "section-geometry"
+    | "image-shape"
+    | "formatting"
+    | "atomic-marks"
+    | "bookkeeping";
 
 const SEVERITY_CLASS_BY_CATEGORY: Record<string, InventorySeverityClass> = {
     text: "content",

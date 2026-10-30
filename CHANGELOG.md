@@ -766,7 +766,7 @@ Breaking under `0.x` conventions: the native `libxmljs2` addon is replaced by
   `accept-changes.ts`, so the bundler tree-shakes both files (and
   `SHIM_SOURCE`, `LD_PRELOAD`, `RTLD_NEXT`, `dlsym`, etc.) out of
   `dist/index.mjs`. `grep -E "LD_PRELOAD|SHIM_SOURCE|RTLD_NEXT|dlsym"
-dist/index.mjs` returns zero matches.
+  dist/index.mjs` returns zero matches.
 - Added `SECURITY.md` with the disclosure policy and a detailed
   explanation of the shim pattern, where it lives, and how to verify the
   published bundle is clean.

@@ -166,7 +166,7 @@ export function diffDocxInventories(before: DocxSemanticInventory, after: DocxSe
 - **Symmetric**: a key in only B → `added`; only A → `removed`; in both with a
   different count → `changed`; identical → counted in `unchangedCount`.
 - A **shape change** such as `table 3×4 → 3×2` is `removed("table 3×4") +
-added("table 3×2")` (different keys). The structured `changed[]` is reserved
+  added("table 3×2")` (different keys). The structured `changed[]` is reserved
   strictly for same-key count deltas — no fragile 1:1 instance pairing (ambiguous
   with multiple same-shape elements, per Non-goals). Pairing a removed shape-key
   with an added shape-key for human readability is a **formatter** concern (see

@@ -50,7 +50,7 @@ keeps `acceptChanges()` working in those environments.
   tree-shakes both files (and `SHIM_SOURCE`, `ensureShim`,
   `getSofficeEnv`, `runSoffice`, `acceptChanges`, etc.) out of the
   published artifact. `grep -E 'LD_PRELOAD|SHIM_SOURCE|RTLD_NEXT|dlsym'
-dist/index.mjs` returns zero matches.
+  dist/index.mjs` returns zero matches.
 - **The default programmatic API** — npm consumers doing
   `import { ... } from "docx-validate"` cannot reach the shim or
   anything that depends on it.
