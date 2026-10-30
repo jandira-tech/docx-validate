@@ -2162,6 +2162,8 @@ await unpack("./contract.docx", "./unpacked");
 await pack("./unpacked", "./contract.modified.docx");
 ```
 
+`pack` refuses symbolic links to files or directories inside the input directory, returning `{ ok: false, message }` with the link's relative path using `/` separators and writing no output file (#1199).
+
 `unpack` checks every entry before it writes one (#675). It refuses, writing
 nothing, an entry whose stored name leaves the output directory, even one JSZip
 would load inside it (`../evil.txt` loads as `evil.txt`; #676), and an entry

@@ -125,6 +125,43 @@ describe("pack", () => {
         });
     });
 
+    it.each(["file", "directory"] as const)("refuses a symbolic link to a %s without writing output (#1199)", async (kind) => {
+        await withTempDir(async (dir) => {
+            const inputDir = path.join(dir, "src");
+            const outputFile = path.join(dir, "out.docx");
+            for (const [name, content] of Object.entries(MINIMAL_PARTS)) {
+                const file = path.join(inputDir, name);
+                await fs.mkdir(path.dirname(file), { recursive: true });
+                await fs.writeFile(file, content);
+            }
+            await fs.writeFile(
+                path.join(inputDir, "[Content_Types].xml"),
+                MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                    "</Types>",
+                    '<Default Extension="bin" ContentType="application/octet-stream"/></Types>',
+                ),
+            );
+            const mediaDir = path.join(inputDir, "word", "media");
+            await fs.mkdir(mediaDir);
+            const target = kind === "file" ? "data.bin" : "data";
+            if (kind === "file") {
+                await fs.writeFile(path.join(mediaDir, target), "data");
+            } else {
+                await fs.mkdir(path.join(mediaDir, target));
+                await fs.writeFile(path.join(mediaDir, target, "data.bin"), "data");
+            }
+            const link = kind === "file" ? "alias.bin" : "alias";
+            await fs.symlink(target, path.join(mediaDir, link), kind === "file" ? "file" : "dir");
+
+            const result = await pack(inputDir, outputFile, { validate: false });
+
+            expect(result.ok).toBe(false);
+            expect(result.message).toContain(`word/media/${link}`);
+            expect(result.message).toMatch(/^Error: .*symbolic link/);
+            await expect(fs.stat(outputFile)).rejects.toMatchObject({ code: "ENOENT" });
+        });
+    });
+
     it("packs a directory into a .docx zip without validation", async () => {
         await withTempDir(async (dir) => {
             const inputDir = path.join(dir, "src");
