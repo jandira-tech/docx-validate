@@ -106,6 +106,15 @@ export async function pack(inputDirectory: string, outputFile: string, opts: Pac
         };
     }
 
+    const symbolicLink = await findSymbolicLink(inputDir);
+    if (symbolicLink) {
+        const relativePath = path.relative(inputDir, symbolicLink).split(path.sep).join("/");
+        return {
+            ok: false,
+            message: `Error: ${relativePath} is a symbolic link`,
+        };
+    }
+
     let validationLog: string | undefined;
 
     if (validate) {
@@ -254,6 +263,21 @@ async function runValidation(
     }
 
     return { success, log: lines.length > 0 ? lines.join("\n") : undefined, issues };
+}
+
+async function findSymbolicLink(dir: string): Promise<string | undefined> {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    for (const entry of entries) {
+        const full = path.join(dir, entry.name);
+        if (entry.isSymbolicLink()) {
+            return full;
+        }
+        if (entry.isDirectory()) {
+            const found = await findSymbolicLink(full);
+            if (found) return found;
+        }
+    }
+    return undefined;
 }
 
 async function copyDir(src: string, dest: string): Promise<void> {

@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- `pack` refuses symbolic links to files or directories before validation or staging, names the link relative to the input directory, and writes no output file ([#1199](https://github.com/jandira-tech/docx-validate/issues/1199)). Links were previously omitted from the archive while `pack` reported success.
+
 ## [0.54.0-rc.2] — 2026-10-30
 
 Changes since `v0.54.0-rc.1` (2026-10-29), from [#1172](https://github.com/jandira-tech/docx-validate/pull/1172) to [#1177](https://github.com/jandira-tech/docx-validate/pull/1177) and [#1180](https://github.com/jandira-tech/docx-validate/pull/1180). This prerelease is published under npm's `next` tag; it does not advance `latest`.
