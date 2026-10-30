@@ -16,6 +16,7 @@
 import { describe, expect, it } from "vitest";
 import { ValidationContext } from "../src/lib/validation-context";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
+import { MINIMAL_PARTS } from "./support/minimal-docx";
 
 const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
 const root = (body: string, attrs = "") => `<x:root xmlns:x="urn:probe" xmlns:mc="${MC}" ${attrs}>${body}</x:root>`;
@@ -74,4 +75,52 @@ describe("xml-package-markup-compatibility", () => {
         expect(await run(root('<x:a mc:Ignorable="p"/>'), "customXml/item.bin")).toEqual([]);
         expect(await run("<broken")).toEqual([]);
     });
+    for (const profile of ["word-valid", "strict"] as const) {
+        for (const main of ["word/document.bin", "other/main.xml"]) {
+            // word-markup-compatibility judges only word/*.xml and relationships
+            // parts, so this check keeps reporting a related main document stored
+            // under another name until the Word check reads it (#1217).
+            it(`still reports the related ${main} under ${profile}`, async () => {
+                const parts = { ...MINIMAL_PARTS };
+                delete parts["word/document.xml"];
+                parts["_rels/.rels"] = parts["_rels/.rels"]!.replace("word/document.xml", main);
+                parts["[Content_Types].xml"] = parts["[Content_Types].xml"]!.replace("/word/document.xml", `/${main}`);
+                parts[main] = root('<x:a mc:Ignorable="missing"/>');
+                const issues = await createDefaultCheckRegistry()
+                    .get("xml-package-markup-compatibility")
+                    ?.run(ValidationContext.fromEntries(parts), profile);
+                expect(issues).toContainEqual(
+                    expect.objectContaining({ path: main, severity: profile === "strict" ? "error" : "warning" }),
+                );
+            });
+        }
+        for (const [part, segment] of [
+            ["other/header.bin", "header"],
+            ["other/settings.xml", "settings"],
+        ] as const) {
+            it(`still reports a related ${segment} outside word/ under ${profile} (#1217)`, async () => {
+                const parts = { ...MINIMAL_PARTS };
+                parts["word/_rels/document.xml.rels"] = parts["word/_rels/document.xml.rels"]!.replace(
+                    "</Relationships>",
+                    `<Relationship Id="header" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/${segment}" Target="../${part}"/></Relationships>`,
+                );
+                parts["word/document.xml"] = parts["word/document.xml"]!.replace(
+                    "<w:sectPr>",
+                    segment === "header"
+                        ? '<w:sectPr><w:headerReference xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="header" w:type="default"/>'
+                        : "<w:sectPr>",
+                );
+                parts["[Content_Types].xml"] = parts["[Content_Types].xml"]!.replace(
+                    "</Types>",
+                    `<Override PartName="/${part}" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${segment}+xml"/></Types>`,
+                );
+                parts[part] = root("", 'xmlns:p="urn:unknown" mc:MustUnderstand="p"');
+                expect(
+                    await createDefaultCheckRegistry()
+                        .get("xml-package-markup-compatibility")
+                        ?.run(ValidationContext.fromEntries(parts), profile),
+                ).toContainEqual(expect.objectContaining({ path: part, severity: profile === "strict" ? "error" : "warning" }));
+            });
+        }
+    }
 });
