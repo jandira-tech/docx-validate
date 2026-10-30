@@ -108,9 +108,13 @@ describe("getGitWordDiff execution limits", () => {
             ({ pid: 1, output: [], stdout: null, stderr: "", status: 1, signal: null }) as unknown as ReturnType<
                 typeof childProcess.spawnSync
             >;
-        spawnSyncMock.mockImplementation(noStdout);
+        spawnSyncMock.mockImplementationOnce(noStdout).mockImplementationOnce(noStdout);
 
         expect(await getGitWordDiff("a\n", "b\n")).toBeNull();
         expect(spawnSyncMock).toHaveBeenCalledTimes(2);
+    });
+
+    it("runs the real git again after a stubbed case (Cursor on #1205)", async () => {
+        expect(await getGitWordDiff("a\n", "b\n")).not.toBeNull();
     });
 });
