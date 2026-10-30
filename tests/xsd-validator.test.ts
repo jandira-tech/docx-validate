@@ -17,6 +17,7 @@ import {
     allowSchemaResourceRoot,
     createXsdValidator,
     schemaResourceRoots,
+    xsdValidateStats,
     type XsdValidator,
 } from "../src/lib/xsd-validator";
 import { withTempDir } from "../src/lib/run-cli";
@@ -218,6 +219,39 @@ describe("xsd-validator", () => {
             expect(schemaResourceRoots()).toContain(path.resolve(__dirname, "..", "src", "scripts", "office", "schemas"));
             const issues = await validator.validate(VALID_XML, OOXML_WML_SCHEMA);
             expect(issues.map((i) => i.code)).toEqual(["xsd-validation-failed"]);
+        });
+
+        it("_resetSchemaResourceRoots drops explicitly allowed roots but keeps the bundled tree", async () => {
+            await withTempDir(async (dir) => {
+                allowSchemaResourceRoot(dir);
+                expect(schemaResourceRoots()).toContain(dir);
+                _resetSchemaResourceRoots();
+                expect(schemaResourceRoots()).not.toContain(dir);
+                expect(schemaResourceRoots()).toContain(path.resolve(__dirname, "..", "src", "scripts", "office", "schemas"));
+            });
+        });
+    });
+
+    it("xsdValidateStats counts status-only passes and message collections on the real engine path", async () => {
+        await withTempDir(async (tempDir) => {
+            const inlineSchemaPath = path.join(tempDir, "self-contained.xsd");
+            writeFileSync(inlineSchemaPath, SELF_CONTAINED_XSD, "utf-8");
+            const passesBefore = xsdValidateStats.statusOnlyPasses;
+            const messagesBefore = xsdValidateStats.messageCollections;
+            expect(await validator.validate(VALID_XML, inlineSchemaPath)).toEqual([]);
+            expect(xsdValidateStats.statusOnlyPasses).toBeGreaterThan(passesBefore);
+            expect(await validator.validate(SCHEMA_INVALID_XML, inlineSchemaPath)).not.toEqual([]);
+            expect(xsdValidateStats.messageCollections).toBeGreaterThan(messagesBefore);
+        });
+    });
+
+    it("maps XmlValidateError details onto ValidationIssue line numbers", async () => {
+        await withTempDir(async (tempDir) => {
+            const inlineSchemaPath = path.join(tempDir, "self-contained.xsd");
+            writeFileSync(inlineSchemaPath, SELF_CONTAINED_XSD, "utf-8");
+            const issues = await validator.validate(SCHEMA_INVALID_XML, inlineSchemaPath);
+            expect(issues.length).toBeGreaterThan(0);
+            expect(issues.some((issue) => typeof issue.line === "number")).toBe(true);
         });
     });
 });
