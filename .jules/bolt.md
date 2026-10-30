@@ -42,3 +42,8 @@
 
 **Learning:** Three PRs opened after the #674 salvage repeated changes the 2026-10-25 entry had already measured and rejected. #677 queried the `txbxContent`/`moveFrom` containers first, like #421, #200 and #202, though one walk for both checks had landed in 58e53b73. #686 and #936 replaced the `lastChild`/`previousSibling` walk in `getElementsByTagNameNSAll` with `childNodes` iteration, which is #633's change. None reported an end-to-end measurement. All three also edited workflow files (#1027).
 **Action:** Read this journal before proposing a change. A traversal rewrite that an entry here rejects needs interleaved end-to-end measurements that beat the A/A noise floor. A performance PR touches no workflow or rules file.
+
+## 2026-10-29 - Backwards childNodes iteration, measured
+
+**Learning:** #686's walk rewrite (the `lastChild`/`previousSibling` loops in `walkElements` and the three `docx.ts` DFS walks become backwards `childNodes` indexing) was measured interleaved this time. The walk alone ran 1.5-1.8x faster (6.81 to 4.34 ms for a named element, 8.36 to 4.57 ms for `*`), but a full `validate()` moved -3.0% on one fixture (A/A noise 0.2%) and +1.0% on another (A/A noise 1.4%). It was taken for the walk-level gain and its unchanged element order, not as an end-to-end speed-up. The "over 2x" figure #686 first recorded here had no measurement behind it.
+**Action:** Quote interleaved walk-level and end-to-end numbers with their A/A noise floors. A walk-level gain alone does not show a faster validator.

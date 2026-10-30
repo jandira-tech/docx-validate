@@ -479,12 +479,12 @@ const walkElements = (root: Document | Element, namespaceURI: string, localName:
             }
         }
 
-        let child = node.lastChild;
-        while (child) {
+        const { childNodes } = node;
+        for (let i = childNodes.length - 1; i >= 0; i -= 1) {
+            const child = childNodes[i];
             if (child.nodeType === 1) {
                 stack.push(child);
             }
-            child = child.previousSibling;
         }
     }
     return out;
