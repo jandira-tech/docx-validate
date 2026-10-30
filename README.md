@@ -369,9 +369,14 @@ other placement it was shown: an unused header, a `_rels/.rels` styles relations
 an unused image, and the main document's settings, numbering, comments, footnotes
 and a used and an unused footer (Word probes session 88). It therefore blocks
 word-valid whatever the relationship type, in `_rels/.rels` and a story root's own
-sidecar, as a folder target does; in any other part's sidecar it is unprobed and
-keeps a warning
-([#1178](https://github.com/jandira-tech/docx-validate/issues/1178)).
+sidecar, as a folder target does
+([#1178](https://github.com/jandira-tech/docx-validate/issues/1178)); session 89
+repeated the refusal in `_rels/.rels` for the core, extended and custom properties.
+It also blocks in a used header's own sidecar, where Word offered recovery for an
+`ftp:` image the header embeds and for one it does not use (Word probes session 89),
+though Word opened a folder target there clean (session 80)
+([#1184](https://github.com/jandira-tech/docx-validate/issues/1184)). In any other
+part's sidecar it is unprobed and keeps a warning.
 They read the scheme ASCII case-insensitively, as RFC 3986 does, so an `HTTP:` or
 `MAILTO:` target is skipped as its lowercase spelling is, where it used to be
 resolved as a part; lenient's scan stays case-sensitive. Word has been shown
