@@ -18,10 +18,10 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import JSZip from "jszip";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
-import { unpack } from "../src/scripts/office/unpack";
+import { unpack, runUnpackFromArgv } from "../src/scripts/office/unpack";
 import { buildDocx as buildMinimalDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildRawZip } from "./support/raw-zip";
 
@@ -501,6 +501,103 @@ describe("unpack", () => {
             expect(result.message).toContain("left word/document.xml as stored");
             expect(result.message).not.toMatch(/simplified|merged/);
             expect(await fs.readFile(path.join(outputDir, "word", "document.xml"), "utf-8")).toBe(document);
+        });
+    });
+});
+
+describe("unpack error handling integration", () => {
+    it.each([true, false])("reports a missing main document with simplifyRedlines=%s", async (simplifyRedlines) => {
+        await withTempDir(async (dir) => {
+            const input = path.join(dir, "missing-main.docx");
+            const output = path.join(dir, "out");
+            const parts = { ...MINIMAL_PARTS };
+            delete parts["word/document.xml"];
+            await fs.writeFile(input, await buildMinimalDocx(parts));
+            expect(await unpack(input, output, { simplifyRedlines })).toEqual({
+                ok: false,
+                message: `Error: ${path.join(output, "word", "document.xml")} not found`,
+            });
+        });
+    });
+
+    it("silently skips XML it cannot pretty-print and still processes other parts", async () => {
+        await withTempDir(async (dir) => {
+            const input = path.join(dir, "malformed-extra.docx");
+            const output = path.join(dir, "out");
+            const malformed = "<extra><child></extra>";
+            await fs.writeFile(input, await buildMinimalDocx({ ...MINIMAL_PARTS, "extra.xml": malformed }));
+            expect((await unpack(input, output)).ok).toBe(true);
+            expect(await fs.readFile(path.join(output, "extra.xml"), "utf8")).toBe(malformed);
+            expect(await fs.readFile(path.join(output, "word", "styles.xml"), "utf8")).toContain("\n  <w:docDefaults>");
+        });
+    });
+
+    it("keeps an existing output directory when the input is not a ZIP", async () => {
+        await withTempDir(async (dir) => {
+            const input = path.join(dir, "fake.docx");
+            const output = path.join(dir, "out");
+            await fs.writeFile(input, "not a ZIP");
+            await fs.mkdir(output);
+            await fs.writeFile(path.join(output, "notes.txt"), "mine");
+            expect(await unpack(input, output)).toEqual({ ok: false, message: `Error: ${input} is not a valid Office file` });
+            expect(await fs.readdir(output)).toEqual(["notes.txt"]);
+            expect(await fs.readFile(path.join(output, "notes.txt"), "utf8")).toBe("mine");
+        });
+    });
+
+    it("extracts binary parts without treating them as XML", async () => {
+        await withTempDir(async (dir) => {
+            const input = path.join(dir, "binary.docx");
+            const output = path.join(dir, "out");
+            const binary = Buffer.from([0, 0xff, 0x80, 0x42]);
+            await fs.writeFile(input, await buildMinimalDocx({ ...MINIMAL_PARTS, "word/media/image.bin": binary }));
+            const result = await unpack(input, output);
+            expect(result.ok).toBe(true);
+            expect(result.message).toContain(`Unpacked ${input}`);
+            expect(await fs.readFile(path.join(output, "word", "media", "image.bin"))).toEqual(binary);
+        });
+    });
+});
+
+describe("unpack CLI integration", () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it.each([
+        [[], 1, "missing required argument"],
+        [["--help"], 0, "Usage: unpack"],
+    ] as const)("returns a clean exit code for %j", async (argv, code, message) => {
+        const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+        const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+        expect(await runUnpackFromArgv(argv)).toBe(code);
+        expect([...stdout.mock.calls, ...stderr.mock.calls].map(([text]) => String(text)).join("")).toContain(message);
+    });
+
+    it.each(["FALSE", "TrUe"])("parses helper flags %s and prints the unpacking result", async (flag) => {
+        await withTempDir(async (dir) => {
+            const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            const input = path.join(dir, "input.docx");
+            const output = path.join(dir, "out");
+            const document = MINIMAL_DOCUMENT.replace("<w:t>Hello</w:t>", "<w:t>foo</w:t></w:r><w:r><w:t>bar</w:t>");
+            await fs.writeFile(input, await buildMinimalDocx({ ...MINIMAL_PARTS, "word/document.xml": document }));
+            expect(await runUnpackFromArgv([input, output, "--merge-runs", flag, "--simplify-redlines", flag])).toBe(0);
+            const message = stdout.mock.calls.map(([text]) => String(text)).join("");
+            expect(message).toContain(`Unpacked ${input}`);
+            const stored = await fs.readFile(path.join(output, "word", "document.xml"), "utf8");
+            expect(stored.match(/<w:r>/g)).toHaveLength(flag === "TrUe" ? 1 : 2);
+            if (flag === "TrUe") {
+                expect(message).toContain("simplified 0 tracked changes, merged 1 runs");
+            } else {
+                expect(message).not.toMatch(/simplified|merged/);
+            }
+        });
+    });
+
+    it("prints an unpacking error and returns exit code 1", async () => {
+        await withTempDir(async (dir) => {
+            const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            const input = path.join(dir, "missing.docx");
+            expect(await runUnpackFromArgv([input, path.join(dir, "out")])).toBe(1);
+            expect(stdout).toHaveBeenCalledWith(`Error: ${input} does not exist\n`);
         });
     });
 });
