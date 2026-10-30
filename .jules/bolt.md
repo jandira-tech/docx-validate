@@ -47,3 +47,8 @@
 
 **Learning:** #686's walk rewrite (the `lastChild`/`previousSibling` loops in `walkElements` and the three `docx.ts` DFS walks become backwards `childNodes` indexing) was measured interleaved this time. The walk alone ran 1.5-1.8x faster (6.81 to 4.34 ms for a named element, 8.36 to 4.57 ms for `*`), but a full `validate()` moved -3.0% on one fixture (A/A noise 0.2%) and +1.0% on another (A/A noise 1.4%). It was taken for the walk-level gain and its unchanged element order, not as an end-to-end speed-up. The "over 2x" figure #686 first recorded here had no measurement behind it.
 **Action:** Quote interleaved walk-level and end-to-end numbers with their A/A noise floors. A walk-level gain alone does not show a faster validator.
+
+## 2026-10-30 - Bot PRs rebased onto 0.54.0-rc.1
+
+**Learning:** Every open bot PR was compared with main after #1172, file by file, against the closest version in main's history. #686's change is #1172. #936 adds only a comment and an `if (childNodes)` guard, and `childNodes` is never undefined on an xmldom node. #1168 splits the old `getElementsByTagNameNSAll` into four loops, a function `walkElements` and its element index have since replaced. #677 downgrades `actions/checkout` and `actions/setup-node`. After the rebase, #685, #686 and #1168 each received a commit that restored their pre-#1169 tree, about 151,000 deleted lines.
+**Action:** Rebase a bot PR before judging it, and judge its head again before merging, since the bot may push after the rebase.

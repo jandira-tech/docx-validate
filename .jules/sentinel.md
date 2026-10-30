@@ -44,3 +44,9 @@
 **Vulnerability:** `extractZipEntries` wrote each entry under the name JSZip had resolved, so a stored `../evil.txt` was extracted as `evil.txt` instead of being refused.
 **Learning:** 0a498a5b (#675, #676) passes every entry's stored `unsafeOriginalName` through `resolveSafeZipEntry` before the first write and refuses a name that leaves the output directory. #685 proposed refusing any name that contains `../`, `..\` or is absolute. That substring test also refuses `a/../b`, which resolves inside the directory (#1027).
 **Prevention:** Judge a stored name by where it resolves, not by the substrings it contains.
+
+## 2026-10-30 - Folder entries carry no unsafeOriginalName
+
+**Vulnerability:** `extractZipEntries` checked each entry's `unsafeOriginalName`, but JSZip 3.10.2 records it only for file entries (`if (!input.dir)`, `lib/load.js:78`). A folder record stored as `../evil/` reached the check under its resolved name, and a traversal record that a later entry shadowed under the same resolved name was never checked at all.
+**Learning:** d59bc9a4 (#676's Codex review, released in 0.54.0-rc.1) reads the stored names from the archive's central directory (`zipCentralDirectoryEntries`) and checks every one with `resolveSafeZipEntry` before the first write, in `unpack` and in the redlining staging alike. #1034 had advised always checking `unsafeOriginalName`, which leaves both gaps open. #1167 repeated #685's substring test and dropped #675's control-character escaping.
+**Prevention:** Judge the names the archive stores, read from its central directory, not the view JSZip builds from them.
