@@ -793,8 +793,32 @@ describe("an internal target spelling a URI scheme names no part (#1127, session
         }
     });
 
-    it.each(S88)("draws no rels-broken for the %s calibration's plain target", async (_row, make) => {
-        expect((await run(make(""), "word-valid")).broken).toEqual([]);
+    it.each(S88)(
+        "draws no rels-broken for the %s calibration's plain target, which word-valid passes as Word opened it",
+        async (_row, make) => {
+            const { valid, broken } = await run(make(""), "word-valid");
+            expect(broken).toEqual([]);
+            expect(valid).toBe(true);
+        },
+    );
+
+    // The scheme reads ASCII case-insensitively (#1008), so `FTP:` blocks as `ftp:` does; unprobed in Word.
+    it("blocks an uppercase FTP: target in the main document's sidecar as it blocks ftp:", async () => {
+        for (const profile of ["word-valid", "strict"] as const) {
+            const { valid, broken } = await run(withBrokenTarget("FTP:image9.png"), profile);
+            expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([[SIDECAR, "error"]]);
+            expect(valid).toBe(false);
+        }
+    });
+
+    // A reached glossary's own sidecar is a story root's, the scope the block covers; unprobed in Word.
+    it("blocks a scheme target in a reached glossary's own sidecar, whatever the type", async () => {
+        const parts = withBrokenGlossaryTarget("ftp:image9.png");
+        const glossaryRels = "word/glossary/_rels/document.xml.rels";
+        parts[glossaryRels] = parts[glossaryRels]!.replace(CUSTOM_XML, IMAGE);
+        const { valid, broken } = await run(parts, "word-valid");
+        expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([[glossaryRels, "error"]]);
+        expect(valid).toBe(false);
     });
 
     // Outside the relationships parts Word reads to reach the stories the shape is unprobed, so it keeps the
