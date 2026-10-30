@@ -51,6 +51,8 @@ describe("resolveSafeZipEntry", () => {
     it("rejects an absolute entry name", () => {
         const out = path.resolve("/tmp/docx-out");
         expect(() => resolveSafeZipEntry(out, "/etc/passwd")).toThrow(/Refusing to extract entry outside output dir/);
+        expect(() => resolveSafeZipEntry(out, "C:\\Windows\\System32\\cmd.exe")).toThrow(/Refusing to extract entry outside output dir/);
+        expect(() => resolveSafeZipEntry(out, "C:/Windows/System32/cmd.exe")).toThrow(/Refusing to extract entry outside output dir/);
     });
 
     it("resolves a relative output dir before the containment check", () => {
