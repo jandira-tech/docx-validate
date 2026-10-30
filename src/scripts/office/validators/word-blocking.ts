@@ -558,27 +558,27 @@ export const isWordBlockingIssue = (
             // the unreferenced part and of the used header, two runs each, all
             // readings agreeing (#987); the customXml shape in an unused
             // header's or the styles part's sidecar is unprobed (#1006).
-            // A target spelling a URI scheme names no part: Word offered
-            // recovery for a used header related through `ftp:header1.xml`
-            // or `httpfoo:header1.xml` and for the styles relationship
-            // through `ftp:styles.xml`, beside the well-formed stored part
-            // its path spells (session 87, s87c/s87d, #1127). Only those
-            // placements are probed: a header the body does not use, a
-            // scheme target in the package relationships part and another
-            // type keep their warning (review of #1177).
+            // A target spelling a URI scheme names no part and blocks, as a
+            // folder target does, whatever the relationship type: Word
+            // offered recovery beside the well-formed stored part its path
+            // spells for a used header related through `ftp:header1.xml` or
+            // `httpfoo:header1.xml` and for the styles relationship through
+            // `ftp:styles.xml` (session 87, s87c/s87d, #1127), and through
+            // `ftp:` for an unused header, a `_rels/.rels` styles
+            // relationship beside the main document's own, an unused image,
+            // and the main document's settings, numbering, comments,
+            // footnotes and a used and an unused footer (session 88,
+            // s88a–s88c, two runs each, all readings agree, #1178); each
+            // plain target opened clean. The sidecar of another part is
+            // unprobed and keeps the warning.
             const part = relsBrokenTarget(issue);
-            const scheme = relsBrokenScheme(issue);
-            if (scheme !== undefined) {
-                return (
-                    part !== undefined &&
-                    isDocumentRelationshipsPart(issue.path, storyRootParts) &&
-                    (scheme === "styles" || scheme === "header")
-                );
-            }
             return (
                 part !== undefined &&
                 (isPackageRelationshipsPart(issue.path) || isDocumentRelationshipsPart(issue.path, storyRootParts)) &&
-                (part.endsWith("/") || isOpcRelationshipsPart(part) || canonicalPartName(part).startsWith("customxml/"))
+                (relsBrokenScheme(issue) ||
+                    part.endsWith("/") ||
+                    isOpcRelationshipsPart(part) ||
+                    canonicalPartName(part).startsWith("customxml/"))
             );
         }
         case "rels-empty-element":

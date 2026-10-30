@@ -456,12 +456,13 @@ describe("a relative target that starts with http is resolved as a part (#988, s
 
     // Word-valid and strict skip only the `http:` and `https:` schemes: another
     // scheme that merely starts with `http` names no part, as `ftp:` does
-    // (session 87, #1127). An image relationship to one keeps the broken-media
-    // warning under word-valid: only a header and the styles type were probed.
+    // (session 87, #1127). An image relationship to one blocks word-valid in
+    // the main document's sidecar, as Word refused an unused image related
+    // through `ftp:image1.png` (session 88, #1178).
     it.each([
-        ["httpfoo:bar", "word-valid", "warning"],
+        ["httpfoo:bar", "word-valid", "error"],
         ["httpfoo:bar", "strict", "error"],
-        ["http+unix:/x", "word-valid", "warning"],
+        ["http+unix:/x", "word-valid", "error"],
         ["http+unix:/x", "strict", "error"],
     ] as const)("reports %s as naming no part under %s, as ftp: is", async (target, profile, severity) => {
         const { broken } = await run(withBrokenTarget(target), profile);
@@ -699,34 +700,115 @@ describe("an internal target spelling a URI scheme names no part (#1127, session
         expect(valid).toBe(true);
     });
 
-    // Unprobed placements keep the warning (review of #1177): a header the
-    // body does not use, and a styles relationship in the package
-    // relationships part beside the main document's own.
-    it.each([
+    // Session 88 (s88a–s88c, two runs each, every reading agreeing, #1178): Word offered recovery for every other
+    // placement it was shown beside the well-formed stored `ftp:…` part — a header no w:headerReference uses, a
+    // `_rels/.rels` styles relationship beside the main document's own, an unused image, and the main document's
+    // settings, numbering, comments, footnotes and a used and an unused footer — and opened each plain-named
+    // calibration clean. The scheme target therefore blocks whatever the relationship type, in the relationships parts
+    // Word reads to reach the stories, as a folder target does (#975).
+    const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+    const story =
+        (segment: string, xml: string, sect = "") =>
+        (target: string) => ({
+            ...withRelationship(`<Relationship Id="rIdX" Type="${RELATIONSHIPS}/${segment}" Target="${target}"/>`),
+            "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+                `xmlns:w="${W}"`,
+                `xmlns:w="${W}" xmlns:r="${RELATIONSHIPS}"`,
+            ).replace("<w:sectPr>", `<w:sectPr>${sect}`),
+            [`word/${target}`]: xml,
+            [CT]: override(MINIMAL_PARTS[CT]!, `word/${target}`, `${WML}.${segment}+xml`),
+        });
+    const FOOTER = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Foot</w:t></w:r></w:p></w:ftr>`;
+    const FOOTNOTES =
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:footnotes xmlns:w="${W}">` +
+        `<w:footnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:footnote>` +
+        `<w:footnote w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:footnote>` +
+        `</w:footnotes>`;
+    const S88: [string, (prefix: string) => Record<string, string>, string][] = [
+        ["s88a unused header", (p) => story("header", HEADER)(`${p}header1.xml`), SIDECAR],
         [
-            "an unused header",
-            (() => {
-                const parts = usedHeaderAt("ftp:header1.xml");
-                parts["word/document.xml"] = MINIMAL_PARTS["word/document.xml"]!;
-                return parts;
-            })(),
-            SIDECAR,
-        ],
-        [
-            "a package-level styles relationship",
-            {
+            "s88a package-level styles relationship",
+            (p) => ({
                 ...MINIMAL_PARTS,
                 "_rels/.rels": MINIMAL_PARTS["_rels/.rels"]!.replace(
                     "</Relationships>",
-                    `<Relationship Id="rIdS" Type="${RELATIONSHIPS}/styles" Target="ftp:styles.xml"/></Relationships>`,
+                    `<Relationship Id="rIdS" Type="${RELATIONSHIPS}/styles" Target="${p}styles.xml"/></Relationships>`,
                 ),
-                "ftp:styles.xml": MINIMAL_PARTS["word/styles.xml"]!,
-            },
+                [`${p}styles.xml`]: MINIMAL_PARTS["word/styles.xml"]!,
+                [CT]: override(MINIMAL_PARTS[CT]!, `${p}styles.xml`, `${WML}.styles+xml`),
+            }),
             "_rels/.rels",
         ],
-    ])("keeps %s through a scheme target a word-valid warning, as Word was not shown it", async (_row, parts, relsPart) => {
+        [
+            "s88a unused image",
+            (p) => ({
+                ...withRelationship(`<Relationship Id="rIdI" Type="${IMAGE}" Target="${p}image1.png"/>`),
+                [`word/${p}image1.png`]: "png",
+            }),
+            SIDECAR,
+        ],
+        [
+            "s88b settings",
+            (p) =>
+                story(
+                    "settings",
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:settings xmlns:w="${W}"/>`,
+                )(`${p}settings1.xml`),
+            SIDECAR,
+        ],
+        [
+            "s88b numbering",
+            (p) =>
+                story(
+                    "numbering",
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:numbering xmlns:w="${W}"/>`,
+                )(`${p}numbering1.xml`),
+            SIDECAR,
+        ],
+        [
+            "s88b comments",
+            (p) =>
+                story(
+                    "comments",
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:comments xmlns:w="${W}"/>`,
+                )(`${p}comments1.xml`),
+            SIDECAR,
+        ],
+        ["s88c footnotes", (p) => story("footnotes", FOOTNOTES)(`${p}footnotes1.xml`), SIDECAR],
+        [
+            "s88c used footer",
+            (p) => story("footer", FOOTER, '<w:footerReference w:type="default" r:id="rIdX"/>')(`${p}footer1.xml`),
+            SIDECAR,
+        ],
+        ["s88c unused footer", (p) => story("footer", FOOTER)(`${p}footer1.xml`), SIDECAR],
+    ];
+
+    it.each(S88)("blocks the %s row's ftp: target beside its well-formed stored part, as Word refused it", async (_row, make, relsPart) => {
+        for (const profile of ["word-valid", "strict"] as const) {
+            const { valid, broken } = await run(make("ftp:"), profile);
+            expect(broken.map((issue) => [issue.path, issue.severity, issue.message])).toEqual([
+                [relsPart, "error", expect.stringMatching(/: it spells a URI scheme, which names no part$/)],
+            ]);
+            expect(valid).toBe(false);
+        }
+    });
+
+    it.each(S88)("draws no rels-broken for the %s calibration's plain target", async (_row, make) => {
+        expect((await run(make(""), "word-valid")).broken).toEqual([]);
+    });
+
+    // Outside the relationships parts Word reads to reach the stories the shape is unprobed, so it keeps the
+    // warning, as a folder target does there (#987): here a used header's own sidecar.
+    it("keeps a scheme target in a used header's own sidecar a word-valid warning, as Word was not shown it", async () => {
+        const parts = {
+            ...usedHeaderAt("header1.xml"),
+            "word/_rels/header1.xml.rels": withBrokenTarget("ftp:image9.png")[SIDECAR]!.replace(
+                MINIMAL_PARTS[SIDECAR]!.match(/<Relationship [^>]*\/>/)![0],
+                "",
+            ),
+        };
         const { valid, broken } = await run(parts, "word-valid");
-        expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([[relsPart, "warning"]]);
+        expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([["word/_rels/header1.xml.rels", "warning"]]);
         expect(valid).toBe(true);
         expect((await run(parts, "strict")).broken.map((issue) => issue.severity)).toEqual(["error"]);
     });

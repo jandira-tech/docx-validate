@@ -363,10 +363,15 @@ folder target
 Any other scheme (`ftp:`, `httpfoo:`) makes the target an absolute URI that names
 no part, reported as `rels-broken`: Word offered recovery for a used header and the
 styles part related through one, beside the well-formed stored `word/ftp:…` part
-(Word probes session 87), so the styles type and a used header block word-valid
-in a story root's sidecar, and every unprobed placement (an unused header, the
-package relationships part, another type) keeps a warning
-([#1127](https://github.com/jandira-tech/docx-validate/issues/1127)).
+(Word probes session 87,
+[#1127](https://github.com/jandira-tech/docx-validate/issues/1127)), and for every
+other placement it was shown: an unused header, a `_rels/.rels` styles relationship,
+an unused image, and the main document's settings, numbering, comments, footnotes
+and a used and an unused footer (Word probes session 88). It therefore blocks
+word-valid whatever the relationship type, in `_rels/.rels` and a story root's own
+sidecar, as a folder target does; in any other part's sidecar it is unprobed and
+keeps a warning
+([#1178](https://github.com/jandira-tech/docx-validate/issues/1178)).
 They read the scheme ASCII case-insensitively, as RFC 3986 does, so an `HTTP:` or
 `MAILTO:` target is skipped as its lowercase spelling is, where it used to be
 resolved as a part; lenient's scan stays case-sensitive. Word has been shown
