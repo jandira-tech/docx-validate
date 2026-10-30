@@ -825,7 +825,7 @@ function applyWordVerification(result: ValidateRunResult, verification: WordVeri
     return {
         ...result,
         valid: result.valid && verification.satisfied,
-        metadata: { ...(result.metadata ?? {}), wordVerification: { ...verification } },
+        metadata: { ...result.metadata, wordVerification: { ...verification } },
     };
 }
 
@@ -1328,7 +1328,14 @@ async function inspectWriteBackDestination(root: string, file: string): Promise<
 async function symbolicLinkPathSegment(root: string, file: string): Promise<string | undefined> {
     const rootPath = path.resolve(root);
     const relative = path.relative(rootPath, path.resolve(file));
-    if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) return undefined;
+    if (
+        relative === ".." ||
+        relative.startsWith(`..${path.sep}`) ||
+        path.isAbsolute(relative) ||
+        path.posix.isAbsolute(relative) ||
+        path.win32.isAbsolute(relative)
+    )
+        return undefined;
 
     const segments = relative.split(path.sep);
     segments.pop();

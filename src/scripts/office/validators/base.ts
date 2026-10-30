@@ -372,7 +372,8 @@ export function containRelationshipTarget(unpackedDir: string, resolvedPath: str
     const root = path.resolve(unpackedDir);
     const target = path.resolve(resolvedPath);
     const rel = path.relative(root, target);
-    const escapesLexically = rel === ".." || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel);
+    const escapesLexically =
+        rel === ".." || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel) || path.posix.isAbsolute(rel) || path.win32.isAbsolute(rel);
 
     let realRoot: string;
     try {
@@ -393,7 +394,14 @@ export function containRelationshipTarget(unpackedDir: string, resolvedPath: str
         }
         if (real !== null) {
             const realRel = path.relative(realRoot, real);
-            if (realRel === ".." || realRel.startsWith(`..${path.sep}`) || path.isAbsolute(realRel)) return null;
+            if (
+                realRel === ".." ||
+                realRel.startsWith(`..${path.sep}`) ||
+                path.isAbsolute(realRel) ||
+                path.posix.isAbsolute(realRel) ||
+                path.win32.isAbsolute(realRel)
+            )
+                return null;
             resolved = true;
             break;
         }

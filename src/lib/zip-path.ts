@@ -46,7 +46,13 @@ export const resolveSafeZipEntry = (outputDir: string, entryName: string): strin
     if (relative === "") {
         return resolved;
     }
-    if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    if (
+        relative === ".." ||
+        relative.startsWith(`..${path.sep}`) ||
+        path.isAbsolute(relative) ||
+        path.posix.isAbsolute(relative) ||
+        path.win32.isAbsolute(relative)
+    ) {
         throw new Error(`Refusing to extract entry outside output dir: ${escapeControlCharacters(entryName)}`);
     }
     return resolved;

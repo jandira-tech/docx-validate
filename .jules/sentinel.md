@@ -50,3 +50,9 @@
 **Vulnerability:** `extractZipEntries` checked each entry's `unsafeOriginalName`, but JSZip 3.10.2 records it only for file entries (`if (!input.dir)`, `lib/load.js:78`). A folder record stored as `../evil/` reached the check under its resolved name, and a traversal record that a later entry shadowed under the same resolved name was never checked at all.
 **Learning:** d59bc9a4 (#676's Codex review, released in 0.54.0-rc.1) reads the stored names from the archive's central directory (`zipCentralDirectoryEntries`) and checks every one with `resolveSafeZipEntry` before the first write, in `unpack` and in the redlining staging alike. #1034 had advised always checking `unsafeOriginalName`, which leaves both gaps open. #1167 repeated #685's substring test and dropped #675's control-character escaping.
 **Prevention:** Judge the names the archive stores, read from its central directory, not the view JSZip builds from them.
+
+## 2026-10-30 - [Zip Slip Vulnerability in node:path on POSIX Hosts]
+
+**Vulnerability:** path.isAbsolute() only checks POSIX style paths on POSIX hosts, so Windows paths like `C:\evil` will incorrectly pass absolute path checks and can result in Zip Slip.
+**Learning:** Zip Slip checks on POSIX servers failed to block Windows absolute paths because path.isAbsolute relied on process.platform instead of explicitly checking both POSIX and Windows styles.
+**Prevention:** Use path.isAbsolute, path.posix.isAbsolute, and path.win32.isAbsolute combined for robust cross-platform path validations.

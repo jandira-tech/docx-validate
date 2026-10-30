@@ -185,7 +185,7 @@ export const _resetSchemaResourceRoots = (): void => {
 /** `file:` URL → filesystem path; anything else → `null` (network, data:, …). */
 const toLocalPath = (filename: string): string | null => {
     if (!filename.startsWith("file:")) {
-        return path.isAbsolute(filename) ? filename : null;
+        return path.isAbsolute(filename) || path.posix.isAbsolute(filename) || path.win32.isAbsolute(filename) ? filename : null;
     }
     try {
         return fileURLToPath(filename);
@@ -196,7 +196,14 @@ const toLocalPath = (filename: string): string | null => {
 
 const isInsideRoot = (root: string, target: string): boolean => {
     const relative = path.relative(root, target);
-    return relative === "" || (!relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative));
+    return (
+        relative === "" ||
+        (!relative.startsWith(`..${path.sep}`) &&
+            relative !== ".." &&
+            !path.isAbsolute(relative) &&
+            !path.posix.isAbsolute(relative) &&
+            !path.win32.isAbsolute(relative))
+    );
 };
 
 let fsProvidersRegistered = false;
