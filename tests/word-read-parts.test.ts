@@ -2595,9 +2595,41 @@ describe("wordPossiblyReadParts (#1116, #1125)", () => {
                 ...new TextEncoder().encode('"/></Relationships>'),
             ]),
         ],
-    ] as const)("knows nothing when a relationships part fails the byte-level XML checks: %s", async (_label, stray) => {
-        expect(await named(withHeaders({ [STRAY]: stray }))).toBeUndefined();
+    ] as const)("knows nothing when a relationships part Word may read fails the byte-level XML checks: %s", async (_label, broken) => {
+        // The package relationships part, the main document's sidecar and
+        // the sidecar of the header the main document uses.
+        for (const name of ["_rels/.rels", "word/_rels/document.xml.rels", "word/_rels/header1.xml.rels"]) {
+            const parts = withHeaders({ "word/document.xml": documentUsingHeader("rIdH"), [name]: broken });
+            expect(await named(parts), name).toBeUndefined();
+        }
     });
+
+    // #1136 (session 87, s87e): Word opened clean an unread part's unknown
+    // MustUnderstand beside an unclosed sidecar of a part not stored, and of a
+    // stored part nothing relates, so neither leaves the list undecidable.
+    it.each([
+        [
+            "an unclosed root",
+            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="${RELS_NS}">${header("rId9", "x.xml")}`,
+        ],
+        [
+            "invalid UTF-8 the DOM parser decodes",
+            new Uint8Array([
+                ...new TextEncoder().encode(relationships(header("rId9", "x.xml")).replace("/></Relationships>", ' Note="')),
+                0xff,
+                0xfe,
+                ...new TextEncoder().encode('"/></Relationships>'),
+            ]),
+        ],
+    ] as const)(
+        "still lists the parts when only a sidecar Word never reads fails the byte-level XML checks: %s",
+        async (_label, broken) => {
+            const expected = await named(withHeaders());
+            expect(expected).toBeDefined();
+            expect(await named(withHeaders({ [STRAY]: broken }))).toEqual(expected);
+            expect(await named(withHeaders({ "word/_rels/header9.xml.rels": broken }))).toEqual(expected);
+        },
+    );
 
     it("lists the canonical name of a part stored under another spelling", async () => {
         const stored = "word/Header7.xml";
