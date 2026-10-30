@@ -30,7 +30,7 @@ import { describe, expect, it } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
 import { parseXml, parseXmlBytes } from "../src/lib/xml-helpers";
-import { checkXmlSyntax } from "../src/lib/xml-syntax";
+import { checkXmlSyntax, exceedsXmlElementDepth, XML_MAX_ELEMENT_DEPTH } from "../src/lib/xml-syntax";
 import { xmlSyntaxCheck } from "../src/scripts/office/checks/xml";
 import { contextFromDirectory } from "../src/scripts/office/package-context";
 import { validate } from "../src/scripts/office/validate";
@@ -399,5 +399,54 @@ describe("a malformed part named by a climbing target (#996, session 81)", () =>
         const result = await judged(parts);
         expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
         expect(result.valid).toBe(true);
+    });
+});
+
+/**
+ * #1159: `exceedsXmlElementDepth` reads the depth libxml2 refuses without a
+ * DOM, so `unpack` can leave such a part as stored. Each row is judged by both
+ * readings, which must agree.
+ */
+describe("exceedsXmlElementDepth agrees with libxml2's depth limit (#1159)", () => {
+    const W_NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+    /** `depth` elements, the root included, around `inner`. */
+    const nest = (depth: number, inner = "", open = "<w:customXml>"): string =>
+        `<?xml version="1.0" encoding="UTF-8"?><w:document ${W_NS}>${open.repeat(depth - 1)}${inner}${"</w:customXml>".repeat(depth - 1)}</w:document>`;
+    const ROWS: readonly (readonly [string, string])[] = [
+        ["255 deep", nest(255)],
+        ["256 deep, the limit", nest(256)],
+        ["257 deep", nest(257)],
+        ["256 deep with an empty element one deeper", nest(256, "<w:x/>")],
+        ["255 deep with an empty element at the limit", nest(255, "<w:x/>")],
+        ["256 deep with markup inside a comment", nest(256, "<!-- <w:a><w:b> -->")],
+        ["256 deep with markup inside CDATA", nest(256, "<w:t><![CDATA[<w:a><w:b>]]></w:t>").replace("<w:t>", "").replace("</w:t>", "")],
+        ["255 deep with markup inside a processing instruction", nest(255, "<?pi <w:a> ?>")],
+        ["256 deep whose tags carry '>' and '/>' in attribute values", nest(256, "", '<w:customXml w:a="x>y" w:b="/>">')],
+        ["257 deep whose tags carry '>' in attribute values", nest(257, "", '<w:customXml w:a="x>y">')],
+        ["257 deep, each element declaring a namespace", nest(257, "", `<w:customXml ${W_NS}>`)],
+        [
+            "256 deep after a doctype with an internal subset",
+            nest(256).replace(
+                "<w:document",
+                '<!DOCTYPE w:document [ <!ELEMENT w:document ANY> <!ATTLIST w:document a CDATA "x>y"> ]><w:document',
+            ),
+        ],
+    ];
+
+    it.each(ROWS)("%s", async (_name, xml) => {
+        const issues = await checkXmlSyntax(new TextEncoder().encode(xml), "word/document.xml");
+        const refused = issues.some((issue) => issue.message.includes("Excessive depth"));
+        expect(exceedsXmlElementDepth(xml)).toBe(refused);
+    });
+
+    it("refuses exactly above XML_MAX_ELEMENT_DEPTH", () => {
+        expect(XML_MAX_ELEMENT_DEPTH).toBe(256);
+        expect(exceedsXmlElementDepth(nest(256))).toBe(false);
+        expect(exceedsXmlElementDepth(nest(257))).toBe(true);
+    });
+
+    it("reads malformed markup as not too deep, leaving it to xml-syntax", () => {
+        expect(exceedsXmlElementDepth("<w:document><w:body")).toBe(false);
+        expect(exceedsXmlElementDepth("<w:document><!-- unterminated")).toBe(false);
     });
 });

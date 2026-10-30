@@ -478,8 +478,10 @@ describe("unpack", () => {
     });
 
     // #1139: mergeRuns and simplifyRedlines walk with their own stack, so a
-    // main document nested deeper than the call stack still unpacks.
-    it("unpacks a main document nested 50 000 elements deep, merging its runs and tracked changes (#1139)", async () => {
+    // main document nested deeper than the call stack no longer fails unpack
+    // (their own rows pin the 50 000-deep walk). #1159: such a part is past
+    // libxml2's depth limit, so unpack now leaves it as stored instead.
+    it("unpacks a main document nested 50 000 elements deep, leaving it as stored (#1139, #1159)", async () => {
         await withTempDir(async (dir) => {
             const inputFile = path.join(dir, "deep.docx");
             const outputDir = path.join(dir, "out");
@@ -496,8 +498,75 @@ describe("unpack", () => {
 
             const result = await unpack(inputFile, outputDir);
             expect(result.ok).toBe(true);
-            expect(result.message).toMatch(/simplified 1 tracked changes/);
-            expect(result.message).toMatch(/merged 2 runs/);
+            expect(result.message).toContain("left word/document.xml as stored");
+            expect(result.message).not.toMatch(/simplified|merged/);
+            expect(await fs.readFile(path.join(outputDir, "word", "document.xml"), "utf-8")).toBe(document);
         });
+    });
+});
+
+/**
+ * #1159: libxml2 refuses a part nested deeper than 256 elements (the root
+ * counts as one), so `xml-syntax` fails it and no validation reaches its DOM.
+ * `unpack` used to parse, pretty-print and serialize it anyway, which grows
+ * with the square of the depth and ran out of heap at 50 000. A part over the
+ * limit is now left as stored, and the message names it.
+ */
+describe("unpack leaves a part deeper than the xml-syntax limit as stored (#1159)", () => {
+    const NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+    /** A main part `depth` elements deep, the root included. */
+    const nested = (depth: number, perElementNamespace: boolean): string => {
+        const open = perElementNamespace ? `<w:customXml ${NS}>` : "<w:customXml>";
+        return (
+            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document ${NS}><w:body>` +
+            open.repeat(depth - 2) +
+            "</w:customXml>".repeat(depth - 2) +
+            "</w:body></w:document>"
+        );
+    };
+    const unpackDocument = async (document: string) =>
+        withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "deep.docx");
+            const outputDir = path.join(dir, "out");
+            await fs.writeFile(inputFile, await buildMinimalDocx({ ...MINIMAL_PARTS, "word/document.xml": document }));
+            const result = await unpack(inputFile, outputDir);
+            const stored = await fs.readFile(path.join(outputDir, "word", "document.xml"), "utf-8");
+            const styles = await fs.readFile(path.join(outputDir, "word", "styles.xml"), "utf-8");
+            return { result, stored, styles };
+        });
+
+    it.each([
+        ["per-element xmlns", true],
+        ["plain", false],
+    ] as const)(
+        "returns at 50 000 deep with the %s part byte-identical",
+        async (_shape, perElementNamespace) => {
+            const document = nested(50_000, perElementNamespace);
+            const { result, stored } = await unpackDocument(document);
+            expect(result.ok).toBe(true);
+            expect(stored).toBe(document);
+        },
+        60_000,
+    );
+
+    it("leaves a part one element over the limit as stored, names it, and still processes the others", async () => {
+        const document = nested(257, false);
+        const { result, stored, styles } = await unpackDocument(document);
+        expect(result.ok).toBe(true);
+        expect(stored).toBe(document);
+        expect(result.message).toContain("left word/document.xml as stored: nested deeper than 256 elements");
+        expect(result.message).not.toContain("merged");
+        expect(result.message).not.toContain("simplified");
+        expect(styles).not.toBe(MINIMAL_PARTS["word/styles.xml"]);
+    });
+
+    it("still pretty-prints a part at the limit", async () => {
+        const document = nested(256, false);
+        const { result, stored } = await unpackDocument(document);
+        expect(result.ok).toBe(true);
+        expect(stored).not.toBe(document);
+        expect(stored).toContain("\n  <w:body>");
+        expect(result.message).not.toContain("as stored");
+        expect(result.message).toContain("merged");
     });
 });
