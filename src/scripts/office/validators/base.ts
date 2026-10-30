@@ -56,6 +56,7 @@ import {
     isRelationshipsPartName,
     parseContentTypes,
     partExtension,
+    partNameFromRelative,
     relationshipTargetFolder,
     resolveContentType,
     resolvePartName,
@@ -2497,7 +2498,7 @@ export class BaseSchemaValidator {
     // ----- helpers ------------------------------------------------------------
 
     protected relPath(absPath: string): string {
-        return path.relative(this.unpackedDir, absPath) || path.basename(absPath);
+        return partNameFromRelative(path.relative(this.unpackedDir, absPath)) || path.basename(absPath);
     }
 
     /** See {@link isMainDocumentPart}; reset at the start of every XSD walk (#657) and when a repair deletes files. */

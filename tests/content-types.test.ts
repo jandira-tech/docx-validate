@@ -11,6 +11,8 @@
  * extensions compare ASCII case-insensitively.
  */
 
+import path from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -35,6 +37,42 @@ import {
 import { parseXml } from "../src/lib/xml-helpers";
 import * as contentTypes from "../src/lib/content-types";
 import * as publicApi from "../src/index";
+import type { ValidationIssue } from "../src/lib/types";
+import { registerRelsBrokenScheme, registerRelsBrokenTarget } from "../src/scripts/office/rels-finding-facts";
+import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
+
+describe("partNameFromRelative (#1183)", () => {
+    it.each([
+        ["word\\_rels\\document.xml.rels", path.win32.sep, "word/_rels/document.xml.rels"],
+        ["_rels\\.rels", path.win32.sep, "_rels/.rels"],
+        ["word/_rels/document.xml.rels", "/", "word/_rels/document.xml.rels"],
+        ["word/literal\\name.xml", "/", "word/literal\\name.xml"],
+        ["", "/", ""],
+    ])("converts %j with separator %j to %j", (relative, sep, expected) => {
+        expect(contentTypes.partNameFromRelative(relative, sep)).toBe(expected);
+    });
+
+    it("defaults to the host separator", () => {
+        expect(contentTypes.partNameFromRelative(path.join("word", "_rels", "document.xml.rels"))).toBe("word/_rels/document.xml.rels");
+    });
+
+    it("makes a Windows story-root sidecar's registered scheme finding Word-blocking", () => {
+        const finding: ValidationIssue = {
+            severity: "error",
+            code: "rels-broken",
+            message: "Internal target spells a URI scheme, which names no part",
+            path: "word\\_rels\\document.xml.rels",
+        };
+        registerRelsBrokenTarget(finding, "word/ftp:styles.xml");
+        registerRelsBrokenScheme(finding);
+        const roots = new Set([canonicalPartName("word/document.xml")]);
+        expect(isWordBlockingIssue(finding, new Set(), new Set(), roots)).toBe(false);
+
+        finding.path = contentTypes.partNameFromRelative(finding.path!, path.win32.sep);
+
+        expect(isWordBlockingIssue(finding, new Set(), new Set(), roots)).toBe(true);
+    });
+});
 
 const typesXml = (inner: string): Document => parseXml(`<?xml version="1.0"?><Types xmlns="${CONTENT_TYPES_NAMESPACE}">${inner}</Types>`);
 

@@ -7,6 +7,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 - An internal relationship target that spells a URI scheme (`ftp:settings1.xml`) now blocks word-valid whatever the relationship type, in `_rels/.rels` and a story root's own sidecar, as a folder target does ([#1178](https://github.com/jandira-tech/docx-validate/issues/1178)). Word session 88 (s88a–s88c, two runs each, all readings agree) offered recovery, beside the well-formed stored part the path spells, for every placement #1127 left a warning: an unused header, a `_rels/.rels` styles relationship beside the main document's own, an unused image, and the main document's settings, numbering, comments, footnotes and a used and an unused footer; each plain target opened clean. The sidecar of another part is unprobed and keeps the warning. Strict and lenient are unchanged.
+- Use forward slashes in validator finding paths on Windows so `rels-broken` findings keep their Word-valid blocking scope ([#1183](https://github.com/jandira-tech/docx-validate/issues/1183)). POSIX file names containing a literal backslash keep that character.
 
 ## [0.54.0-rc.2] — 2026-10-30
 
