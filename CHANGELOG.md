@@ -6,10 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.54.0-rc.2] — 2026-10-30
+
+Changes since `v0.54.0-rc.1` (2026-10-29), from [#1172](https://github.com/jandira-tech/docx-validate/pull/1172) to [#1177](https://github.com/jandira-tech/docx-validate/pull/1177) and [#1180](https://github.com/jandira-tech/docx-validate/pull/1180). This prerelease is published under npm's `next` tag; it does not advance `latest`.
+
 - `unpack` leaves an XML part nested deeper than 256 elements as stored ([#1159](https://github.com/jandira-tech/docx-validate/issues/1159)): no pretty-print, no smart-quote escaping, and, for the main document, no run merge or redline simplification. Its message names each such part. libxml2 refuses that depth, so `xml-syntax` already fails the part under every profile, while pretty-printing and serializing it grow with the square of its depth: a 50 000-deep main document ran `unpack`, `Repair` and `Normalize` out of heap after about four minutes, and now returns at once. `exceedsXmlElementDepth` (`src/lib/xml-syntax.ts`) reads the depth in one pass without a DOM and agrees with libxml2 on every boundary row.
 - Word-valid and strict report an internal relationship target that spells a URI scheme other than `http:`, `https:` and `mailto:` (`ftp:styles.xml`, `httpfoo:header1.xml`) as `rels-broken`: it names no part ([#1127](https://github.com/jandira-tech/docx-validate/issues/1127)). Word offered recovery for a used header and the styles part related through one, beside the well-formed stored part its path spells (Word session 87), so the styles type and a used header block word-valid in a story root's sidecar; every unprobed placement (an unused header, the package relationships part, another type) keeps a warning. Lenient keeps its historical scan.
 - A relationships part that fails the byte-level XML checks no longer turns every unread part's markup-compatibility finding into a word-valid error when Word never reads it: the sidecar of a part not stored, or of a stored part nothing relates ([#1136](https://github.com/jandira-tech/docx-validate/issues/1136), Word session 87).
 - Word session 87 also confirms word-valid's verdict on the charset-typed styles part a used header, comments, footnotes or endnotes relationship also targets ([#776](https://github.com/jandira-tech/docx-validate/issues/776)); the change is the citation and pin tests.
+- Walk element children by backwards `childNodes` index in `walkElements` and the three `docx.ts` depth-first walks ([#1172](https://github.com/jandira-tech/docx-validate/pull/1172), from #686). Same order and results; the walk alone ran 1.5-1.8x faster, measured interleaved (`.jules/bolt.md`).
+- Run #1129's glossary hand-off test rows at a renamed glossary part too ([#1175](https://github.com/jandira-tech/docx-validate/pull/1175), #1163). Tests only.
+- Move the toolchain to TypeScript 7 and bump every dependency to its latest release ([#1174](https://github.com/jandira-tech/docx-validate/pull/1174), [#1180](https://github.com/jandira-tech/docx-validate/pull/1180)): vite-plus 1.4.0, oxlint 1.90.0, oxfmt 0.75.0, cspell 10.4.0, xpath 0.0.36. Development only; the published API and bundle are unchanged. TypeScript 7 ships no JS compiler API, so `eslint-plugin-functional` is dropped (its one enabled rule is now oxlint's native `typescript/method-signature-style`) and `pnpm run docs` runs typedoc 0.28.20 through `pnpm dlx` with TypeScript 6.0.3.
 
 ## [0.54.0-rc.1] — 2026-10-29
 
