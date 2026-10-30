@@ -41,6 +41,7 @@ import JSZip from "jszip";
 import { commanderExitCode, runCli } from "../../lib/run-cli";
 import { readXmlPart, writeXmlText } from "../../lib/xml-part-io";
 import { parseXml, prettyXml } from "../../lib/xml-helpers";
+import { exceedsXmlElementDepth, XML_MAX_ELEMENT_DEPTH } from "../../lib/xml-syntax";
 import { zipCentralDirectoryEntries } from "../../lib/zip-central-directory";
 import { escapeControlCharacters, extractZipEntries } from "../../lib/zip-path";
 import { mergeRuns } from "./helpers/merge-runs";
@@ -121,13 +122,17 @@ export async function unpack(inputFile: string, outputDir: string, opts: UnpackO
         }
 
         const xmlFiles = await collectXmlFiles(outputPath);
+        // A part nested deeper than libxml2's limit fails xml-syntax, so no
+        // validation reads its DOM, while pretty-printing and serializing it
+        // grow with the square of its depth: it is left as stored (#1159).
+        const tooDeep = new Set<string>();
         for (const xmlFile of xmlFiles) {
-            await prettyPrintXml(xmlFile);
+            if (await prettyPrintXml(xmlFile)) tooDeep.add(xmlFile);
         }
 
         let message = `Unpacked ${inputFile} (${xmlFiles.length} XML files)`;
 
-        if (suffix === ".docx") {
+        if (suffix === ".docx" && !tooDeep.has(path.join(outputPath, "word", "document.xml"))) {
             if (doSimplifyRedlines) {
                 const simplified = await simplifyRedlines(outputPath);
                 if (simplified.message.startsWith("Error:")) {
@@ -145,7 +150,12 @@ export async function unpack(inputFile: string, outputDir: string, opts: UnpackO
         }
 
         for (const xmlFile of xmlFiles) {
-            await escapeSmartQuotes(xmlFile);
+            if (!tooDeep.has(xmlFile)) await escapeSmartQuotes(xmlFile);
+        }
+
+        if (tooDeep.size > 0) {
+            const names = [...tooDeep].map((file) => path.relative(outputPath, file).split(path.sep).join("/")).sort();
+            message += `; left ${names.join(", ")} as stored: nested deeper than ${XML_MAX_ELEMENT_DEPTH} elements`;
         }
 
         return { ok: true, message };
@@ -183,19 +193,22 @@ async function collectXmlFiles(root: string): Promise<string[]> {
     return out;
 }
 
-async function prettyPrintXml(xmlFile: string): Promise<void> {
+/** Pretty-prints a part in place; returns true when it is left as stored for its depth (#1159). */
+async function prettyPrintXml(xmlFile: string): Promise<boolean> {
     try {
         const part = await readXmlPart(xmlFile);
         if (part === undefined) {
             // An encoding we cannot decode: leave the part's bytes untouched.
-            return;
+            return false;
         }
+        if (exceedsXmlElementDepth(part.text)) return true;
         const dom = parseXml(part.text);
         const pretty = prettyXml(dom, "  ");
         await writeXmlText(xmlFile, pretty, part);
     } catch {
         // Match Python: silently skip files we cannot pretty-print.
     }
+    return false;
 }
 
 async function escapeSmartQuotes(xmlFile: string): Promise<void> {

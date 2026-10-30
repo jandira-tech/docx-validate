@@ -155,3 +155,88 @@ export const checkXmlSyntax = async (bytes: Uint8Array, partName: string): Promi
     doc.dispose();
     return warnings;
 };
+
+/**
+ * libxml2's element-depth limit without `XML_PARSE_HUGE`: `checkXmlSyntax`
+ * accepts a document nested 256 elements deep, the root counting as one, and
+ * refuses 257 with "Excessive depth in document" (#1159).
+ */
+export const XML_MAX_ELEMENT_DEPTH = 256;
+
+/** The index just past `terminator` at or after `from`, or -1 when the text ends first. */
+const indexPast = (text: string, terminator: string, from: number): number => {
+    const at = text.indexOf(terminator, from);
+    return at === -1 ? -1 : at + terminator.length;
+};
+
+/**
+ * The index just past the `>` that ends the tag or declaration starting
+ * before `from`, reading quoted values and a declaration's `[…]` internal
+ * subset as opaque, or -1 when the text ends first.
+ */
+const indexPastTag = (text: string, from: number): number => {
+    let quote = "";
+    let brackets = 0;
+    for (let i = from; i < text.length; i += 1) {
+        const c = text[i];
+        if (quote !== "") {
+            if (c === quote) {
+                quote = "";
+            }
+        } else if (c === '"' || c === "'") {
+            quote = c;
+        } else if (c === "[") {
+            brackets += 1;
+        } else if (c === "]") {
+            brackets -= 1;
+        } else if (c === ">" && brackets <= 0) {
+            return i + 1;
+        }
+    }
+    return -1;
+};
+
+/**
+ * Whether `text` nests elements deeper than `limit`, read in one linear pass
+ * without building a DOM (#1159). Comments, CDATA sections, processing
+ * instructions, declarations and quoted attribute values are skipped, and an
+ * empty-element tag counts at the depth it would open. Malformed markup ends
+ * the scan with `false`: `checkXmlSyntax` reports it, and this reading is only
+ * for keeping depth-quadratic work away from a part libxml2 refuses.
+ */
+export const exceedsXmlElementDepth = (text: string, limit: number = XML_MAX_ELEMENT_DEPTH): boolean => {
+    let depth = 0;
+    let i = text.indexOf("<");
+    while (i !== -1) {
+        let next: number;
+        if (text.startsWith("<!--", i)) {
+            next = indexPast(text, "-->", i + 4);
+        } else if (text.startsWith("<![CDATA[", i)) {
+            next = indexPast(text, "]]>", i + 9);
+        } else if (text.startsWith("<?", i)) {
+            next = indexPast(text, "?>", i + 2);
+        } else if (text.startsWith("<!", i)) {
+            next = indexPastTag(text, i + 2);
+        } else if (text.startsWith("</", i)) {
+            depth -= 1;
+            next = indexPast(text, ">", i + 2);
+        } else {
+            next = indexPastTag(text, i + 1);
+            if (next === -1) {
+                return false;
+            }
+            depth += 1;
+            if (depth > limit) {
+                return true;
+            }
+            if (text[next - 2] === "/") {
+                depth -= 1;
+            }
+        }
+        if (next === -1) {
+            return false;
+        }
+        i = text.indexOf("<", next);
+    }
+    return false;
+};

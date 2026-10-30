@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- `unpack` leaves an XML part nested deeper than 256 elements as stored ([#1159](https://github.com/jandira-tech/docx-validate/issues/1159)): no pretty-print, no smart-quote escaping, and, for the main document, no run merge or redline simplification. Its message names each such part. libxml2 refuses that depth, so `xml-syntax` already fails the part under every profile, while pretty-printing and serializing it grow with the square of its depth: a 50 000-deep main document ran `unpack`, `Repair` and `Normalize` out of heap after about four minutes, and now returns at once. `exceedsXmlElementDepth` (`src/lib/xml-syntax.ts`) reads the depth in one pass without a DOM and agrees with libxml2 on every boundary row.
+
 ## [0.54.0-rc.1] — 2026-10-29
 
 Changes since `v0.53.0-rc.1` (2026-10-15), consolidated in [#1169](https://github.com/jandira-tech/docx-validate/pull/1169). This prerelease is published under npm's `next` tag; it does not advance `latest`.
