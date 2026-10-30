@@ -353,6 +353,48 @@ describe("generateHexId", () => {
     });
 });
 
+describe("runCommentFromArgv integration (#1203)", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it.each(["1x", "1.5", "2e3", "+1", "-1", "", " 1"])("refuses commentId %j, changing nothing", async (raw) => {
+        await withTempDir(async (dir) => {
+            await makeFixture(dir);
+            const before = await readTree(dir);
+            const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+
+            const code = await runCommentFromArgv(["--author", "Test", "--initials", "T", "--", dir, raw, "Comment"]);
+
+            expect(code).toBe(1);
+            expect(stderr).toHaveBeenCalledExactlyOnceWith(`Error: commentId must be an integer (got ${raw})\n`);
+            expect(stdout).not.toHaveBeenCalled();
+            expect(await readTree(dir)).toEqual(before);
+        });
+    });
+
+    it.each(["1x", "1.5", "2e3", "+1", "-1", "", " 1"])("refuses --parent %j, changing nothing", async (raw) => {
+        await withTempDir(async (dir) => {
+            await makeFixture(dir);
+            for (const commentId of [1, 2]) {
+                const result = await addComment({ unpackedDir: dir, commentId, text: "Parent", author: "Test", initials: "T" });
+                expect(result.message).toMatch(/^Added comment /);
+            }
+            const before = await readTree(dir);
+            const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+
+            const code = await runCommentFromArgv([dir, "3", "Reply", "--author", "Test", "--initials", "T", `--parent=${raw}`]);
+
+            expect(code).toBe(1);
+            expect(stderr).toHaveBeenCalledExactlyOnceWith(`Error: --parent must be an integer (got ${raw})\n`);
+            expect(stdout).not.toHaveBeenCalled();
+            expect(await readTree(dir)).toEqual(before);
+        });
+    });
+});
+
 describe("addComment", () => {
     it("adds a top-level comment, seeds parts, and registers rels + content types", async () => {
         await withTempDir(async (dir) => {

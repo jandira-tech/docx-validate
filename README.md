@@ -119,6 +119,8 @@ pnpm exec tsx src/scripts/accept-changes.ts <path>
 pnpm exec tsx src/scripts/comment.ts <path>
 ```
 
+The comment CLI's `commentId` and `--parent` values must contain only ASCII decimal digits (`0`–`9`), with no sign or whitespace.
+
 ## Programmatic use
 
 The validator and packaged document helpers are available as plain function/class
