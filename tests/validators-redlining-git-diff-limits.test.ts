@@ -80,4 +80,37 @@ describe("getGitWordDiff execution limits", () => {
 
         expect(spawnSyncMock).toHaveBeenCalledTimes(1);
     });
+
+    it("falls back to the word-level diff when the granular diff filters to nothing", async () => {
+        const plainOutput = (stdout: string): ReturnType<typeof childProcess.spawnSync> =>
+            ({ pid: 1, output: [], stdout, stderr: "", status: 1, signal: null }) as unknown as ReturnType<typeof childProcess.spawnSync>;
+        spawnSyncMock.mockImplementationOnce(() => plainOutput("diff --git a/original.txt b/modified.txt\nindex 1..2 100644\n"));
+        spawnSyncMock.mockImplementationOnce(() => plainOutput("@@ -1 +1 @@\n[-a-]{+b+}\n"));
+
+        expect(await getGitWordDiff("a\n", "b\n")).toBe("[-a-]{+b+}");
+        expect(spawnSyncMock).toHaveBeenCalledTimes(2);
+    });
+
+    it("returns null when spawning git throws", async () => {
+        spawnSyncMock.mockImplementationOnce(() => {
+            throw new Error("boom");
+        });
+        spawnSyncMock.mockImplementationOnce(() => {
+            throw new Error("boom");
+        });
+
+        expect(await getGitWordDiff("a\n", "b\n")).toBeNull();
+        expect(spawnSyncMock).toHaveBeenCalledTimes(2);
+    });
+
+    it("treats missing stdout as empty output", async () => {
+        const noStdout = (): ReturnType<typeof childProcess.spawnSync> =>
+            ({ pid: 1, output: [], stdout: null, stderr: "", status: 1, signal: null }) as unknown as ReturnType<
+                typeof childProcess.spawnSync
+            >;
+        spawnSyncMock.mockImplementation(noStdout);
+
+        expect(await getGitWordDiff("a\n", "b\n")).toBeNull();
+        expect(spawnSyncMock).toHaveBeenCalledTimes(2);
+    });
 });
