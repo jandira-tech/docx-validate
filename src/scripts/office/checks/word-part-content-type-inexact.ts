@@ -56,7 +56,10 @@
  * decides per (part, segment) pair, not per part — and a read story
  * segment hides no eager reach either: session 56 (s56a) observed Word
  * 16.115 recover the styles part typed `…styles+xml; charset=utf-8` with
- * a read footer relationship also targeting it (#760), so the spelling is
+ * a read footer relationship also targeting it (#760), and session 87
+ * (s87a) the same part with a used header relationship, or a comments,
+ * footnotes or endnotes relationship, also targeting it in place of the
+ * footer (#776), so the spelling is
  * judged over every reach the story roots read, as session 53 judged the
  * mismatch over all of the part's entries (#739).
  *
@@ -316,7 +319,9 @@ export const wordPartContentTypeInexactFindings = async (
         // relationship neither reports nor hides. A read story segment
         // hides no eager reach either: session 56 (s56a) observed Word
         // recover the styles part typed `…styles+xml; charset=utf-8` with a
-        // read footer relationship also targeting it (#760), as session 53
+        // read footer relationship also targeting it (#760), and session 87
+        // (s87a) with a used header, comments, footnotes or endnotes
+        // relationship in its place (#776), as session 53
         // ended the matching reach's exemption in the mismatch check
         // (#739). Eager relationships keep their existing spec scope.
         const readEntries = entries.filter((entry) => LAZY_OBSERVED_SEGMENTS.has(entry.segment) && isRead(entry));

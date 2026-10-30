@@ -1106,8 +1106,11 @@ nor hides a read one, because usage is decided per (part, type) pair
 ([#593](https://github.com/jandira-tech/docx-validate/issues/593)); a read
 story relationship hides no eager one either — session 56 (s56a, 2026-10-26)
 observed Word recover the styles part typed `…styles+xml; charset=utf-8`
-with a read footer relationship also targeting it, so the spelling is
-judged over every reach the story roots read
+with a read footer relationship also targeting it, and session 87 (s87a,
+2026-10-29) the same part with a used header, comments, footnotes or endnotes
+relationship in place of the footer
+([#776](https://github.com/jandira-tech/docx-validate/issues/776)), so the
+spelling is judged over every reach the story roots read
 ([#760](https://github.com/jandira-tech/docx-validate/issues/760)). Strict
 judges the same probed set — theme included, though it is a DrawingML part,
 not a clause-11.3 one — plus the unprobed Part 1 WordprocessingML

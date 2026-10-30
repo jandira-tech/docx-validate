@@ -1916,6 +1916,64 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
         }, 60_000);
     });
 
+    /**
+     * Session 87 (2026-10-29, chunk s87a, Word 16.115, two runs, every
+     * reading agreeing) offered recovery for the same charset-typed styles
+     * part with a used header relationship, or a comments, footnotes or
+     * endnotes relationship, targeting it in place of s56a's footer, and for
+     * s56a's calibration again. Word-valid already fails each with exactly
+     * the inexact error; these rows keep it so (#776). The exact-typed
+     * comments, footnotes and endnotes co-reaches opened clean (s87b).
+     */
+    describe("session 87's header, comments, footnotes and endnotes co-reaches (#776)", () => {
+        const CONTENT_TYPE = `${CT.styles}; charset=utf-8`;
+        const coReach = (type: string, segment: "header" | "comments" | "footnotes" | "endnotes"): Parts => {
+            const parts = withOverride({ ...MINIMAL_PARTS }, "word/styles.xml", type);
+            return {
+                ...parts,
+                ...(segment === "header"
+                    ? {
+                          "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+                              `xmlns:w="${W}"`,
+                              `xmlns:w="${W}" xmlns:r="${R}"`,
+                          ).replace("<w:sectPr>", `<w:sectPr><w:headerReference w:type="default" r:id="rIdX"/>`),
+                      }
+                    : {}),
+                "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                    "</Relationships>",
+                    `<Relationship Id="rIdX" Type="${R}/${segment}" Target="styles.xml"/></Relationships>`,
+                ),
+            };
+        };
+        const wanted = expectedInexactFinding("word/styles.xml", "styles", "error", CONTENT_TYPE);
+
+        it.each(["header", "comments", "footnotes", "endnotes"] as const)(
+            "invalidates the s87a %s co-reach with exactly the inexact error, as Word refused it",
+            async (segment) => {
+                await withTempDir(async (dir) => {
+                    const file = path.join(dir, `styles-charset-${segment}-used.docx`);
+                    writeFileSync(file, await buildDocx(coReach(CONTENT_TYPE, segment)));
+                    const result = await validate(file);
+                    expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([wanted]);
+                    expect(result.valid).toBe(false);
+                });
+            },
+            60_000,
+        );
+
+        it.each(["comments", "footnotes", "endnotes"] as const)(
+            "passes the s87b exact-typed %s co-reach, as Word opened it clean",
+            async (segment) => {
+                await withTempDir(async (dir) => {
+                    const file = path.join(dir, `styles-exact-${segment}-used.docx`);
+                    writeFileSync(file, await buildDocx(coReach(CT.styles, segment)));
+                    expect((await validate(file)).valid).toBe(true);
+                });
+            },
+            60_000,
+        );
+    });
+
     it("drops a Default-typed main under strict only when ct-undeclared-part errors at the same path (#535)", async () => {
         await withTempDir(async (dir) => {
             const declared = path.join(dir, "declared.docx");
