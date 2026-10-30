@@ -430,59 +430,65 @@ describe("a refused w:hyperlink in a read footer, comments or notes part is one 
  * #1129: the same hand-off in a reached glossary document, the other story
  * root the rule's read set holds. Session 28's accepted main document gains a
  * `glossaryDocument` relationship, and the glossary's `w:docPartBody` holds a
- * hyperlink naming nothing its own sidecar defines.
+ * hyperlink naming nothing its own sidecar defines. The read model reaches a
+ * glossary wherever it is stored, so the rows run at the conventional path and
+ * at a renamed one, with the Override, the relationship and the sidecar
+ * following the part (#1163).
  */
-describe("a refused w:hyperlink in a reached glossary is one report in a full run (#1129)", () => {
-    const LEGACY = new Set(["rels-id-mismatch", "rels-id-missing"]);
-    const GLOSSARY = "word/glossary/document.xml";
-    const withGlossaryHyperlink = (ids: string): Record<string, string> => {
-        const parts = hyperlinkRelTypeParts(`${R}/hyperlink`);
-        parts["[Content_Types].xml"] = parts["[Content_Types].xml"]!.replace(
-            "</Types>",
-            `<Override PartName="/${GLOSSARY}" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml"/></Types>`,
-        );
-        parts["word/_rels/document.xml.rels"] = parts["word/_rels/document.xml.rels"]!.replace(
-            "</Relationships>",
-            `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/></Relationships>`,
-        );
-        parts[GLOSSARY] =
-            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
-            `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}" xmlns:rs="${RS}"><w:docParts><w:docPart>` +
-            `<w:docPartPr><w:name w:val="Part"/><w:guid w:val="{00000000-0000-0000-0000-000000000001}"/></w:docPartPr>` +
-            `<w:docPartBody><w:p><w:hyperlink ${ids}><w:r><w:t>link</w:t></w:r></w:hyperlink></w:p></w:docPartBody>` +
-            `</w:docPart></w:docParts></w:glossaryDocument>`;
-        parts["word/glossary/_rels/document.xml.rels"] = rels(relation("rIdL", "hyperlink", "External"));
-        return parts;
-    };
+describe.each(["word/glossary/document.xml", "word/glossary2/document.xml"])(
+    "a refused w:hyperlink in a reached glossary at %s is one report in a full run (#1129)",
+    (glossary) => {
+        const LEGACY = new Set(["rels-id-mismatch", "rels-id-missing"]);
+        const folder = path.posix.dirname(glossary);
+        const withGlossaryHyperlink = (ids: string): Record<string, string> => {
+            const parts = hyperlinkRelTypeParts(`${R}/hyperlink`);
+            parts["[Content_Types].xml"] = parts["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/${glossary}" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml"/></Types>`,
+            );
+            parts["word/_rels/document.xml.rels"] = parts["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="${path.posix.relative("word", glossary)}"/></Relationships>`,
+            );
+            parts[glossary] =
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}" xmlns:rs="${RS}"><w:docParts><w:docPart>` +
+                `<w:docPartPr><w:name w:val="Part"/><w:guid w:val="{00000000-0000-0000-0000-000000000001}"/></w:docPartPr>` +
+                `<w:docPartBody><w:p><w:hyperlink ${ids}><w:r><w:t>link</w:t></w:r></w:hyperlink></w:p></w:docPartBody>` +
+                `</w:docPart></w:docParts></w:glossaryDocument>`;
+            parts[`${folder}/_rels/document.xml.rels`] = rels(relation("rIdL", "hyperlink", "External"));
+            return parts;
+        };
 
-    it.each([
-        ["word-valid", 'r:id="rIdX"'],
-        ["strict", 'r:id="rIdX"'],
-        ["word-valid", 'rs:id="rIdY"'],
-        ["strict", 'rs:id="rIdY"'],
-        ["word-valid", 'r:id="rIdX" rs:id="rIdY"'],
-        ["strict", 'r:id="rIdX" rs:id="rIdY"'],
-    ] as const)("reports it once under %s for %s", async (profile, ids) => {
-        await withTempDir(async (dir) => {
-            const file = path.join(dir, "glossary-hyperlink.docx");
-            writeFileSync(file, await buildDocx(withGlossaryHyperlink(ids)));
-            const result = await validate(file, { profile });
-            expect(result.issues.filter((issue) => issue.code === "word-hyperlink-relationship").map((issue) => issue.path)).toEqual([
-                GLOSSARY,
-            ]);
-            expect(result.issues.filter((issue) => LEGACY.has(issue.code ?? ""))).toEqual([]);
+        it.each([
+            ["word-valid", 'r:id="rIdX"'],
+            ["strict", 'r:id="rIdX"'],
+            ["word-valid", 'rs:id="rIdY"'],
+            ["strict", 'rs:id="rIdY"'],
+            ["word-valid", 'r:id="rIdX" rs:id="rIdY"'],
+            ["strict", 'r:id="rIdX" rs:id="rIdY"'],
+        ] as const)("reports it once under %s for %s", async (profile, ids) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "glossary-hyperlink.docx");
+                writeFileSync(file, await buildDocx(withGlossaryHyperlink(ids)));
+                const result = await validate(file, { profile });
+                expect(result.issues.filter((issue) => issue.code === "word-hyperlink-relationship").map((issue) => issue.path)).toEqual([
+                    glossary,
+                ]);
+                expect(result.issues.filter((issue) => LEGACY.has(issue.code ?? ""))).toEqual([]);
+            });
         });
-    });
 
-    it("lenient keeps the legacy finding", async () => {
-        await withTempDir(async (dir) => {
-            const file = path.join(dir, "glossary-hyperlink.docx");
-            writeFileSync(file, await buildDocx(withGlossaryHyperlink('r:id="rIdX"')));
-            const result = await validate(file, { profile: "lenient" });
-            expect(result.issues.filter((issue) => issue.code === "word-hyperlink-relationship")).toEqual([]);
-            expect(result.issues.filter((issue) => LEGACY.has(issue.code ?? "")).map((issue) => `${issue.code} ${issue.path}`)).toEqual([
-                `rels-id-missing ${GLOSSARY}`,
-            ]);
+        it("lenient keeps the legacy finding", async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "glossary-hyperlink.docx");
+                writeFileSync(file, await buildDocx(withGlossaryHyperlink('r:id="rIdX"')));
+                const result = await validate(file, { profile: "lenient" });
+                expect(result.issues.filter((issue) => issue.code === "word-hyperlink-relationship")).toEqual([]);
+                expect(result.issues.filter((issue) => LEGACY.has(issue.code ?? "")).map((issue) => `${issue.code} ${issue.path}`)).toEqual(
+                    [`rels-id-missing ${glossary}`],
+                );
+            });
         });
-    });
-});
+    },
+);
