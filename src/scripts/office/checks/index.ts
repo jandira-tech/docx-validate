@@ -28,6 +28,7 @@ import { wordTablePropertiesRequiredCheck } from "./table-properties-required";
 import { wordRowWithoutCellCheck } from "./tables";
 import { textboxContentNamespaceCheck } from "./textbox-content-namespace";
 import { wordCustomPropertyFiletimeEmptyCheck } from "./word-custom-properties";
+import { wordPackageThumbnailTypeCheck } from "./word-package-thumbnail-type";
 import { wordDrawingExtentMissingCheck } from "./word-drawing";
 import { wordDrawingExtentMisplacedCheck } from "./word-drawing-extent-position";
 import { wordPictureNvpicprMissingCheck, wordPictureSpprMissingCheck } from "./word-picture";
@@ -89,6 +90,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     pageMarginAttributesCheck,
     textboxContentNamespaceCheck,
     wordCustomPropertyFiletimeEmptyCheck,
+    wordPackageThumbnailTypeCheck,
     wordDrawingExtentMissingCheck,
     wordDrawingExtentMisplacedCheck,
     wordPictureNvpicprMissingCheck,

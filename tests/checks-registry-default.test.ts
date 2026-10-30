@@ -38,6 +38,7 @@ describe("default check registry", () => {
                 "xml-syntax",
                 "word-row-without-cell",
                 "word-main-document-part",
+                "word-package-thumbnail-type",
             ]),
         );
     });

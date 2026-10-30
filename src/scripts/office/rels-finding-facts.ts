@@ -32,7 +32,7 @@ export type RelsEmptyElementShape = "missing-attribute" | "body-content";
 /** Facts by issue object, so a copied issue is an unregistered issue (#734, #735). */
 const brokenTargets = new WeakMap<ValidationIssue, string>();
 const emptyElementShapes = new WeakMap<ValidationIssue, RelsEmptyElementShape>();
-const brokenSchemes = new WeakMap<ValidationIssue, string>();
+const brokenSchemes = new WeakSet<ValidationIssue>();
 
 /**
  * Register the part name a broken relationship target resolved to, in the
@@ -48,16 +48,15 @@ export const relsBrokenTarget = (issue: ValidationIssue): string | undefined => 
 
 /**
  * Register that a broken target spells a URI scheme, which names no part
- * (#1127), with the relationship's Office type segment (`""` for another
- * type, `header-unused` for a header no markup in the source part
- * references). The verdict never reads the raw Target or Type.
+ * (#1127). Word refuses one whatever the relationship type (#1178), so the
+ * fact records no type. The verdict never reads the raw Target.
  */
-export const registerRelsBrokenScheme = (issue: ValidationIssue, typeSegment: string): void => {
-    brokenSchemes.set(issue, typeSegment);
+export const registerRelsBrokenScheme = (issue: ValidationIssue): void => {
+    brokenSchemes.add(issue);
 };
 
-/** The registered type segment of a scheme target's `issue`, or `undefined` when it is no scheme target (#1127). */
-export const relsBrokenScheme = (issue: ValidationIssue): string | undefined => brokenSchemes.get(issue);
+/** Whether `issue` was registered as a scheme target (#1127). */
+export const relsBrokenScheme = (issue: ValidationIssue): boolean => brokenSchemes.has(issue);
 
 /**
  * Register which `rels-empty-element` shape the finding reports. The verdict
