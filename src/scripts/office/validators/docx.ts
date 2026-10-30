@@ -62,15 +62,12 @@ import { withoutConsequentialParseFailures } from "../../../lib/parse-failures";
 import { mergeResults, NS } from "../../../lib/types";
 import { promoteFullCheckIssue } from "../../../lib/mode-policy";
 import { propertiesParts } from "../../../lib/properties-parts";
-import { relsBrokenScheme } from "../rels-finding-facts";
 import {
     COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE,
     COMMENTS_IDS_RELATIONSHIP_TYPE,
     wordExactTypeTargets,
     wordReferenceLoadedSources,
     wordReadParts,
-    wordReadTypedTargets,
-    sidecarOf,
     wordPossiblyReadParts,
     wordStoryRootParts,
     wordTypedRelationshipTargets,
@@ -864,17 +861,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             wordObservedContentTypeParts(context, this.profile),
             needsPossiblyReadParts(result.issues) ? wordPossiblyReadParts(context, this.profile) : undefined,
         ]);
-        // #1184: the untyped read set includes used headers and footers alike.
-        // Keep only typed header reads, whose relationship Id a story root's
-        // headerReference uses; a related but unused header is not a read.
-        const readHeaderSidecars = new Set<string>();
-        if (result.issues.some(relsBrokenScheme)) {
-            for (const target of await wordReadTypedTargets(context, this.profile)) {
-                if (target.segment !== "header" || !read.has(canonicalPartName(target.part))) continue;
-                const sidecar = sidecarOf(context.partNames, target.part);
-                if (sidecar !== undefined) readHeaderSidecars.add(canonicalPartName(sidecar));
-            }
-        }
         const missingSidecarPart = (issue: ValidationIssue): string | undefined =>
             issue.severity === "error" && issue.code === "rels-missing-sidecar" ? issue.path : undefined;
         // Only a missing-sidecar error consults the unobserved-type targets.
@@ -924,7 +910,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             const part = missingSidecarPart(issue);
             const effective = part === undefined ? undefined : context.effectiveXml(part);
             const facts = {
-                isReadHeaderSidecar: issue.path !== undefined && readHeaderSidecars.has(canonicalPartName(issue.path)),
                 hasEffectiveRelationshipReference: effective?.ok === true && hasWordRelationshipReference(effective.document),
                 reachedByUnobservedRelationship: part !== undefined && unobserved.has(canonicalPartName(part.replace(/\\/g, "/"))),
                 referenceLoadedReach: part === undefined ? undefined : referenceLoadedReach.get(part),

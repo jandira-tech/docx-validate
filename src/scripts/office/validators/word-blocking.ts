@@ -24,8 +24,6 @@ import {
 
 /** Per-issue facts supplied by the caller that owns the processed XML view. */
 export type WordBlockingFacts = {
-    /** The issue names the own sidecar of a header in `wordReadTypedTargets` (#1184). */
-    isReadHeaderSidecar?: boolean;
     hasEffectiveRelationshipReference?: boolean;
     reachedByUnobservedRelationship?: boolean;
     /**
@@ -560,8 +558,8 @@ export const isWordBlockingIssue = (
             // the unreferenced part and of the used header, two runs each, all
             // readings agreeing (#987); the customXml shape in an unused
             // header's or the styles part's sidecar is unprobed (#1006).
-            // A target spelling a URI scheme names no part and blocks, as a
-            // folder target does, whatever the relationship type: Word
+            // A target spelling a URI scheme names no part and blocks in
+            // every relationships part, whatever the relationship type: Word
             // offered recovery beside the well-formed stored part its path
             // spells for a used header related through `ftp:header1.xml` or
             // `httpfoo:header1.xml` and for the styles relationship through
@@ -571,21 +569,22 @@ export const isWordBlockingIssue = (
             // and the main document's settings, numbering, comments,
             // footnotes and a used and an unused footer (session 88,
             // s88a–s88c, two runs each, all readings agree, #1178); each
-            // plain target opened clean. Session 89 s89b (#1184, two runs,
-            // all four readings agree) also offered recovery for an ftp:
-            // image target in a used header's own sidecar, whether an inline
-            // drawing embeds the image or not; the plain target opened clean.
-            // Only the scheme arm extends to read headers: folder, OPC
-            // relationships and customXml targets keep their scope above.
-            // Scheme targets in a used footer's, unused header's, styles
-            // part's or unreferenced part's sidecar remain unprobed warnings.
+            // plain target opened clean. Session 89 (s89a–s89c, #1184, two
+            // runs each, all four readings agree) repeated the refusal in
+            // `_rels/.rels` for the core, extended and custom properties,
+            // and for an ftp: image in a used header's own sidecar, embedded
+            // or unused, and unused in a used footer's, an unused header's,
+            // the styles part's and an unreferenced part's sidecar. Each
+            // plain target opened clean. Only the scheme arm extends to
+            // every relationships part; the folder, OPC-relationships and
+            // customXml arms keep their scope above (#987).
             const part = relsBrokenTarget(issue);
             const scheme = relsBrokenScheme(issue);
             return (
-                part !== undefined &&
-                ((scheme && facts.isReadHeaderSidecar === true) ||
-                    ((isPackageRelationshipsPart(issue.path) || isDocumentRelationshipsPart(issue.path, storyRootParts)) &&
-                        (scheme || part.endsWith("/") || isOpcRelationshipsPart(part) || canonicalPartName(part).startsWith("customxml/"))))
+                scheme ||
+                (part !== undefined &&
+                    (isPackageRelationshipsPart(issue.path) || isDocumentRelationshipsPart(issue.path, storyRootParts)) &&
+                    (part.endsWith("/") || isOpcRelationshipsPart(part) || canonicalPartName(part).startsWith("customxml/")))
             );
         }
         case "rels-empty-element":

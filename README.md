@@ -361,22 +361,24 @@ relative target that merely starts with `http` resolves as a part: Word refused 
 folder target
 ([#988](https://github.com/jandira-tech/docx-validate/issues/988)).
 Any other scheme (`ftp:`, `httpfoo:`) makes the target an absolute URI that names
-no part, reported as `rels-broken`: Word offered recovery for a used header and the
-styles part related through one, beside the well-formed stored `word/ftp:…` part
-(Word probes session 87,
-[#1127](https://github.com/jandira-tech/docx-validate/issues/1127)), and for every
-other placement it was shown: an unused header, a `_rels/.rels` styles relationship,
-an unused image, and the main document's settings, numbering, comments, footnotes
-and a used and an unused footer (Word probes session 88). It therefore blocks
-word-valid whatever the relationship type, in `_rels/.rels` and a story root's own
-sidecar, as a folder target does
-([#1178](https://github.com/jandira-tech/docx-validate/issues/1178)); session 89
-repeated the refusal in `_rels/.rels` for the core, extended and custom properties.
-It also blocks in a used header's own sidecar, where Word offered recovery for an
-`ftp:` image the header embeds and for one it does not use (Word probes session 89),
-though Word opened a folder target there clean (session 80)
-([#1184](https://github.com/jandira-tech/docx-validate/issues/1184)). In any other
-part's sidecar it is unprobed and keeps a warning.
+no part, reported as `rels-broken`. It blocks word-valid in every relationships
+part, whatever the relationship type: Word refused it in each one shown.
+Word offered recovery for a used header and the styles part related through one,
+beside the well-formed stored `word/ftp:…` part (Word probes session 87,
+[#1127](https://github.com/jandira-tech/docx-validate/issues/1127)), and for an
+unused header, a `_rels/.rels` styles relationship, an unused image, and the main
+document's settings, numbering, comments, footnotes and a used and an unused
+footer (session 88,
+[#1178](https://github.com/jandira-tech/docx-validate/issues/1178)). Session 89
+repeated the refusal in `_rels/.rels` for the core, extended and custom properties
+(s89a), in a used header's own sidecar for an `ftp:` image it embeds and one it
+does not use (s89b), and for an unused `ftp:` image in a used footer's, an unused
+header's, the styles part's and an unreferenced part's own sidecar (s89c). Two
+runs each, all four readings agree; each plain target opened clean
+([#1184](https://github.com/jandira-tech/docx-validate/issues/1184)). Only the
+scheme arm extends to every relationships part; the folder, OPC-relationships
+and `customXml` arms keep their narrower scope in `_rels/.rels` or a story root's
+own sidecar ([#987](https://github.com/jandira-tech/docx-validate/issues/987)).
 They read the scheme ASCII case-insensitively, as RFC 3986 does, so an `HTTP:` or
 `MAILTO:` target is skipped as its lowercase spelling is, where it used to be
 resolved as a part; lenient's scan stays case-sensitive. Word has been shown

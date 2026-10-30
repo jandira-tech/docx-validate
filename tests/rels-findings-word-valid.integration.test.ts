@@ -704,8 +704,8 @@ describe("an internal target spelling a URI scheme names no part (#1127, session
     // placement it was shown beside the well-formed stored `ftp:…` part — a header no w:headerReference uses, a
     // `_rels/.rels` styles relationship beside the main document's own, an unused image, and the main document's
     // settings, numbering, comments, footnotes and a used and an unused footer — and opened each plain-named
-    // calibration clean. The scheme target therefore blocks whatever the relationship type, in the relationships parts
-    // Word reads to reach the stories, as a folder target does (#975).
+    // calibration clean. Session 89 s89c extends the scheme block to every relationships part (#1184), while
+    // folder targets keep their narrower scope (#987).
     const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
     const story =
         (segment: string, xml: string, sect = "") =>
@@ -811,7 +811,7 @@ describe("an internal target spelling a URI scheme names no part (#1127, session
         }
     });
 
-    // A reached glossary's own sidecar is a story root's, the scope the block covers; unprobed in Word.
+    // A reached glossary's own sidecar is covered by the scheme block too; unprobed in Word.
     it("blocks a scheme target in a reached glossary's own sidecar, whatever the type", async () => {
         const parts = withBrokenGlossaryTarget("ftp:image9.png");
         const glossaryRels = "word/glossary/_rels/document.xml.rels";
@@ -875,14 +875,42 @@ describe("an internal target spelling a URI scheme names no part (#1127, session
         });
     });
 
-    // Scheme targets in these sidecars remain unprobed; reading a footer alone must not widen the block.
-    it.each([
-        ["header", false],
-        ["footer", true],
-    ] as const)("keeps a %s sidecar's scheme target a warning when used=%s", async (segment, used) => {
-        const { valid, broken } = await run(storyWithImageSidecar(segment, used), "word-valid");
-        expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([[`word/_rels/${segment}1.xml.rels`, "warning"]]);
-        expect(valid).toBe(true);
+    const partWithImageSidecar = (part: "styles" | "foo", target = "ftp:image1.png"): Record<string, string | Uint8Array> => ({
+        ...MINIMAL_PARTS,
+        ...(part === "foo" ? { "word/foo.xml": `<w:styles xmlns:w="${W}"/>` } : {}),
+        [`word/_rels/${part}.xml.rels`]:
+            `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+            `<Relationship Id="rIdImage" Type="${IMAGE}" Target="${target}"/></Relationships>`,
+        [`word/${target}`]: PNG,
+        [CT]: MINIMAL_PARTS[CT]!.replace("</Types>", '<Default Extension="png" ContentType="image/png"/></Types>'),
+    });
+
+    // Session 89 s89c (#1184), two runs, all four readings agree: Word refused an unused ftp: image
+    // in each of these sidecars and opened each plain target clean, including the unreferenced part's.
+    describe.each([
+        ["unused header", "word/_rels/header1.xml.rels", (target: string) => storyWithImageSidecar("header", false, false, target)],
+        ["used footer", "word/_rels/footer1.xml.rels", (target: string) => storyWithImageSidecar("footer", true, false, target)],
+        ["styles part", "word/_rels/styles.xml.rels", (target: string) => partWithImageSidecar("styles", target)],
+        ["unreferenced part", "word/_rels/foo.xml.rels", (target: string) => partWithImageSidecar("foo", target)],
+    ] as const)("%s sidecar (#1184, s89c)", (_row, relsPart, partsAt) => {
+        it.each(["word-valid", "strict"] as const)("blocks the scheme target under %s", async (profile) => {
+            const { valid, broken } = await run(partsAt("ftp:image1.png"), profile);
+            expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([[relsPart, "error"]]);
+            expect(valid).toBe(false);
+        });
+
+        it("accepts the plain image target control under word-valid", async () => {
+            const { valid, broken } = await run(partsAt("image1.png"), "word-valid");
+            expect(broken).toEqual([]);
+            expect(valid).toBe(true);
+        });
+
+        it("keeps lenient's historical scan resolving the stored ftp: image as a part", async () => {
+            const { valid, broken } = await run(partsAt("ftp:image1.png"), "lenient");
+            expect(broken).toEqual([]);
+            // Lenient already rejects the unreferenced owner; the scheme target does not change that verdict.
+            expect(valid).toBe(_row !== "unreferenced part");
+        });
     });
 
     it("keeps a folder target in a used header's own sidecar a word-valid warning (#987)", async () => {
@@ -890,6 +918,14 @@ describe("an internal target spelling a URI scheme names no part (#1127, session
         delete parts["word/media/"];
         const { valid, broken } = await run(parts, "word-valid");
         expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([["word/_rels/header1.xml.rels", "warning"]]);
+        expect(valid).toBe(true);
+    });
+
+    it("keeps a folder target in the styles part's own sidecar a word-valid warning (#987)", async () => {
+        const parts = partWithImageSidecar("styles", "media/");
+        delete parts["word/media/"];
+        const { valid, broken } = await run(parts, "word-valid");
+        expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([["word/_rels/styles.xml.rels", "warning"]]);
         expect(valid).toBe(true);
     });
 
