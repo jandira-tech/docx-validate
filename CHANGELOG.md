@@ -11,6 +11,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Reject internal package thumbnails typed `image/png` under word-valid and strict through the new `word-package-thumbnail-type` check ([#1186](https://github.com/jandira-tech/docx-validate/issues/1186)). Word 16.115 offered recovery for PNG thumbnails and opened JPEG thumbnails clean in sessions 89 and 90, with Default and Override declarations. Unrelated PNG parts, External relationships and lenient validation are unchanged.
 - Use forward slashes in validator finding paths on Windows so `rels-broken` findings keep their Word-valid blocking scope ([#1183](https://github.com/jandira-tech/docx-validate/issues/1183)). POSIX file names containing a literal backslash keep that character.
 - `pack` refuses symbolic links to files or directories before validation or staging, names the link relative to the input directory, and writes no output file ([#1199](https://github.com/jandira-tech/docx-validate/issues/1199)). Links were previously omitted from the archive while `pack` reported success.
+- Include the package-root `_rels/.rels` in `pack`'s XML condensing and `unpack`'s pretty-printing and smart-quote escaping ([#1198](https://github.com/jandira-tech/docx-validate/issues/1198)). Both file walks now match the lower-cased name's `.xml` or `.rels` suffix, so the dotfile is processed like `word/_rels/document.xml.rels`.
 
 ## [0.54.0-rc.2] — 2026-10-30
 

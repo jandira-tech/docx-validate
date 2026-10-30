@@ -186,6 +186,34 @@ describe("pack", () => {
         });
     });
 
+    it("condenses package-root relationships like document relationships (#1198)", async () => {
+        await withTempDir(async (dir) => {
+            const inputDir = path.join(dir, "src");
+            const outputFile = path.join(dir, "out.docx");
+            const rels =
+                '<?xml version="1.0" encoding="UTF-8"?>\n' +
+                '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n' +
+                '  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>\n' +
+                "</Relationships>";
+            await writeUnpacked(inputDir, {
+                document: "<w:body><w:p><w:r><w:t>hello</w:t></w:r></w:p></w:body>",
+                rels,
+            });
+            await fs.mkdir(path.join(inputDir, "word", "_rels"), { recursive: true });
+            await fs.writeFile(path.join(inputDir, "word", "_rels", "document.xml.rels"), rels, "utf8");
+
+            const result = await pack(inputDir, outputFile, { validate: false });
+            expect(result.ok).toBe(true);
+
+            const zip = await JSZip.loadAsync(await fs.readFile(outputFile));
+            const documentRels = await zip.file("word/_rels/document.xml.rels")!.async("string");
+            expect(documentRels).toMatch(/<Relationships[^>]*><Relationship /);
+            expect(documentRels).toMatch(/\/><\/Relationships>/);
+            const rootRels = await zip.file("_rels/.rels")!.async("string");
+            expect(rootRels).toBe(documentRels);
+        });
+    });
+
     it("condenses whitespace-only text and strips comments from non-:t elements", async () => {
         await withTempDir(async (dir) => {
             const inputDir = path.join(dir, "src");
