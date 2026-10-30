@@ -6,10 +6,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.54.0-rc.0] — 2026-10-29
+## [0.54.0-rc.1] — 2026-10-29
 
 Changes since `v0.53.0-rc.1` (2026-10-15), consolidated in [#1169](https://github.com/jandira-tech/docx-validate/pull/1169). This prerelease is published under npm's `next` tag; it does not advance `latest`.
 
+- Keep the equivalent-folder comment-thread test row portable across file systems ([#1170](https://github.com/jandira-tech/docx-validate/pull/1170)). It stored `WORD/s%75b/…` beside `word/…`, which a case-insensitive file system folds into `word/` but a case-sensitive one keeps as a folder collision the package view refuses (#441); it now spells `word/s%75b/…`. The initial GitHub candidate, `v0.54.0-rc.0`, stopped at this test in the Linux publish preflight and was never published to npm.
 - Refuse an archive whose central directory stores a name that leaves the output directory, a folder entry or a record a later entry shadows included ([#676](https://github.com/jandira-tech/docx-validate/pull/676)). JSZip keeps no `unsafeOriginalName` for a folder entry, and keys its view by the resolved name, so `unpack` and the redlining staging now pass the stored names to `extractZipEntries`, which refuses any that leave the directory before the first write.
 - Key only internal relationships in #1158's markup-compatibility view ([#1161](https://github.com/jandira-tech/docx-validate/pull/1161)). An external relationship names nothing, so it no longer stands for an unselected internal twin with the same `Id`, `Type` and `Target`: that twin names its part in `wordPossiblyReadParts` again.
 - Pin the two scopes #1155 changed that no row held ([#1162](https://github.com/jandira-tech/docx-validate/issues/1162)). Tests only. Review 1156 F2 found the gaps; #1164 fixed its F1.
