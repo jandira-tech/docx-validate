@@ -11,9 +11,13 @@ import {
     encodeXmlPart,
     getElementsByTagNameAll,
     getElementsByTagNameNSAll,
+    getLineNumber,
+    getLocalName,
+    makeSelect,
     parseXml,
     parseXmlBytes,
     prettyXml,
+    serializeXml,
     xmlDeclarationEncoding,
 } from "../src/lib/xml-helpers";
 
@@ -45,6 +49,13 @@ describe("xml-helpers element collectors", () => {
         const dom = parseXml(DOC);
         const ps = getElementsByTagNameNSAll(dom, "urn:a", "p");
         expect(ps.map((p) => p.textContent)).toEqual(["one", "tworun"]);
+    });
+
+    it("walks when the document's mutation counter is not a number", () => {
+        const dom = parseXml(DOC);
+        // Deleting the own property uncovers a numeric prototype value. A non-number is what the index refuses.
+        Object.defineProperty(dom, "_inc", { value: undefined, configurable: true });
+        expect(getElementsByTagNameNSAll(dom, "urn:a", "p").map((p) => p.textContent)).toEqual(["one", "tworun"]);
     });
 
     it("root semantics mirror the native API: documentElement included for a Document root, self excluded for an Element root", () => {
@@ -357,6 +368,17 @@ describe("decodeXmlPart / encodeXmlPart", () => {
         expect(xmlDeclarationEncoding({ encoding: "utf-16le" })).toBe("UTF-16LE");
         expect(xmlDeclarationEncoding({ encoding: "utf-16be" })).toBe("UTF-16BE");
     });
+
+    it("writes a BOM-less UTF-16 part without a byte order mark", () => {
+        const bytes = encodeXmlPart("<a/>", { encoding: "utf-16le" });
+        expect([...bytes.subarray(0, 4)]).toEqual([0x3c, 0x00, 0x61, 0x00]);
+    });
+
+    it("reads a declaration that never closes as the whole head", () => {
+        const open = `<?xml version="1.0" encoding="UTF-8"`;
+        expect(decodeXmlPart(utf8(open))).toEqual({ text: open, encoding: "utf-8" });
+        expect(decodeXmlPart(utf8(`<?xml version="1.0" encoding="macintosh"`))).toBeUndefined();
+    });
 });
 
 describe("prettyXml", () => {
@@ -384,4 +406,74 @@ describe("prettyXml", () => {
             timeout: 5_000,
         });
     }, 10_000);
+
+    it("puts text that follows a closing tag on its own line", () => {
+        expect(prettyXml(parseXml("<r><a>x</a>tail</r>"))).toBe("<r>\n  <a>x\n  </a>\n  tail\n</r>");
+    });
+
+    it("keeps text on a comment that closes an empty tag, and breaks after any other earlier angle bracket", () => {
+        expect(prettyXml(parseXml("<r><!--<>-->tail</r>"))).toBe("<r>\n  <!--<>-->tail\n</r>");
+        expect(prettyXml(parseXml("<r><!-- > -->tail</r>"))).toBe("<r>\n  <!-- > -->\n  tail\n</r>");
+    });
+
+    it("drops whitespace-only text", () => {
+        expect(prettyXml(parseXml("<r> <a/></r>"))).toBe("<r>\n  <a/>\n</r>");
+    });
+
+    it("pretty-prints a document with no root as an empty string", () => {
+        const dom = parseXml("<r/>");
+        dom.removeChild(dom.documentElement);
+        expect(prettyXml(dom)).toBe("");
+    });
+});
+
+describe("parseXml", () => {
+    it("strips a leading UTF-8 BOM before parsing", () => {
+        expect(parseXml("\uFEFF<a/>").documentElement.localName).toBe("a");
+    });
+
+    it("wraps a recoverable parse error and keeps the parser's message", () => {
+        expect(() => parseXml("\u0000<a/>")).toThrow(/^parseXml failed: Unexpected content outside root element: '\0'$/);
+    });
+});
+
+describe("serializeXml", () => {
+    it("names the encoding it is asked to, adding a declaration or rewriting the one the document carries", () => {
+        expect(serializeXml(parseXml("<r/>"), "UTF-8")).toBe('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<r/>');
+        expect(serializeXml(parseXml('<?xml version="1.0" encoding="UTF-16"?><r/>'), "UTF-8")).toBe(
+            '<?xml version="1.0" encoding="UTF-8"?><r/>',
+        );
+    });
+});
+
+describe("makeSelect", () => {
+    it("selects with the OOXML prefixes, and with a caller's extra prefix", () => {
+        const dom = parseXml(`<w:document xmlns:w="${NS.W}"><w:body><w:p/></w:body></w:document>`);
+        const select = makeSelect();
+        expect(select("//w:p", dom)).toHaveLength(1);
+        const extra = makeSelect({ z: "urn:z" });
+        const zdom = parseXml(`<z:r xmlns:z="urn:z"><z:t/></z:r>`);
+        expect(extra("//z:t", zdom)).toHaveLength(1);
+        expect(extra("//w:p", dom)).toHaveLength(1);
+    });
+});
+
+describe("getLineNumber", () => {
+    it("returns the parser's line, or 0 when none was recorded", () => {
+        expect(getLineNumber(null)).toBe(0);
+        expect(getLineNumber(undefined)).toBe(0);
+        const dom = parseXml("<r>\n<a/>\n</r>");
+        expect(getLineNumber(dom.documentElement)).toBe(1);
+        expect(getLineNumber(dom.getElementsByTagName("a")[0]!)).toBe(2);
+        expect(getLineNumber(dom.createTextNode("t"))).toBe(0);
+    });
+});
+
+describe("getLocalName", () => {
+    it("returns the element's local name, lower-cased when asked", () => {
+        const dom = parseXml(`<W:Document xmlns:W="${NS.W}"/>`);
+        expect(getLocalName(dom.documentElement)).toBe("Document");
+        expect(getLocalName(dom.documentElement, true)).toBe("document");
+        expect(getLocalName(dom.documentElement, false)).toBe("Document");
+    });
 });

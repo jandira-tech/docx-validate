@@ -108,6 +108,17 @@ describe("extractZipEntries (#675)", () => {
         },
     );
 
+    it("refuses a stored central-directory name before it writes anything", async () => {
+        await withTempDir(async (dir) => {
+            const out = path.join(dir, "out");
+            await fsPromises.mkdir(out);
+            await expect(extractZipEntries(await zipOf([["a.xml", "a"]]), out, ["../evil.txt"])).rejects.toThrow(
+                "Refusing to extract entry outside output dir: ../evil.txt",
+            );
+            expect(existsSync(path.join(out, "a.xml"))).toBe(false);
+        });
+    });
+
     it("keeps extracting a stored name that resolves inside the output directory", async () => {
         await withTempDir(async (dir) => {
             const out = path.join(dir, "out");
@@ -187,6 +198,33 @@ describe("extractZipEntries (#675)", () => {
             expect(entriesUnder(out)).toEqual(["notes.txt", "word", "word/keep.xml"]);
         });
     });
+
+    it("overwrites a file that was already there, and keeps those bytes when a later write fails", async () => {
+        await withTempDir(async (dir) => {
+            const out = path.join(dir, "out");
+            const locked = path.join(out, "locked");
+            await fsPromises.mkdir(locked, { recursive: true });
+            await fsPromises.writeFile(path.join(out, "keep.xml"), "old");
+            await fsPromises.chmod(locked, 0o555);
+            try {
+                await expect(
+                    extractZipEntries(
+                        await zipOf([
+                            ["keep.xml", "new"],
+                            ["ok.xml", "ok"],
+                            ["locked/secret.xml", "no"],
+                        ]),
+                        out,
+                    ),
+                ).rejects.toMatchObject({ code: "EACCES" });
+                expect(readFileSync(path.join(out, "keep.xml"), "utf8")).toBe("new");
+                expect(existsSync(path.join(out, "ok.xml"))).toBe(false);
+                expect(existsSync(locked)).toBe(true);
+            } finally {
+                await fsPromises.chmod(locked, 0o755);
+            }
+        });
+    });
 });
 
 describe("findLinkBelow (#675, #939)", () => {
@@ -228,6 +266,28 @@ describe("findLinkBelow (#675, #939)", () => {
             const out = path.join(dir, "out");
             await fsPromises.mkdir(out);
             expect(await findLinkBelow(out, path.join(out, "word", "document.xml"))).toBeUndefined();
+        });
+    });
+
+    it("returns undefined when a file stands where a directory is needed", async () => {
+        await withTempDir(async (dir) => {
+            const out = path.join(dir, "out");
+            await fsPromises.mkdir(out);
+            await fsPromises.writeFile(path.join(out, "word"), "not a directory");
+            expect(await findLinkBelow(out, path.join(out, "word", "document.xml"))).toBeUndefined();
+        });
+    });
+
+    it("rethrows an lstat error other than a missing path or a file in the way", async () => {
+        await withTempDir(async (dir) => {
+            const out = path.join(dir, "out");
+            await fsPromises.mkdir(out);
+            await fsPromises.chmod(out, 0);
+            try {
+                await expect(findLinkBelow(out, path.join(out, "word", "document.xml"))).rejects.toMatchObject({ code: "EACCES" });
+            } finally {
+                await fsPromises.chmod(out, 0o755);
+            }
         });
     });
 
@@ -335,6 +395,47 @@ describe("extractPackageParts", () => {
                 expect(readFileSync(path.join(out, "word", "_rels", "document.xml.rels"), "utf8")).toBe("<r/>");
             });
             expect(spy).toHaveBeenCalled();
+        } finally {
+            spy.mockRestore();
+        }
+    });
+
+    it("refuses a part whose file the output directory already holds (#373)", async () => {
+        await withTempDir(async (dir) => {
+            const out = path.join(dir, "out");
+            await fsPromises.mkdir(path.join(out, "word"), { recursive: true });
+            await fsPromises.writeFile(path.join(out, "word", "document.xml"), "there");
+            await expect(extractPackageParts(await zipOf([["word/document.xml", "<d/>"]]), out)).rejects.toThrow(
+                'Cannot write part "word/document.xml": this filesystem already holds another part under the same file name',
+            );
+            expect(readFileSync(path.join(out, "word", "document.xml"), "utf8")).toBe("there");
+        });
+    });
+
+    it("ignores a symbolic link while checking that each part landed under its own name", async () => {
+        await withTempDir(async (dir) => {
+            const out = path.join(dir, "out");
+            await fsPromises.mkdir(out);
+            await fsPromises.symlink(dir, path.join(out, "side"));
+            await extractPackageParts(await zipOf([["word/document.xml", "<d/>"]]), out);
+            expect(readFileSync(path.join(out, "word", "document.xml"), "utf8")).toBe("<d/>");
+            expect((await fsPromises.lstat(path.join(out, "side"))).isSymbolicLink()).toBe(true);
+        });
+    });
+
+    it("refuses a part the output walk cannot find under its own name (#376)", async () => {
+        const readdir = fsPromises.readdir.bind(fsPromises);
+        const spy = vi.spyOn(fsPromises, "readdir").mockImplementation((async (dir: string, options?: { withFileTypes?: boolean }) => {
+            const folder = String(dir);
+            if (folder.endsWith(`${path.sep}out`) || folder.includes(`${path.sep}out${path.sep}`)) return [];
+            return readdir(dir, options as never);
+        }) as unknown as typeof fsPromises.readdir);
+        try {
+            await withTempDir(async (dir) => {
+                await expect(extractPackageParts(await zipOf([["word/document.xml", "<d/>"]]), path.join(dir, "out"))).rejects.toThrow(
+                    'Cannot write part "word/document.xml": this filesystem holds it under another name',
+                );
+            });
         } finally {
             spy.mockRestore();
         }
