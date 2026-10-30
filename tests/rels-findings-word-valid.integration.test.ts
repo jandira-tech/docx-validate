@@ -821,20 +821,76 @@ describe("an internal target spelling a URI scheme names no part (#1127, session
         expect(valid).toBe(false);
     });
 
-    // Outside the relationships parts Word reads to reach the stories the shape is unprobed, so it keeps the
-    // warning, as a folder target does there (#987): here a used header's own sidecar.
-    it("keeps a scheme target in a used header's own sidecar a word-valid warning, as Word was not shown it", async () => {
-        const parts = {
-            ...usedHeaderAt("header1.xml"),
-            "word/_rels/header1.xml.rels": withBrokenTarget("ftp:image9.png")[SIDECAR]!.replace(
-                MINIMAL_PARTS[SIDECAR]!.match(/<Relationship [^>]*\/>/)![0],
-                "",
+    const PNG = Uint8Array.from(
+        Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64"),
+    );
+    const INLINE_PICTURE =
+        `<w:r><w:drawing><wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" ` +
+        `xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" ` +
+        `xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+        `<wp:extent cx="9525" cy="9525"/><wp:docPr id="2" name="Image"/>` +
+        `<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+        `<pic:pic><pic:nvPicPr><pic:cNvPr id="2" name="Image"/><pic:cNvPicPr/></pic:nvPicPr>` +
+        `<pic:blipFill><a:blip r:embed="rIdImage"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
+        `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="9525" cy="9525"/></a:xfrm>` +
+        `<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>` +
+        `</a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
+    const storyWithImageSidecar = (segment: "header" | "footer", used: boolean, usesImage = false, target = "ftp:image1.png") => {
+        const name = `${segment}1.xml`;
+        const xml = (segment === "header" ? HEADER : FOOTER)
+            .replace(`xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${RELATIONSHIPS}"`)
+            .replace("</w:p>", `${usesImage ? INLINE_PICTURE : ""}</w:p>`);
+        return {
+            ...story(segment, xml, used ? `<w:${segment}Reference w:type="default" r:id="rIdX"/>` : "")(name),
+            [`word/_rels/${name}.rels`]:
+                `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                `<Relationship Id="rIdImage" Type="${IMAGE}" Target="${target}"/></Relationships>`,
+            [`word/${target}`]: PNG,
+            [CT]: override(MINIMAL_PARTS[CT]!, `word/${name}`, `${WML}.${segment}+xml`).replace(
+                "</Types>",
+                '<Default Extension="png" ContentType="image/png"/></Types>',
             ),
         };
+    };
+
+    // Session 89 s89b (#1184), two runs, all four readings agree: a used header's own
+    // sidecar's ftp: image caused recovery whether an inline drawing embeds it or not.
+    describe.each([false, true])("used header sidecar, image embedded: %s", (usesImage) => {
+        it.each(["word-valid", "strict"] as const)("blocks the scheme target under %s", async (profile) => {
+            const { valid, broken } = await run(storyWithImageSidecar("header", true, usesImage), profile);
+            expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([["word/_rels/header1.xml.rels", "error"]]);
+            expect(valid).toBe(false);
+        });
+
+        it("accepts the plain image target control under word-valid", async () => {
+            const { valid, broken } = await run(storyWithImageSidecar("header", true, usesImage, "image1.png"), "word-valid");
+            expect(broken).toEqual([]);
+            expect(valid).toBe(true);
+        });
+
+        it("keeps lenient's historical scan resolving the stored ftp: image as a part", async () => {
+            const { valid, broken } = await run(storyWithImageSidecar("header", true, usesImage), "lenient");
+            expect(broken).toEqual([]);
+            expect(valid).toBe(true);
+        });
+    });
+
+    // Scheme targets in these sidecars remain unprobed; reading a footer alone must not widen the block.
+    it.each([
+        ["header", false],
+        ["footer", true],
+    ] as const)("keeps a %s sidecar's scheme target a warning when used=%s", async (segment, used) => {
+        const { valid, broken } = await run(storyWithImageSidecar(segment, used), "word-valid");
+        expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([[`word/_rels/${segment}1.xml.rels`, "warning"]]);
+        expect(valid).toBe(true);
+    });
+
+    it("keeps a folder target in a used header's own sidecar a word-valid warning (#987)", async () => {
+        const parts = storyWithImageSidecar("header", true, false, "media/");
+        delete parts["word/media/"];
         const { valid, broken } = await run(parts, "word-valid");
         expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([["word/_rels/header1.xml.rels", "warning"]]);
         expect(valid).toBe(true);
-        expect((await run(parts, "strict")).broken.map((issue) => issue.severity)).toEqual(["error"]);
     });
 
     it("keeps lenient's historical scan, which resolves ftp: as a part (#665)", async () => {

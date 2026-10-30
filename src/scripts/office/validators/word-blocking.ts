@@ -24,6 +24,8 @@ import {
 
 /** Per-issue facts supplied by the caller that owns the processed XML view. */
 export type WordBlockingFacts = {
+    /** The issue names the own sidecar of a header in `wordReadTypedTargets` (#1184). */
+    isReadHeaderSidecar?: boolean;
     hasEffectiveRelationshipReference?: boolean;
     reachedByUnobservedRelationship?: boolean;
     /**
@@ -569,16 +571,21 @@ export const isWordBlockingIssue = (
             // and the main document's settings, numbering, comments,
             // footnotes and a used and an unused footer (session 88,
             // s88a–s88c, two runs each, all readings agree, #1178); each
-            // plain target opened clean. The sidecar of another part is
-            // unprobed and keeps the warning.
+            // plain target opened clean. Session 89 s89b (#1184, two runs,
+            // all four readings agree) also offered recovery for an ftp:
+            // image target in a used header's own sidecar, whether an inline
+            // drawing embeds the image or not; the plain target opened clean.
+            // Only the scheme arm extends to read headers: folder, OPC
+            // relationships and customXml targets keep their scope above.
+            // Scheme targets in a used footer's, unused header's, styles
+            // part's or unreferenced part's sidecar remain unprobed warnings.
             const part = relsBrokenTarget(issue);
+            const scheme = relsBrokenScheme(issue);
             return (
                 part !== undefined &&
-                (isPackageRelationshipsPart(issue.path) || isDocumentRelationshipsPart(issue.path, storyRootParts)) &&
-                (relsBrokenScheme(issue) ||
-                    part.endsWith("/") ||
-                    isOpcRelationshipsPart(part) ||
-                    canonicalPartName(part).startsWith("customxml/"))
+                ((scheme && facts.isReadHeaderSidecar === true) ||
+                    ((isPackageRelationshipsPart(issue.path) || isDocumentRelationshipsPart(issue.path, storyRootParts)) &&
+                        (scheme || part.endsWith("/") || isOpcRelationshipsPart(part) || canonicalPartName(part).startsWith("customxml/"))))
             );
         }
         case "rels-empty-element":
