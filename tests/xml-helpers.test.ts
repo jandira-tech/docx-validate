@@ -56,7 +56,7 @@ describe("xml-helpers element collectors", () => {
         // A stable non-number: xmldom still updates the tree, and two queries would otherwise cache the old one.
         Object.defineProperty(dom, "_inc", {
             get: () => "opaque",
-            set: () => undefined,
+            set: () => {},
             configurable: true,
         });
         const texts = () => getElementsByTagNameNSAll(dom, "urn:a", "p").map((p) => p.textContent);
