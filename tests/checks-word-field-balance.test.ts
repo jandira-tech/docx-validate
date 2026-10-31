@@ -46,6 +46,11 @@ describe("word-field-unbalanced", () => {
         expect(await run(`<w:p>${field("begin", "separate", "begin", "end")}</w:p><w:p>${field("end")}</w:p>`)).toEqual([]);
         expect(await run(`<w:p>${field("begin", "end")}</w:p>`)).toEqual([]);
     });
+    it("describes an unbalanced field without claiming its Word status is unknown", async () => {
+        expect(await run(`<w:p>${field("begin")}</w:p>`)).toEqual([
+            expect.objectContaining({ message: "Unbalanced complex field: 1 begin marker(s) have no end in this story." }),
+        ]);
+    });
     it("supports ISO Strict namespaces", async () => {
         expect(await run(`<w:p>${field("begin")}</w:p>`, "strict", WS)).toEqual([
             expect.objectContaining({ code: "word-field-unbalanced" }),
@@ -66,6 +71,24 @@ describe("word-field-unbalanced", () => {
             ),
         ).toEqual([]);
     });
+    for (const profile of ["word-valid", "strict"] as const) {
+        for (const [word, drawing] of [
+            [W, "http://schemas.openxmlformats.org/drawingml/2006/main"],
+            [WS, "http://purl.oclc.org/ooxml/drawingml/main"],
+        ]) {
+            it(`ignores field markers in opaque extension payloads under ${profile} with ${word}`, async () => {
+                for (const type of ["begin", "end", "separate"]) {
+                    expect(
+                        await run(
+                            `<w:p>${field("begin", "separate")}<w:r><w:drawing><pic:spPr xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:a="${drawing}"><a:extLst><a:ext uri="urn:payload"><payload xmlns="urn:payload">${field(type)}</payload></a:ext></a:extLst></pic:spPr></w:drawing></w:r>${field("end")}</w:p>`,
+                            profile,
+                            word,
+                        ),
+                    ).toEqual([]);
+                }
+            });
+        }
+    }
     it("does not scan unrelated parts or missing field types", async () => {
         expect(await run(`<w:p>${field("begin")}</w:p>`, "strict", W, "customXml/item.xml")).toEqual([]);
         expect(await run("<w:p><w:r><w:fldChar/></w:r></w:p>")).toEqual([]);

@@ -15,6 +15,7 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
+import { EXTENSION_NAMESPACES } from "../../../lib/markup-compatibility";
 import type { ValidationIssue } from "../../../lib/types";
 import { wordReadStoryParts } from "../../../lib/word-read-parts";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
@@ -51,6 +52,7 @@ export function moveRangeProblems(root: Element): string[] {
         }
         const { element } = step;
         const ns = element.namespaceURI ?? "";
+        if (element.localName === "ext" && EXTENSION_NAMESPACES.has(ns)) continue;
         const current = WORD.has(ns) && SCOPES.has(element.localName) ? newScope() : step.scope;
         if (current !== step.scope) pending.push({ finish: current });
         const marker = WORD.has(ns) ? /^(moveFrom|moveTo)Range(Start|End)$/.exec(element.localName) : null;
@@ -98,7 +100,7 @@ export const wordMoveRangePairingCheck: CheckDefinition = {
                     severity: profile === "strict" ? "error" : "warning",
                     code: WORD_MOVE_RANGE_UNPAIRED,
                     path: part,
-                    message: `${problem} Word-blocking status is unknown.`,
+                    message: problem,
                 });
         }
         return issues;

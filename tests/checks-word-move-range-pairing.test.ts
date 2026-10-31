@@ -47,6 +47,11 @@ describe("word-move-range-unpaired", () => {
     it("reports mismatched names", async () => {
         expect(await run(range("moveFrom", "a", "10") + range("moveTo", "b", "11"))).toHaveLength(2);
     });
+    it("describes an unpaired move without claiming its Word status is unknown", async () => {
+        expect(await run(range("moveFrom", "a", "10"))).toEqual([
+            expect.objectContaining({ message: 'Move "a" has 1 moveFrom and 0 moveTo start(s) in this story.' }),
+        ]);
+    });
     it("reports missing and orphan ends independently of name pairing", async () => {
         expect(await run(start("moveFrom", "a", "10") + range("moveTo", "a", "11"))).toHaveLength(1);
         expect(await run(end("moveFrom", "10"))).toHaveLength(1);
@@ -86,6 +91,24 @@ describe("word-move-range-unpaired", () => {
             ),
         ).toEqual([]);
     });
+    for (const profile of ["word-valid", "strict"] as const) {
+        for (const [word, drawing] of [
+            [W, "http://schemas.openxmlformats.org/drawingml/2006/main"],
+            [WS, "http://purl.oclc.org/ooxml/drawingml/main"],
+        ]) {
+            it(`ignores move markers in opaque extension payloads under ${profile} with ${word}`, async () => {
+                for (const payload of [start("moveFrom", "opaque", "10"), end("moveFrom", "10")]) {
+                    expect(
+                        await run(
+                            `${start("moveFrom", "visible", "10")}<w:r><w:drawing><pic:spPr xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:a="${drawing}"><a:extLst><a:ext uri="urn:payload"><payload xmlns="urn:payload">${payload}</payload></a:ext></a:extLst></pic:spPr></w:drawing></w:r>${end("moveFrom", "10")}${range("moveTo", "visible", "11")}`,
+                            profile,
+                            word,
+                        ),
+                    ).toEqual([]);
+                }
+            });
+        }
+    }
     it("leaves missing id/name attributes to their own rules", async () => {
         expect(await run("<w:moveFromRangeStart/><w:moveFromRangeEnd/>")).toEqual([]);
     });
