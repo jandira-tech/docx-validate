@@ -21,6 +21,7 @@ import JSZip from "jszip";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
+import { getElementsByTagNameNSAll, parseXml } from "../src/lib/xml-helpers";
 import { pack } from "../src/scripts/office/pack";
 import { unpack, runUnpackFromArgv } from "../src/scripts/office/unpack";
 import { buildDocx as buildMinimalDocx, MINIMAL_PARTS } from "./support/minimal-docx";
@@ -89,6 +90,33 @@ async function buildDocx(target: string, parts: DocxParts): Promise<void> {
 }
 
 describe("unpack", () => {
+    it.each([" <!--c--> ", "\u00a0<!--c-->"])("preserves text beside comments through unpack and pack (#1219): %j", async (content) => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "text.docx");
+            const outputDir = path.join(dir, "out");
+            const packedFile = path.join(dir, "round-trip.docx");
+            const text = `<w:t xml:space="preserve">${content}</w:t>`;
+            await buildDocx(inputFile, { document: `<w:body><w:p><w:r>${text}</w:r></w:p></w:body>` });
+            const textNodes = (xml: string) =>
+                getElementsByTagNameNSAll(parseXml(xml), "*", "t").map((element) =>
+                    Array.from(element.childNodes)
+                        .filter((child) => child.nodeType === 3)
+                        .map((child) => child.nodeValue),
+                );
+            const original = await JSZip.loadAsync(await fs.readFile(inputFile));
+            const expected = textNodes(await original.file("word/document.xml")!.async("string"));
+
+            expect((await unpack(inputFile, outputDir, { mergeRuns: false, simplifyRedlines: false })).ok).toBe(true);
+            const unpacked = textNodes(await fs.readFile(path.join(outputDir, "word/document.xml"), "utf8"));
+            expect((await pack(outputDir, packedFile, { validate: false })).ok).toBe(true);
+            const packed = await JSZip.loadAsync(await fs.readFile(packedFile));
+            expect({ unpacked, packed: textNodes(await packed.file("word/document.xml")!.async("string")) }).toEqual({
+                unpacked: expected,
+                packed: expected,
+            });
+        });
+    });
+
     it("preserves w:t text bytes through unpack and pack (#1219)", async () => {
         await withTempDir(async (dir) => {
             const inputFile = path.join(dir, "text.docx");
