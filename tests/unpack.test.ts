@@ -253,6 +253,25 @@ describe("unpack", () => {
         });
     });
 
+    it.each(["_RELS", "_%72els"])("pretty-prints relationships under the OPC-equivalent folder %s", async (folder) => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "input.docx");
+            const outputDir = path.join(dir, "out");
+            const rels = MINIMAL_PARTS["_rels/.rels"]!.replace(/\n/g, "");
+            const part = `customXml/${folder}/item1.xml.rels`;
+            await fs.writeFile(inputFile, await buildMinimalDocx({ ...MINIMAL_PARTS, [part]: rels }));
+
+            const result = await unpack(inputFile, outputDir, {
+                mergeRuns: false,
+                simplifyRedlines: false,
+            });
+            expect(result.ok).toBe(true);
+
+            const written = await fs.readFile(path.join(outputDir, part), "utf8");
+            expect(written).toMatch(/<Relationships[^>]*>\n {2}<Relationship /);
+        });
+    });
+
     it.each([".rels", "payload.rels"])("preserves binary %s outside a relationships folder", async (name) => {
         await withTempDir(async (dir) => {
             const inputFile = path.join(dir, "input.docx");

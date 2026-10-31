@@ -246,6 +246,31 @@ describe("pack", () => {
         });
     });
 
+    it.each(["_RELS", "_%72els"])("condenses relationships under the OPC-equivalent folder %s", async (folder) => {
+        await withTempDir(async (dir) => {
+            const inputDir = path.join(dir, "src");
+            const outputFile = path.join(dir, "out.docx");
+            const rels =
+                '<?xml version="1.0" encoding="UTF-8"?>\n' +
+                '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n' +
+                '  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXmlProps" Target="itemProps1.xml"/>\n' +
+                "</Relationships>";
+            await writeUnpacked(inputDir, {
+                document: "<w:body><w:p><w:r><w:t>hello</w:t></w:r></w:p></w:body>",
+            });
+            const part = `customXml/${folder}/item1.xml.rels`;
+            await fs.mkdir(path.join(inputDir, "customXml", folder), { recursive: true });
+            await fs.writeFile(path.join(inputDir, part), rels, "utf8");
+
+            await expect(pack(inputDir, outputFile, { validate: false })).resolves.toMatchObject({ ok: true });
+
+            const zip = await JSZip.loadAsync(await fs.readFile(outputFile));
+            const written = await zip.file(part)!.async("string");
+            expect(written).toMatch(/<Relationships[^>]*><Relationship /);
+            expect(written).toMatch(/\/><\/Relationships>/);
+        });
+    });
+
     it.each([".rels", "payload.rels"])("preserves binary %s outside a relationships folder", async (name) => {
         await withTempDir(async (dir) => {
             const inputDir = path.join(dir, "src");
