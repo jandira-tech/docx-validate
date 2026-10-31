@@ -259,6 +259,7 @@ describe("simplifyRedlines", () => {
             expect(result.count).toBe(1);
             const after = await fs.readFile(docPath, "utf8");
             expect((after.match(/<w:ins[ >]/g) ?? []).length).toBe(1);
+            expect(after).toContain('<w:ins w:id="1" w:author="Alice"><w:r><w:t>foo</w:t></w:r><w:r><w:t>bar</w:t></w:r></w:ins>');
         });
     });
 
@@ -420,7 +421,9 @@ describe("inferAuthor", () => {
             zip.file(
                 "word/document.xml",
                 Buffer.from(
-                    `<?xml version="1.0" encoding="macintosh"?>\n<w:document ${W}><w:body><w:p><w:r><w:t>orig</w:t></w:r></w:p></w:body></w:document>`,
+                    `<?xml version="1.0" encoding="macintosh"?>\n<w:document ${W}><w:body><w:p>` +
+                        '<w:ins w:id="1" w:author="Mallory"><w:r><w:t>old</w:t></w:r></w:ins>' +
+                        "</w:p></w:body></w:document>",
                     "latin1",
                 ),
             );
@@ -450,7 +453,12 @@ describe("getTrackedChangeAuthorsFromPath", () => {
             const docPath = path.join(wordDir, "document.xml");
             await fs.writeFile(
                 docPath,
-                Buffer.from(`<?xml version="1.0" encoding="macintosh"?>\n<w:document ${W}><w:body/></w:document>`, "latin1"),
+                Buffer.from(
+                    `<?xml version="1.0" encoding="macintosh"?>\n<w:document ${W}><w:body><w:p>` +
+                        '<w:ins w:id="1" w:author="Alice"><w:r><w:t>new</w:t></w:r></w:ins>' +
+                        "</w:p></w:body></w:document>",
+                    "latin1",
+                ),
             );
             expect(await getTrackedChangeAuthorsFromPath(docPath)).toEqual(new Map());
         });
