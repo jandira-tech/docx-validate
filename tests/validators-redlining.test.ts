@@ -14,11 +14,19 @@
  * limitations under the License.
  */
 
+import * as childProcess from "node:child_process";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import JSZip from "jszip";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// `getGitWordDiff` shells out to git; keep the real behaviour by default and
+// let individual tests make the git calls fail deterministically.
+vi.mock("node:child_process", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("node:child_process")>();
+    return { ...actual, spawnSync: vi.fn(actual.spawnSync) };
+});
 
 import { withTempDir } from "../src/lib/run-cli";
 import { NS } from "../src/lib/types";
@@ -163,6 +171,175 @@ describe("validateRedlining", () => {
             expect(result.valid).toBe(true);
         });
     });
+
+    it("reports a parse failure when the modified part has no root element", async () => {
+        await withTempDir(async (dir) => {
+            const docx = await buildOriginalDocx(dir, "<w:body><w:p><w:r><w:t>x</w:t></w:r></w:p></w:body>");
+            const unpacked = path.join(dir, "unpacked");
+            const wordDir = path.join(unpacked, "word");
+            await fs.mkdir(wordDir, { recursive: true });
+            await fs.writeFile(path.join(wordDir, "document.xml"), '<?xml version="1.0"?><!-- no root -->', "utf8");
+
+            const result = await validateRedlining({ unpackedDir: unpacked, originalDocx: docx, author: "Ritapolis" });
+            expect(result.valid).toBe(false);
+            expect(result.issues[0].message).toMatch(/FAILED - Error parsing XML files/);
+        });
+    });
+
+    it("reports a failure when the original docx carries no word/document.xml", async () => {
+        await withTempDir(async (dir) => {
+            const zip = new JSZip();
+            zip.file(
+                "[Content_Types].xml",
+                '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>',
+            );
+            const docxPath = path.join(dir, "empty.docx");
+            await fs.writeFile(docxPath, await zip.generateAsync({ type: "nodebuffer" }));
+
+            const unpacked = path.join(dir, "unpacked");
+            await writeUnpacked(
+                unpacked,
+                "<w:body><w:p>" + '<w:ins w:id="1" w:author="Ritapolis"><w:r><w:t>x</w:t></w:r></w:ins>' + "</w:p></w:body>",
+            );
+
+            const result = await validateRedlining({ unpackedDir: unpacked, originalDocx: docxPath, author: "Ritapolis" });
+            expect(result.valid).toBe(false);
+            expect(result.issues[0].message).toMatch(/FAILED - Original document\.xml not found/);
+        });
+    });
+
+    it("reports a parse failure when the original document part is malformed", async () => {
+        await withTempDir(async (dir) => {
+            const zip = new JSZip();
+            zip.file("word/document.xml", `<?xml version="1.0"?>\n<w:document ${W}><w:body>`);
+            const docxPath = path.join(dir, "broken.docx");
+            await fs.writeFile(docxPath, await zip.generateAsync({ type: "nodebuffer" }));
+
+            const unpacked = path.join(dir, "unpacked");
+            await writeUnpacked(
+                unpacked,
+                "<w:body><w:p>" + '<w:ins w:id="1" w:author="Ritapolis"><w:r><w:t>x</w:t></w:r></w:ins>' + "</w:p></w:body>",
+            );
+
+            const result = await validateRedlining({ unpackedDir: unpacked, originalDocx: docxPath, author: "Ritapolis" });
+            expect(result.valid).toBe(false);
+            expect(result.issues[0].message).toMatch(/FAILED - Error parsing XML files/);
+        });
+    });
+
+    it("prints the no-tracked-changes pass line under verbose", async () => {
+        await withTempDir(async (dir) => {
+            const body = "<w:body><w:p><w:r><w:t>Hello world</w:t></w:r></w:p></w:body>";
+            const docx = await buildOriginalDocx(dir, body);
+            const unpacked = path.join(dir, "unpacked");
+            await writeUnpacked(unpacked, body);
+
+            const write = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            try {
+                const result = await validateRedlining({ unpackedDir: unpacked, originalDocx: docx, author: "Ritapolis", verbose: true });
+                expect(result.valid).toBe(true);
+                expect(write).toHaveBeenCalledWith("PASSED - No tracked changes by Ritapolis found.\n");
+            } finally {
+                write.mockRestore();
+            }
+        });
+    });
+
+    it("prints failure messages under verbose", async () => {
+        await withTempDir(async (dir) => {
+            const docx = await buildOriginalDocx(dir, "<w:body><w:p><w:r><w:t>x</w:t></w:r></w:p></w:body>");
+            const unpacked = path.join(dir, "unpacked");
+            await fs.mkdir(unpacked, { recursive: true });
+
+            const write = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            try {
+                const result = await validateRedlining({ unpackedDir: unpacked, originalDocx: docx, author: "Ritapolis", verbose: true });
+                expect(result.valid).toBe(false);
+                expect(write).toHaveBeenCalledWith(expect.stringContaining("FAILED - Modified document.xml not found"));
+            } finally {
+                write.mockRestore();
+            }
+        });
+    });
+
+    it("prints the pass line under verbose when all changes strip down to the original", async () => {
+        await withTempDir(async (dir) => {
+            const original = "<w:body><w:p><w:r><w:t>The quick brown fox</w:t></w:r></w:p></w:body>";
+            const modified =
+                "<w:body><w:p>" +
+                '<w:r><w:t xml:space="preserve">The </w:t></w:r>' +
+                '<w:ins w:id="1" w:author="Ritapolis"><w:r><w:t xml:space="preserve">very </w:t></w:r></w:ins>' +
+                "<w:r><w:t>quick brown fox</w:t></w:r>" +
+                "</w:p></w:body>";
+
+            const docx = await buildOriginalDocx(dir, original);
+            const unpacked = path.join(dir, "unpacked");
+            await writeUnpacked(unpacked, modified);
+
+            const write = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            try {
+                const result = await validateRedlining({ unpackedDir: unpacked, originalDocx: docx, author: "Ritapolis", verbose: true });
+                expect(result.valid).toBe(true);
+                expect(write).toHaveBeenCalledWith("PASSED - All changes by Ritapolis are properly tracked\n");
+            } finally {
+                write.mockRestore();
+            }
+        });
+    });
+
+    it("prints the detailed mismatch under verbose", async () => {
+        await withTempDir(async (dir) => {
+            const original = "<w:body><w:p><w:r><w:t>The quick brown fox</w:t></w:r></w:p></w:body>";
+            const modified =
+                "<w:body><w:p>" +
+                '<w:r><w:t xml:space="preserve">The </w:t></w:r>' +
+                '<w:ins w:id="1" w:author="Ritapolis"><w:r><w:t xml:space="preserve">very </w:t></w:r></w:ins>' +
+                "<w:r><w:t>quick red fox</w:t></w:r>" +
+                "</w:p></w:body>";
+
+            const docx = await buildOriginalDocx(dir, original);
+            const unpacked = path.join(dir, "unpacked");
+            await writeUnpacked(unpacked, modified);
+
+            const write = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            try {
+                const result = await validateRedlining({ unpackedDir: unpacked, originalDocx: docx, author: "Ritapolis", verbose: true });
+                expect(result.valid).toBe(false);
+                expect(write).toHaveBeenCalledWith(expect.stringContaining("FAILED - Document text doesn't match"));
+            } finally {
+                write.mockRestore();
+            }
+        });
+    });
+
+    it("reports the git-unavailable wording when git cannot run", async () => {
+        await withTempDir(async (dir) => {
+            const original = "<w:body><w:p><w:r><w:t>The quick brown fox</w:t></w:r></w:p></w:body>";
+            const modified =
+                "<w:body><w:p>" +
+                '<w:r><w:t xml:space="preserve">The </w:t></w:r>' +
+                '<w:ins w:id="1" w:author="Ritapolis"><w:r><w:t xml:space="preserve">very </w:t></w:r></w:ins>' +
+                "<w:r><w:t>quick red fox</w:t></w:r>" +
+                "</w:p></w:body>";
+
+            const docx = await buildOriginalDocx(dir, original);
+            const unpacked = path.join(dir, "unpacked");
+            await writeUnpacked(unpacked, modified);
+
+            const spawnSyncMock = vi.mocked(childProcess.spawnSync);
+            const errored = (): ReturnType<typeof childProcess.spawnSync> =>
+                ({ error: new Error("git unavailable"), stdout: "" }) as unknown as ReturnType<typeof childProcess.spawnSync>;
+            spawnSyncMock.mockImplementationOnce(errored).mockImplementationOnce(errored);
+            try {
+                const result = await validateRedlining({ unpackedDir: unpacked, originalDocx: docx, author: "Ritapolis" });
+                expect(result.valid).toBe(false);
+                expect(result.issues[0].message).toContain("Unable to generate word diff (git not available)");
+                expect(result.issues[0].message).not.toContain("Differences:");
+            } finally {
+                spawnSyncMock.mockClear();
+            }
+        });
+    });
 });
 
 describe("removeAuthorTrackedChanges", () => {
@@ -221,6 +398,34 @@ describe("removeAuthorTrackedChanges", () => {
         expect(after).not.toMatch(/<w:delText/);
         expect(after).toMatch(/<w:t[^>]*>outer <\/w:t>/);
         expect(after).toMatch(/<w:t[^>]*>inner<\/w:t>/);
+    });
+
+    it("unwraps a w:del whose children sit beside whitespace text", () => {
+        const xml = wrapDoc(
+            "<w:body><w:p>" + '<w:del w:author="Ritapolis">\n  <w:r><w:delText>restored</w:delText></w:r>\n</w:del>' + "</w:p></w:body>",
+        );
+        const doc = parseXml(xml);
+        const root = doc.documentElement;
+        if (!root) throw new Error("parseXml returned no root");
+        removeAuthorTrackedChanges(root, "Ritapolis");
+        const after = serializeXml(doc);
+        expect(after).not.toMatch(/<w:del[^a-zA-Z]/);
+        expect(after).not.toMatch(/<w:delText/);
+        expect(after).toMatch(/<w:t[^>]*>restored<\/w:t>/);
+    });
+
+    it("keeps an unprefixed attribute when converting w:delText to w:t", () => {
+        const xml = wrapDoc(
+            "<w:body><w:p>" +
+                '<w:del w:author="Ritapolis"><w:r><w:delText custom="keep">restored</w:delText></w:r></w:del>' +
+                "</w:p></w:body>",
+        );
+        const doc = parseXml(xml);
+        const root = doc.documentElement;
+        if (!root) throw new Error("parseXml returned no root");
+        removeAuthorTrackedChanges(root, "Ritapolis");
+        const after = serializeXml(doc);
+        expect(after).toMatch(/<w:t custom="keep">restored<\/w:t>/);
     });
 });
 

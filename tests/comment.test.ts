@@ -17,6 +17,7 @@
 import * as crypto from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -32,7 +33,7 @@ import { withTempDir } from "../src/lib/run-cli";
 import { canonicalPartName, CONTENT_TYPES_NAMESPACE, parseContentTypes, resolveContentType } from "../src/lib/content-types";
 import { getElementsByTagNameNSAll, parseXml } from "../src/lib/xml-helpers";
 import { SECURE_LONG_HEX_EXCLUSIVE_MAX } from "../src/lib/secure-id";
-import { addComment, generateHexId } from "../src/scripts/comment";
+import { addComment, generateHexId, runCommentFromArgv } from "../src/scripts/comment";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
@@ -349,6 +350,114 @@ describe("generateHexId", () => {
     it("returns a zero-padded 8-digit uppercase hex string", () => {
         vi.mocked(crypto.randomInt).mockImplementation(() => 1);
         expect(generateHexId()).toMatch(/^[0-9A-F]{8}$/);
+    });
+});
+
+/** The comment CLI's id rule: a canonical decimal integer, no leading zero, at most the safe integer. */
+const COMMENT_ID_CAP = Number.MAX_SAFE_INTEGER;
+
+function commentIdRefusal(label: "commentId" | "--parent", raw: string): string {
+    return `Error: ${label} must be a decimal integer from 0 to ${COMMENT_ID_CAP} without leading zeros (got ${raw})\n`;
+}
+
+/**
+ * Spellings the gate must refuse. `9007199254740993` rounds to the other
+ * safe-looking value; `1` and 21 zeros stringifies as `1e+21`; `01` collapses
+ * to `1`; `1` and 400 zeros is all digits and still not a safe integer.
+ */
+const NON_CANONICAL_COMMENT_IDS = [
+    "1x",
+    "1.5",
+    "2e3",
+    "+1",
+    "-1",
+    "",
+    " 1",
+    "01",
+    "00",
+    "9007199254740992",
+    "9007199254740993",
+    `1${"0".repeat(21)}`,
+    `1${"0".repeat(400)}`,
+];
+
+describe("runCommentFromArgv integration (#1203)", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it.each(NON_CANONICAL_COMMENT_IDS)("refuses commentId %j, changing nothing", async (raw) => {
+        await withTempDir(async (dir) => {
+            await makeFixture(dir);
+            const before = await readTree(dir);
+            const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+
+            const code = await runCommentFromArgv(["--author", "Test", "--initials", "T", "--", dir, raw, "Comment"]);
+
+            expect(code).toBe(1);
+            expect(stderr).toHaveBeenCalledExactlyOnceWith(commentIdRefusal("commentId", raw));
+            expect(stdout).not.toHaveBeenCalled();
+            expect(await readTree(dir)).toEqual(before);
+        });
+    });
+
+    it.each(NON_CANONICAL_COMMENT_IDS)("refuses --parent %j, changing nothing", async (raw) => {
+        await withTempDir(async (dir) => {
+            await makeFixture(dir);
+            for (const commentId of [1, 2]) {
+                const result = await addComment({ unpackedDir: dir, commentId, text: "Parent", author: "Test", initials: "T" });
+                expect(result.message).toMatch(/^Added comment /);
+            }
+            const before = await readTree(dir);
+            const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+
+            const code = await runCommentFromArgv([dir, "3", "Reply", "--author", "Test", "--initials", "T", `--parent=${raw}`]);
+
+            expect(code).toBe(1);
+            expect(stderr).toHaveBeenCalledExactlyOnceWith(commentIdRefusal("--parent", raw));
+            expect(stdout).not.toHaveBeenCalled();
+            expect(await readTree(dir)).toEqual(before);
+        });
+    });
+
+    it.each(["0", String(COMMENT_ID_CAP)])("accepts commentId %s and writes that exact w:id", async (raw) => {
+        await withTempDir(async (dir) => {
+            await makeFixture(dir);
+            vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+
+            const code = await runCommentFromArgv(["--author", "Test", "--initials", "T", "--", dir, raw, "Comment"]);
+
+            expect(code).toBe(0);
+            expect(stderr).not.toHaveBeenCalled();
+            const comments = await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8");
+            expect(comments).toContain(`w:id="${raw}"`);
+        });
+    });
+
+    it("accepts --parent at the safe-integer cap and nests the reply under that comment", async () => {
+        const parentId = String(COMMENT_ID_CAP);
+        await withTempDir(async (dir) => {
+            await makeFixture(dir);
+            vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+
+            const created = await runCommentFromArgv(["--author", "Test", "--initials", "T", "--", dir, parentId, "Parent"]);
+            expect(created).toBe(0);
+            const reply = await runCommentFromArgv([dir, "2", "Reply", "--author", "Test", "--initials", "T", `--parent=${parentId}`]);
+
+            expect(reply).toBe(0);
+            expect(stderr).not.toHaveBeenCalled();
+            const comments = await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8");
+            expect(comments).toContain(`w:id="${parentId}"`);
+            expect(comments).toContain(`w:id="2"`);
+            const extended = await fs.readFile(path.join(dir, "word", "commentsExtended.xml"), "utf-8");
+            const parentPara = parseXml(comments).getElementsByTagName("w:p").item(0)!.getAttribute("w14:paraId");
+            const replyEx = parseXml(extended).getElementsByTagName("w15:commentEx").item(1)!;
+            expect(replyEx.getAttribute("w15:paraIdParent")).toBe(parentPara);
+        });
     });
 });
 
@@ -3527,5 +3636,333 @@ describe("addComment", () => {
                 ),
             ).toEqual(["0"]);
         });
+    });
+});
+
+describe("addComment — coverage edges", () => {
+    it("refuses a reply with a parent when the package holds no comments yet", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            const before = await readTree(dir);
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "orphan reply",
+                parent: 99,
+                author: "Test",
+                initials: "T",
+            });
+            expect(result.paraId).toBe("");
+            expect(result.message).toBe("Error: Parent comment 99 not found");
+            expect(await readTree(dir)).toEqual(before);
+        });
+    });
+
+    it("numbers the new relationships past the largest rId, skipping non-numeric suffixes", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+            await fs.writeFile(
+                path.join(dir, "word", "_rels", "document.xml.rels"),
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                    `<Relationships xmlns="${PACKAGE_RELATIONSHIPS_NAMESPACE}">` +
+                    `<Relationship Id="rId9" Type="${STYLES_RELATIONSHIP_TYPE}" Target="styles.xml"/>` +
+                    `<Relationship Id="rIdABC" Type="${STYLES_RELATIONSHIP_TYPE}" Target="styles.xml"/>` +
+                    `<Relationship Id="rId2" Type="${STYLES_RELATIONSHIP_TYPE}" Target="styles.xml"/>` +
+                    `</Relationships>`,
+                "utf-8",
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "x",
+                author: "Test",
+                initials: "T",
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            const rows = relationshipRows(parseXml(await fs.readFile(path.join(dir, "word", "_rels", "document.xml.rels"), "utf-8")));
+            expect(rows.slice(3).map((row) => row[0])).toEqual(["rId10", "rId11", "rId12", "rId13"]);
+        });
+    });
+
+    it("adds the four relationships beside relationships without a Type or a Target attribute", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+            await fs.writeFile(
+                path.join(dir, "word", "_rels", "document.xml.rels"),
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                    `<Relationships xmlns="${PACKAGE_RELATIONSHIPS_NAMESPACE}">` +
+                    `<Relationship Id="rId1" Target="comments.xml"/>` +
+                    `<Relationship Id="rId2" Type="${COMMENTS_RELATIONSHIP_TYPE}"/>` +
+                    `</Relationships>`,
+                "utf-8",
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "x",
+                author: "Test",
+                initials: "T",
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            // Neither element relates word/comments.xml — one has no Type, the
+            // other's missing Target names no part — so the four are appended.
+            const rows = relationshipRows(parseXml(await fs.readFile(path.join(dir, "word", "_rels", "document.xml.rels"), "utf-8")));
+            expect(rows).toHaveLength(6);
+            expect(rows.slice(2).map((row) => row[2])).toEqual([
+                "comments.xml",
+                "commentsExtended.xml",
+                "commentsIds.xml",
+                "commentsExtensible.xml",
+            ]);
+        });
+    });
+
+    it("refuses when _rels/.rels holds an officeDocument-typed relationship without a Type attribute", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, packageRels('Target="word/document.xml"'), "word/document.xml");
+            const before = await readTree(dir);
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "x",
+                author: "Test",
+                initials: "T",
+            });
+            expect(result.paraId).toBe("");
+            expect(result.message).toBe(`Error: ${path.join(dir, "_rels", ".rels")} names no officeDocument relationship`);
+            expect(await readTree(dir)).toEqual(before);
+        });
+    });
+
+    it("leaves an Override without a PartName alone while correcting a mistyped created part", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.writeFile(
+                path.join(dir, "[Content_Types].xml"),
+                contentTypes(RELATIONSHIPS_TYPE, [
+                    `<Override PartName="/word/_rels/document.xml.rels" ContentType="application/xml"/>`,
+                    `<Override ContentType="application/xml"/>`,
+                    `<Override PartName="/word/document.xml" ContentType="${MAIN_DOCUMENT_CONTENT_TYPE}"/>`,
+                ]),
+                "utf-8",
+            );
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: "x",
+                author: "Test",
+                initials: "T",
+            });
+            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+
+            const dom = parseXml(await fs.readFile(path.join(dir, "[Content_Types].xml"), "utf-8"));
+            expect(overridesNaming(dom, "/word/_rels/document.xml.rels")).toEqual([["/word/_rels/document.xml.rels", RELATIONSHIPS_TYPE]]);
+            // The PartName-less Override is not the created part: unchanged.
+            expect(dom.getElementsByTagName("Override").item(1)!.getAttribute("ContentType")).toBe("application/xml");
+            expect(dom.getElementsByTagName("Override").item(1)!.hasAttribute("PartName")).toBe(false);
+        });
+    });
+
+    it("finds the parent paraId in a later paragraph when the first paragraph has none", async () => {
+        await withTempDir(async (dir) => {
+            await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+            await fs.writeFile(
+                path.join(dir, "word", "comments.xml"),
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                    `<w:comments xmlns:w="${WORD_MAIN_NAMESPACE}" xmlns:w14="${W14_NAMESPACE}">` +
+                    `<w:comment w:id="0" w:author="Test" w:date="2026-05-03T12:00:00Z" w:initials="T">` +
+                    `<w:p><w:r><w:t>first</w:t></w:r></w:p>` +
+                    `<w:p w14:paraId="AABB0011" w14:textId="77777777"><w:r><w:t>more</w:t></w:r></w:p>` +
+                    `</w:comment>` +
+                    `</w:comments>`,
+                "utf-8",
+            );
+
+            const reply = await addComment({
+                unpackedDir: dir,
+                commentId: 1,
+                text: "reply",
+                parent: 0,
+                author: "Reviewer",
+                initials: "R",
+            });
+            expect(reply.message).toMatch(/^Added reply 1 \(para_id=[0-9A-F]{8}\)$/);
+
+            const extDom = parseXml(await fs.readFile(path.join(dir, "word", "commentsExtended.xml"), "utf-8"));
+            const entries = getElementsByTagNameNSAll(extDom, W15_NAMESPACE, "commentEx");
+            expect(entries).toHaveLength(1);
+            expect(entries[0]!.getAttributeNS(W15_NAMESPACE, "paraIdParent")).toBe("AABB0011");
+        });
+    });
+});
+
+describe("runCommentFromArgv", () => {
+    const captured = () => {
+        const stdout: string[] = [];
+        const stderr: string[] = [];
+        const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => {
+            stdout.push(String(chunk));
+            return true;
+        });
+        const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation((chunk: unknown) => {
+            stderr.push(String(chunk));
+            return true;
+        });
+        return { stdout, stderr, restore: () => [stdoutSpy, stderrSpy].forEach((spy) => spy.mockRestore()) };
+    };
+
+    it("adds a comment and prints the marker instructions", async () => {
+        const { stdout, restore } = captured();
+        try {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+                const code = await runCommentFromArgv([dir, "0", "Hello world", "--author", "Test", "--initials", "T"]);
+                expect(code).toBe(0);
+                const dom = parseXml(await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8"));
+                const comments = getElementsByTagNameNSAll(dom, WORD_MAIN_NAMESPACE, "comment");
+                expect(comments).toHaveLength(1);
+                expect(comments[0]!.getAttributeNS(WORD_MAIN_NAMESPACE, "id")).toBe("0");
+                expect(comments[0]!.getAttributeNS(WORD_MAIN_NAMESPACE, "author")).toBe("Test");
+                expect(comments[0]!.getAttributeNS(WORD_MAIN_NAMESPACE, "initials")).toBe("T");
+                expect(getElementsByTagNameNSAll(comments[0]!, WORD_MAIN_NAMESPACE, "t").map((t) => t.textContent)).toEqual([
+                    "Hello world",
+                ]);
+            });
+            const out = stdout.join("");
+            expect(out).toContain("Added comment 0");
+            expect(out.match(/<w:(?:commentRangeStart|commentRangeEnd|commentReference) w:id="\d+"\/>/g)).toEqual([
+                '<w:commentRangeStart w:id="0"/>',
+                '<w:commentRangeEnd w:id="0"/>',
+                '<w:commentReference w:id="0"/>',
+            ]);
+        } finally {
+            restore();
+        }
+    });
+
+    it("adds a reply with --parent and prints the nested markers", async () => {
+        const { stdout, restore } = captured();
+        try {
+            await withTempDir(async (dir) => {
+                await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
+                expect(await runCommentFromArgv([dir, "0", "first", "--author", "Test", "--initials", "T"])).toBe(0);
+                stdout.length = 0;
+                const code = await runCommentFromArgv([dir, "1", "reply", "--author", "Reviewer", "--initials", "R", "--parent", "0"]);
+                expect(code).toBe(0);
+                const dom = parseXml(await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8"));
+                const comments = getElementsByTagNameNSAll(dom, WORD_MAIN_NAMESPACE, "comment");
+                expect(
+                    comments.map((comment) => ({
+                        id: comment.getAttributeNS(WORD_MAIN_NAMESPACE, "id"),
+                        author: comment.getAttributeNS(WORD_MAIN_NAMESPACE, "author"),
+                        initials: comment.getAttributeNS(WORD_MAIN_NAMESPACE, "initials"),
+                        text: getElementsByTagNameNSAll(comment, WORD_MAIN_NAMESPACE, "t").map((t) => t.textContent),
+                    })),
+                ).toEqual([
+                    { id: "0", author: "Test", initials: "T", text: ["first"] },
+                    { id: "1", author: "Reviewer", initials: "R", text: ["reply"] },
+                ]);
+            });
+            const out = stdout.join("");
+            expect(out).toContain("Added reply 1");
+            expect(out.match(/<w:(?:commentRangeStart|commentRangeEnd|commentReference) w:id="\d+"\/>/g)).toEqual([
+                '<w:commentRangeStart w:id="0"/>',
+                '<w:commentRangeStart w:id="1"/>',
+                '<w:commentRangeEnd w:id="1"/>',
+                '<w:commentRangeEnd w:id="0"/>',
+                '<w:commentReference w:id="0"/>',
+                '<w:commentReference w:id="1"/>',
+            ]);
+        } finally {
+            restore();
+        }
+    });
+
+    it("exits 1 when a required option is missing", async () => {
+        const { restore } = captured();
+        try {
+            const code = await runCommentFromArgv(["some-dir", "0", "text", "--initials", "T"]);
+            expect(code).toBe(1);
+        } finally {
+            restore();
+        }
+    });
+
+    it("exits 0 for --help", async () => {
+        const { restore } = captured();
+        try {
+            const code = await runCommentFromArgv(["--help"]);
+            expect(code).toBe(0);
+        } finally {
+            restore();
+        }
+    });
+
+    it("exits 1 when commentId is not an integer", async () => {
+        const { stderr, restore } = captured();
+        try {
+            const code = await runCommentFromArgv(["some-dir", "abc", "text", "--author", "T", "--initials", "T"]);
+            expect(code).toBe(1);
+            expect(stderr.join("")).toBe(
+                "Error: commentId must be a decimal integer from 0 to 9007199254740991 without leading zeros (got abc)\n",
+            );
+        } finally {
+            restore();
+        }
+    });
+
+    it("exits 1 when --parent is not an integer", async () => {
+        const { stderr, restore } = captured();
+        try {
+            const code = await runCommentFromArgv(["some-dir", "1", "text", "--author", "T", "--initials", "T", "--parent", "abc"]);
+            expect(code).toBe(1);
+            expect(stderr.join("")).toBe(
+                "Error: --parent must be a decimal integer from 0 to 9007199254740991 without leading zeros (got abc)\n",
+            );
+        } finally {
+            restore();
+        }
+    });
+
+    it("exits 1 and prints the addComment error message when the call fails", async () => {
+        const { stdout, restore } = captured();
+        try {
+            await withTempDir(async (dir) => {
+                const code = await runCommentFromArgv([dir, "0", "text", "--author", "T", "--initials", "T"]);
+                expect(code).toBe(1);
+            });
+            expect(stdout.join("")).toContain("Error: ");
+        } finally {
+            restore();
+        }
+    });
+});
+
+describe("comment.ts entry-point guard", () => {
+    it("runs the comment CLI when src/scripts/comment.ts is the process entry", async () => {
+        const argv = process.argv;
+        const commentPath = fileURLToPath(new URL("../src/scripts/comment.ts", import.meta.url));
+        const exit = vi.spyOn(process, "exit").mockImplementation((() => undefined) as never);
+        const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+        process.argv = [argv[0]!, commentPath, "--help"];
+        vi.resetModules();
+        try {
+            await import("../src/scripts/comment");
+            await vi.waitFor(() => expect(exit).toHaveBeenCalledWith(0));
+            expect(stdout).toHaveBeenCalled();
+        } finally {
+            process.argv = argv;
+            exit.mockRestore();
+            stdout.mockRestore();
+        }
     });
 });

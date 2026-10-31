@@ -21,7 +21,7 @@ import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
-import { inferAuthor, simplifyRedlines } from "../src/scripts/office/helpers/simplify-redlines";
+import { getTrackedChangeAuthorsFromPath, inferAuthor, simplifyRedlines } from "../src/scripts/office/helpers/simplify-redlines";
 
 const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
 
@@ -199,6 +199,121 @@ describe("simplifyRedlines", () => {
             expect(await simplifyRedlines(dir)).toEqual({ count: 1, message: "Simplified 1 tracked changes" });
         });
     });
+
+    it("leaves an undecodable main part untouched and reports zero tracked changes", async () => {
+        await withTempDir(async (dir) => {
+            const wordDir = path.join(dir, "word");
+            await fs.mkdir(wordDir, { recursive: true });
+            const docPath = path.join(wordDir, "document.xml");
+            const body =
+                "<w:body><w:p>" +
+                '<w:ins w:id="1" w:author="Alice"><w:r><w:t>foo</w:t></w:r></w:ins>' +
+                '<w:ins w:id="2" w:author="Alice"><w:r><w:t>bar</w:t></w:r></w:ins>' +
+                "</w:p></w:body>";
+            const stored = Buffer.from(`<?xml version="1.0" encoding="macintosh"?>\n<w:document ${W}>${body}</w:document>`, "latin1");
+            await fs.writeFile(docPath, stored);
+
+            expect(await simplifyRedlines(dir)).toEqual({ count: 0, message: "Simplified 0 tracked changes" });
+            expect((await fs.readFile(docPath)).equals(stored)).toBe(true);
+        });
+    });
+
+    it("returns an error message for a malformed main part", async () => {
+        await withTempDir(async (dir) => {
+            const docPath = await writeDoc(dir, "<w:body><w:p>");
+            const result = await simplifyRedlines(dir);
+            expect(result.count).toBe(0);
+            expect(result.message).toMatch(/^Error: /);
+            expect(await fs.readFile(docPath, "utf8")).toContain("<w:body><w:p>");
+        });
+    });
+
+    it("does not merge w:ins separated by non-whitespace text", async () => {
+        await withTempDir(async (dir) => {
+            const body =
+                "<w:body><w:p>" +
+                '<w:ins w:id="1" w:author="Alice"><w:r><w:t>foo</w:t></w:r></w:ins>' +
+                "stray" +
+                '<w:ins w:id="2" w:author="Alice"><w:r><w:t>bar</w:t></w:r></w:ins>' +
+                "</w:p></w:body>";
+            const docPath = await writeDoc(dir, body);
+
+            const result = await simplifyRedlines(dir);
+            expect(result.count).toBe(0);
+            const after = await fs.readFile(docPath, "utf8");
+            expect((after.match(/<w:ins[ >]/g) ?? []).length).toBe(2);
+        });
+    });
+
+    it("merges w:ins separated by whitespace-only text", async () => {
+        await withTempDir(async (dir) => {
+            const body =
+                "<w:body><w:p>" +
+                '<w:ins w:id="1" w:author="Alice"><w:r><w:t>foo</w:t></w:r></w:ins>' +
+                "\n      " +
+                '<w:ins w:id="2" w:author="Alice"><w:r><w:t>bar</w:t></w:r></w:ins>' +
+                "</w:p></w:body>";
+            const docPath = await writeDoc(dir, body);
+
+            const result = await simplifyRedlines(dir);
+            expect(result.count).toBe(1);
+            const after = await fs.readFile(docPath, "utf8");
+            expect((after.match(/<w:ins[ >]/g) ?? []).length).toBe(1);
+            expect(after).toContain('<w:ins w:id="1" w:author="Alice"><w:r><w:t>foo</w:t></w:r><w:r><w:t>bar</w:t></w:r></w:ins>');
+        });
+    });
+
+    it("does not merge a w:ins that carries no author attribute", async () => {
+        await withTempDir(async (dir) => {
+            const body =
+                "<w:body><w:p>" +
+                '<w:ins w:id="1"><w:r><w:t>foo</w:t></w:r></w:ins>' +
+                '<w:ins w:id="2" w:author="Alice"><w:r><w:t>bar</w:t></w:r></w:ins>' +
+                "</w:p></w:body>";
+            const docPath = await writeDoc(dir, body);
+
+            const result = await simplifyRedlines(dir);
+            expect(result.count).toBe(0);
+            const after = await fs.readFile(docPath, "utf8");
+            expect((after.match(/<w:ins[ >]/g) ?? []).length).toBe(2);
+        });
+    });
+
+    it("merges tracked changes written in the default Word namespace", async () => {
+        await withTempDir(async (dir) => {
+            const defaultW = 'xmlns="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+            const body =
+                "<w:body><w:p>" +
+                `<ins ${defaultW} author="Alice"><w:r><w:t>foo</w:t></w:r></ins>` +
+                `<ins ${defaultW} author="Alice"><w:r><w:t>bar</w:t></w:r></ins>` +
+                "</w:p></w:body>";
+            const docPath = await writeDoc(dir, body);
+
+            const result = await simplifyRedlines(dir);
+            expect(result.count).toBe(1);
+            const after = await fs.readFile(docPath, "utf8");
+            expect((after.match(/<ins[ >]/g) ?? []).length).toBe(1);
+            expect(after).toMatch(/foo/);
+            expect(after).toMatch(/bar/);
+        });
+    });
+
+    it("does not merge default-namespace tracked changes from different authors", async () => {
+        await withTempDir(async (dir) => {
+            const defaultW = 'xmlns="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+            const body =
+                "<w:body><w:p>" +
+                `<ins ${defaultW} author="Alice"><w:r><w:t>foo</w:t></w:r></ins>` +
+                `<ins ${defaultW} author="Bob"><w:r><w:t>bar</w:t></w:r></ins>` +
+                "</w:p></w:body>";
+            const docPath = await writeDoc(dir, body);
+
+            const result = await simplifyRedlines(dir);
+            expect(result.count).toBe(0);
+            const after = await fs.readFile(docPath, "utf8");
+            expect((after.match(/<ins[ >]/g) ?? []).length).toBe(2);
+        });
+    });
 });
 
 describe("inferAuthor", () => {
@@ -257,6 +372,118 @@ describe("inferAuthor", () => {
             await writeDoc(dir, body);
 
             await expect(inferAuthor(dir, docxPath, "Ritapolis")).rejects.toThrow(/Multiple authors/);
+        });
+    });
+
+    it("infers from the modified document alone when the original docx is missing", async () => {
+        await withTempDir(async (dir) => {
+            const body = "<w:body><w:p>" + '<w:ins w:id="1" w:author="Mallory"><w:r><w:t>new</w:t></w:r></w:ins>' + "</w:p></w:body>";
+            await writeDoc(dir, body);
+
+            expect(await inferAuthor(dir, path.join(dir, "missing.docx"), "Ritapolis")).toBe("Mallory");
+        });
+    });
+
+    it("infers from the modified document alone when the original docx is not a zip", async () => {
+        await withTempDir(async (dir) => {
+            const docxPath = path.join(dir, "garbage.docx");
+            await fs.writeFile(docxPath, Buffer.from("not a zip archive", "utf8"));
+            await writeDoc(
+                dir,
+                "<w:body><w:p>" + '<w:ins w:id="1" w:author="Mallory"><w:r><w:t>new</w:t></w:r></w:ins>' + "</w:p></w:body>",
+            );
+
+            expect(await inferAuthor(dir, docxPath, "Ritapolis")).toBe("Mallory");
+        });
+    });
+
+    it("infers from the modified document alone when the original docx carries no word/document.xml", async () => {
+        await withTempDir(async (dir) => {
+            const zip = new JSZip();
+            zip.file(
+                "[Content_Types].xml",
+                '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>',
+            );
+            const docxPath = path.join(dir, "empty.docx");
+            await fs.writeFile(docxPath, await zip.generateAsync({ type: "nodebuffer" }));
+            await writeDoc(
+                dir,
+                "<w:body><w:p>" + '<w:ins w:id="1" w:author="Mallory"><w:r><w:t>new</w:t></w:r></w:ins>' + "</w:p></w:body>",
+            );
+
+            expect(await inferAuthor(dir, docxPath, "Ritapolis")).toBe("Mallory");
+        });
+    });
+
+    it("infers from the modified document alone when the original document part is undecodable", async () => {
+        await withTempDir(async (dir) => {
+            const zip = new JSZip();
+            zip.file(
+                "word/document.xml",
+                Buffer.from(
+                    `<?xml version="1.0" encoding="macintosh"?>\n<w:document ${W}><w:body><w:p>` +
+                        '<w:ins w:id="1" w:author="Mallory"><w:r><w:t>old</w:t></w:r></w:ins>' +
+                        "</w:p></w:body></w:document>",
+                    "latin1",
+                ),
+            );
+            const docxPath = path.join(dir, "macintosh.docx");
+            await fs.writeFile(docxPath, await zip.generateAsync({ type: "nodebuffer" }));
+            await writeDoc(
+                dir,
+                "<w:body><w:p>" + '<w:ins w:id="1" w:author="Mallory"><w:r><w:t>new</w:t></w:r></w:ins>' + "</w:p></w:body>",
+            );
+
+            expect(await inferAuthor(dir, docxPath, "Ritapolis")).toBe("Mallory");
+        });
+    });
+});
+
+describe("getTrackedChangeAuthorsFromPath", () => {
+    it("returns an empty map for a missing file", async () => {
+        await withTempDir(async (dir) => {
+            expect(await getTrackedChangeAuthorsFromPath(path.join(dir, "word", "document.xml"))).toEqual(new Map());
+        });
+    });
+
+    it("returns an empty map for a part whose encoding it cannot decode", async () => {
+        await withTempDir(async (dir) => {
+            const wordDir = path.join(dir, "word");
+            await fs.mkdir(wordDir, { recursive: true });
+            const docPath = path.join(wordDir, "document.xml");
+            await fs.writeFile(
+                docPath,
+                Buffer.from(
+                    `<?xml version="1.0" encoding="macintosh"?>\n<w:document ${W}><w:body><w:p>` +
+                        '<w:ins w:id="1" w:author="Alice"><w:r><w:t>new</w:t></w:r></w:ins>' +
+                        "</w:p></w:body></w:document>",
+                    "latin1",
+                ),
+            );
+            expect(await getTrackedChangeAuthorsFromPath(docPath)).toEqual(new Map());
+        });
+    });
+
+    it("returns an empty map for a malformed part", async () => {
+        await withTempDir(async (dir) => {
+            const wordDir = path.join(dir, "word");
+            await fs.mkdir(wordDir, { recursive: true });
+            const docPath = path.join(wordDir, "document.xml");
+            await fs.writeFile(docPath, `<?xml version="1.0"?>\n<w:document ${W}><w:body>`, "utf8");
+            expect(await getTrackedChangeAuthorsFromPath(docPath)).toEqual(new Map());
+        });
+    });
+
+    it("skips tracked changes with no author attribute and counts w:del authors", async () => {
+        await withTempDir(async (dir) => {
+            const docPath = await writeDoc(
+                dir,
+                "<w:body><w:p>" +
+                    '<w:ins w:id="1"><w:r><w:t>anon</w:t></w:r></w:ins>' +
+                    '<w:del w:id="2" w:author="Dana"><w:r><w:delText>gone</w:delText></w:r></w:del>' +
+                    "</w:p></w:body>",
+            );
+            expect(await getTrackedChangeAuthorsFromPath(docPath)).toEqual(new Map([["Dana", 1]]));
         });
     });
 });

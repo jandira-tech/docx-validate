@@ -37,6 +37,9 @@ import type { ValidationIssue } from "./types";
 export const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
 export const CT_DUPLICATE_DECLARATION = "ct-duplicate-declaration";
 
+/** Convert a filesystem-relative path to a part name, preserving literal backslashes on POSIX (#1183). */
+export const partNameFromRelative = (relative: string, sep: string = path.sep): string => relative.split(sep).join("/");
+
 /**
  * The content-types stream is a ZIP item, not an OPC part. Match its ASCII
  * spelling without percent-decoding, as System.IO.Packaging does (#396).

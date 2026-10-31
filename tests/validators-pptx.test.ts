@@ -1305,7 +1305,81 @@ describe("a slide master's relationships part stored under an equivalent spellin
     });
 });
 
+describe("PPTX-specific checks when a part cannot be parsed", () => {
+    it("validateUuidIds reports uuid-parse for malformed XML", async () => {
+        await withTempDir(async (dir) => {
+            await writeFile(path.join(dir, "ppt", "slides", "slide1.xml"), "<p:unclosed");
+            const result = await makeValidator(dir).validateUuidIds();
+            expect(result.valid).toBe(false);
+            expect(result.issues).toContainEqual(
+                expect.objectContaining({ code: "uuid-parse", path: "ppt/slides/slide1.xml", severity: "error" }),
+            );
+        });
+    });
+
+    it("validateUuidIds ignores attributes whose local name does not end in id", async () => {
+        await withTempDir(async (dir) => {
+            const badUuid = "1234567890abcdefGHIJKLMNOpqrstuv";
+            await writeFile(path.join(dir, "ppt", "slides", "slide1.xml"), presentationXml(`<p:custom title="${badUuid}"/>`));
+            expect(await makeValidator(dir).validateUuidIds()).toEqual({ valid: true, issues: [] });
+        });
+    });
+
+    it("validateSlideLayoutIds reports sldlayout-parse and sldlayout-rels-parse", async () => {
+        await withTempDir(async (dir) => {
+            await writeFile(path.join(dir, "ppt", "slideMasters", "slideMaster1.xml"), "<p:broken");
+            await writeFile(path.join(dir, "ppt", "slideMasters", "_rels", "slideMaster1.xml.rels"), "<Relationships");
+            const parseMaster = await makeValidator(dir).validateSlideLayoutIds();
+            expect(parseMaster.issues).toContainEqual(
+                expect.objectContaining({ code: "sldlayout-parse", path: "ppt/slideMasters/slideMaster1.xml" }),
+            );
+            await writeFile(
+                path.join(dir, "ppt", "slideMasters", "slideMaster1.xml"),
+                presentationXml('<p:sldLayoutIdLst><p:sldLayoutId id="1" r:id="rId1"/></p:sldLayoutIdLst>'),
+            );
+            const parseRels = await makeValidator(dir).validateSlideLayoutIds();
+            expect(parseRels.issues).toContainEqual(
+                expect.objectContaining({ code: "sldlayout-rels-parse", path: "ppt/slideMasters/slideMaster1.xml" }),
+            );
+        });
+    });
+
+    it("validateNoDuplicateSlideLayouts reports slide-rels-parse", async () => {
+        await withTempDir(async (dir) => {
+            await writeFile(path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"), "<Relationships");
+            const result = await makeValidator(dir).validateNoDuplicateSlideLayouts();
+            expect(result.issues).toContainEqual(
+                expect.objectContaining({ code: "slide-rels-parse", path: "ppt/slides/_rels/slide1.xml.rels" }),
+            );
+        });
+    });
+
+    it("validateNotesSlideReferences reports notes-rels-parse and skips notesSlide relationships with no Target", async () => {
+        await withTempDir(async (dir) => {
+            await writeFile(path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"), "<Relationships");
+            expect((await makeValidator(dir).validateNotesSlideReferences()).issues).toContainEqual(
+                expect.objectContaining({ code: "notes-rels-parse", path: "ppt/slides/_rels/slide1.xml.rels" }),
+            );
+            // Two Target-less sidecars stay valid only when both are skipped.
+            // Storing one stand-in target for each counts them as one shared
+            // notes part and reports notes-shared.
+            await writeFile(
+                path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"),
+                relsXml(`<Relationship Id="rId1" Type="${R_NS}/notesSlide"/>`),
+            );
+            await writeFile(
+                path.join(dir, "ppt", "slides", "_rels", "slide2.xml.rels"),
+                relsXml(`<Relationship Id="rId2" Type="${R_NS}/notesSlide"/>`),
+            );
+            expect(await makeValidator(dir).validateNotesSlideReferences()).toEqual({ valid: true, issues: [] });
+        });
+    });
+});
+
 describe("PPTXSchemaValidator.validate", () => {
+    const CT_STREAM = "[Content_Types].xml";
+    const CT_DUP = '<Default Extension="xml" ContentType="application/xml"/>';
+
     it("aggregates validate_xml failure and short-circuits the suite", async () => {
         await withTempDir(async (dir) => {
             // Malformed XML so the first check (validateXml) fails immediately.
@@ -1315,6 +1389,39 @@ describe("PPTXSchemaValidator.validate", () => {
             const result = await makeValidator(dir).validate();
             expect(result.valid).toBe(false);
             expect(result.issues.some((i) => i.code === "xml-syntax")).toBe(true);
+        });
+    });
+
+    it.skipIf(process.platform === "win32")("reports package-extract-failed when the directory package view is refused", async () => {
+        await withTempDir(async (dir) => {
+            const root = path.join(dir, "input.pptx");
+            for (const [name, content] of Object.entries(MINIMAL_PPTX_PARTS)) {
+                await writeFile(path.join(root, name), content);
+            }
+            const stored = "ppt\\a\\..\\x.xml";
+            await writeFile(path.join(root, stored), "<x");
+            const result = await makeValidator(root).validate();
+            expect(result.valid).toBe(false);
+            expect(result.issues).toContainEqual(expect.objectContaining({ code: "package-extract-failed", severity: "error" }));
+        });
+    });
+
+    it("lenient stops at malformed XML while word-valid still judges the content-types stream (#456)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PPTX_PARTS,
+                [CT_STREAM]: MINIMAL_PPTX_PARTS[CT_STREAM]!.replace("</Types>", `${CT_DUP}</Types>`),
+                "junk.xml": "<broken",
+            };
+            for (const [name, content] of Object.entries(parts)) {
+                await writeFile(path.join(dir, name), content);
+            }
+            const lenient = await new PPTXSchemaValidator({ unpackedDir: dir, profile: "lenient" }).validate();
+            const wordValid = await new PPTXSchemaValidator({ unpackedDir: dir, profile: "word-valid" }).validate();
+            expect(lenient.issues.some((issue) => issue.code === "xml-syntax")).toBe(true);
+            expect(lenient.issues.some((issue) => issue.code === "ct-duplicate-declaration")).toBe(false);
+            expect(wordValid.issues.some((issue) => issue.code === "ct-duplicate-declaration")).toBe(true);
+            expect(wordValid.issues.some((issue) => issue.code === "xml-syntax")).toBe(true);
         });
     });
 

@@ -32,6 +32,7 @@ import path from "node:path";
 import { Command } from "commander";
 import JSZip from "jszip";
 
+import { isRelationshipsFolderName } from "../../lib/content-types";
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
 import type { ValidationIssue, ValidationResult } from "../../lib/types";
 import { readXmlPart, writeXmlPart, type DecodedXmlPart } from "../../lib/xml-part-io";
@@ -106,6 +107,11 @@ export async function pack(inputDirectory: string, outputFile: string, opts: Pac
         };
     }
 
+    const symbolicLink = await findSymbolicLink(inputDir);
+    if (symbolicLink) {
+        return symbolicLinkRefusal(inputDir, symbolicLink);
+    }
+
     let validationLog: string | undefined;
 
     if (validate) {
@@ -144,9 +150,14 @@ export async function pack(inputDirectory: string, outputFile: string, opts: Pac
         }
     }
 
-    await withTempDir(async (tempDir) => {
+    const stagingRefusal = await withTempDir(async (tempDir): Promise<PackResult | undefined> => {
         const tempContentDir = path.join(tempDir, "content");
-        await copyDir(inputDir, tempContentDir);
+        // A link added after the preflight scan is refused here too, never
+        // staged and then left out of the archive (codex on #1200).
+        const stagedLink = await copyDir(inputDir, tempContentDir);
+        if (stagedLink) {
+            return symbolicLinkRefusal(inputDir, stagedLink);
+        }
 
         const xmlFiles = await collectXmlFiles(tempContentDir);
         for (const xmlFile of xmlFiles) {
@@ -167,7 +178,11 @@ export async function pack(inputDirectory: string, outputFile: string, opts: Pac
             compression: "DEFLATE",
         });
         await fs.writeFile(outputPath, buf);
+        return undefined;
     });
+    if (stagingRefusal) {
+        return stagingRefusal;
+    }
 
     return {
         ok: true,
@@ -256,21 +271,47 @@ async function runValidation(
     return { success, log: lines.length > 0 ? lines.join("\n") : undefined, issues };
 }
 
-async function copyDir(src: string, dest: string): Promise<void> {
+async function findSymbolicLink(dir: string): Promise<string | undefined> {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    for (const entry of entries) {
+        const full = path.join(dir, entry.name);
+        if (entry.isSymbolicLink()) {
+            return full;
+        }
+        if (entry.isDirectory()) {
+            const found = await findSymbolicLink(full);
+            if (found) return found;
+        }
+    }
+    return undefined;
+}
+
+function symbolicLinkRefusal(inputDir: string, link: string): PackResult {
+    const relativePath = path.relative(inputDir, link).split(path.sep).join("/");
+    return {
+        ok: false,
+        message: `Error: ${relativePath} is a symbolic link`,
+    };
+}
+
+/** Copies `src` into `dest`, stopping at the first symbolic link, which it returns uncopied. */
+async function copyDir(src: string, dest: string): Promise<string | undefined> {
     await fs.mkdir(dest, { recursive: true });
     const entries = await fs.readdir(src, { withFileTypes: true });
     for (const entry of entries) {
         const from = path.join(src, entry.name);
         const to = path.join(dest, entry.name);
+        if (entry.isSymbolicLink()) {
+            return from;
+        }
         if (entry.isDirectory()) {
-            await copyDir(from, to);
+            const link = await copyDir(from, to);
+            if (link) return link;
         } else if (entry.isFile()) {
             await fs.copyFile(from, to);
-        } else if (entry.isSymbolicLink()) {
-            const target = await fs.readlink(from);
-            await fs.symlink(target, to);
         }
     }
+    return undefined;
 }
 
 async function collectXmlFiles(root: string): Promise<string[]> {
@@ -282,8 +323,8 @@ async function collectXmlFiles(root: string): Promise<string[]> {
             if (entry.isDirectory()) {
                 await walk(full);
             } else if (entry.isFile()) {
-                const ext = path.extname(entry.name).toLowerCase();
-                if (ext === ".xml" || ext === ".rels") {
+                const name = entry.name.toLowerCase();
+                if (name.endsWith(".xml") || (name.endsWith(".rels") && isRelationshipsFolderName(path.basename(dir)))) {
                     out.push(full);
                 }
             }

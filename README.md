@@ -119,6 +119,8 @@ pnpm exec tsx src/scripts/accept-changes.ts <path>
 pnpm exec tsx src/scripts/comment.ts <path>
 ```
 
+The comment CLI's `commentId` and `--parent` values must be canonical decimal integers from 0 to 9007199254740991 (`Number.MAX_SAFE_INTEGER`) with no leading zeros. `0` is accepted; `01`, a sign, whitespace, and any larger integer are refused.
+
 ## Programmatic use
 
 The validator and packaged document helpers are available as plain function/class
@@ -361,12 +363,24 @@ relative target that merely starts with `http` resolves as a part: Word refused 
 folder target
 ([#988](https://github.com/jandira-tech/docx-validate/issues/988)).
 Any other scheme (`ftp:`, `httpfoo:`) makes the target an absolute URI that names
-no part, reported as `rels-broken`: Word offered recovery for a used header and the
-styles part related through one, beside the well-formed stored `word/ftp:…` part
-(Word probes session 87), so the styles type and a used header block word-valid
-in a story root's sidecar, and every unprobed placement (an unused header, the
-package relationships part, another type) keeps a warning
-([#1127](https://github.com/jandira-tech/docx-validate/issues/1127)).
+no part, reported as `rels-broken`. It blocks word-valid in every relationships
+part, whatever the relationship type: Word refused it in each one shown.
+Word offered recovery for a used header and the styles part related through one,
+beside the well-formed stored `word/ftp:…` part (Word probes session 87,
+[#1127](https://github.com/jandira-tech/docx-validate/issues/1127)), and for an
+unused header, a `_rels/.rels` styles relationship, an unused image, and the main
+document's settings, numbering, comments, footnotes and a used and an unused
+footer (session 88,
+[#1178](https://github.com/jandira-tech/docx-validate/issues/1178)). Session 89
+repeated the refusal in `_rels/.rels` for the core, extended and custom properties
+(s89a), in a used header's own sidecar for an `ftp:` image it embeds and one it
+does not use (s89b), and for an unused `ftp:` image in a used footer's, an unused
+header's, the styles part's and an unreferenced part's own sidecar (s89c). Two
+runs each, all four readings agree; each plain target opened clean
+([#1184](https://github.com/jandira-tech/docx-validate/issues/1184)). Only the
+scheme arm extends to every relationships part; the folder, OPC-relationships
+and `customXml` arms keep their narrower scope in `_rels/.rels` or a story root's
+own sidecar ([#987](https://github.com/jandira-tech/docx-validate/issues/987)).
 They read the scheme ASCII case-insensitively, as RFC 3986 does, so an `HTTP:` or
 `MAILTO:` target is skipped as its lowercase spelling is, where it used to be
 resolved as a part; lenient's scan stays case-sensitive. Word has been shown
@@ -672,14 +686,14 @@ names and input bytes unchanged.
 | `package`                 | `zip-bytes-after-eocd`, `zip-bytes-before-archive`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, `opc-part-name-word-refused`, `opc-item-name-refused`                                                                                                                                                                                                                                                                                              |
 | `math`, `tracked-changes` | `word-math-run-insertion`, `word-math-run-deletion`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `math`                    | `word-math-parse`, `word-math-spre-body`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-endnote-reference-missing`, `word-shared-story-part`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`                                                                                                                            |
+| `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-endnote-reference-missing`, `word-shared-story-part`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`, `word-field-unbalanced`                                                                                                   |
 | `tables`                  | `word-grid-column-attributes`, `word-cell-margin-order`, `word-table-properties-required`, `word-table-properties-misplaced`, `word-row-without-cell`, `word-cell-ends-with-table`                                                                                                                                                                                                                                                                                                                                                 |
 | `drawings`                | `word-textbox-content-namespace`, `word-drawing-extent-missing`, `word-drawing-extent-misplaced`, `word-picture-nvpicpr-missing`, `word-picture-sppr-missing`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-position-offset-and-align`, `word-drawing-scalar-whitespace`, `word-drawing-arc-radius`, `word-drawing-extent-negative`, `word-part-reference-relationship`                                                                                                                                            |
-| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`, `word-part-content-type-generic`, `word-part-content-type-inexact`, `word-part-content-type-mismatch`, `word-part-content-type-unrecognized`                                                                                                                                                                                                                              |
+| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`, `word-part-content-type-generic`, `word-part-content-type-inexact`, `word-part-content-type-mismatch`, `word-part-content-type-unrecognized`, `word-package-thumbnail-type`, `ct-stale-override`                                                                                                                                                                          |
 | `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-duplicate-styles-relationship`, `word-duplicate-numbering-relationship`, `word-duplicate-endnotes-relationship`, `word-duplicate-footnotes-relationship`, `word-hyperlink-relationship`, `word-header-footer-relationship`, `word-main-document-part`, `opc-relationships-structure`, `opc-relationships-target-mode`, `word-part-reference-relationship` |
-| `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`, `word-move-range-unpaired`                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `settings`                | `word-custom-property-filetime-empty`, `word-attached-toolbar-relationship`, `word-attached-toolbar-utf8`                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `xml`                     | `word-markup-compatibility`, `word-document-root`, `word-choice-requires-undeclared`                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `xml`                     | `word-markup-compatibility`, `word-document-root`, `word-choice-requires-undeclared`, `xml-package-markup-compatibility`                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `comments`                | `comment-markers`, `comment-threading`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `schema`                  | `word-unknown-element`, `word-link-without-namespace`                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
@@ -1188,6 +1202,17 @@ and stays unreported. An `invalid-*` declared value stays with
 finding is reported per part, and when several relationship types reach it
 the observed reach names the finding whenever it exists. Full, quick and
 named runs agree.
+
+`word-package-thumbnail-type` reports one error per internal package thumbnail
+relationship in `_rels/.rels` whose stored target resolves to `image/png`, using
+Override precedence over Default and case-insensitive type/subtype comparison.
+It blocks word-valid and strict and runs in quick and named selections; lenient
+runs no such rule. Word 16.115 offered recovery for 1×1 and 96×96 PNG thumbnails
+and opened 96×96 JPEG thumbnails clean with either declaration (Word probes
+sessions 89 and 90, [#1186](https://github.com/jandira-tech/docx-validate/issues/1186)).
+The recovery sentence is omitted in packages containing an ISO Strict part.
+Other image types, parameterized types, External relationships, absent targets,
+unrelated PNG parts and thumbnails related from other parts are not judged.
 
 The `schema` group contains structural checks, not an XSD walk. The `comments`
 group runs `comment-markers` (range pairing and references to existing comments)
@@ -2046,8 +2071,10 @@ share that identity, severity and count. Descendant-only findings keep
 `mce-unbound-prefix` ([#499](https://github.com/jandira-tech/docx-validate/issues/499)).
 
 Strict bundles both Transitional and ISO Strict schema trees, with local Dublin
-Core imports. Strict does not subtract errors shared with `original` or suppress
-messages in `IGNORED_VALIDATION_ERRORS`; only lenient retains those XSD behaviors.
+Core imports. Strict does not subtract errors shared with `original`; only
+lenient retains that XSD behavior. No profile suppresses schema messages by their
+text: `IGNORED_VALIDATION_ERRORS` is empty
+([#1209](https://github.com/jandira-tech/docx-validate/issues/1209)).
 Strict preserves each schema error occurrence and available engine line. If
 preprocessing changes the view, the message marks the line as referring to the
 preprocessed view. Schema-load failures remain blocking `xsd-schema-load-failed`
@@ -2138,6 +2165,8 @@ await unpack("./contract.docx", "./unpacked");
 // (your edits go here)
 await pack("./unpacked", "./contract.modified.docx");
 ```
+
+`pack` refuses symbolic links to files or directories inside the input directory, returning `{ ok: false, message }` with the link's relative path using `/` separators and writing no output file (#1199).
 
 `unpack` checks every entry before it writes one (#675). It refuses, writing
 nothing, an entry whose stored name leaves the output directory, even one JSZip

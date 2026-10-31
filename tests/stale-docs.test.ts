@@ -85,6 +85,17 @@ describe("the ValidateOptions.profile doc comment (#321)", () => {
     });
 });
 
+describe("the xsd-validator load-failure comment (#1209)", () => {
+    const source = readFileSync(path.join(SRC, "lib", "xsd-validator.ts"), "utf-8");
+
+    it("says opc-coreProperties.xsd imports the bundled dublincore copies", () => {
+        // The remote import is gone. The comment must not still say that
+        // import is string-filtered by IGNORED_VALIDATION_ERRORS.
+        expect(source).not.toMatch(/string-filtered/);
+        expect(source).toMatch(/dublincore/);
+    });
+});
+
 describe("the base.ts schema comments (#321)", () => {
     const source = readFileSync(path.join(SRC, "scripts", "office", "validators", "base.ts"), "utf-8");
 

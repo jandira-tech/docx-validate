@@ -294,11 +294,11 @@ const buildWasmValidator = async (): Promise<XsdValidator> => {
             validator = await loadValidator(schemaPath);
         } catch (loadErr) {
             // Load failures are errors, not info: a validator must not claim
-            // a document is valid against a schema it could not load. The
-            // known-noisy bundled case (opc-coreProperties.xsd's remote
-            // Dublin Core import) is string-filtered one layer up in
-            // `validators/base.ts` (IGNORED_VALIDATION_ERRORS), mirroring the
-            // Python original's message-based suppression.
+            // a document is valid against a schema it could not load.
+            // opc-coreProperties.xsd imports the bundled dublincore copies
+            // (schemas/dublincore/). IGNORED_VALIDATION_ERRORS in
+            // validators/base.ts is empty, so a load failure is reported
+            // here and is never suppressed (#1209).
             const message = loadErr instanceof Error ? loadErr.message : String(loadErr);
             return [
                 {

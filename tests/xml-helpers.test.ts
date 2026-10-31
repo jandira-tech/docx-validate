@@ -11,9 +11,13 @@ import {
     encodeXmlPart,
     getElementsByTagNameAll,
     getElementsByTagNameNSAll,
+    getLineNumber,
+    getLocalName,
+    makeSelect,
     parseXml,
     parseXmlBytes,
     prettyXml,
+    serializeXml,
     xmlDeclarationEncoding,
 } from "../src/lib/xml-helpers";
 
@@ -45,6 +49,24 @@ describe("xml-helpers element collectors", () => {
         const dom = parseXml(DOC);
         const ps = getElementsByTagNameNSAll(dom, "urn:a", "p");
         expect(ps.map((p) => p.textContent)).toEqual(["one", "tworun"]);
+    });
+
+    it("walks when the document's mutation counter is not a number", () => {
+        const dom = parseXml(DOC);
+        // A stable non-number: xmldom still updates the tree, and two queries would otherwise cache the old one.
+        Object.defineProperty(dom, "_inc", {
+            get: () => "opaque",
+            set: () => undefined,
+            configurable: true,
+        });
+        const texts = () => getElementsByTagNameNSAll(dom, "urn:a", "p").map((p) => p.textContent);
+        expect(texts()).toEqual(["one", "tworun"]);
+        expect(texts()).toEqual(["one", "tworun"]);
+        const body = dom.getElementsByTagName("pkga:body")[0]!;
+        const added = dom.createElementNS("urn:a", "pkga:p");
+        added.appendChild(dom.createTextNode("three"));
+        body.appendChild(added);
+        expect(texts()).toEqual(["one", "tworun", "three"]);
     });
 
     it("root semantics mirror the native API: documentElement included for a Document root, self excluded for an Element root", () => {
@@ -357,16 +379,151 @@ describe("decodeXmlPart / encodeXmlPart", () => {
         expect(xmlDeclarationEncoding({ encoding: "utf-16le" })).toBe("UTF-16LE");
         expect(xmlDeclarationEncoding({ encoding: "utf-16be" })).toBe("UTF-16BE");
     });
+
+    it("writes a BOM-less UTF-16 part without a byte order mark", () => {
+        const bytes = encodeXmlPart("<a/>", { encoding: "utf-16le" });
+        expect([...bytes.subarray(0, 4)]).toEqual([0x3c, 0x00, 0x61, 0x00]);
+    });
+
+    it("reads a declaration that never closes as the whole head", () => {
+        const open = `<?xml version="1.0" encoding="UTF-8"`;
+        expect(decodeXmlPart(utf8(open))).toEqual({ text: open, encoding: "utf-8" });
+        expect(decodeXmlPart(utf8(`<?xml version="1.0" encoding="macintosh"`))).toBeUndefined();
+    });
 });
 
 describe("prettyXml", () => {
+    /** Text nodes in document order, including whitespace-only nodes. */
+    const textNodes = (node: Node): string[] => {
+        if (node.nodeType === 3 || node.nodeType === 4) return [node.nodeValue ?? ""];
+        return Array.from(node.childNodes).flatMap(textNodes);
+    };
+
+    it.each([" <!--c--> ", " <x/> ", "<!--c-->", "<?mark a > b?>"])(
+        "preserves text nodes beside markup in xml:space=preserve (#1219): %s",
+        (content) => {
+            const xml = `<w:t xmlns:w="urn:word" xml:space="preserve">${content}</w:t>`;
+            const before = parseXml(xml);
+            const pretty = prettyXml(before);
+            expect(textNodes(parseXml(pretty).documentElement)).toEqual(textNodes(before.documentElement));
+            expect(pretty).toBe(xml);
+        },
+    );
+
+    it.each(["t", "w:t", "a:t", "other:delText", "instrText", "other:delInstrText"])(
+        "preserves text-bearing local names without xml:space (#1219): %s",
+        (name) => {
+            const xml = `<${name} xmlns:w="urn:word" xmlns:a="urn:drawing" xmlns:other="urn:other"> <!--c--><?mark a > b?><x/> </${name}>`;
+            const before = parseXml(xml);
+            const pretty = prettyXml(before);
+            expect(textNodes(parseXml(pretty).documentElement)).toEqual(textNodes(before.documentElement));
+            expect(pretty).toBe(xml);
+        },
+    );
+
+    it.each(["\u00a0<!--c-->", "<!--c-->\u00a0", "&#160;<!--c-->", "\u2003<x/>", " \t\n\r"])(
+        "uses XML whitespace when preserving direct text (#1219): %j",
+        (content) => {
+            const before = parseXml(`<r>${content}</r>`);
+            const pretty = prettyXml(before);
+            expect(textNodes(parseXml(pretty).documentElement)).toEqual(textNodes(before.documentElement));
+            expect(pretty).toBe(xmlHelpers.serializeXml(before));
+        },
+    );
+
+    it("inherits xml:space when printing a subtree (#1219)", () => {
+        const before = parseXml('<r xml:space="preserve"><wrap><target> <!--c--><x/> </target></wrap></r>');
+        const target = getElementsByTagNameNSAll(before, "*", "target")[0]!;
+        const pretty = prettyXml(target);
+        expect(textNodes(parseXml(pretty).documentElement)).toEqual(textNodes(target));
+        expect(pretty).toBe("<target> <!--c--><x/> </target>");
+    });
+
+    it("resets inherited xml:space at the nearer default ancestor (#1219)", () => {
+        const before = parseXml(
+            '<r xml:space="preserve"><wrap xml:space="default"><target> <a/><!--c--><?mark a > b?><b/> </target></wrap></r>',
+        );
+        const target = getElementsByTagNameNSAll(before, "*", "target")[0]!;
+        expect(prettyXml(target)).toBe("<target>\n  <a/>\n  <!--c-->\n  <?mark a > b?>\n  <b/>\n</target>");
+    });
+
+    it("keeps a preserved container and its descendants verbatim (#1219)", () => {
+        const xml = '<r xml:space="preserve"> <wrap> <!--c--><x/> </wrap> </r>';
+        const before = parseXml(xml);
+        const pretty = prettyXml(before);
+        expect(textNodes(parseXml(pretty).documentElement)).toEqual(textNodes(before.documentElement));
+        expect(pretty).toBe(xml);
+    });
+
+    it.each([
+        "<!DOCTYPE r [<!ELEMENT r ANY>]>",
+        '<!DOCTYPE r [<!ELEMENT r ANY><!ENTITY e "a > b [ ]">]>',
+        '<!DOCTYPE r SYSTEM "a>b.dtd" [<!-- ] > [ --><?mark ] >?><!ELEMENT r ANY>]>',
+    ])("keeps the complete DOCTYPE subset opaque (#1219): %s", (doctype) => {
+        const before = parseXml(`${doctype}<r/>`);
+        const pretty = prettyXml(before);
+        const after = parseXml(pretty);
+        expect(xmlHelpers.serializeXml(after.doctype!)).toBe(xmlHelpers.serializeXml(before.doctype!));
+        expect(textNodes(after.documentElement)).toEqual(textNodes(before.documentElement));
+        expect(pretty).toBe(`${xmlHelpers.serializeXml(before.doctype!)}\n<r/>`);
+    });
+
+    it("indents element-only Word containers with comments and PIs (#1219)", () => {
+        const xml = '<w:body xmlns:w="urn:word"> <w:p> <!--c--><?mark a > b?><w:r/> </w:p> </w:body>';
+        expect(prettyXml(parseXml(xml))).toBe(
+            '<w:body xmlns:w="urn:word">\n  <w:p>\n    <!--c-->\n    <?mark a > b?>\n    <w:r/>\n  </w:p>\n</w:body>',
+        );
+    });
+
+    it.each([" a  b ", "\t a\n  b\t "])("keeps preserve-space text verbatim (#1219): %j", (text) => {
+        const xml = `<w:t xmlns:w="urn:word" xml:space="preserve">${text}</w:t>`;
+        expect(prettyXml(parseXml(xml))).toBe(xml);
+    });
+
+    it("keeps plain text and its closing tag together (#1219)", () => {
+        expect(prettyXml(parseXml("<r><t>Hello</t></r>"))).toBe("<r>\n  <t>Hello</t>\n</r>");
+    });
+
+    it.each([" ", "  ", "\t\n  "])("keeps a whitespace-only text child (#1219): %j", (text) => {
+        const xml = `<t xml:space="preserve">${text}</t>`;
+        expect(prettyXml(parseXml(xml))).toBe(xml);
+    });
+
+    it.each([
+        "<r> before  <b> bold </b>  after </r>",
+        "<r><b/>tail</r>",
+        "<r>head<b/></r>",
+        "<r> head <b><c/></b> tail </r>",
+        "<r>before<b/> <c/>after</r>",
+    ])("adds no whitespace inside mixed content (#1219): %s", (xml) => {
+        expect(prettyXml(parseXml(xml))).toBe(xml);
+    });
+
+    it.each(["<r><![CDATA[ a  > b <c/>\n ]]></r>", "<r> before <![CDATA[<a>]]> after </r>"])(
+        "keeps CDATA byte-identical (#1219): %s",
+        (xml) => {
+            expect(prettyXml(parseXml(xml))).toBe(xml);
+        },
+    );
+
+    it("keeps comments, PIs, and entity escapes byte-identical in mixed content (#1219)", () => {
+        const xml = "<r> &amp; &lt; <!-- a > b <c --><?pi a > b?> &gt; </r>";
+        expect(prettyXml(parseXml(xml))).toBe(xml);
+    });
+
+    it("keeps nested element-only indentation and drops old indentation (#1219)", () => {
+        expect(prettyXml(parseXml("<r> \n <a>\n <b/> <c/>\n </a>\t<d/>\n</r>"), "    ")).toBe(
+            "<r>\n    <a>\n        <b/>\n        <c/>\n    </a>\n    <d/>\n</r>",
+        );
+    });
+
     it("preserves inline text after opening and empty tags", () => {
-        expect(prettyXml(parseXml("<r><a>text</a><empty/>tail</r>"))).toBe("<r>\n  <a>text\n  </a>\n  <empty/>tail\n</r>");
+        expect(prettyXml(parseXml("<r><a>text</a><empty/>tail</r>"))).toBe("<r><a>text</a><empty/>tail</r>");
     });
 
     it("preserves formatting around comments, processing instructions, and CDATA", () => {
         expect(prettyXml(parseXml("<r><!-- <a -->tail<?pi?><![CDATA[<a>]]>text</r>"))).toBe(
-            "<r>\n  <!-- <a -->tail\n  <?pi ?>\n  <![CDATA[<a>]]>text\n</r>",
+            "<r><!-- <a -->tail<?pi ?><![CDATA[<a>]]>text</r>",
         );
     });
 
@@ -377,11 +534,90 @@ describe("prettyXml", () => {
             import { parseXml, prettyXml } from ${JSON.stringify(moduleUrl)};
             const comment = "<!-- " + "< ".repeat(200_000) + "> trailing -->";
             const xml = "<root>" + comment + "tail</root>";
-            assert.equal(prettyXml(parseXml(xml)), "<root>\\n  " + comment + "\\n  tail\\n</root>");
+            assert.equal(prettyXml(parseXml(xml)), xml);
         `;
         await promisify(execFile)(process.execPath, ["--import", "tsx", "--input-type=module", "--eval", script], {
             cwd: fileURLToPath(new URL("..", import.meta.url)),
             timeout: 5_000,
         });
     }, 10_000);
+
+    it("indents element-only content", () => {
+        // #1219: prettyXml inserts whitespace into element text (`x` becomes `x\n  `). Pin only structure.
+        expect(prettyXml(parseXml("<r><a><b/></a></r>"))).toBe("<r>\n  <a>\n    <b/>\n  </a>\n</r>");
+    });
+
+    it("copies mixed content with a comment holding angle brackets verbatim (#1219)", () => {
+        expect(prettyXml(parseXml("<r><!--<>-->tail</r>"))).toBe("<r><!--<>-->tail</r>");
+        expect(prettyXml(parseXml("<r><!-- > -->tail</r>"))).toBe("<r><!-- > -->tail</r>");
+    });
+
+    it("drops whitespace-only text", () => {
+        expect(prettyXml(parseXml("<r> <a/></r>"))).toBe("<r>\n  <a/>\n</r>");
+    });
+
+    it("pretty-prints a document with no root as an empty string", () => {
+        const dom = parseXml("<r/>");
+        dom.removeChild(dom.documentElement);
+        expect(prettyXml(dom)).toBe("");
+    });
+});
+
+describe("parseXml", () => {
+    it("strips a leading UTF-8 BOM before parsing", () => {
+        expect(parseXml("\uFEFF<a/>").documentElement.localName).toBe("a");
+    });
+
+    it("wraps a recoverable parse error and keeps the parser's message", () => {
+        expect(() => parseXml("\u0000<a/>")).toThrow(/^parseXml failed: Unexpected content outside root element: '\0'$/);
+    });
+});
+
+describe("serializeXml", () => {
+    it("names the encoding it is asked to, adding a declaration or rewriting the one the document carries", () => {
+        expect(serializeXml(parseXml("<r/>"), "UTF-8")).toBe('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<r/>');
+        expect(serializeXml(parseXml('<?xml version="1.0" encoding="UTF-16"?><r/>'), "UTF-8")).toBe(
+            '<?xml version="1.0" encoding="UTF-8"?><r/>',
+        );
+        const utf16le = serializeXml(parseXml("<r/>"), "UTF-16LE");
+        expect(utf16le).toBe('<?xml version="1.0" encoding="UTF-16LE" standalone="yes"?>\n<r/>');
+        const utf16leBytes = Buffer.from(utf16le, "utf16le");
+        expect(utf16leBytes.subarray(0, 2)).toEqual(Buffer.from([0x3c, 0x00]));
+        expect(utf16leBytes.includes(Buffer.from('encoding="UTF-16LE"', "utf16le"))).toBe(true);
+        expect(serializeXml(parseXml('<?xml version="1.0" encoding="UTF-8"?><r/>'), "UTF-16LE")).toBe(
+            '<?xml version="1.0" encoding="UTF-16LE"?><r/>',
+        );
+    });
+});
+
+describe("makeSelect", () => {
+    it("selects with the OOXML prefixes, and with a caller's extra prefix", () => {
+        const dom = parseXml(`<w:document xmlns:w="${NS.W}"><w:body><w:p/></w:body></w:document>`);
+        const select = makeSelect();
+        expect(select("//w:p", dom)).toHaveLength(1);
+        const extra = makeSelect({ z: "urn:z" });
+        const zdom = parseXml(`<z:r xmlns:z="urn:z"><z:t/></z:r>`);
+        expect(extra("//z:t", zdom)).toHaveLength(1);
+        expect(extra("//w:p", dom)).toHaveLength(1);
+    });
+});
+
+describe("getLineNumber", () => {
+    it("returns the parser's line, or 0 when none was recorded", () => {
+        expect(getLineNumber(null)).toBe(0);
+        expect(getLineNumber(undefined)).toBe(0);
+        const dom = parseXml("<r>\n<a/>\n</r>");
+        expect(getLineNumber(dom.documentElement)).toBe(1);
+        expect(getLineNumber(dom.getElementsByTagName("a")[0]!)).toBe(2);
+        expect(getLineNumber(dom.createTextNode("t"))).toBe(0);
+    });
+});
+
+describe("getLocalName", () => {
+    it("returns the element's local name, lower-cased when asked", () => {
+        const dom = parseXml(`<W:Document xmlns:W="${NS.W}"/>`);
+        expect(getLocalName(dom.documentElement)).toBe("Document");
+        expect(getLocalName(dom.documentElement, true)).toBe("document");
+        expect(getLocalName(dom.documentElement, false)).toBe("Document");
+    });
 });

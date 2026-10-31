@@ -8,7 +8,8 @@
  * branches and honours mc:MustUnderstand with the namespaces it understands
  * (`WORD_UNDERSTOOD_NAMESPACES`), so the errors of that pass are judged on
  * the context's Word view, without the schema walk. The judged parts are the
- * XML parts under `word/` and every relationships part: the schema walk
+ * XML parts under `word/`, every relationships part, and every XML story
+ * part Word reads regardless of its folder or extension (#1217): the schema walk
  * applied markup compatibility to the same folder, and Word 16.115 applies
  * it to relationships parts too — it opened session 33's footer shapes
  * (s33d/s33e, #632) and refused mc:MustUnderstand on the `_rels/.rels` root
@@ -28,7 +29,9 @@ import type { CheckDefinition } from "../../../lib/check-registry";
 import { citesWordSession } from "../../../lib/conformance-class";
 import { canonicalPartName, isRelationshipsPartName } from "../../../lib/content-types";
 import { isAlternateContentCharacterData, withWordSessionCitation } from "../../../lib/markup-compatibility";
-import type { ValidationIssue } from "../../../lib/types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
+import type { ValidationContext } from "../../../lib/validation-context";
+import { wordReadStoryParts } from "../../../lib/word-read-parts";
 import { xmlPartNames } from "./xml";
 
 const WORD_XML_PART = /^word\/.+\.xml$/;
@@ -43,15 +46,33 @@ const WORD_XML_PART = /^word\/.+\.xml$/;
 export const isMarkupCompatibilityJudgedPart = (partName: string): boolean =>
     WORD_XML_PART.test(canonicalPartName(partName)) || isRelationshipsPartName(partName);
 
+/**
+ * Shared scope for the Word check and its package complement (#1217).
+ * Resolve Word's read model only when an additional XML candidate has an
+ * error to report. The legacy folder/sidecar scope stays unconditional.
+ */
+export const markupCompatibilityJudgedParts = async (ctx: ValidationContext, profile?: Profile): Promise<ReadonlySet<string>> => {
+    const judged = new Set(ctx.partNames.filter(isMarkupCompatibilityJudgedPart).map(canonicalPartName));
+    let read: ReadonlySet<string> | undefined;
+    for (const name of xmlPartNames(ctx.partNames, (part) => ctx.bytes(part))) {
+        const canonical = canonicalPartName(name);
+        if (judged.has(canonical) || !ctx.compatibilityIssues(name).some((issue) => issue.severity === "error")) continue;
+        read ??= new Set((await wordReadStoryParts(ctx, profile)).map(canonicalPartName));
+        if (read.has(canonical)) judged.add(canonical);
+    }
+    return judged;
+};
+
 export const wordMarkupCompatibilityCheck: CheckDefinition = {
     id: "word-markup-compatibility",
     description: "Markup compatibility in Word parts and relationships parts is well formed and requires only namespaces Word understands.",
     groups: ["xml"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx): ValidationIssue[] => {
+    run: async (ctx, profile): Promise<ValidationIssue[]> => {
+        const judged = await markupCompatibilityJudgedParts(ctx, profile);
         const issues = ctx.partNames
-            .filter(isMarkupCompatibilityJudgedPart)
+            .filter((name) => judged.has(canonicalPartName(name)))
             .flatMap((name) => ctx.compatibilityIssues(name).filter((issue) => issue.severity === "error"));
         // Sessions 65 and 67 stored Transitional packages (#1016).
         return issues.some(isAlternateContentCharacterData) &&

@@ -250,6 +250,9 @@ export const isWordBlockingIssue = (
         case "ct-markup-compatibility":
         // paragraph-sectpr-breaks.docx: empty vt:filetime causes Word unreadable-content recovery; empty lpwstr in complex2.docx opens clean.
         case "word-custom-property-filetime-empty":
+        // #1186, sessions 89 and 90: PNG package thumbnails get recovery;
+        // JPEG thumbnails and unrelated PNG parts open clean.
+        case "word-package-thumbnail-type":
         // header-with-rid-no-sidecar.docx: Word open-error with missing wp:extent; the complete scaffold in validators-docx.test.ts opens clean.
         case "word-drawing-extent-missing":
         // Historical WORD_BLOCKING_MISPLACED_LOCALS extent probe comment: misplaced extents are rejected; positive-extent drawing control opens clean.
@@ -558,27 +561,33 @@ export const isWordBlockingIssue = (
             // the unreferenced part and of the used header, two runs each, all
             // readings agreeing (#987); the customXml shape in an unused
             // header's or the styles part's sidecar is unprobed (#1006).
-            // A target spelling a URI scheme names no part: Word offered
-            // recovery for a used header related through `ftp:header1.xml`
-            // or `httpfoo:header1.xml` and for the styles relationship
-            // through `ftp:styles.xml`, beside the well-formed stored part
-            // its path spells (session 87, s87c/s87d, #1127). Only those
-            // placements are probed: a header the body does not use, a
-            // scheme target in the package relationships part and another
-            // type keep their warning (review of #1177).
+            // A target spelling a URI scheme names no part and blocks in
+            // every relationships part, whatever the relationship type: Word
+            // offered recovery beside the well-formed stored part its path
+            // spells for a used header related through `ftp:header1.xml` or
+            // `httpfoo:header1.xml` and for the styles relationship through
+            // `ftp:styles.xml` (session 87, s87c/s87d, #1127), and through
+            // `ftp:` for an unused header, a `_rels/.rels` styles
+            // relationship beside the main document's own, an unused image,
+            // and the main document's settings, numbering, comments,
+            // footnotes and a used and an unused footer (session 88,
+            // s88a–s88c, two runs each, all readings agree, #1178); each
+            // plain target opened clean. Session 89 (s89a–s89c, #1184, two
+            // runs each, all four readings agree) repeated the refusal in
+            // `_rels/.rels` for the core, extended and custom properties,
+            // and for an ftp: image in a used header's own sidecar, embedded
+            // or unused, and unused in a used footer's, an unused header's,
+            // the styles part's and an unreferenced part's sidecar. Each
+            // plain target opened clean. Only the scheme arm extends to
+            // every relationships part; the folder, OPC-relationships and
+            // customXml arms keep their scope above (#987).
             const part = relsBrokenTarget(issue);
             const scheme = relsBrokenScheme(issue);
-            if (scheme !== undefined) {
-                return (
-                    part !== undefined &&
-                    isDocumentRelationshipsPart(issue.path, storyRootParts) &&
-                    (scheme === "styles" || scheme === "header")
-                );
-            }
             return (
-                part !== undefined &&
-                (isPackageRelationshipsPart(issue.path) || isDocumentRelationshipsPart(issue.path, storyRootParts)) &&
-                (part.endsWith("/") || isOpcRelationshipsPart(part) || canonicalPartName(part).startsWith("customxml/"))
+                scheme ||
+                (part !== undefined &&
+                    (isPackageRelationshipsPart(issue.path) || isDocumentRelationshipsPart(issue.path, storyRootParts)) &&
+                    (part.endsWith("/") || isOpcRelationshipsPart(part) || canonicalPartName(part).startsWith("customxml/")))
             );
         }
         case "rels-empty-element":
@@ -611,8 +620,14 @@ export const isWordBlockingIssue = (
             // and opened both clean in a header the main document relates
             // but does not use (#1125).
             const path = issue.path?.replace(/\\/g, "/");
+            // A content-type-declared XML story may have any extension or
+            // folder (#1217). Reuse the caller's read set; sidecars keep their
+            // separately observed policy below, and unused stories stay absent.
+            // Only a `_rels/<owner>.rels` sidecar is a relationships part; a
+            // story stored under another `.rels` name is read as its type.
+            const readPart = path !== undefined && !isOpcRelationshipsPart(path) && wordReadParts.has(canonicalPartName(path));
             return (
-                (isWordXmlPart(path) && facts.unreadByWord !== true) ||
+                ((isWordXmlPart(path) || readPart) && facts.unreadByWord !== true) ||
                 isPackageRelationshipsPart(path) ||
                 isDocumentRelationshipsPart(path, storyRootParts)
             );

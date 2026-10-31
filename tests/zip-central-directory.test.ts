@@ -5,7 +5,13 @@
 
 import { describe, expect, it } from "vitest";
 
-import { readCentralDirectoryView, zipBytesBeforeArchive, zipCentralDirectoryEntries } from "../src/lib/zip-central-directory";
+import {
+    hasSignature,
+    isStructuralEocd,
+    readCentralDirectoryView,
+    zipBytesBeforeArchive,
+    zipCentralDirectoryEntries,
+} from "../src/lib/zip-central-directory";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import JSZip from "jszip";
 
@@ -724,6 +730,94 @@ describe("the central-directory walk JSZip runs (#478)", () => {
         expect(names(bytes)).toBeUndefined();
         // The measure's own extra-field scan already bounds the declared
         // length; only the names view used to disagree.
+        expect(zipBytesBeforeArchive(bytes)).toBeUndefined();
+    });
+});
+
+// `parseZIP64ExtraField` reads each saturated size with `readInt(8)`, and
+// throws when the 0x0001 field is shorter than that read. The uncompressed
+// slot is consumed first, so a short field fails there before the compressed
+// slot is reached (#490).
+describe("a ZIP64 size the extra field is too short to resolve", () => {
+    const withShortZip64Size = (field: 20 | 24): Buffer => {
+        const base = buildRawZip([{ name: "a.xml", content: "<a/>" }]);
+        const eocd = base.length - 22;
+        const cd = base.readUInt32LE(eocd + 16);
+        // Four data bytes: the field fits the buffer, the 8-byte read does not.
+        const extra = Buffer.from([0x01, 0x00, 0x04, 0x00, 1, 2, 3, 4]);
+        const bytes = Buffer.concat([base.subarray(0, eocd), extra, base.subarray(eocd)]);
+        bytes.writeUInt32LE(0xffffffff, cd + field);
+        bytes.writeUInt16LE(extra.length, cd + 30);
+        const shifted = eocd + extra.length;
+        bytes.writeUInt32LE(bytes.readUInt32LE(shifted + 12) + extra.length, shifted + 12);
+        return bytes;
+    };
+
+    it.each([
+        ["uncompressed", 24],
+        ["compressed", 20],
+    ] as const)("returns undefined where JSZip throws: the %s size's ZIP64 value is shorter than 8 bytes", async (_label, field) => {
+        const bytes = withShortZip64Size(field);
+        await expect(JSZip.loadAsync(bytes)).rejects.toThrow(/End of data reached/);
+        expect(zipBytesBeforeArchive(bytes)).toBeUndefined();
+        expect(names(bytes)).toBeUndefined();
+    });
+});
+
+describe("a resolved local offset that is not a local header", () => {
+    it("returns undefined where JSZip throws: the offset names the central directory", async () => {
+        const bytes = buildRawZip([{ name: "a.xml", content: "<a/>" }]);
+        const cd = bytes.readUInt32LE(bytes.length - 22 + 16);
+        bytes.writeUInt32LE(cd, cd + 42);
+        await expect(JSZip.loadAsync(bytes)).rejects.toThrow(/unexpected signature/);
+        expect(zipBytesBeforeArchive(bytes)).toBeUndefined();
+        expect(names(bytes)).toBeUndefined();
+    });
+});
+
+describe("isStructuralEocd", () => {
+    it("accepts an empty archive and a directory it can see, and a ZIP64 offset only beside a locator", () => {
+        const empty = Buffer.alloc(22);
+        empty.writeUInt32LE(0x06054b50, 0);
+        expect(isStructuralEocd(empty, 0)).toBe(true);
+        expect(hasSignature(empty, -1, 0x06054b50)).toBe(false);
+
+        const bytes = buildRawZip([{ name: "a.xml", content: "A" }]);
+        const eocd = bytes.length - 22;
+        expect(isStructuralEocd(bytes, eocd)).toBe(true);
+
+        const saturated = Buffer.from(bytes);
+        saturated.writeUInt32LE(0xffffffff, eocd + 16);
+        expect(isStructuralEocd(saturated, eocd)).toBe(false);
+
+        const located = Buffer.alloc(42);
+        located.writeUInt32LE(0x07064b50, 0);
+        located.writeUInt32LE(0x06054b50, 20);
+        located.writeUInt32LE(0xffffffff, 36);
+        expect(isStructuralEocd(located, 20)).toBe(true);
+    });
+
+    it("rejects a record that names no directory", () => {
+        const record = Buffer.alloc(22);
+        record.writeUInt32LE(0x06054b50, 0);
+        record.writeUInt16LE(1, 10);
+        record.writeUInt32LE(1, 12);
+        expect(isStructuralEocd(record, 0)).toBe(false);
+    });
+});
+
+describe("a ZIP64 locator that names no end record", () => {
+    it("returns undefined where JSZip throws: nothing at the locator's offset is a ZIP64 end signature", async () => {
+        const base = buildRawZip([{ name: "a.xml", content: "A" }]);
+        const eocd = base.length - 22;
+        const locator = Buffer.alloc(20);
+        locator.writeUInt32LE(0x07064b50, 0);
+        locator.writeUInt32LE(0, 8);
+        locator.writeUInt32LE(1, 16);
+        const bytes = Buffer.concat([base.subarray(0, eocd), locator, base.subarray(eocd)]);
+        bytes.writeUInt16LE(0xffff, eocd + locator.length + 10);
+        await expect(JSZip.loadAsync(bytes)).rejects.toThrow(/ZIP64 end of central directory/);
+        expect(readCentralDirectoryView(bytes)).toBeUndefined();
         expect(zipBytesBeforeArchive(bytes)).toBeUndefined();
     });
 });

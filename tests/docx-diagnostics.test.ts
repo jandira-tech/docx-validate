@@ -213,10 +213,29 @@ describe("docx diagnostics", () => {
             );
             const inv = await collectDocxSemanticInventory(root);
             const shapes = [...inv.counters.values()].filter((c) => c.category === "table shape");
-            const shape = (label: string) => shapes.find((c) => c.label === label)?.count ?? 0;
-            expect(shape("table 1×3")).toBe(1); // table A
-            expect(shape("table 2×3")).toBe(1); // table B via gridSpan fallback
-            expect(shape("merged cell gridSpan=2")).toBe(2); // one in each table
+            expect(shapes).toEqual([
+                {
+                    path: "word/document.xml",
+                    category: "table shape",
+                    label: "merged cell gridSpan=2", // one in each table
+                    unit: "cell(s)",
+                    count: 2,
+                },
+                {
+                    path: "word/document.xml",
+                    category: "table shape",
+                    label: "table 1×3", // table A
+                    unit: "table(s)",
+                    count: 1,
+                },
+                {
+                    path: "word/document.xml",
+                    category: "table shape",
+                    label: "table 2×3", // table B via gridSpan fallback
+                    unit: "table(s)",
+                    count: 1,
+                },
+            ]);
         });
     });
 
@@ -978,5 +997,211 @@ describe("buildRepairPlanIssues migration notes (#651)", () => {
         expect(migration.replace(/\s+/g, " ")).toContain("the old one-argument call throws a `TypeError`");
         const oneArgument = buildRepairPlanIssues as unknown as (issues: readonly ValidationIssue[]) => unknown;
         expect(() => oneArgument([{ severity: "error", code: "x", message: "m" }])).toThrow(TypeError);
+    });
+});
+
+// Directory-backed integration specimens exercise the inventory's public API;
+// pure repair-plan cases below need no filesystem or dependency doubles.
+describe("semantic inventory coverage (#1190)", () => {
+    const countersFor = async (dir: string, category: string, profile: "lenient" | "strict" = "lenient") =>
+        [...(await collectDocxSemanticInventory(dir, profile)).counters.values()]
+            .filter((counter) => counter.category === category)
+            .map(({ label, count }) => ({ label, count }));
+
+    it("keeps style counters by name when a refused stored name prevents reading the package view", async () => {
+        await withTempDir(async (dir) => {
+            for (const [name, xml] of Object.entries(MINIMAL_PARTS)) await writeXml(path.join(dir, name), xml);
+            // Dot-only segments are refused by the package view (CLAUDE.md #24).
+            await writeXml(path.join(dir, "...", "refused.xml"), "<root/>");
+            await writeXml(
+                path.join(dir, "other", "styles.xml"),
+                `<w:styles ${W_NS}><w:style w:styleId="Fallback" w:type="character"/></w:styles>`,
+            );
+            expect(await countersFor(dir, "style definition")).toEqual([
+                { label: "character 'Fallback'", count: 1 },
+                { label: "character 'DefaultParagraphFont'", count: 1 },
+                { label: "numbering 'NoList'", count: 1 },
+                { label: "paragraph 'Normal'", count: 1 },
+                { label: "table 'TableNormal'", count: 1 },
+            ]);
+        });
+    });
+
+    it("skips unreadable XML and symlinks while retaining regular-file inventory", async () => {
+        await withTempDir(async (dir) => {
+            await writeXml(path.join(dir, "word", "document.xml"), doc(`<w:p><w:r><w:t>kept</w:t></w:r></w:p>`));
+            await writeXml(path.join(dir, "broken.xml"), `<root><unclosed></root>`);
+            await fs.writeFile(path.join(dir, "empty.bin"), new Uint8Array());
+            await fs.symlink(path.join(dir, "word", "document.xml"), path.join(dir, "linked.xml"));
+            await fs.symlink(path.join(dir, "word"), path.join(dir, "linked-dir"));
+            const inventory = await collectDocxSemanticInventory(dir);
+            expect([...new Set([...inventory.counters.values()].map((counter) => counter.path))]).toEqual([
+                "empty.bin",
+                "word/document.xml",
+            ]);
+            expect(await countersFor(dir, "package asset")).toEqual([{ label: "part exists", count: 1 }]);
+            expect(await countersFor(dir, "text")).toEqual([{ label: "visible text", count: 4 }]);
+        });
+    });
+
+    it("returns an empty inventory for a directory that does not exist", async () => {
+        await withTempDir(async (dir) => {
+            expect((await collectDocxSemanticInventory(path.join(dir, "absent"))).counters.size).toBe(0);
+        });
+    });
+
+    it("counts math objects and enabled formatting while excluding explicit off values", async () => {
+        await withTempDir(async (dir) => {
+            await writeXml(
+                path.join(dir, "word/document.xml"),
+                doc(
+                    `<w:p><w:pPr><w:numPr/></w:pPr>` +
+                        `<w:r><w:rPr><w:strike/><w:dstrike/><w:caps/><w:smallCaps/><w:vanish/></w:rPr><w:t>abc</w:t></w:r>` +
+                        `<w:r><w:rPr><w:strike w:val="0"/><w:dstrike w:val="false"/><w:caps w:val="OFF"/>` +
+                        `<w:smallCaps w:val="none"/><w:vanish w:val="false"/><w:u w:val="none"/></w:rPr><w:t>ignored</w:t></w:r>` +
+                        `<m:oMathPara xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"><m:oMath/></m:oMathPara></w:p>`,
+                ),
+            );
+            expect(await countersFor(dir, "formatting")).toEqual([
+                { label: "caps", count: 3 },
+                { label: "double strikethrough", count: 3 },
+                { label: "hidden", count: 3 },
+                { label: "small caps", count: 3 },
+                { label: "strikethrough", count: 3 },
+            ]);
+            expect(await countersFor(dir, "numbering")).toEqual([]);
+            expect(await countersFor(dir, "document structure")).toContainEqual({ label: "math object", count: 2 });
+        });
+    });
+
+    it("uses one column for invalid grid spans when falling back from an empty table grid", async () => {
+        await withTempDir(async (dir) => {
+            await writeXml(
+                path.join(dir, "word/document.xml"),
+                doc(
+                    `<w:tbl>\n<w:tblGrid/>\n<w:tr>\n` +
+                        ["bogus", "0", "-2", "2"]
+                            .map((span) => `<w:tc><w:tcPr><w:gridSpan w:val="${span}"/></w:tcPr><w:p/></w:tc>`)
+                            .join("") +
+                        `</w:tr></w:tbl>`,
+                ),
+            );
+            const tableShapes = [...(await collectDocxSemanticInventory(dir)).counters.values()].filter(
+                (counter) => counter.category === "table shape",
+            );
+            expect(tableShapes).toEqual([
+                {
+                    path: "word/document.xml",
+                    category: "table shape",
+                    label: "merged cell gridSpan=2",
+                    unit: "cell(s)",
+                    count: 1,
+                },
+                {
+                    path: "word/document.xml",
+                    category: "table shape",
+                    label: "table 1×5",
+                    unit: "table(s)",
+                    count: 1,
+                },
+            ]);
+        });
+    });
+
+    it("retains defaults and unknown dimensions for incomplete strict section geometry", async () => {
+        await withTempDir(async (dir) => {
+            await writeXml(path.join(dir, "word/document.xml"), doc(`<w:sectPr><w:pgSz/><w:pgMar/><w:cols/></w:sectPr><w:sectPr/>`));
+            expect(await countersFor(dir, "section geometry", "strict")).toEqual([
+                { label: "section columns=1", count: 2 },
+                { label: "section margins T? R? B? L?", count: 1 },
+                { label: "section portrait ?×?", count: 1 },
+            ]);
+        });
+    });
+
+    it("rounds anchored image extents and ignores extents outside placements", async () => {
+        await withTempDir(async (dir) => {
+            await writeXml(
+                path.join(dir, "word/document.xml"),
+                doc(
+                    `<w:p><w:r><w:drawing xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">` +
+                        `<wp:anchor><wp:extent cx="1499" cy="1500"/></wp:anchor>` +
+                        `<wp:inline><wp:extent cx="not-a-number" cy="2001"/></wp:inline>` +
+                        `<wp:extent cx="9999" cy="9999"/></w:drawing></w:r></w:p>`,
+                ),
+            );
+            expect(await countersFor(dir, "image shape", "strict")).toEqual([
+                { label: "image ~0×2000 inline", count: 1 },
+                { label: "image ~1000×2000 anchor", count: 1 },
+            ]);
+        });
+    });
+
+    it("retains unknown declaration metadata and counts extended-comment entries", async () => {
+        await withTempDir(async (dir) => {
+            await writeXml(
+                path.join(dir, "[Content_Types].xml"),
+                `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml"/><Override PartName="/word/document.xml"/></Types>`,
+            );
+            await writeXml(
+                path.join(dir, "_rels/.rels"),
+                `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="missingType" Target="word/document.xml"/></Relationships>`,
+            );
+            await writeXml(path.join(dir, "word/styles.xml"), `<w:styles ${W_NS}><w:style/></w:styles>`);
+            await writeXml(
+                path.join(dir, "word/commentsExtended.xml"),
+                `<w15:commentsEx xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"><w15:commentEx/><w15:commentEx/></w15:commentsEx>`,
+            );
+            expect(await countersFor(dir, "content type")).toEqual([
+                { label: "default 'unknown'", count: 1 },
+                { label: "override 'unknown'", count: 1 },
+            ]);
+            expect(await countersFor(dir, "relationship")).toEqual([
+                { label: "target mode 'Internal'", count: 1 },
+                { label: "type 'unknown'", count: 1 },
+            ]);
+            expect(await countersFor(dir, "style definition")).toEqual([{ label: "unknown 'unknown'", count: 1 }]);
+            expect(await countersFor(dir, "comment thread")).toEqual([{ label: "commentsExtended entry", count: 2 }]);
+        });
+    });
+});
+
+describe("repair guidance coverage (#1190)", () => {
+    it.each([
+        ["word-endnote-reference-missing", "remove the w:endnoteReference whose id matches no w:endnote, or add that endnote"],
+        [
+            "word-part-reference-relationship",
+            "point the c:chart r:id, dgm:relIds r:dm or o:OLEObject r:id at a relationship whose Type is the Transitional or ISO Strict chart, diagramData, package or oleObject relationship URI the element reads, adding such a relationship to the part's relationships when none exists",
+        ],
+        ["word-duplicate-endnotes-relationship", "keep a single endnotes relationship in the part's .rels file"],
+        ["word-duplicate-footnotes-relationship", "keep a single footnotes relationship in the part's .rels file"],
+    ])("keeps manual guidance for surviving %s findings", (code, guidance) => {
+        const issue: ValidationIssue = { severity: "error", code, message: "synthetic" };
+        expect(buildRepairPlanIssues([issue], [issue])).toEqual([
+            {
+                severity: "info",
+                path: undefined,
+                code: "repair-plan-unavailable",
+                message: `Before repair found 1 [${code}] issue(s). Auto-repair cleared 0; 1 remain. Fix manually: ${guidance}.`,
+            },
+        ]);
+    });
+
+    it.each(["xsd-error", "xsd-summary"])("recognizes picture shape guidance in %s findings", (code) => {
+        const issue: ValidationIssue = {
+            severity: "error",
+            code,
+            message: "Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}spPr ).",
+        };
+        expect(buildRepairPlanIssues([issue], [issue])[0].message).toContain(
+            "Fix manually: insert missing picture shape properties required by DrawingML schemas.",
+        );
+    });
+
+    it("recognizes blipFill schema-order guidance", () => {
+        const issue: ValidationIssue = { severity: "error", code: "xsd-error", message: "}blipFill': This element is not expected" };
+        expect(buildRepairPlanIssues([issue], [issue])[0].message).toContain(
+            "Fix manually: supply the required DrawingML children in schema order for the reported anchor, inline drawing, or picture.",
+        );
     });
 });
