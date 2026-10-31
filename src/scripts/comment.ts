@@ -982,6 +982,31 @@ interface CliOptions {
     parent?: string;
 }
 
+/** `0`, or digits with no leading zero. A longer digit string is still not this. */
+const CANONICAL_COMMENT_ID = /^(0|[1-9][0-9]*)$/;
+
+/**
+ * A comment id `Number` can round-trip. Past `Number.MAX_SAFE_INTEGER`,
+ * `parseInt` rounds (`9007199254740993` becomes `9007199254740992`) and
+ * `String` of a larger value is scientific notation (`1e+21`), which is
+ * not an `xsd:integer`. Leading zeros are a different spelling (`01` is
+ * not `1`), so they are refused rather than collapsed.
+ */
+function parseCanonicalCommentId(raw: string): number | undefined {
+    if (!CANONICAL_COMMENT_ID.test(raw)) {
+        return undefined;
+    }
+    const cap = String(Number.MAX_SAFE_INTEGER);
+    if (raw.length > cap.length || (raw.length === cap.length && raw > cap)) {
+        return undefined;
+    }
+    return Number(raw);
+}
+
+function commentIdRefusal(label: "commentId" | "--parent", raw: string): string {
+    return `Error: ${label} must be a decimal integer from 0 to ${Number.MAX_SAFE_INTEGER} without leading zeros (got ${raw})\n`;
+}
+
 export async function runCommentFromArgv(argv: readonly string[]): Promise<number> {
     const cmd = buildCommentCommand();
     cmd.exitOverride();
@@ -993,14 +1018,14 @@ export async function runCommentFromArgv(argv: readonly string[]): Promise<numbe
     const opts = cmd.opts<CliOptions>();
     const [unpackedDir, commentIdRaw, text] = cmd.args;
 
-    const commentId = Number.parseInt(commentIdRaw, 10);
-    if (!/^[0-9]+$/.test(commentIdRaw) || !Number.isFinite(commentId)) {
-        process.stderr.write(`Error: commentId must be an integer (got ${commentIdRaw})\n`);
+    const commentId = parseCanonicalCommentId(commentIdRaw);
+    if (commentId === undefined) {
+        process.stderr.write(commentIdRefusal("commentId", commentIdRaw));
         return 1;
     }
-    const parent = opts.parent !== undefined ? Number.parseInt(opts.parent, 10) : undefined;
-    if (opts.parent !== undefined && (!/^[0-9]+$/.test(opts.parent) || !Number.isFinite(parent))) {
-        process.stderr.write(`Error: --parent must be an integer (got ${opts.parent})\n`);
+    const parent = opts.parent === undefined ? undefined : parseCanonicalCommentId(opts.parent);
+    if (opts.parent !== undefined && parent === undefined) {
+        process.stderr.write(commentIdRefusal("--parent", opts.parent));
         return 1;
     }
 

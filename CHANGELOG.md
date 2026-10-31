@@ -6,7 +6,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-- Refuse comment CLI `commentId` and `--parent` values containing anything other than ASCII decimal digits, with the existing integer error and no document changes ([#1203](https://github.com/jandira-tech/docx-validate/issues/1203)). Previously, `parseInt` accepted numeric prefixes, signs and leading whitespace.
+- Refuse a comment CLI `commentId` or `--parent` that is not a canonical decimal integer from 0 to 9007199254740991 without leading zeros, with one error naming that rule and the value, and change nothing ([#1203](https://github.com/jandira-tech/docx-validate/issues/1203)). A larger integer does not round-trip through a JS number (`9007199254740993` was stored as `9007199254740992`, and the same value as `--parent` attached to that other comment), `1` followed by 21 zeros was written as `w:id="1e+21"` (not an `xsd:integer`), and a leading zero (`01`) was stored as `1`, so markers spelled `01` no longer matched and a stored `01` could not be named as a parent. Previously the gate accepted any ASCII decimal digits and `parseInt` also accepted numeric prefixes, signs and leading whitespace; a digit string `Number` cannot represent (`1` and 400 zeros) was refused only as "must be an integer".
 
 ## [0.54.0-rc.2] — 2026-10-30
 
