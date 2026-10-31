@@ -21,6 +21,7 @@ import JSZip from "jszip";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
+import * as simplifyRedlines from "../src/scripts/office/helpers/simplify-redlines";
 import { pack, runPackFromArgv } from "../src/scripts/office/pack";
 import { unpack } from "../src/scripts/office/unpack";
 import { validate } from "../src/scripts/office/validate";
@@ -483,16 +484,24 @@ describe("pack validation integration", () => {
 
     it("uses the explicit author as the default inference fallback", async () => {
         await withTempDir(async (dir) => {
+            const inferred = vi.spyOn(simplifyRedlines, "inferAuthor");
             const input = path.join(dir, "input");
             const original = path.join(dir, "original.docx");
             const output = path.join(dir, "out.docx");
-            await writePackageParts(input);
+            // The unpacked tree differs from the original, so a pack that copies
+            // the original archive cannot satisfy the output assertion.
+            await writePackageParts(input, {
+                ...MINIMAL_PARTS,
+                "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace("<w:t>Hello</w:t>", "<w:t>PackedInputOnly</w:t>"),
+            });
             await fs.writeFile(original, await buildMinimalDocx());
             const result = await pack(input, output, { original, author: "Alice" });
             expect(result.ok).toBe(true);
             expect(result.validationLog).toBe("All validations PASSED!");
+            expect(inferred).toHaveBeenCalledTimes(1);
+            expect(inferred).toHaveBeenCalledWith(path.resolve(input), path.resolve(original), "Alice");
             const zip = await JSZip.loadAsync(await fs.readFile(output));
-            expect(await zip.file("word/document.xml")!.async("string")).toContain("Hello");
+            expect(await zip.file("word/document.xml")!.async("string")).toContain("PackedInputOnly");
         });
     });
 
@@ -569,12 +578,18 @@ describe("pack validation integration", () => {
         await withTempDir(async (dir) => {
             const input = path.join(dir, "input");
             const output = path.join(dir, "out.pptx");
-            await writePackageParts(input, MINIMAL_PPTX_PARTS);
+            const rels = MINIMAL_PPTX_PARTS["ppt/slides/_rels/slide1.xml.rels"]!;
+            const layout = rels.match(/<Relationship [^>]*\/slideLayout"[^>]*\/>/)?.[0];
+            if (layout === undefined) throw new Error("minimal slide relationships have no slideLayout");
+            await writePackageParts(input, {
+                ...MINIMAL_PPTX_PARTS,
+                "ppt/slides/_rels/slide1.xml.rels": rels.replace(layout, `${layout}${layout.replace('Id="rId1"', 'Id="rId2"')}`),
+            });
             const result = await pack(input, output);
-            expect(result.ok).toBe(true);
-            expect(result.validationLog).toBe("All validations PASSED!");
-            const zip = await JSZip.loadAsync(await fs.readFile(output));
-            expect(await zip.file("ppt/presentation.xml")!.async("string")).toContain("<p:presentation ");
+            expect(result.ok).toBe(false);
+            expect(result.message).toBe(`Error: Validation failed for ${input}`);
+            expect(result.issues).toContainEqual(expect.objectContaining({ code: "slide-layout-duplicate", severity: "error" }));
+            await expect(fs.access(output)).rejects.toThrow();
         });
     });
 });

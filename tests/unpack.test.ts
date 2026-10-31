@@ -618,14 +618,19 @@ describe("unpack", () => {
 });
 
 describe("unpack error handling integration", () => {
-    it.each([true, false])("reports a missing main document with simplifyRedlines=%s", async (simplifyRedlines) => {
+    it.each([
+        [true, false],
+        [false, true],
+    ] as const)("reports a missing main document with simplifyRedlines=%s and mergeRuns=%s", async (simplifyRedlines, mergeRuns) => {
         await withTempDir(async (dir) => {
             const input = path.join(dir, "missing-main.docx");
             const output = path.join(dir, "out");
             const parts = { ...MINIMAL_PARTS };
             delete parts["word/document.xml"];
             await fs.writeFile(input, await buildMinimalDocx(parts));
-            expect(await unpack(input, output, { simplifyRedlines })).toEqual({
+            // Each row enables only one helper. With both on, a missing
+            // document is reported by whichever helper runs first.
+            expect(await unpack(input, output, { simplifyRedlines, mergeRuns })).toEqual({
                 ok: false,
                 message: `Error: ${path.join(output, "word", "document.xml")} not found`,
             });
