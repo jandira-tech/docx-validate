@@ -34622,21 +34622,19 @@ Word-valid at 2a98048d matches Word on 4 of 7 rows: it passed the three related 
 
 Reading the logs used session 41's `logcheck.py`, above, unchanged. The builder ran from the root of the committed tree at the first revision, and the re-judge from the root of the committed tree at the second.
 
-`s89builder.mts`:
+`s90builder.mts`:
 
 ```ts
-// Session 89 (2026-10-30, #1184): the placements of a scheme-like internal target (`ftp:`) session 88 did not show
-// Word, on the minimal package (`tests/support/minimal-docx.ts`). Every ftp: row stores the part the path spells
-// well-formed, and each placement has a plain-target calibration.
-// s89a: `_rels/.rels` relates the core, extended (app) and custom properties and the thumbnail through `ftp:docProps/…`,
-//   stored /ftp:docProps/… (#1182 blocks these by extrapolation from s88a's styles row).
-// s89b: a used header's own sidecar (word/_rels/header1.xml.rels) relates an image through `ftp:image1.png`, stored
-//   word/ftp:image1.png, that the header uses through r:embed, and one it does not use (#1182 keeps these a warning).
-// s89c: the same unused image through `ftp:image1.png` in other sidecars: a used footer's, an unused header's, the
-//   styles part's and an unreferenced part's (word/foo.xml, no relationship names it).
+// Session 90 (2026-10-30, #1186): why Word refused session 89's plain thumbnail calibration (s89a), a 1x1 PNG at
+// docProps/thumbnail.png that _rels/.rels relates by the package thumbnail type and a png Default types. Every row is
+// the minimal package (`tests/support/minimal-docx.ts`) plus one thumbnail variant.
+// s90a: that s89a row again; the same bytes stored but related by nothing; a 96x96 PNG; the 1x1 PNG typed by an
+//   Override instead of a Default; a 96x96 JPEG at docProps/thumbnail.jpeg typed by a jpeg Default (the name and
+//   format Word for Mac writes); the same JPEG typed image/jpeg by an Override.
+// Assets: s90/assets (1x1.png from s89a's bytes; 96.png and 96.jpeg made with sips).
 // Every chunk ends with a minimal control. Every row records the validator revision it was judged at
 // (`validatorRevision`, `git -C <tree> rev-parse HEAD`).
-// Run: CHUNK=s89a pnpm exec node --import tsx <abs path to this file>  (from the committed tree's root)
+// Run: CHUNK=s90a pnpm exec node --import tsx <abs path to this file>  (from the committed tree's root)
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { appendFileSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
@@ -34679,155 +34677,65 @@ const mainWith = (parts: Record<string, string | Uint8Array>, sect: string): Rec
     [MAIN]: replaceOnce(replaceOnce(P[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`), "<w:sectPr>", `<w:sectPr>${sect}`),
 });
 
+import { readFileSync } from "node:fs";
 const PKG = "http://schemas.openxmlformats.org/package/2006/relationships";
-const A = "http://schemas.openxmlformats.org/drawingml/2006/main";
-const PIC = "http://schemas.openxmlformats.org/drawingml/2006/picture";
-const WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
-// A 1x1 transparent PNG.
-const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
-const CORE = `${XML_DECL}<cp:coreProperties xmlns:cp="${PKG.replace("relationships", "metadata/core-properties")}" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Probe 89</dc:title></cp:coreProperties>`;
-const APP = `${XML_DECL}<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>Microsoft Office Word</Application></Properties>`;
-const CUSTOM =
-    `${XML_DECL}<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">` +
-    `<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="Probe"><vt:lpwstr>89</vt:lpwstr></property></Properties>`;
-
-type Prop = { type: string; file: string; xml: string | Uint8Array; contentType?: string };
-const PROPS: Record<string, Prop> = {
-    core: {
-        type: `${PKG}/metadata/core-properties`,
-        file: "core.xml",
-        xml: CORE,
-        contentType: "application/vnd.openxmlformats-package.core-properties+xml",
-    },
-    app: {
-        type: `${R}/extended-properties`,
-        file: "app.xml",
-        xml: APP,
-        contentType: "application/vnd.openxmlformats-officedocument.extended-properties+xml",
-    },
-    custom: {
-        type: `${R}/custom-properties`,
-        file: "custom.xml",
-        xml: CUSTOM,
-        contentType: "application/vnd.openxmlformats-officedocument.custom-properties+xml",
-    },
-    thumbnail: { type: `${PKG}/metadata/thumbnail`, file: "thumbnail.png", xml: PNG },
-};
-/** `_rels/.rels` relating the `kind` part through `prefix + docProps/<file>`, stored at the package root under that spelling. */
-const pkgProp = (kind: string, prefix: string) => {
-    const prop = PROPS[kind]!;
-    const target = `${prefix}docProps/${prop.file}`;
+const THUMB = `${PKG}/metadata/thumbnail`;
+const asset = (name: string) => readFileSync(path.join(ROOT, "s90", "assets", name));
+type Variant = { file: string; bytes: Uint8Array; type: string; by: "default" | "override"; related?: boolean };
+const thumbnail = (v: Variant) => {
+    const ext = v.file.slice(v.file.lastIndexOf(".") + 1);
     return {
         ...P,
-        [target]: prop.xml,
-        [PKG_RELS]: appendRels(P[PKG_RELS]!, `<Relationship Id="rIdP" Type="${prop.type}" Target="${target}"/>`),
-        [CT]: prop.contentType ? overrides(P[CT]!, [target, prop.contentType]) : defaults(P[CT]!, "png", "image/png"),
+        [`docProps/${v.file}`]: v.bytes,
+        [PKG_RELS]:
+            v.related === false
+                ? P[PKG_RELS]!
+                : appendRels(P[PKG_RELS]!, `<Relationship Id="rIdT" Type="${THUMB}" Target="docProps/${v.file}"/>`),
+        [CT]: v.by === "default" ? defaults(P[CT]!, ext, v.type) : overrides(P[CT]!, [`docProps/${v.file}`, v.type]),
     };
 };
-
-const DRAWING =
-    `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="95250" cy="95250"/><wp:docPr id="1" name="Picture 1"/>` +
-    `<a:graphic xmlns:a="${A}"><a:graphicData uri="${PIC}"><pic:pic xmlns:pic="${PIC}"><pic:nvPicPr><pic:cNvPr id="1" name="image1.png"/><pic:cNvPicPr/></pic:nvPicPr>` +
-    `<pic:blipFill><a:blip r:embed="rIdI"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
-    `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="95250" cy="95250"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
-const header = (used: boolean) =>
-    `${XML_DECL}<w:hdr xmlns:w="${W}" xmlns:r="${R}" xmlns:wp="${WP}"><w:p><w:r><w:t>Header 89</w:t></w:r>${used ? DRAWING : ""}</w:p></w:hdr>`;
-/** A used header whose own sidecar relates an image through `prefix + image1.png`, stored at word/ under that spelling. */
-const headerImage = (used: boolean, prefix: string) => {
-    const target = `${prefix}image1.png`;
-    return mainWith(
-        {
-            ...P,
-            "word/header1.xml": header(used),
-            "word/_rels/header1.xml.rels": `${XML_DECL}<Relationships xmlns="${PKG}">${relationship("rIdI", "image", target)}</Relationships>`,
-            [`word/${target}`]: PNG,
-            [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
-            [CT]: defaults(overrides(P[CT]!, ["word/header1.xml", `${WML}.header+xml`]), "png", "image/png"),
-        },
-        `<w:headerReference w:type="default" r:id="rIdH"/>`,
-    );
-};
-
 type Row = [string, string, () => Promise<Uint8Array>];
-const FOOTER89 = `${XML_DECL}<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Footer 89</w:t></w:r></w:p></w:ftr>`;
-const HEADER89 = `${XML_DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header 89</w:t></w:r></w:p></w:hdr>`;
-const imageRels = (target: string) => `${XML_DECL}<Relationships xmlns="${PKG}">${relationship("rIdI", "image", target)}</Relationships>`;
-/** A part whose own sidecar relates an unused image through `prefix + image1.png`, stored at word/ under that spelling. */
-const sidecarImage = (owner: string, prefix: string) => {
-    const target = `${prefix}image1.png`;
-    const base: Record<string, string | Uint8Array> = { ...P, [`word/${target}`]: PNG, [CT]: defaults(P[CT]!, "png", "image/png") };
-    if (owner === "footer-used")
-        return mainWith(
-            {
-                ...base,
-                "word/footer1.xml": FOOTER89,
-                "word/_rels/footer1.xml.rels": imageRels(target),
-                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdF", "footer", "footer1.xml")),
-                [CT]: overrides(base[CT] as string, ["word/footer1.xml", `${WML}.footer+xml`]),
-            },
-            `<w:footerReference w:type="default" r:id="rIdF"/>`,
-        );
-    if (owner === "header-unused")
-        return {
-            ...base,
-            "word/header1.xml": HEADER89,
-            "word/_rels/header1.xml.rels": imageRels(target),
-            [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
-            [CT]: overrides(base[CT] as string, ["word/header1.xml", `${WML}.header+xml`]),
-        };
-    if (owner === "styles") return { ...base, "word/_rels/styles.xml.rels": imageRels(target) };
-    // An unreferenced part: no relationship names word/foo.xml.
-    return { ...base, "word/foo.xml": `${XML_DECL}<foo/>`, "word/_rels/foo.xml.rels": imageRels(target) };
-};
-const sidecarPair = (owner: string): Row[] => [
-    [
-        `sidecar-${owner}-ftp`,
-        `#1184: ${owner === "unreferenced" ? "an unreferenced word/foo.xml" : `the ${owner.replace("-", " ")} part`}'s own sidecar relates an unused image through ftp:image1.png, stored word/ftp:image1.png`,
-        () => buildDocx(sidecarImage(owner, "ftp:")),
-    ],
-    [
-        `sidecar-${owner}-plain-calibration`,
-        `calibration: the same sidecar image relationship through image1.png`,
-        () => buildDocx(sidecarImage(owner, "")),
-    ],
-];
-
-const propPair = (kind: string): Row[] => [
-    [
-        `pkgrels-${kind}-ftp`,
-        `#1184: _rels/.rels relates the ${kind} part through ftp:docProps/${PROPS[kind]!.file}, stored /ftp:docProps/${PROPS[kind]!.file} well-formed`,
-        () => buildDocx(pkgProp(kind, "ftp:")),
-    ],
-    [
-        `pkgrels-${kind}-plain-calibration`,
-        `calibration: the same _rels/.rels ${kind} relationship through docProps/${PROPS[kind]!.file}`,
-        () => buildDocx(pkgProp(kind, "")),
-    ],
-];
-const headerPair = (used: boolean): Row[] => {
-    const kind = used ? "used" : "unused";
-    return [
-        [
-            `header-image-${kind}-ftp`,
-            `#1184: a used header's own sidecar relates an image the header ${used ? "uses through r:embed" : "does not use"} through ftp:image1.png, stored word/ftp:image1.png`,
-            () => buildDocx(headerImage(used, "ftp:")),
-        ],
-        [
-            `header-image-${kind}-plain-calibration`,
-            `calibration: the same header-sidecar image relationship through image1.png`,
-            () => buildDocx(headerImage(used, "")),
-        ],
-    ];
-};
+const row = (name: string, issue: string, v: Variant): Row => [name, issue, () => buildDocx(thumbnail(v))];
 const withControl = (chunk: string, rows: Row[]): Row[] => [...rows, [`${chunk}-control-minimal`, "control", () => buildDocx({ ...P })]];
 const chunks: Record<string, Row[]> = {
-    s89a: withControl("s89a", [...propPair("core"), ...propPair("app"), ...propPair("custom"), ...propPair("thumbnail")]),
-    s89b: withControl("s89b", [...headerPair(true), ...headerPair(false)]),
-    s89c: withControl("s89c", [
-        ...sidecarPair("footer-used"),
-        ...sidecarPair("header-unused"),
-        ...sidecarPair("styles"),
-        ...sidecarPair("unreferenced"),
+    s90a: withControl("s90a", [
+        row("thumb-png1-default-s89a", "#1186: s89a's thumbnail calibration again: a 1x1 PNG at docProps/thumbnail.png, png Default", {
+            file: "thumbnail.png",
+            bytes: asset("1x1.png"),
+            type: "image/png",
+            by: "default",
+        }),
+        row("thumb-png1-default-unrelated", "#1186: the same PNG and Default, but no relationship names the part", {
+            file: "thumbnail.png",
+            bytes: asset("1x1.png"),
+            type: "image/png",
+            by: "default",
+            related: false,
+        }),
+        row("thumb-png96-default", "#1186: a 96x96 PNG at docProps/thumbnail.png, png Default", {
+            file: "thumbnail.png",
+            bytes: asset("96.png"),
+            type: "image/png",
+            by: "default",
+        }),
+        row("thumb-png1-override", "#1186: the 1x1 PNG typed image/png by an Override", {
+            file: "thumbnail.png",
+            bytes: asset("1x1.png"),
+            type: "image/png",
+            by: "override",
+        }),
+        row("thumb-jpeg96-default", "#1186: a 96x96 JPEG at docProps/thumbnail.jpeg, jpeg Default", {
+            file: "thumbnail.jpeg",
+            bytes: asset("96.jpeg"),
+            type: "image/jpeg",
+            by: "default",
+        }),
+        row("thumb-jpeg96-override", "#1186: the same JPEG typed image/jpeg by an Override", {
+            file: "thumbnail.jpeg",
+            bytes: asset("96.jpeg"),
+            type: "image/jpeg",
+            by: "override",
+        }),
     ]),
 };
 
@@ -35136,12 +35044,430 @@ out = [
     "tree at the first revision, and the re-judge from the root of the committed tree at the second.",
     "",
 ]
-for name, path, lang in (("s89builder.mts", ROOT / "s89builder.mts", "ts"), ("rejudge.mts", ROOT / "s90/rejudge.mts", "ts"),
+for name, path, lang in (("s90builder.mts", ROOT / "s90builder.mts", "ts"), ("rejudge.mts", ROOT / "s90/rejudge.mts", "ts"),
                          ("compare.py", ROOT / "s90/compare.py", "python"), ("section.py", ROOT / "s90/section.py", "python")):
     out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
 out += ["</details>", ""]
 (ROOT / "s90/section.md").write_text("\n".join(out))
 print(n, "rows,", len(raw), "raw records,", mb, "/", ma, "match")
+`````
+
+</details>
+
+### Session 91: 22:42Z–22:47Z on 2026-10-30, validator columns at 1d88dab4
+
+The three shapes the malformation audit found unjudged ([#1212](https://github.com/jandira-tech/docx-validate/issues/1212)), which #1213's `word-field-unbalanced`, `word-move-range-unpaired` and `xml-package-markup-compatibility` report as word-valid warnings and strict errors. One chunk, on the minimal package with its one run replaced or one part added: a body field with only a `begin` `w:fldChar`, one with `begin`, a `PAGE` instruction and `separate` but no `end`, an orphan `end`, and a balanced `PAGE` field calibration; a move-from range named `a` with no move-to range, a move-from start with no end beside its move-to pair, and a paired move calibration; and a `customXml/item1.xml` the main document relates whose `mc:Choice` `Requires` an undeclared prefix, with a calibration declaring it.
+
+The chunk ends with a minimal control. It ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 10 of 10 rows agree. The builder judged every row at `1d88dab4a6141f744b8698d0f1f51ff03cc668fe`, the #1213 head. Both runs waited until no other session's Word driver had run for 90 s.
+
+- **Word opens every shape clean.** No dialog named any row, in either run.
+- **It renders the broken fields as plain text.** The calibration's `PAGE` field computed `1`; the field with no `end` rendered its instruction, `PAGE`, before the text, and the `begin`-only and orphan-`end` rows rendered the text alone.
+- **It renders both sides of a move,** paired or not: the calibration and the start with no end show `HelloHello`, and the unpaired move-from shows its text.
+
+Word-valid at 1d88dab4 matches Word on 10 of 10 rows: it passes every row and warns on the six defective ones. Strict refuses those six, as its profile intends.
+
+| Run    | Observed             | Specimen                                  | Shape                                                                      | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome    | Word rendered | word-valid at 1d88dab4                   | strict at 1d88dab4                                    |
+| ------ | -------------------- | ----------------------------------------- | -------------------------------------------------------------------------- | ------------------ | ----------- | ----------- | ---------- | ------------- | ---------------------------------------- | ----------------------------------------------------- |
+| `s91a` | 22:42:09Z, 22:47:19Z | `field-begin-only`                        | #1212: a body fldChar begin with no separate or end                        | `f56376b7742fd910` | clean-open  | clean-open  | clean-open | `Hello`       | valid (warns `word-field-unbalanced`)    | invalid: `word-field-unbalanced@word/document.xml`    |
+| `s91a` | 22:42:09Z, 22:47:19Z | `field-begin-separate-no-end`             | #1212: begin, PAGE instrText and separate, with no end                     | `481b31d1dadcddb4` | clean-open  | clean-open  | clean-open | `PAGE Hello`  | valid (warns `word-field-unbalanced`)    | invalid: `word-field-unbalanced@word/document.xml`    |
+| `s91a` | 22:42:09Z, 22:47:19Z | `field-end-orphan`                        | #1212: a fldChar end with no begin                                         | `f8fe0ea3876db385` | clean-open  | clean-open  | clean-open | `Hello`       | valid (warns `word-field-unbalanced`)    | invalid: `word-field-unbalanced@word/document.xml`    |
+| `s91a` | 22:42:09Z, 22:47:19Z | `field-page-calibration`                  | #1212: a balanced PAGE field                                               | `67775e8b421c5ca6` | clean-open  | clean-open  | clean-open | `1`           | valid                                    | valid                                                 |
+| `s91a` | 22:42:09Z, 22:47:19Z | `move-from-unpaired`                      | #1212: a move-from range named a, with no move-to range                    | `0adb27757ef043a9` | clean-open  | clean-open  | clean-open | `Hello`       | valid (warns `word-move-range-unpaired`) | invalid: `word-move-range-unpaired@word/document.xml` |
+| `s91a` | 22:42:09Z, 22:47:19Z | `move-from-start-no-end`                  | #1212: a moveFromRangeStart with no moveFromRangeEnd, and its move-to pair | `db5a14766af0a7df` | clean-open  | clean-open  | clean-open | `HelloHello`  | valid (warns `word-move-range-unpaired`) | invalid: `word-move-range-unpaired@word/document.xml` |
+| `s91a` | 22:42:09Z, 22:47:19Z | `move-pair-calibration`                   | #1212: a move-from and a move-to range both named a                        | `1c7dd202f37df75d` | clean-open  | clean-open  | clean-open | `HelloHello`  | valid                                    | valid                                                 |
+| `s91a` | 22:42:09Z, 22:47:19Z | `customxml-requires-undeclared`           | #1212: a related customXml item whose Choice Requires an undeclared prefix | `4f65bbcbe60d9ea0` | clean-open  | clean-open  | clean-open | `Hello`       | valid (warns `mce-malformed`)            | invalid: `mce-malformed@customXml/item1.xml`          |
+| `s91a` | 22:42:09Z, 22:47:19Z | `customxml-requires-declared-calibration` | #1212: the same item with the Requires prefix declared                     | `dcef4c0cd97d0751` | clean-open  | clean-open  | clean-open | `Hello`       | valid                                    | valid                                                 |
+| `s91a` | 22:42:09Z, 22:47:19Z | `s91a-control-minimal`                    | control                                                                    | `96735acbb658e2d4` | clean-open  | clean-open  | clean-open | `Hello`       | valid                                    | valid                                                 |
+
+<details><summary>Raw records, session 91</summary>
+
+```jsonl
+{"run": "s91a", "pass": 1, "name": "field-begin-only", "sha256": "f56376b7742fd910472f6b989d3353bf54457cb9170cf36ab6ee18a1ba692da5", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:42:09+00:00", "staged": "00002__wfv__field-begin-only.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF field-begin-only_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 2, "name": "field-begin-only", "sha256": "f56376b7742fd910472f6b989d3353bf54457cb9170cf36ab6ee18a1ba692da5", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:47:19+00:00", "staged": "00002__wfv__field-begin-only.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF field-begin-only_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 1, "name": "field-begin-separate-no-end", "sha256": "481b31d1dadcddb4b3ab85937bf4226815422762f4feee61528d04bdcb704a73", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:42:09+00:00", "staged": "00003__wfv__field-begin-separate-no-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF field-begin-separate-no-end_byword.pdf (15419 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 2, "name": "field-begin-separate-no-end", "sha256": "481b31d1dadcddb4b3ab85937bf4226815422762f4feee61528d04bdcb704a73", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:47:19+00:00", "staged": "00003__wfv__field-begin-separate-no-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF field-begin-separate-no-end_byword.pdf (15419 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 1, "name": "field-end-orphan", "sha256": "f8fe0ea3876db3856e688886bfcba0eebb05fd42332b0945995a48e6874de06d", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:42:09+00:00", "staged": "00004__wfv__field-end-orphan.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF field-end-orphan_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 2, "name": "field-end-orphan", "sha256": "f8fe0ea3876db3856e688886bfcba0eebb05fd42332b0945995a48e6874de06d", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:47:19+00:00", "staged": "00004__wfv__field-end-orphan.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF field-end-orphan_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 1, "name": "field-page-calibration", "sha256": "67775e8b421c5ca66f950c6b7ec18fefe9b93a90071f537866efc5fd9716f8cd", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:42:09+00:00", "staged": "00005__wfv__field-page-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF field-page-calibration_byword.pdf (11342 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 2, "name": "field-page-calibration", "sha256": "67775e8b421c5ca66f950c6b7ec18fefe9b93a90071f537866efc5fd9716f8cd", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:47:19+00:00", "staged": "00005__wfv__field-page-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF field-page-calibration_byword.pdf (11342 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 1, "name": "move-from-unpaired", "sha256": "0adb27757ef043a9e4a57434df42d6e2b31ac3437e0a05b493f9b1833458ad1e", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:42:09+00:00", "staged": "00007__wfv__move-from-unpaired.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF move-from-unpaired_byword.pdf (13454 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 2, "name": "move-from-unpaired", "sha256": "0adb27757ef043a9e4a57434df42d6e2b31ac3437e0a05b493f9b1833458ad1e", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:47:19+00:00", "staged": "00007__wfv__move-from-unpaired.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF move-from-unpaired_byword.pdf (13454 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 1, "name": "move-from-start-no-end", "sha256": "db5a14766af0a7dfb1451713a760ed0b54ee31c236417b0b513a0f60b463d01e", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:42:09+00:00", "staged": "00006__wfv__move-from-start-no-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF move-from-start-no-end_byword.pdf (13494 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 2, "name": "move-from-start-no-end", "sha256": "db5a14766af0a7dfb1451713a760ed0b54ee31c236417b0b513a0f60b463d01e", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:47:19+00:00", "staged": "00006__wfv__move-from-start-no-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF move-from-start-no-end_byword.pdf (13494 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 1, "name": "move-pair-calibration", "sha256": "1c7dd202f37df75da111a342788c6f507043ca78d1af2be2d23545a1df2a4a79", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:42:09+00:00", "staged": "00008__wfv__move-pair-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF move-pair-calibration_byword.pdf (13526 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 2, "name": "move-pair-calibration", "sha256": "1c7dd202f37df75da111a342788c6f507043ca78d1af2be2d23545a1df2a4a79", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:47:19+00:00", "staged": "00008__wfv__move-pair-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF move-pair-calibration_byword.pdf (13526 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 1, "name": "customxml-requires-undeclared", "sha256": "4f65bbcbe60d9ea0b792fc6117ca5023d02d6279b227881f86c879b7e27ed6c0", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:42:09+00:00", "staged": "00001__wfv__customxml-requires-undeclared.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customxml-requires-undeclared_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 2, "name": "customxml-requires-undeclared", "sha256": "4f65bbcbe60d9ea0b792fc6117ca5023d02d6279b227881f86c879b7e27ed6c0", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:47:19+00:00", "staged": "00001__wfv__customxml-requires-undeclared.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customxml-requires-undeclared_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 1, "name": "customxml-requires-declared-calibration", "sha256": "dcef4c0cd97d0751f08f598101e7d3c29202e63dea06de79f0a1232b6053f049", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:42:09+00:00", "staged": "00000__wfv__customxml-requires-declared-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customxml-requires-declared-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 2, "name": "customxml-requires-declared-calibration", "sha256": "dcef4c0cd97d0751f08f598101e7d3c29202e63dea06de79f0a1232b6053f049", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:47:19+00:00", "staged": "00000__wfv__customxml-requires-declared-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF customxml-requires-declared-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 1, "name": "s91a-control-minimal", "sha256": "96735acbb658e2d4a4b0f0700fdc39ff65e7775396bfff4c022532b5d0dfd5d0", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:42:09+00:00", "staged": "00009__wfv__s91a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s91a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s91a", "pass": 2, "name": "s91a-control-minimal", "sha256": "96735acbb658e2d4a4b0f0700fdc39ff65e7775396bfff4c022532b5d0dfd5d0", "validatorRevision": "1d88dab4a6141f744b8698d0f1f51ff03cc668fe", "observedAt": "2026-10-30T22:47:19+00:00", "staged": "00009__wfv__s91a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s91a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 91 builder, cross-check and section scripts</summary>
+
+Reading the logs used session 41's `logcheck.py`, above, unchanged. The builder ran from the root of a clean checkout of the committed tree; its refusal of a tree with uncommitted changes (CodeRabbit on #1182) was added after the build, and is the only change since.
+
+`s91builder.mts`:
+
+```ts
+// Session 91 (2026-10-30, #1212): the field, move-range and customXml compatibility shapes #1213 warns on. Every row is
+// the minimal package (`tests/support/minimal-docx.ts`) with one paragraph run replaced, or one customXml part added.
+// s91a: an unclosed field (begin only; begin, instrText and separate), an orphan end, and a balanced PAGE field
+//   calibration; a move-from range with no move-to range, a move-from start with no end, and a paired move calibration;
+//   a customXml item whose Choice Requires an undeclared prefix, and the same item with the prefix declared.
+// Every chunk ends with a minimal control. Every row records the validator revision it was judged at
+// (`validatorRevision`, `git -C <tree> rev-parse HEAD`).
+// Run: CHUNK=s91a pnpm exec node --import tsx <abs path to this file>  (from the committed tree's root)
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const WT = process.env.WT ?? process.cwd();
+// The recorded revision must name the bytes that judged the rows (CodeRabbit on #1182).
+if (execFileSync("git", ["-C", WT, "status", "--porcelain", "--untracked-files=no"], { encoding: "utf8" }).trim() !== "")
+    throw new Error(`${WT} has uncommitted changes`);
+const { validate } = await import(path.join(WT, "src/scripts/office/validate.ts"));
+const { MINIMAL_PARTS, buildDocx } = await import(path.join(WT, "tests/support/minimal-docx.ts"));
+const REVISION = execFileSync("git", ["-C", WT, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const PKG_RELS = "_rels/.rels";
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n`;
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const P = MINIMAL_PARTS as Record<string, string>;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+const defaults = (ct: string, extension: string, type: string) =>
+    replaceOnce(ct, '<Default Extension="xml"', `<Default Extension="${extension}" ContentType="${type}"/><Default Extension="xml"`);
+/** `parts` with `r:` declared on the main document and `sect` first in its w:sectPr. */
+const mainWith = (parts: Record<string, string | Uint8Array>, sect: string): Record<string, string | Uint8Array> => ({
+    ...parts,
+    [MAIN]: replaceOnce(replaceOnce(P[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`), "<w:sectPr>", `<w:sectPr>${sect}`),
+});
+
+const DATE = 'w:author="Probe" w:date="2026-10-30T00:00:00Z"';
+const HELLO = "<w:r><w:t>Hello</w:t></w:r>";
+const body = (runs: string) => ({ ...P, [MAIN]: replaceOnce(P[MAIN]!, HELLO, runs) });
+const fld = (type: string) => `<w:r><w:fldChar w:fldCharType="${type}"/></w:r>`;
+const instr = '<w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>';
+const moveFrom = (name: string, end = true) =>
+    `<w:moveFromRangeStart w:id="10" w:name="${name}" ${DATE}/><w:moveFrom w:id="11" ${DATE}>${HELLO}</w:moveFrom>${end ? '<w:moveFromRangeEnd w:id="10"/>' : ""}`;
+const moveTo = (name: string) =>
+    `<w:moveToRangeStart w:id="12" w:name="${name}" ${DATE}/><w:moveTo w:id="13" ${DATE}>${HELLO}</w:moveTo><w:moveToRangeEnd w:id="12"/>`;
+const MCNS = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const customXml = (declare: boolean) => ({
+    ...P,
+    "customXml/item1.xml": `${XML_DECL}<x:root xmlns:x="urn:probe" xmlns:mc="${MCNS}"${declare ? ' xmlns:missing="urn:probe-missing"' : ""}><mc:AlternateContent><mc:Choice Requires="missing"><x:child/></mc:Choice><mc:Fallback/></mc:AlternateContent></x:root>`,
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdC", "customXml", "../customXml/item1.xml")),
+});
+type Row = [string, string, () => Promise<Uint8Array>];
+const row = (name: string, issue: string, parts: Record<string, string | Uint8Array>): Row => [name, issue, () => buildDocx(parts)];
+const withControl = (chunk: string, rows: Row[]): Row[] => [...rows, [`${chunk}-control-minimal`, "control", () => buildDocx({ ...P })]];
+const chunks: Record<string, Row[]> = {
+    s91a: withControl("s91a", [
+        row("field-begin-only", "#1212: a body fldChar begin with no separate or end", body(fld("begin") + HELLO)),
+        row(
+            "field-begin-separate-no-end",
+            "#1212: begin, PAGE instrText and separate, with no end",
+            body(fld("begin") + instr + fld("separate") + HELLO),
+        ),
+        row("field-end-orphan", "#1212: a fldChar end with no begin", body(HELLO + fld("end"))),
+        row("field-page-calibration", "#1212: a balanced PAGE field", body(fld("begin") + instr + fld("separate") + HELLO + fld("end"))),
+        row("move-from-unpaired", "#1212: a move-from range named a, with no move-to range", body(moveFrom("a"))),
+        row(
+            "move-from-start-no-end",
+            "#1212: a moveFromRangeStart with no moveFromRangeEnd, and its move-to pair",
+            body(moveFrom("a", false) + moveTo("a")),
+        ),
+        row("move-pair-calibration", "#1212: a move-from and a move-to range both named a", body(moveFrom("a") + moveTo("a"))),
+        row(
+            "customxml-requires-undeclared",
+            "#1212: a related customXml item whose Choice Requires an undeclared prefix",
+            customXml(false),
+        ),
+        row("customxml-requires-declared-calibration", "#1212: the same item with the Requires prefix declared", customXml(true)),
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = path.join(ROOT, chunk, "src");
+// A rerun starts from an empty src, so a removed or renamed row leaves no stale specimen (CodeRabbit on #985).
+rmSync(dir, { recursive: true, force: true });
+mkdirSync(dir, { recursive: true });
+const jsonl = path.join(ROOT, chunk, "specimens.jsonl");
+writeFileSync(jsonl, "");
+
+const verdict = async (file: string, profile: "word-valid" | "strict") => {
+    try {
+        const r = await validate(file, { profile });
+        return {
+            valid: r.valid,
+            errors: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "error")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+            warnings: [
+                ...new Set(
+                    r.issues
+                        .filter((x: { severity: string }) => x.severity === "warning")
+                        .map((x: { code: string; path?: string }) => `${x.code}@${x.path ?? "-"}`),
+                ),
+            ],
+        };
+    } catch (error) {
+        return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`], warnings: [] };
+    }
+};
+
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const target = path.join(dir, file);
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        control: issue === "control",
+        validatorRevision: REVISION,
+        wordValid: await verdict(target, "word-valid"),
+        strict: await verdict(target, "strict"),
+    };
+    appendFileSync(jsonl, JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} warn=${row.wordValid.warnings.filter((w: string) => !w.startsWith("ct-")).join(",")} strict=${row.strict.valid}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join the two runs of the session-91 chunk: log verdicts, table verdicts, validator verdicts, hashes.
+
+Each row's runs are the chunk's first pass (the chunk folder) and second pass (`pass2`), separate driver runs of
+byte-identical copies. The validator verdicts come from the builder (`specimens.jsonl`), which judged every row at the
+#1213 head that adds the checks these shapes probe; there is no re-judge.
+"""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s91a",)
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+
+
+def checks(run):
+    return {json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()}
+
+
+def matches(readings, valid):
+    return (all(r in REJECTIONS for r in readings) and valid is False) or (all(r == "clean-open" for r in readings) and valid is True)
+
+
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    for name, spec in specs.items():
+        for run in runs:
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        p1, p2 = (checks(run)[name] for run in runs)
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "runs": [str(r.relative_to(ROOT)) for r in runs],
+                     "readings": readings, "agreed": agreed, "outcome": TO_MANIFEST.get(readings[0], "unknown") if agreed else "unknown",
+                     "wordValid": spec["wordValid"]["valid"], "revision": spec["validatorRevision"],
+                     "matches": agreed and matches(readings, spec["wordValid"]["valid"])})
+(ROOT / "s91/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<45} {r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['matches']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| matches:", sum(r["matches"] for r in rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-91 part of docs/plans/evidence/word-probes-2026-10-24.md into s91/section.md.
+
+Reads the chunk's specimens.jsonl (written by the builder, each row carrying the validator revision it was judged at),
+each run's logcheck.jsonl and pdf/manifest.jsonl, and the results.json compare.py writes. Revisions come from the rows,
+never from this script. The text Word rendered is read from its own PDFs with pdftotext, so the narrative's claims about
+what Word rendered are checked here.
+"""
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CHUNKS = ("s91a",)
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s91/results.json").read_text())}
+
+
+def cell(v):
+    if v["valid"] is None:
+        return "threw: " + ", ".join(f"`{e}`" for e in v["errors"])
+    if not v["valid"]:
+        return "invalid: " + ", ".join(f"`{e}`" for e in v["errors"])
+    return "valid" + (" (warns " + ", ".join(f"`{w.split('@')[0]}`" for w in v["warnings"]) + ")" if v["warnings"] else "")
+
+
+def manifest(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return row
+    raise KeyError(file)
+
+
+def checks(run):
+    return {json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()}
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+def rendered(run, file):
+    pdf = run / "pdf" / (Path(file).stem + "_byword.pdf")
+    if not pdf.exists():
+        return None
+    return " ".join(subprocess.run(["pdftotext", str(pdf), "-"], check=True, capture_output=True, text=True).stdout.split())
+
+
+rows, raw, starts, ends, revisions = [], [], [], [], set()
+texts = {}
+for label in CHUNKS:
+    for s in map(json.loads, (ROOT / label / "specimens.jsonl").read_text().splitlines()):
+        result = results[(label, s["file"])]
+        runs = [ROOT / label, ROOT / label / "pass2"]
+        revisions.add(s["validatorRevision"])
+        times = [datetime.fromisoformat(manifest(r, s["file"])["run_at"]).astimezone(timezone.utc) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        cs = [checks(r)[s["file"]] for r in runs]
+        seen = {rendered(r, s["file"]) for r in runs}
+        assert len(seen) == 1, (s["file"], seen)
+        texts[s["file"]] = next(iter(seen))
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {s['issue'].replace('|', chr(92) + '|')} | "
+            f"`{s['sha256'][:16]}` | {word_cell(cs[0])} | {word_cell(cs[1])} | {result['outcome']} | `{texts[s['file']]}` | "
+            f"{cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, cs, times), start=1):
+            out = {"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"], "validatorRevision": s["validatorRevision"],
+                   "observedAt": t.isoformat(), "staged": c["staged"], "logVerdict": c["logVerdict"], "tableVerdict": c["outcomesVerdict"],
+                   "pdf": c["pdf"], "evidence": c["evidence"]}
+            if manifest(r, s["file"]).get("error"):
+                out["error"] = manifest(r, s["file"])["error"]
+            raw.append(json.dumps(out, ensure_ascii=False))
+
+assert len(revisions) == 1, revisions
+rev = next(iter(revisions))
+# The narrative's claims, checked against results.json and the PDFs: every row's four readings agree and every row
+# opened clean, so word-valid (which only warns on these shapes) matches Word on every row; the rendered texts are the
+# ones the narrative quotes.
+for (label, file), r in results.items():
+    assert r["agreed"] and r["outcome"] == "clean-open" and r["matches"], (label, file, r)
+assert texts["field-page-calibration.docx"] == "1"
+assert texts["field-begin-separate-no-end.docx"] == "PAGE Hello"
+assert texts["move-pair-calibration.docx"] == texts["move-from-start-no-end.docx"] == "HelloHello"
+assert {f: t for f, t in texts.items() if t != "Hello"}.keys() == {"field-page-calibration.docx", "field-begin-separate-no-end.docx",
+                                                                    "move-pair-calibration.docx", "move-from-start-no-end.docx"}
+# The driver opens files in name order (#671).
+for label in CHUNKS:
+    files = sorted(json.loads(l)["file"] for l in (ROOT / label / "specimens.jsonl").read_text().splitlines())
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        assert [json.loads(l)["original_filename"] for l in (run / "pdf/manifest.jsonl").read_text().splitlines()] == files, run
+day = f"{min(starts):%Y-%m-%d}"
+assert day == f"{max(ends):%Y-%m-%d}"
+n = len(rows)
+I = "https://github.com/jandira-tech/docx-validate/issues/"
+out = [
+    f"### Session 91: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on {day}, validator columns at {rev[:8]}",
+    "",
+    f"The three shapes the malformation audit found unjudged ([#1212]({I}1212)), which #1213's `word-field-unbalanced`, "
+    "`word-move-range-unpaired` and `xml-package-markup-compatibility` report as word-valid warnings and strict errors. One "
+    "chunk, on the minimal package with its one run replaced or one part added: a body field with only a `begin` "
+    "`w:fldChar`, one with `begin`, a `PAGE` instruction and `separate` but no `end`, an orphan `end`, and a balanced `PAGE` "
+    "field calibration; a move-from range named `a` with no move-to range, a move-from start with no end beside its move-to "
+    "pair, and a paired move calibration; and a `customXml/item1.xml` the main document relates whose `mc:Choice` "
+    "`Requires` an undeclared prefix, with a calibration declaring it.",
+    "",
+    "The chunk ends with a minimal control. It ran twice, as two separate driver runs of byte-identical copies, and each "
+    "run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome "
+    f"is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; "
+    f"{sum(r['agreed'] for r in results.values())} of {n} rows agree. The builder judged every row at `{rev}`, the #1213 "
+    "head. Both runs waited until no other session's Word driver had run for 90 s.",
+    "",
+    "- **Word opens every shape clean.** No dialog named any row, in either run.",
+    "- **It renders the broken fields as plain text.** The calibration's `PAGE` field computed `1`; the field with no `end` "
+    "rendered its instruction, `PAGE`, before the text, and the `begin`-only and orphan-`end` rows rendered the text alone.",
+    "- **It renders both sides of a move,** paired or not: the calibration and the start with no end show `HelloHello`, "
+    "and the unpaired move-from shows its text.",
+    "",
+    f"Word-valid at {rev[:8]} matches Word on {sum(r['matches'] for r in results.values())} of {n} rows: it passes every "
+    "row and warns on the six defective ones. Strict refuses those six, as its profile intends.",
+    "",
+    f"| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | Word rendered | word-valid at {rev[:8]} | strict at {rev[:8]} |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 91</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 91 builder, cross-check and section scripts</summary>",
+    "",
+    "Reading the logs used session 41's `logcheck.py`, above, unchanged. The builder ran from the root of a clean "
+    "checkout of the committed tree; its refusal of a tree with uncommitted changes (CodeRabbit on #1182) was added after "
+    "the build, and is the only change since.",
+    "",
+]
+for name, path, lang in (("s91builder.mts", ROOT / "s91builder.mts", "ts"), ("compare.py", ROOT / "s91/compare.py", "python"),
+                         ("section.py", ROOT / "s91/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s91/section.md").write_text("\n".join(out))
+print(n, "rows,", len(raw), "raw records")
 `````
 
 </details>
