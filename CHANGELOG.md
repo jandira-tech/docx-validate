@@ -6,7 +6,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-- Include the package-root `_rels/.rels` in `pack`'s XML condensing and `unpack`'s pretty-printing and smart-quote escaping ([#1198](https://github.com/jandira-tech/docx-validate/issues/1198)). Both file walks now match the lower-cased name's `.xml` or `.rels` suffix, so the dotfile is processed like `word/_rels/document.xml.rels`.
+- Include the package-root `_rels/.rels` in `pack`'s XML condensing and `unpack`'s pretty-printing and smart-quote escaping ([#1198](https://github.com/jandira-tech/docx-validate/issues/1198)). Both file walks now treat a `.xml` name, or a `.rels` name in a `_rels` folder, as XML, so the dotfile is processed like `word/_rels/document.xml.rels`, while a binary `.rels` stored elsewhere (`word/media/.rels`) keeps its bytes.
 
 ## [0.54.0-rc.2] — 2026-10-30
 
