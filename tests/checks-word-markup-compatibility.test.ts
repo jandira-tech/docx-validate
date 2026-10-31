@@ -6,6 +6,7 @@
 import { describe, expect, it } from "vitest";
 
 import { ValidationContext } from "../src/lib/validation-context";
+import { compatibilityMainParts, compatibilityStoryParts } from "./support/word-compatibility-parts";
 import { wordMarkupCompatibilityCheck as check } from "../src/scripts/office/checks/word-markup-compatibility";
 
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
@@ -200,4 +201,66 @@ describe("character data directly inside AlternateContent (#851, sessions 65 and
             "AlternateContent holds character data directly inside it.",
         ]);
     });
+});
+
+describe("Word-read XML parts regardless of stored name (#1217)", () => {
+    for (const profile of ["word-valid", "strict"] as const) {
+        for (const main of ["word/document.bin", "other/main.xml", "WORD/doc%75ment.BIN"]) {
+            for (const [code, xml] of [
+                ["mce-must-understand", document("", MUST_UNDERSTAND_FOO)],
+                ["mce-malformed", document(FALLBACK_ONLY)],
+            ]) {
+                it(`judges ${code} in ${main} under ${profile}`, async () => {
+                    const ctx = ValidationContext.fromEntries(compatibilityMainParts(main!, xml));
+                    expect(await check.run(ctx, profile)).toEqual([expect.objectContaining({ code, path: main, severity: "error" })]);
+                });
+            }
+        }
+        for (const [segment, tag] of [
+            ["glossaryDocument", "glossaryDocument"],
+            ["header", "hdr"],
+            ["footer", "ftr"],
+            ["comments", "comments"],
+            ["footnotes", "footnotes"],
+            ["endnotes", "endnotes"],
+        ]) {
+            it(`judges a read ${segment} stored outside word/ as binary under ${profile}`, async () => {
+                const part = `other/${segment}.bin`;
+                const ctx = ValidationContext.fromEntries(
+                    compatibilityStoryParts(part, segment!, `<w:${tag} ${ROOT}${MUST_UNDERSTAND_FOO}/>`),
+                );
+                expect(await check.run(ctx, profile)).toEqual([
+                    expect.objectContaining({ code: "mce-must-understand", path: part, severity: "error" }),
+                ]);
+            });
+        }
+    }
+    it("does not judge an unused binary header or an untyped binary main document", async () => {
+        const unused = compatibilityStoryParts("word/header1.bin", "header", `<w:hdr ${ROOT}${MUST_UNDERSTAND_FOO}/>`, false);
+        expect(await check.run(ValidationContext.fromEntries(unused), "word-valid")).toEqual([]);
+        const untyped = compatibilityMainParts("word/document.bin", document(FALLBACK_ONLY));
+        untyped["[Content_Types].xml"] = untyped["[Content_Types].xml"]!.replace(
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
+            "application/octet-stream",
+        );
+        expect(await check.run(ValidationContext.fromEntries(untyped), "word-valid")).toEqual([]);
+    });
+    for (const strict of [false, true]) {
+        it(`keeps character-data session citations conditional for a binary main, Strict sibling: ${strict}`, async () => {
+            const parts = compatibilityMainParts(
+                "word/document.bin",
+                document('<mc:AlternateContent><mc:Choice Requires="w14"><w:p/></mc:Choice>Stray<mc:Fallback/></mc:AlternateContent>'),
+            );
+            if (strict) parts["docProps/app.xml"] = '<Properties xmlns="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"/>';
+            expect(await check.run(ValidationContext.fromEntries(parts), "word-valid")).toEqual([
+                expect.objectContaining({
+                    code: "mce-malformed",
+                    path: "word/document.bin",
+                    message: strict
+                        ? "AlternateContent holds character data directly inside it."
+                        : "AlternateContent holds character data directly inside it; Word 16.115 offered recovery for every position probed (sessions 65 and 67).",
+                }),
+            ]);
+        });
+    }
 });

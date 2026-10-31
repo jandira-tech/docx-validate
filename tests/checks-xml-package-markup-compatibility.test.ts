@@ -77,10 +77,7 @@ describe("xml-package-markup-compatibility", () => {
     });
     for (const profile of ["word-valid", "strict"] as const) {
         for (const main of ["word/document.bin", "other/main.xml"]) {
-            // word-markup-compatibility judges only word/*.xml and relationships
-            // parts, so this check keeps reporting a related main document stored
-            // under another name until the Word check reads it (#1217).
-            it(`still reports the related ${main} under ${profile}`, async () => {
+            it(`leaves the related ${main} to the Word check under ${profile} (#1217)`, async () => {
                 const parts = { ...MINIMAL_PARTS };
                 delete parts["word/document.xml"];
                 parts["_rels/.rels"] = parts["_rels/.rels"]!.replace("word/document.xml", main);
@@ -89,16 +86,17 @@ describe("xml-package-markup-compatibility", () => {
                 const issues = await createDefaultCheckRegistry()
                     .get("xml-package-markup-compatibility")
                     ?.run(ValidationContext.fromEntries(parts), profile);
-                expect(issues).toContainEqual(
-                    expect.objectContaining({ path: main, severity: profile === "strict" ? "error" : "warning" }),
-                );
+                expect(issues).toEqual([]);
+                expect(
+                    await createDefaultCheckRegistry().get("word-markup-compatibility")?.run(ValidationContext.fromEntries(parts), profile),
+                ).toEqual([expect.objectContaining({ path: main, severity: "error", code: "mce-unbound-prefix" })]);
             });
         }
         for (const [part, segment] of [
             ["other/header.bin", "header"],
             ["other/settings.xml", "settings"],
         ] as const) {
-            it(`still reports a related ${segment} outside word/ under ${profile} (#1217)`, async () => {
+            it(`assigns a related ${segment} outside word/ to its compatibility check under ${profile} (#1217)`, async () => {
                 const parts = { ...MINIMAL_PARTS };
                 parts["word/_rels/document.xml.rels"] = parts["word/_rels/document.xml.rels"]!.replace(
                     "</Relationships>",
@@ -115,11 +113,19 @@ describe("xml-package-markup-compatibility", () => {
                     `<Override PartName="/${part}" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${segment}+xml"/></Types>`,
                 );
                 parts[part] = root("", 'xmlns:p="urn:unknown" mc:MustUnderstand="p"');
-                expect(
-                    await createDefaultCheckRegistry()
-                        .get("xml-package-markup-compatibility")
-                        ?.run(ValidationContext.fromEntries(parts), profile),
-                ).toContainEqual(expect.objectContaining({ path: part, severity: profile === "strict" ? "error" : "warning" }));
+                const ctx = ValidationContext.fromEntries(parts);
+                const packageIssues = await createDefaultCheckRegistry().get("xml-package-markup-compatibility")?.run(ctx, profile);
+                const wordIssues = await createDefaultCheckRegistry().get("word-markup-compatibility")?.run(ctx, profile);
+                if (segment === "header") {
+                    expect(packageIssues).toEqual([]);
+                    expect(wordIssues).toEqual([expect.objectContaining({ path: part, severity: "error" })]);
+                } else {
+                    // Settings are not story parts; the package check retains them.
+                    expect(packageIssues).toEqual([
+                        expect.objectContaining({ path: part, severity: profile === "strict" ? "error" : "warning" }),
+                    ]);
+                    expect(wordIssues).toEqual([]);
+                }
             });
         }
     }
