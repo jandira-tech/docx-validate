@@ -250,8 +250,9 @@ describe("xsd-validator", () => {
             const inlineSchemaPath = path.join(tempDir, "self-contained.xsd");
             writeFileSync(inlineSchemaPath, SELF_CONTAINED_XSD, "utf-8");
             const issues = await validator.validate(SCHEMA_INVALID_XML, inlineSchemaPath);
-            expect(issues.length).toBeGreaterThan(0);
-            expect(issues.some((issue) => typeof issue.line === "number")).toBe(true);
+            // The engine reports this one-line document at line 1. A number
+            // check also accepts the column (0) or a hardcoded 0.
+            expect(issues.map((issue) => issue.line)).toEqual([1]);
         });
     });
 });
