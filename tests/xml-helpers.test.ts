@@ -360,6 +360,88 @@ describe("decodeXmlPart / encodeXmlPart", () => {
 });
 
 describe("prettyXml", () => {
+    /** Text nodes in document order, including whitespace-only nodes. */
+    const textNodes = (node: Node): string[] => {
+        if (node.nodeType === 3 || node.nodeType === 4) return [node.nodeValue ?? ""];
+        return Array.from(node.childNodes).flatMap(textNodes);
+    };
+
+    it.each([" <!--c--> ", " <x/> ", "<!--c-->", "<?mark a > b?>"])(
+        "preserves text nodes beside markup in xml:space=preserve (#1219): %s",
+        (content) => {
+            const xml = `<w:t xmlns:w="urn:word" xml:space="preserve">${content}</w:t>`;
+            const before = parseXml(xml);
+            const pretty = prettyXml(before);
+            expect(textNodes(parseXml(pretty).documentElement)).toEqual(textNodes(before.documentElement));
+            expect(pretty).toBe(xml);
+        },
+    );
+
+    it.each(["t", "w:t", "a:t", "other:delText", "instrText", "other:delInstrText"])(
+        "preserves text-bearing local names without xml:space (#1219): %s",
+        (name) => {
+            const xml = `<${name} xmlns:w="urn:word" xmlns:a="urn:drawing" xmlns:other="urn:other"> <!--c--><?mark a > b?><x/> </${name}>`;
+            const before = parseXml(xml);
+            const pretty = prettyXml(before);
+            expect(textNodes(parseXml(pretty).documentElement)).toEqual(textNodes(before.documentElement));
+            expect(pretty).toBe(xml);
+        },
+    );
+
+    it.each(["\u00a0<!--c-->", "<!--c-->\u00a0", "&#160;<!--c-->", "\u2003<x/>", " \t\n\r"])(
+        "uses XML whitespace when preserving direct text (#1219): %j",
+        (content) => {
+            const before = parseXml(`<r>${content}</r>`);
+            const pretty = prettyXml(before);
+            expect(textNodes(parseXml(pretty).documentElement)).toEqual(textNodes(before.documentElement));
+            expect(pretty).toBe(xmlHelpers.serializeXml(before));
+        },
+    );
+
+    it("inherits xml:space when printing a subtree (#1219)", () => {
+        const before = parseXml('<r xml:space="preserve"><wrap><target> <!--c--><x/> </target></wrap></r>');
+        const target = getElementsByTagNameNSAll(before, "*", "target")[0]!;
+        const pretty = prettyXml(target);
+        expect(textNodes(parseXml(pretty).documentElement)).toEqual(textNodes(target));
+        expect(pretty).toBe("<target> <!--c--><x/> </target>");
+    });
+
+    it("resets inherited xml:space at the nearer default ancestor (#1219)", () => {
+        const before = parseXml(
+            '<r xml:space="preserve"><wrap xml:space="default"><target> <a/><!--c--><?mark a > b?><b/> </target></wrap></r>',
+        );
+        const target = getElementsByTagNameNSAll(before, "*", "target")[0]!;
+        expect(prettyXml(target)).toBe("<target>\n  <a/>\n  <!--c-->\n  <?mark a > b?>\n  <b/>\n</target>");
+    });
+
+    it("keeps a preserved container and its descendants verbatim (#1219)", () => {
+        const xml = '<r xml:space="preserve"> <wrap> <!--c--><x/> </wrap> </r>';
+        const before = parseXml(xml);
+        const pretty = prettyXml(before);
+        expect(textNodes(parseXml(pretty).documentElement)).toEqual(textNodes(before.documentElement));
+        expect(pretty).toBe(xml);
+    });
+
+    it.each([
+        "<!DOCTYPE r [<!ELEMENT r ANY>]>",
+        '<!DOCTYPE r [<!ELEMENT r ANY><!ENTITY e "a > b [ ]">]>',
+        '<!DOCTYPE r SYSTEM "a>b.dtd" [<!-- ] > [ --><?mark ] >?><!ELEMENT r ANY>]>',
+    ])("keeps the complete DOCTYPE subset opaque (#1219): %s", (doctype) => {
+        const before = parseXml(`${doctype}<r/>`);
+        const pretty = prettyXml(before);
+        const after = parseXml(pretty);
+        expect(xmlHelpers.serializeXml(after.doctype!)).toBe(xmlHelpers.serializeXml(before.doctype!));
+        expect(textNodes(after.documentElement)).toEqual(textNodes(before.documentElement));
+        expect(pretty).toBe(`${xmlHelpers.serializeXml(before.doctype!)}\n<r/>`);
+    });
+
+    it("indents element-only Word containers with comments and PIs (#1219)", () => {
+        const xml = '<w:body xmlns:w="urn:word"> <w:p> <!--c--><?mark a > b?><w:r/> </w:p> </w:body>';
+        expect(prettyXml(parseXml(xml))).toBe(
+            '<w:body xmlns:w="urn:word">\n  <w:p>\n    <!--c-->\n    <?mark a > b?>\n    <w:r/>\n  </w:p>\n</w:body>',
+        );
+    });
+
     it.each([" a  b ", "\t a\n  b\t "])("keeps preserve-space text verbatim (#1219): %j", (text) => {
         const xml = `<w:t xmlns:w="urn:word" xml:space="preserve">${text}</w:t>`;
         expect(prettyXml(parseXml(xml))).toBe(xml);

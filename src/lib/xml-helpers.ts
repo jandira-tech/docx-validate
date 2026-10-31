@@ -299,19 +299,84 @@ export const serializeXml = (node: Node, encoding?: string): string => {
     return xml.replace(/^(<\?xml\b(?:(?!\?>)[\s\S])*?encoding\s*=\s*)(["'])[^"']*\2/i, `$1$2${encoding}$2`);
 };
 
+/** Tokenize serialized XML in one forward scan, keeping declarations and quoted markup opaque. */
+const prettyXmlTokens = (raw: string): string[] => {
+    const tokens: string[] = [];
+    let offset = 0;
+    while (offset < raw.length) {
+        const start = offset;
+        const terminator = raw.startsWith("<!--", start)
+            ? "-->"
+            : raw.startsWith("<![CDATA[", start)
+              ? "]]>"
+              : raw.startsWith("<?", start)
+                ? "?>"
+                : undefined;
+        if (terminator !== undefined) {
+            const end = raw.indexOf(terminator, start + 2);
+            offset = end < 0 ? raw.length : end + terminator.length;
+        } else if (raw[start] !== "<") {
+            const end = raw.indexOf("<", start);
+            offset = end < 0 ? raw.length : end;
+        } else {
+            const doctype = raw.startsWith("<!DOCTYPE", start);
+            let subsetDepth = 0;
+            let quote: string | undefined;
+            offset += 1;
+            while (offset < raw.length) {
+                const char = raw[offset];
+                if (quote !== undefined) {
+                    if (char === quote) {
+                        quote = undefined;
+                    }
+                } else if (doctype && (raw.startsWith("<!--", offset) || raw.startsWith("<?", offset))) {
+                    // Brackets and '>' inside a subset's comment or PI are data.
+                    const close = raw.startsWith("<!--", offset) ? "-->" : "?>";
+                    const end = raw.indexOf(close, offset + 2);
+                    offset = end < 0 ? raw.length : end + close.length;
+                    continue;
+                } else if (char === '"' || char === "'") {
+                    quote = char;
+                } else if (doctype && char === "[") {
+                    subsetDepth += 1;
+                } else if (doctype && char === "]") {
+                    subsetDepth -= 1;
+                } else if (char === ">" && subsetDepth === 0) {
+                    offset += 1;
+                    break;
+                }
+                offset += 1;
+            }
+        }
+        tokens.push(raw.slice(start, offset));
+    }
+    return tokens;
+};
+
 /**
- * Pretty-print a DOM `Document` with the given indent (default two spaces).
+ * Pretty-print a DOM node with the given indent (default two spaces).
  * Like Python's `toprettyxml`, keep a sole text child beside its tags, even
  * when it contains only whitespace. Keep mixed content intact too: adding
- * indentation there would change its text. Only element-only content is
- * re-indented; serialized text, CDATA, comments, PIs and escapes are copied.
+ * indentation there would change its text. xml:space="preserve" and text-
+ * bearing local names also keep the entire element verbatim. Only element-
+ * only content is re-indented; serialized text and opaque markup are copied.
  */
 export const prettyXml = (node: Node, indent = "  "): string => {
     const raw = serializeXml(node);
-    // Comments, CDATA and PIs are opaque, including any '<' or '>' inside.
-    // Quoted attribute values likewise must not split a tag at a '>'.
-    const tokens = raw.match(/<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>|<\?[\s\S]*?\?>|<(?:[^>"']|"[^"]*"|'[^']*')+>|[^<]+/g) ?? [];
-    const stack: { start: number; hasText: boolean }[] = [];
+    const tokens = prettyXmlTokens(raw);
+    // A caller can print a subtree whose xml:space was declared above it.
+    let inheritedPreserve = false;
+    for (let ancestor = node.parentNode; ancestor; ancestor = ancestor.parentNode) {
+        if (ancestor.nodeType === 1) {
+            const space = (ancestor as Element).getAttributeNS("http://www.w3.org/XML/1998/namespace", "space");
+            if (space === "preserve" || space === "default") {
+                inheritedPreserve = space === "preserve";
+                break;
+            }
+        }
+    }
+    const textNames = new Set(["t", "delText", "instrText", "delInstrText"]);
+    const stack: { start: number; hasText: boolean; preserve: boolean }[] = [];
     const inlineEnds = new Map<number, number>();
     for (const [i, token] of tokens.entries()) {
         if (token.startsWith("</")) {
@@ -319,13 +384,19 @@ export const prettyXml = (node: Node, indent = "  "): string => {
             if (parent && (parent.hasText || (i === parent.start + 2 && !tokens[i - 1].startsWith("<")))) {
                 inlineEnds.set(parent.start, i);
             }
-        } else if (token.startsWith("<![CDATA[") || (!token.startsWith("<") && token.trim() !== "")) {
+        } else if (token.startsWith("<![CDATA[") || (!token.startsWith("<") && /[^ \t\n\r]/.test(token))) {
             const parent = stack[stack.length - 1];
             if (parent) {
                 parent.hasText = true;
             }
         } else if (token.startsWith("<") && !token.startsWith("<!") && !token.startsWith("<?") && !token.endsWith("/>")) {
-            stack.push({ start: i, hasText: false });
+            // XMLSerializer writes attributes in double quotes. Using XML's
+            // whitespace class here keeps Unicode text out of markup rules.
+            const space = /[ \t\n\r]xml:space="(preserve|default)"/.exec(token)?.[1];
+            const preserve = space === undefined ? (stack[stack.length - 1]?.preserve ?? inheritedPreserve) : space === "preserve";
+            const [, name] = /^<([^ \t\n\r/>]+)/.exec(token)!;
+            const localName = name.slice(name.indexOf(":") + 1);
+            stack.push({ start: i, hasText: preserve || textNames.has(localName), preserve });
         }
     }
 
@@ -349,7 +420,7 @@ export const prettyXml = (node: Node, indent = "  "): string => {
             if (!token.endsWith("/>")) {
                 depth += 1;
             }
-        } else if (token.trim() !== "") {
+        } else if (/[^ \t\n\r]/.test(token)) {
             lines.push(token);
         }
     }
