@@ -3719,10 +3719,23 @@ describe("runCommentFromArgv", () => {
                 await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
                 const code = await runCommentFromArgv([dir, "0", "Hello world", "--author", "Test", "--initials", "T"]);
                 expect(code).toBe(0);
+                const dom = parseXml(await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8"));
+                const comments = getElementsByTagNameNSAll(dom, WORD_MAIN_NAMESPACE, "comment");
+                expect(comments).toHaveLength(1);
+                expect(comments[0]!.getAttributeNS(WORD_MAIN_NAMESPACE, "id")).toBe("0");
+                expect(comments[0]!.getAttributeNS(WORD_MAIN_NAMESPACE, "author")).toBe("Test");
+                expect(comments[0]!.getAttributeNS(WORD_MAIN_NAMESPACE, "initials")).toBe("T");
+                expect(getElementsByTagNameNSAll(comments[0]!, WORD_MAIN_NAMESPACE, "t").map((t) => t.textContent)).toEqual([
+                    "Hello world",
+                ]);
             });
             const out = stdout.join("");
             expect(out).toContain("Added comment 0");
-            expect(out).toContain("<w:commentRangeStart");
+            expect(out.match(/<w:(?:commentRangeStart|commentRangeEnd|commentReference) w:id="\d+"\/>/g)).toEqual([
+                '<w:commentRangeStart w:id="0"/>',
+                '<w:commentRangeEnd w:id="0"/>',
+                '<w:commentReference w:id="0"/>',
+            ]);
         } finally {
             restore();
         }
@@ -3734,12 +3747,33 @@ describe("runCommentFromArgv", () => {
             await withTempDir(async (dir) => {
                 await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
                 expect(await runCommentFromArgv([dir, "0", "first", "--author", "Test", "--initials", "T"])).toBe(0);
-                const code = await runCommentFromArgv([dir, "1", "reply", "--author", "Test", "--initials", "T", "--parent", "0"]);
+                stdout.length = 0;
+                const code = await runCommentFromArgv([dir, "1", "reply", "--author", "Reviewer", "--initials", "R", "--parent", "0"]);
                 expect(code).toBe(0);
+                const dom = parseXml(await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8"));
+                const comments = getElementsByTagNameNSAll(dom, WORD_MAIN_NAMESPACE, "comment");
+                expect(
+                    comments.map((comment) => ({
+                        id: comment.getAttributeNS(WORD_MAIN_NAMESPACE, "id"),
+                        author: comment.getAttributeNS(WORD_MAIN_NAMESPACE, "author"),
+                        initials: comment.getAttributeNS(WORD_MAIN_NAMESPACE, "initials"),
+                        text: getElementsByTagNameNSAll(comment, WORD_MAIN_NAMESPACE, "t").map((t) => t.textContent),
+                    })),
+                ).toEqual([
+                    { id: "0", author: "Test", initials: "T", text: ["first"] },
+                    { id: "1", author: "Reviewer", initials: "R", text: ["reply"] },
+                ]);
             });
             const out = stdout.join("");
             expect(out).toContain("Added reply 1");
-            expect(out).toContain('w:id="0"/><w:commentRangeStart w:id="1"');
+            expect(out.match(/<w:(?:commentRangeStart|commentRangeEnd|commentReference) w:id="\d+"\/>/g)).toEqual([
+                '<w:commentRangeStart w:id="0"/>',
+                '<w:commentRangeStart w:id="1"/>',
+                '<w:commentRangeEnd w:id="1"/>',
+                '<w:commentRangeEnd w:id="0"/>',
+                '<w:commentReference w:id="0"/>',
+                '<w:commentReference w:id="1"/>',
+            ]);
         } finally {
             restore();
         }
@@ -3815,6 +3849,7 @@ describe("comment.ts entry-point guard", () => {
             expect(stdout).toHaveBeenCalled();
         } finally {
             process.argv = argv;
+            exit.mockRestore();
             stdout.mockRestore();
         }
     });
