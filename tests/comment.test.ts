@@ -3878,7 +3878,9 @@ describe("runCommentFromArgv", () => {
         try {
             const code = await runCommentFromArgv(["some-dir", "abc", "text", "--author", "T", "--initials", "T"]);
             expect(code).toBe(1);
-            expect(stderr.join("")).toBe("Error: commentId must be an integer (got abc)\n");
+            expect(stderr.join("")).toBe(
+                "Error: commentId must be a decimal integer from 0 to 9007199254740991 without leading zeros (got abc)\n",
+            );
         } finally {
             restore();
         }
@@ -3889,7 +3891,9 @@ describe("runCommentFromArgv", () => {
         try {
             const code = await runCommentFromArgv(["some-dir", "1", "text", "--author", "T", "--initials", "T", "--parent", "abc"]);
             expect(code).toBe(1);
-            expect(stderr.join("")).toBe("Error: --parent must be an integer (got abc)\n");
+            expect(stderr.join("")).toBe(
+                "Error: --parent must be a decimal integer from 0 to 9007199254740991 without leading zeros (got abc)\n",
+            );
         } finally {
             restore();
         }
