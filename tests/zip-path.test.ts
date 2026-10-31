@@ -225,6 +225,30 @@ describe("extractZipEntries (#675)", () => {
             }
         });
     });
+
+    it("removes a file a failed write left behind", async () => {
+        await withTempDir(async (dir) => {
+            const out = path.join(dir, "out");
+            await fsPromises.mkdir(out);
+            const dest = path.join(out, "partial.xml");
+            const writeFile = fsPromises.writeFile.bind(fsPromises);
+            const spy = vi.spyOn(fsPromises, "writeFile").mockImplementation((async (file, data, options) => {
+                if (String(file) === dest) {
+                    await writeFile(file, "partial bytes", options);
+                    throw Object.assign(new Error("simulated disk full after partial write"), { code: "ENOSPC" });
+                }
+                return writeFile(file, data, options);
+            }) as typeof fsPromises.writeFile);
+            try {
+                await expect(extractZipEntries(await zipOf([["partial.xml", "FULL DATA"]]), out)).rejects.toMatchObject({
+                    code: "ENOSPC",
+                });
+                expect(entriesUnder(out)).toEqual([]);
+            } finally {
+                spy.mockRestore();
+            }
+        });
+    });
 });
 
 describe("findLinkBelow (#675, #939)", () => {
