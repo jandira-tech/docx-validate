@@ -213,10 +213,29 @@ describe("docx diagnostics", () => {
             );
             const inv = await collectDocxSemanticInventory(root);
             const shapes = [...inv.counters.values()].filter((c) => c.category === "table shape");
-            const shape = (label: string) => shapes.find((c) => c.label === label)?.count ?? 0;
-            expect(shape("table 1×3")).toBe(1); // table A
-            expect(shape("table 2×3")).toBe(1); // table B via gridSpan fallback
-            expect(shape("merged cell gridSpan=2")).toBe(2); // one in each table
+            expect(shapes).toEqual([
+                {
+                    path: "word/document.xml",
+                    category: "table shape",
+                    label: "merged cell gridSpan=2", // one in each table
+                    unit: "cell(s)",
+                    count: 2,
+                },
+                {
+                    path: "word/document.xml",
+                    category: "table shape",
+                    label: "table 1×3", // table A
+                    unit: "table(s)",
+                    count: 1,
+                },
+                {
+                    path: "word/document.xml",
+                    category: "table shape",
+                    label: "table 2×3", // table B via gridSpan fallback
+                    unit: "table(s)",
+                    count: 1,
+                },
+            ]);
         });
     });
 
@@ -1067,9 +1086,24 @@ describe("semantic inventory coverage (#1190)", () => {
                         `</w:tr></w:tbl>`,
                 ),
             );
-            expect(await countersFor(dir, "table shape")).toEqual([
-                { label: "merged cell gridSpan=2", count: 1 },
-                { label: "table 1×5", count: 1 },
+            const tableShapes = [...(await collectDocxSemanticInventory(dir)).counters.values()].filter(
+                (counter) => counter.category === "table shape",
+            );
+            expect(tableShapes).toEqual([
+                {
+                    path: "word/document.xml",
+                    category: "table shape",
+                    label: "merged cell gridSpan=2",
+                    unit: "cell(s)",
+                    count: 1,
+                },
+                {
+                    path: "word/document.xml",
+                    category: "table shape",
+                    label: "table 1×5",
+                    unit: "table(s)",
+                    count: 1,
+                },
             ]);
         });
     });
