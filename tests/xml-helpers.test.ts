@@ -53,9 +53,20 @@ describe("xml-helpers element collectors", () => {
 
     it("walks when the document's mutation counter is not a number", () => {
         const dom = parseXml(DOC);
-        // Deleting the own property uncovers a numeric prototype value. A non-number is what the index refuses.
-        Object.defineProperty(dom, "_inc", { value: undefined, configurable: true });
-        expect(getElementsByTagNameNSAll(dom, "urn:a", "p").map((p) => p.textContent)).toEqual(["one", "tworun"]);
+        // A stable non-number: xmldom still updates the tree, and two queries would otherwise cache the old one.
+        Object.defineProperty(dom, "_inc", {
+            get: () => "opaque",
+            set: () => undefined,
+            configurable: true,
+        });
+        const texts = () => getElementsByTagNameNSAll(dom, "urn:a", "p").map((p) => p.textContent);
+        expect(texts()).toEqual(["one", "tworun"]);
+        expect(texts()).toEqual(["one", "tworun"]);
+        const body = dom.getElementsByTagName("pkga:body")[0]!;
+        const added = dom.createElementNS("urn:a", "pkga:p");
+        added.appendChild(dom.createTextNode("three"));
+        body.appendChild(added);
+        expect(texts()).toEqual(["one", "tworun", "three"]);
     });
 
     it("root semantics mirror the native API: documentElement included for a Document root, self excluded for an Element root", () => {
@@ -407,8 +418,9 @@ describe("prettyXml", () => {
         });
     }, 10_000);
 
-    it("puts text that follows a closing tag on its own line", () => {
-        expect(prettyXml(parseXml("<r><a>x</a>tail</r>"))).toBe("<r>\n  <a>x\n  </a>\n  tail\n</r>");
+    it("indents element-only content", () => {
+        // #1219: prettyXml inserts whitespace into element text (`x` becomes `x\n  `). Pin only structure.
+        expect(prettyXml(parseXml("<r><a><b/></a></r>"))).toBe("<r>\n  <a>\n    <b/>\n  </a>\n</r>");
     });
 
     it("keeps text on a comment that closes an empty tag, and breaks after any other earlier angle bracket", () => {
@@ -442,6 +454,14 @@ describe("serializeXml", () => {
         expect(serializeXml(parseXml("<r/>"), "UTF-8")).toBe('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<r/>');
         expect(serializeXml(parseXml('<?xml version="1.0" encoding="UTF-16"?><r/>'), "UTF-8")).toBe(
             '<?xml version="1.0" encoding="UTF-8"?><r/>',
+        );
+        const utf16le = serializeXml(parseXml("<r/>"), "UTF-16LE");
+        expect(utf16le).toBe('<?xml version="1.0" encoding="UTF-16LE" standalone="yes"?>\n<r/>');
+        const utf16leBytes = Buffer.from(utf16le, "utf16le");
+        expect(utf16leBytes.subarray(0, 2)).toEqual(Buffer.from([0x3c, 0x00]));
+        expect(utf16leBytes.includes(Buffer.from('encoding="UTF-16LE"', "utf16le"))).toBe(true);
+        expect(serializeXml(parseXml('<?xml version="1.0" encoding="UTF-8"?><r/>'), "UTF-16LE")).toBe(
+            '<?xml version="1.0" encoding="UTF-16LE"?><r/>',
         );
     });
 });
