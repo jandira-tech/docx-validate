@@ -393,13 +393,55 @@ describe("decodeXmlPart / encodeXmlPart", () => {
 });
 
 describe("prettyXml", () => {
+    it.each([" a  b ", "\t a\n  b\t "])("keeps preserve-space text verbatim (#1219): %j", (text) => {
+        const xml = `<w:t xmlns:w="urn:word" xml:space="preserve">${text}</w:t>`;
+        expect(prettyXml(parseXml(xml))).toBe(xml);
+    });
+
+    it("keeps plain text and its closing tag together (#1219)", () => {
+        expect(prettyXml(parseXml("<r><t>Hello</t></r>"))).toBe("<r>\n  <t>Hello</t>\n</r>");
+    });
+
+    it.each([" ", "  ", "\t\n  "])("keeps a whitespace-only text child (#1219): %j", (text) => {
+        const xml = `<t xml:space="preserve">${text}</t>`;
+        expect(prettyXml(parseXml(xml))).toBe(xml);
+    });
+
+    it.each([
+        "<r> before  <b> bold </b>  after </r>",
+        "<r><b/>tail</r>",
+        "<r>head<b/></r>",
+        "<r> head <b><c/></b> tail </r>",
+        "<r>before<b/> <c/>after</r>",
+    ])("adds no whitespace inside mixed content (#1219): %s", (xml) => {
+        expect(prettyXml(parseXml(xml))).toBe(xml);
+    });
+
+    it.each(["<r><![CDATA[ a  > b <c/>\n ]]></r>", "<r> before <![CDATA[<a>]]> after </r>"])(
+        "keeps CDATA byte-identical (#1219): %s",
+        (xml) => {
+            expect(prettyXml(parseXml(xml))).toBe(xml);
+        },
+    );
+
+    it("keeps comments, PIs, and entity escapes byte-identical in mixed content (#1219)", () => {
+        const xml = "<r> &amp; &lt; <!-- a > b <c --><?pi a > b?> &gt; </r>";
+        expect(prettyXml(parseXml(xml))).toBe(xml);
+    });
+
+    it("keeps nested element-only indentation and drops old indentation (#1219)", () => {
+        expect(prettyXml(parseXml("<r> \n <a>\n <b/> <c/>\n </a>\t<d/>\n</r>"), "    ")).toBe(
+            "<r>\n    <a>\n        <b/>\n        <c/>\n    </a>\n    <d/>\n</r>",
+        );
+    });
+
     it("preserves inline text after opening and empty tags", () => {
-        expect(prettyXml(parseXml("<r><a>text</a><empty/>tail</r>"))).toBe("<r>\n  <a>text\n  </a>\n  <empty/>tail\n</r>");
+        expect(prettyXml(parseXml("<r><a>text</a><empty/>tail</r>"))).toBe("<r><a>text</a><empty/>tail</r>");
     });
 
     it("preserves formatting around comments, processing instructions, and CDATA", () => {
         expect(prettyXml(parseXml("<r><!-- <a -->tail<?pi?><![CDATA[<a>]]>text</r>"))).toBe(
-            "<r>\n  <!-- <a -->tail\n  <?pi ?>\n  <![CDATA[<a>]]>text\n</r>",
+            "<r><!-- <a -->tail<?pi ?><![CDATA[<a>]]>text</r>",
         );
     });
 
@@ -410,7 +452,7 @@ describe("prettyXml", () => {
             import { parseXml, prettyXml } from ${JSON.stringify(moduleUrl)};
             const comment = "<!-- " + "< ".repeat(200_000) + "> trailing -->";
             const xml = "<root>" + comment + "tail</root>";
-            assert.equal(prettyXml(parseXml(xml)), "<root>\\n  " + comment + "\\n  tail\\n</root>");
+            assert.equal(prettyXml(parseXml(xml)), xml);
         `;
         await promisify(execFile)(process.execPath, ["--import", "tsx", "--input-type=module", "--eval", script], {
             cwd: fileURLToPath(new URL("..", import.meta.url)),
