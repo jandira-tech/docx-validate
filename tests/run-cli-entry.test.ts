@@ -107,6 +107,7 @@ describe("runCli — entry-point dispatch", () => {
                 await vi.waitFor(() => expect(exit).toHaveBeenCalledWith(7));
             } finally {
                 process.argv[1] = argv1;
+                exit.mockRestore();
             }
         });
     });
@@ -123,6 +124,7 @@ describe("runCli — entry-point dispatch", () => {
                 await vi.waitFor(() => expect(exit).toHaveBeenCalledWith(0));
             } finally {
                 process.argv[1] = argv1;
+                exit.mockRestore();
             }
         });
     });
@@ -140,14 +142,16 @@ describe("runCli — entry-point dispatch", () => {
             });
             process.argv[1] = file;
             try {
+                const error = new Error("kapow");
+                error.stack = "Error: kapow\n    at cliAction (entry.ts:10:5)\n    at dispatch (entry.ts:20:3)";
                 runCli(pathToFileURL(file).href, () => {
-                    throw new Error("kapow");
+                    throw error;
                 });
                 await vi.waitFor(() => expect(exit).toHaveBeenCalledWith(1));
-                expect(written.join("")).toContain("kapow");
-                expect(written.join("")).toContain("Error");
+                expect(written.join("")).toBe(`${error.stack}\n`);
             } finally {
                 process.argv[1] = argv1;
+                exit.mockRestore();
                 stderr.mockRestore();
             }
         });
@@ -176,6 +180,7 @@ describe("runCli — entry-point dispatch", () => {
                 expect(written.join("")).toBe("no stack here\n");
             } finally {
                 process.argv[1] = argv1;
+                exit.mockRestore();
                 stderr.mockRestore();
             }
         });
@@ -199,6 +204,7 @@ describe("runCli — entry-point dispatch", () => {
                 expect(written.join("")).toContain("rejected string");
             } finally {
                 process.argv[1] = argv1;
+                exit.mockRestore();
                 stderr.mockRestore();
             }
         });
