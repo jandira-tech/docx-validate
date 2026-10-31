@@ -465,9 +465,9 @@ describe("prettyXml", () => {
         expect(prettyXml(parseXml("<r><a><b/></a></r>"))).toBe("<r>\n  <a>\n    <b/>\n  </a>\n</r>");
     });
 
-    it("keeps text on a comment that closes an empty tag, and breaks after any other earlier angle bracket", () => {
-        expect(prettyXml(parseXml("<r><!--<>-->tail</r>"))).toBe("<r>\n  <!--<>-->tail\n</r>");
-        expect(prettyXml(parseXml("<r><!-- > -->tail</r>"))).toBe("<r>\n  <!-- > -->\n  tail\n</r>");
+    it("copies mixed content with a comment holding angle brackets verbatim (#1219)", () => {
+        expect(prettyXml(parseXml("<r><!--<>-->tail</r>"))).toBe("<r><!--<>-->tail</r>");
+        expect(prettyXml(parseXml("<r><!-- > -->tail</r>"))).toBe("<r><!-- > -->tail</r>");
     });
 
     it("drops whitespace-only text", () => {
