@@ -76,6 +76,7 @@ starts a CLI.</p>
 <pre><code class="bash"><span class="hl-0">pnpm</span><span class="hl-1"> </span><span class="hl-2">exec</span><span class="hl-1"> </span><span class="hl-2">tsx</span><span class="hl-1"> </span><span class="hl-2">src/scripts/office/validate.ts</span><span class="hl-1"> &lt;</span><span class="hl-2">pat</span><span class="hl-1">h&gt;</span><br/><span class="hl-0">pnpm</span><span class="hl-1"> </span><span class="hl-2">exec</span><span class="hl-1"> </span><span class="hl-2">tsx</span><span class="hl-1"> </span><span class="hl-2">src/scripts/office/unpack.ts</span><span class="hl-1"> &lt;</span><span class="hl-2">pat</span><span class="hl-1">h&gt;</span><br/><span class="hl-0">pnpm</span><span class="hl-1"> </span><span class="hl-2">exec</span><span class="hl-1"> </span><span class="hl-2">tsx</span><span class="hl-1"> </span><span class="hl-2">src/scripts/office/pack.ts</span><span class="hl-1"> &lt;</span><span class="hl-2">di</span><span class="hl-1">r&gt;</span><br/><span class="hl-0">pnpm</span><span class="hl-1"> </span><span class="hl-2">exec</span><span class="hl-1"> </span><span class="hl-2">tsx</span><span class="hl-1"> </span><span class="hl-2">src/scripts/accept-changes.ts</span><span class="hl-1"> &lt;</span><span class="hl-2">pat</span><span class="hl-1">h&gt;</span><br/><span class="hl-0">pnpm</span><span class="hl-1"> </span><span class="hl-2">exec</span><span class="hl-1"> </span><span class="hl-2">tsx</span><span class="hl-1"> </span><span class="hl-2">src/scripts/comment.ts</span><span class="hl-1"> &lt;</span><span class="hl-2">pat</span><span class="hl-1">h&gt;</span>
 </code><button type="button">Copy</button></pre>
 
+<p>The comment CLI's <code>commentId</code> and <code>--parent</code> values must be canonical decimal integers from 0 to 9007199254740991 (<code>Number.MAX_SAFE_INTEGER</code>) with no leading zeros. <code>0</code> is accepted; <code>01</code>, a sign, whitespace, and any larger integer are refused.</p>
 <h2 id="programmatic-use" class="tsd-anchor-link">Programmatic use<a href="#programmatic-use" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>The validator and packaged document helpers are available as plain function/class
 imports. The package's barrel (<code>src/index.ts</code>) is hand-maintained (the
@@ -288,12 +289,24 @@ relative target that merely starts with <code>http</code> resolves as a part: Wo
 folder target
 (<a href="https://github.com/jandira-tech/docx-validate/issues/988">#988</a>).
 Any other scheme (<code>ftp:</code>, <code>httpfoo:</code>) makes the target an absolute URI that names
-no part, reported as <code>rels-broken</code>: Word offered recovery for a used header and the
-styles part related through one, beside the well-formed stored <code>word/ftp:…</code> part
-(Word probes session 87), so the styles type and a used header block word-valid
-in a story root's sidecar, and every unprobed placement (an unused header, the
-package relationships part, another type) keeps a warning
-(<a href="https://github.com/jandira-tech/docx-validate/issues/1127">#1127</a>).
+no part, reported as <code>rels-broken</code>. It blocks word-valid in every relationships
+part, whatever the relationship type: Word refused it in each one shown.
+Word offered recovery for a used header and the styles part related through one,
+beside the well-formed stored <code>word/ftp:…</code> part (Word probes session 87,
+<a href="https://github.com/jandira-tech/docx-validate/issues/1127">#1127</a>), and for an
+unused header, a <code>_rels/.rels</code> styles relationship, an unused image, and the main
+document's settings, numbering, comments, footnotes and a used and an unused
+footer (session 88,
+<a href="https://github.com/jandira-tech/docx-validate/issues/1178">#1178</a>). Session 89
+repeated the refusal in <code>_rels/.rels</code> for the core, extended and custom properties
+(s89a), in a used header's own sidecar for an <code>ftp:</code> image it embeds and one it
+does not use (s89b), and for an unused <code>ftp:</code> image in a used footer's, an unused
+header's, the styles part's and an unreferenced part's own sidecar (s89c). Two
+runs each, all four readings agree; each plain target opened clean
+(<a href="https://github.com/jandira-tech/docx-validate/issues/1184">#1184</a>). Only the
+scheme arm extends to every relationships part; the folder, OPC-relationships
+and <code>customXml</code> arms keep their narrower scope in <code>_rels/.rels</code> or a story root's
+own sidecar (<a href="https://github.com/jandira-tech/docx-validate/issues/987">#987</a>).
 They read the scheme ASCII case-insensitively, as RFC 3986 does, so an <code>HTTP:</code> or
 <code>MAILTO:</code> target is skipped as its lowercase spelling is, where it used to be
 resolved as a part; lenient's scan stays case-sensitive. Word has been shown
@@ -588,7 +601,7 @@ names and input bytes unchanged.</p>
 </tr>
 <tr>
 <td><code>story</code></td>
-<td><code>word-shading-color</code>, <code>word-page-margin-attributes</code>, <code>word-run-misplaced</code>, <code>word-run-properties-misplaced</code>, <code>word-underline-misplaced</code>, <code>word-paragraph-properties-misplaced</code>, <code>word-section-properties-misplaced</code>, <code>word-footnote-reference-missing</code>, <code>word-endnote-reference-missing</code>, <code>word-shared-story-part</code>, <code>word-numbering-picture-bullet</code>, <code>word-sdt-id-empty</code>, <code>word-text-contains-paragraph</code></td>
+<td><code>word-shading-color</code>, <code>word-page-margin-attributes</code>, <code>word-run-misplaced</code>, <code>word-run-properties-misplaced</code>, <code>word-underline-misplaced</code>, <code>word-paragraph-properties-misplaced</code>, <code>word-section-properties-misplaced</code>, <code>word-footnote-reference-missing</code>, <code>word-endnote-reference-missing</code>, <code>word-shared-story-part</code>, <code>word-numbering-picture-bullet</code>, <code>word-sdt-id-empty</code>, <code>word-text-contains-paragraph</code>, <code>word-field-unbalanced</code></td>
 </tr>
 <tr>
 <td><code>tables</code></td>
@@ -600,7 +613,7 @@ names and input bytes unchanged.</p>
 </tr>
 <tr>
 <td><code>content-types</code></td>
-<td><code>word-content-type-invalid</code>, <code>ct-duplicate-declaration</code>, <code>ct-override-partname-invalid</code>, <code>ct-override-partname-word-refused</code>, <code>ct-markup-compatibility</code>, <code>word-part-content-type-generic</code>, <code>word-part-content-type-inexact</code>, <code>word-part-content-type-mismatch</code>, <code>word-part-content-type-unrecognized</code></td>
+<td><code>word-content-type-invalid</code>, <code>ct-duplicate-declaration</code>, <code>ct-override-partname-invalid</code>, <code>ct-override-partname-word-refused</code>, <code>ct-markup-compatibility</code>, <code>word-part-content-type-generic</code>, <code>word-part-content-type-inexact</code>, <code>word-part-content-type-mismatch</code>, <code>word-part-content-type-unrecognized</code>, <code>word-package-thumbnail-type</code>, <code>ct-stale-override</code></td>
 </tr>
 <tr>
 <td><code>relationships</code></td>
@@ -608,7 +621,7 @@ names and input bytes unchanged.</p>
 </tr>
 <tr>
 <td><code>tracked-changes</code></td>
-<td><code>word-textbox-deleted-text</code>, <code>word-move-from-deleted-text</code></td>
+<td><code>word-textbox-deleted-text</code>, <code>word-move-from-deleted-text</code>, <code>word-move-range-unpaired</code></td>
 </tr>
 <tr>
 <td><code>settings</code></td>
@@ -616,7 +629,7 @@ names and input bytes unchanged.</p>
 </tr>
 <tr>
 <td><code>xml</code></td>
-<td><code>word-markup-compatibility</code>, <code>word-document-root</code>, <code>word-choice-requires-undeclared</code></td>
+<td><code>word-markup-compatibility</code>, <code>word-document-root</code>, <code>word-choice-requires-undeclared</code>, <code>xml-package-markup-compatibility</code></td>
 </tr>
 <tr>
 <td><code>comments</code></td>
@@ -1116,6 +1129,16 @@ and stays unreported. An <code>invalid-*</code> declared value stays with
 finding is reported per part, and when several relationship types reach it
 the observed reach names the finding whenever it exists. Full, quick and
 named runs agree.</p>
+<p><code>word-package-thumbnail-type</code> reports one error per internal package thumbnail
+relationship in <code>_rels/.rels</code> whose stored target resolves to <code>image/png</code>, using
+Override precedence over Default and case-insensitive type/subtype comparison.
+It blocks word-valid and strict and runs in quick and named selections; lenient
+runs no such rule. Word 16.115 offered recovery for 1×1 and 96×96 PNG thumbnails
+and opened 96×96 JPEG thumbnails clean with either declaration (Word probes
+sessions 89 and 90, <a href="https://github.com/jandira-tech/docx-validate/issues/1186">#1186</a>).
+The recovery sentence is omitted in packages containing an ISO Strict part.
+Other image types, parameterized types, External relationships, absent targets,
+unrelated PNG parts and thumbnails related from other parts are not judged.</p>
 <p>The <code>schema</code> group contains structural checks, not an XSD walk. The <code>comments</code>
 group runs <code>comment-markers</code> (range pairing and references to existing comments)
 and <code>comment-threading</code> (marker counts, paragraph ids, parent ids, and durable ids
@@ -1976,8 +1999,10 @@ once as <code>ignorable-undeclared</code> even when staging fails. Named Word-va
 share that identity, severity and count. Descendant-only findings keep
 <code>mce-unbound-prefix</code> (<a href="https://github.com/jandira-tech/docx-validate/issues/499">#499</a>).</p>
 <p>Strict bundles both Transitional and ISO Strict schema trees, with local Dublin
-Core imports. Strict does not subtract errors shared with <code>original</code> or suppress
-messages in <code>IGNORED_VALIDATION_ERRORS</code>; only lenient retains those XSD behaviors.
+Core imports. Strict does not subtract errors shared with <code>original</code>; only
+lenient retains that XSD behavior. No profile suppresses schema messages by their
+text: <code>IGNORED_VALIDATION_ERRORS</code> is empty
+(<a href="https://github.com/jandira-tech/docx-validate/issues/1209">#1209</a>).
 Strict preserves each schema error occurrence and available engine line. If
 preprocessing changes the view, the message marks the line as referring to the
 preprocessed view. Schema-load failures remain blocking <code>xsd-schema-load-failed</code>
@@ -2035,6 +2060,7 @@ list.</p>
 <pre><code class="ts"><span class="hl-10">import</span><span class="hl-1"> {</span><br/><span class="hl-1">    </span><span class="hl-4">pack</span><span class="hl-1">, </span><span class="hl-3">// repack an unpacked dir into .docx/.pptx/.xlsx</span><br/><span class="hl-1">    </span><span class="hl-4">unpack</span><span class="hl-1">, </span><span class="hl-3">// unzip + pretty-print + optional run-merging</span><br/><span class="hl-1">    </span><span class="hl-4">addComment</span><span class="hl-1">, </span><span class="hl-3">// append a w:comment to an unpacked DOCX</span><br/><span class="hl-1">    </span><span class="hl-4">mergeRuns</span><span class="hl-1">, </span><span class="hl-3">// collapse adjacent w:r runs with identical formatting</span><br/><span class="hl-1">    </span><span class="hl-4">simplifyRedlines</span><span class="hl-1">, </span><span class="hl-3">// collapse adjacent same-author tracked changes</span><br/><span class="hl-1">} </span><span class="hl-10">from</span><span class="hl-1"> </span><span class="hl-2">&quot;docx-validate&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">// e.g. unpack → mutate → repack:</span><br/><span class="hl-10">await</span><span class="hl-1"> </span><span class="hl-0">unpack</span><span class="hl-1">(</span><span class="hl-2">&quot;./contract.docx&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;./unpacked&quot;</span><span class="hl-1">);</span><br/><span class="hl-3">// (your edits go here)</span><br/><span class="hl-10">await</span><span class="hl-1"> </span><span class="hl-0">pack</span><span class="hl-1">(</span><span class="hl-2">&quot;./unpacked&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;./contract.modified.docx&quot;</span><span class="hl-1">);</span>
 </code><button type="button">Copy</button></pre>
 
+<p><code>pack</code> refuses symbolic links to files or directories inside the input directory, returning <code>{ ok: false, message }</code> with the link's relative path using <code>/</code> separators and writing no output file (#1199).</p>
 <p><code>unpack</code> checks every entry before it writes one (#675). It refuses, writing
 nothing, an entry whose stored name leaves the output directory, even one JSZip
 would load inside it (<code>../evil.txt</code> loads as <code>evil.txt</code>; #676), and an entry

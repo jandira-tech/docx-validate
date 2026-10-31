@@ -15,13 +15,12 @@
 <li class="">
 <div class="tsd-signature tsd-anchor-link" id="prettyxml"><span class="tsd-kind-call-signature">prettyXml</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">node</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">indent</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><a href="#prettyxml" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
 <div class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Pretty-print a DOM <code>Document</code> with the given indent (default two spaces).
-Mirrors Python's <code>doc.toprettyxml(indent=&quot;  &quot;)</code>.</p>
-<p>Implementation note: <code>@xmldom</code> does not have a built-in pretty-printer, so
-we walk the serialized output and re-indent. This is good enough for
-human-readable diffs; do NOT use the result as the canonical form for
-roundtrip comparison (whitespace inside <code>xml:space=&quot;preserve&quot;</code> runs
-survives but surrounding indentation is reflowed).</p>
+<div class="tsd-comment tsd-typography"><p>Pretty-print a DOM node with the given indent (default two spaces).
+Like Python's <code>toprettyxml</code>, keep a sole text child beside its tags, even
+when it contains only whitespace. Keep mixed content intact too: adding
+indentation there would change its text. xml:space=&quot;preserve&quot; and text-
+bearing local names also keep the entire element verbatim. Only element-
+only content is re-indented; serialized text and opaque markup are copied.</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -30,7 +29,7 @@ survives but surrounding indentation is reflowed).</p>
 <li><span><span class="tsd-kind-parameter">indent</span>: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;  &quot;</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/45e7962fd961081ec1d7265f722e18dea18a6d53/src/lib/xml-helpers.ts#L331">work/docx-validate/docx-validate/src/lib/xml-helpers.ts:331</a></li></ul></aside></div></li></ul></section></div>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/a0e2f455e2d8d441ee5d36661b8e9f1ac87f16a0/src/lib/xml-helpers.ts#L364">work/docx-validate/docx-validate/src/lib/xml-helpers.ts:364</a></li></ul></aside></div></li></ul></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
