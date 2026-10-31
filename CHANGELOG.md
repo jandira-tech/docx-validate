@@ -6,6 +6,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.60.0] — 2026-10-31
+
+First stable release since `v0.52.0`, and the first on npm's `latest` tag since 0.5.0 (0.51.0, 0.52.0 and the 0.53.0 prereleases were tagged but not published to npm). It promotes `v0.54.0-rc.3` unchanged: the code is that prerelease's, and the sections below, from 0.54.0-rc.3 back to 0.51.0, list everything since 0.5.0. Read [MIGRATION.md](MIGRATION.md) before upgrading: DOCX/DOCM now default to the `word-valid` profile.
+
 ## [0.54.0-rc.3] — 2026-10-30
 
 Changes since `v0.54.0-rc.2` (2026-10-30), merged through the pre-release PR [#1214](https://github.com/jandira-tech/docx-validate/pull/1214) and [#1216](https://github.com/jandira-tech/docx-validate/pull/1216): [#1182](https://github.com/jandira-tech/docx-validate/pull/1182), [#1185](https://github.com/jandira-tech/docx-validate/pull/1185), [#1187](https://github.com/jandira-tech/docx-validate/pull/1187), [#1188](https://github.com/jandira-tech/docx-validate/pull/1188), [#1196](https://github.com/jandira-tech/docx-validate/pull/1196), [#1197](https://github.com/jandira-tech/docx-validate/pull/1197), [#1200](https://github.com/jandira-tech/docx-validate/pull/1200), [#1201](https://github.com/jandira-tech/docx-validate/pull/1201), [#1202](https://github.com/jandira-tech/docx-validate/pull/1202), [#1204](https://github.com/jandira-tech/docx-validate/pull/1204), [#1205](https://github.com/jandira-tech/docx-validate/pull/1205), [#1206](https://github.com/jandira-tech/docx-validate/pull/1206), [#1208](https://github.com/jandira-tech/docx-validate/pull/1208), [#1210](https://github.com/jandira-tech/docx-validate/pull/1210), [#1211](https://github.com/jandira-tech/docx-validate/pull/1211), [#1213](https://github.com/jandira-tech/docx-validate/pull/1213), [#1218](https://github.com/jandira-tech/docx-validate/pull/1218), [#1220](https://github.com/jandira-tech/docx-validate/pull/1220). This prerelease is published under npm's `next` tag; it does not advance `latest`.
@@ -837,4 +841,5 @@ commits — the changelog starts here.
 [0.1.2]: https://github.com/jandira-tech/docx-validate/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/jandira-tech/docx-validate/releases/tag/v0.1.1
 [0.53.0-rc.1]: https://github.com/jandira-tech/docx-validate/compare/v0.52.0...v0.53.0-rc.1
-[Unreleased]: https://github.com/jandira-tech/docx-validate/compare/v0.53.0-rc.1...HEAD
+[0.60.0]: https://github.com/jandira-tech/docx-validate/compare/v0.52.0...v0.60.0
+[Unreleased]: https://github.com/jandira-tech/docx-validate/compare/v0.60.0...HEAD
