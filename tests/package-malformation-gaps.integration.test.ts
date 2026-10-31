@@ -177,6 +177,19 @@ describe("Word-read markup compatibility regardless of stored name (#1217)", () 
             expect((await run(compatibilityMainParts(main), "word-valid")).valid).toBe(true);
         });
     }
+    // A story named like a relationships part outside a _rels folder is no
+    // relationships part (OPC Part 2 §9.3); Word reads it as its relationship
+    // types it (grok on #1218).
+    for (const part of ["other/footer.rels", "word/footer1.rels"]) {
+        it(`a used footer stored as ${part} blocks an unknown MustUnderstand`, async () => {
+            const xml = `<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:mc="${mc}" xmlns:p="urn:unknown" mc:MustUnderstand="p"><w:p><w:r><w:t>Foot</w:t></w:r></w:p></w:ftr>`;
+            const result = await run(compatibilityStoryParts(part, "footer", xml), "word-valid");
+            expect(result.issues.filter((issue) => issue.code === "mce-must-understand" && issue.path === part)).toEqual([
+                expect.objectContaining({ severity: "error" }),
+            ]);
+            expect(result.valid).toBe(false);
+        });
+    }
     for (const extension of ["xml", "bin"]) {
         for (const used of [false, true]) {
             for (const defect of defects.slice(0, 2)) {

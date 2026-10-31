@@ -10,12 +10,7 @@
  * one predicate, so they cannot drift (#381).
  */
 
-import {
-    canonicalPartName,
-    isContentTypesStreamName,
-    isRelationshipsPartName,
-    PART_NAME_FOLDER_SEGMENT_DOT,
-} from "../../../lib/content-types";
+import { canonicalPartName, isContentTypesStreamName, PART_NAME_FOLDER_SEGMENT_DOT } from "../../../lib/content-types";
 import { sidecarOf } from "../../../lib/word-read-parts";
 import { NS, type ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameAll } from "../../../lib/xml-helpers";
@@ -619,7 +614,9 @@ export const isWordBlockingIssue = (
             // A content-type-declared XML story may have any extension or
             // folder (#1217). Reuse the caller's read set; sidecars keep their
             // separately observed policy below, and unused stories stay absent.
-            const readPart = path !== undefined && !isRelationshipsPartName(path) && wordReadParts.has(canonicalPartName(path));
+            // Only a `_rels/<owner>.rels` sidecar is a relationships part; a
+            // story stored under another `.rels` name is read as its type.
+            const readPart = path !== undefined && !isOpcRelationshipsPart(path) && wordReadParts.has(canonicalPartName(path));
             return (
                 ((isWordXmlPart(path) || readPart) && facts.unreadByWord !== true) ||
                 isPackageRelationshipsPart(path) ||
