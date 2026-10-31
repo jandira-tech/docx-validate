@@ -80,6 +80,7 @@ describe("xsd-validator engine and filesystem failures", () => {
     });
 
     beforeEach(() => {
+        _resetXsdValidatorMemo();
         vi.clearAllMocks();
         vi.mocked(readFile).mockResolvedValue(SCHEMA);
     });
@@ -277,4 +278,19 @@ describe("xsd-validator engine and filesystem failures", () => {
             expect(open).not.toHaveBeenCalled();
         },
     );
+
+    it("refuses a relative resource inside an allowed schema root before filesystem IO", () => {
+        const absolute = path.join(schemaResourceRoots()[0]!, "probe.xsd");
+        const relative = path.relative(process.cwd(), absolute);
+        const open = vi.spyOn(fsInputProviders, "open").mockReturnValue(42);
+
+        // The root allow-list accepts this target, so it cannot mask a missing
+        // relative-path refusal. The fake opener never touches the filesystem.
+        expect(provider.open(absolute)).toBe(42);
+        expect(open).toHaveBeenCalledExactlyOnceWith(absolute);
+        open.mockClear();
+
+        expect(provider.open(relative)).toBeUndefined();
+        expect(open).not.toHaveBeenCalled();
+    });
 });
