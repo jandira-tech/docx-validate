@@ -119,7 +119,7 @@ pnpm exec tsx src/scripts/accept-changes.ts <path>
 pnpm exec tsx src/scripts/comment.ts <path>
 ```
 
-The comment CLI's `commentId` and `--parent` values must contain only ASCII decimal digits (`0`–`9`), with no sign or whitespace.
+The comment CLI's `commentId` and `--parent` values must be canonical decimal integers from 0 to 9007199254740991 (`Number.MAX_SAFE_INTEGER`) with no leading zeros. `0` is accepted; `01`, a sign, whitespace, and any larger integer are refused.
 
 ## Programmatic use
 
