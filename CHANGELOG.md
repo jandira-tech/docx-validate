@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- Preserve text verbatim when pretty-printing unpacked XML, including whitespace-only text and mixed content, so unpack→pack keeps `w:t` text intact ([#1219](https://github.com/jandira-tech/docx-validate/issues/1219)).
+
 ## [0.54.0-rc.2] — 2026-10-30
 
 Changes since `v0.54.0-rc.1` (2026-10-29), from [#1172](https://github.com/jandira-tech/docx-validate/pull/1172) to [#1177](https://github.com/jandira-tech/docx-validate/pull/1177) and [#1180](https://github.com/jandira-tech/docx-validate/pull/1180). This prerelease is published under npm's `next` tag; it does not advance `latest`.

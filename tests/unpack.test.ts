@@ -21,6 +21,7 @@ import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
+import { pack } from "../src/scripts/office/pack";
 import { unpack } from "../src/scripts/office/unpack";
 import { buildDocx as buildMinimalDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildRawZip } from "./support/raw-zip";
@@ -88,6 +89,36 @@ async function buildDocx(target: string, parts: DocxParts): Promise<void> {
 }
 
 describe("unpack", () => {
+    it("preserves w:t text bytes through unpack and pack (#1219)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "text.docx");
+            const outputDir = path.join(dir, "out");
+            const packedFile = path.join(dir, "round-trip.docx");
+            const textElements = [
+                '<w:t xml:space="preserve"> a  b </w:t>',
+                "<w:t>Hello</w:t>",
+                '<w:t xml:space="preserve"> </w:t>',
+                '<w:t xml:space="preserve">\t a\n  b\t </w:t>',
+                "<w:t>&amp; &lt; &gt;</w:t>",
+            ];
+            await buildDocx(inputFile, {
+                document: `<w:body><w:p>${textElements.map((text) => `<w:r>${text}</w:r>`).join("")}</w:p></w:body>`,
+            });
+
+            expect((await unpack(inputFile, outputDir, { mergeRuns: false, simplifyRedlines: false })).ok).toBe(true);
+            const unpackedXml = await fs.readFile(path.join(outputDir, "word/document.xml"), "utf8");
+            // Compare lexical bytes, including whitespace and entity escapes,
+            // rather than normalized DOM text or the outer ZIP envelope.
+            const textBytes = (xml: string) => Buffer.from((xml.match(/<w:t\b[^>]*>[\s\S]*?<\/w:t>/g) ?? []).join(""));
+            const expected = Buffer.from(textElements.join(""));
+            expect(textBytes(unpackedXml)).toEqual(expected);
+
+            expect((await pack(outputDir, packedFile, { validate: false })).ok).toBe(true);
+            const zip = await JSZip.loadAsync(await fs.readFile(packedFile));
+            expect(textBytes(await zip.file("word/document.xml")!.async("string"))).toEqual(expected);
+        });
+    });
+
     it("keeps raw JSZip's UTF-8 fallback for flag-less CP437 names (#480)", async () => {
         await withTempDir(async (dir) => {
             const inputFile = path.join(dir, "cp437.docx");
@@ -155,12 +186,9 @@ describe("unpack", () => {
 
             const docXml = await fs.readFile(path.join(outputDir, "word", "document.xml"), "utf8");
             expect((docXml.match(/<w:ins[ >]/g) ?? []).length).toBe(1);
-            // After pretty-printing the source XML, mergeRuns combines two
-            // <w:t> children into one whose data carries the indent whitespace
-            // that the pretty-printer left between them. Accept either compact
-            // output or whitespace-separated output.
-            expect(docXml).toMatch(/foo\s*bar/);
-            expect(docXml).toMatch(/x\s*y/);
+            // Pretty-printing must not introduce text between merged runs.
+            expect(docXml).toContain("<w:t>foobar</w:t>");
+            expect(docXml).toContain("<w:t>xy</w:t>");
 
             const contentTypes = await fs.readFile(path.join(outputDir, "[Content_Types].xml"), "utf8");
             expect(contentTypes).toMatch(/<Types/);
