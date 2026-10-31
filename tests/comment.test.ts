@@ -353,12 +353,40 @@ describe("generateHexId", () => {
     });
 });
 
+/** The comment CLI's id rule: a canonical decimal integer, no leading zero, at most the safe integer. */
+const COMMENT_ID_CAP = Number.MAX_SAFE_INTEGER;
+
+function commentIdRefusal(label: "commentId" | "--parent", raw: string): string {
+    return `Error: ${label} must be a decimal integer from 0 to ${COMMENT_ID_CAP} without leading zeros (got ${raw})\n`;
+}
+
+/**
+ * Spellings the gate must refuse. `9007199254740993` rounds to the other
+ * safe-looking value; `1` and 21 zeros stringifies as `1e+21`; `01` collapses
+ * to `1`; `1` and 400 zeros is all digits and still not a safe integer.
+ */
+const NON_CANONICAL_COMMENT_IDS = [
+    "1x",
+    "1.5",
+    "2e3",
+    "+1",
+    "-1",
+    "",
+    " 1",
+    "01",
+    "00",
+    "9007199254740992",
+    "9007199254740993",
+    `1${"0".repeat(21)}`,
+    `1${"0".repeat(400)}`,
+];
+
 describe("runCommentFromArgv integration (#1203)", () => {
     afterEach(() => {
         vi.restoreAllMocks();
     });
 
-    it.each(["1x", "1.5", "2e3", "+1", "-1", "", " 1"])("refuses commentId %j, changing nothing", async (raw) => {
+    it.each(NON_CANONICAL_COMMENT_IDS)("refuses commentId %j, changing nothing", async (raw) => {
         await withTempDir(async (dir) => {
             await makeFixture(dir);
             const before = await readTree(dir);
@@ -368,13 +396,13 @@ describe("runCommentFromArgv integration (#1203)", () => {
             const code = await runCommentFromArgv(["--author", "Test", "--initials", "T", "--", dir, raw, "Comment"]);
 
             expect(code).toBe(1);
-            expect(stderr).toHaveBeenCalledExactlyOnceWith(`Error: commentId must be an integer (got ${raw})\n`);
+            expect(stderr).toHaveBeenCalledExactlyOnceWith(commentIdRefusal("commentId", raw));
             expect(stdout).not.toHaveBeenCalled();
             expect(await readTree(dir)).toEqual(before);
         });
     });
 
-    it.each(["1x", "1.5", "2e3", "+1", "-1", "", " 1"])("refuses --parent %j, changing nothing", async (raw) => {
+    it.each(NON_CANONICAL_COMMENT_IDS)("refuses --parent %j, changing nothing", async (raw) => {
         await withTempDir(async (dir) => {
             await makeFixture(dir);
             for (const commentId of [1, 2]) {
@@ -388,9 +416,47 @@ describe("runCommentFromArgv integration (#1203)", () => {
             const code = await runCommentFromArgv([dir, "3", "Reply", "--author", "Test", "--initials", "T", `--parent=${raw}`]);
 
             expect(code).toBe(1);
-            expect(stderr).toHaveBeenCalledExactlyOnceWith(`Error: --parent must be an integer (got ${raw})\n`);
+            expect(stderr).toHaveBeenCalledExactlyOnceWith(commentIdRefusal("--parent", raw));
             expect(stdout).not.toHaveBeenCalled();
             expect(await readTree(dir)).toEqual(before);
+        });
+    });
+
+    it.each(["0", String(COMMENT_ID_CAP)])("accepts commentId %s and writes that exact w:id", async (raw) => {
+        await withTempDir(async (dir) => {
+            await makeFixture(dir);
+            vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+
+            const code = await runCommentFromArgv(["--author", "Test", "--initials", "T", "--", dir, raw, "Comment"]);
+
+            expect(code).toBe(0);
+            expect(stderr).not.toHaveBeenCalled();
+            const comments = await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8");
+            expect(comments).toContain(`w:id="${raw}"`);
+        });
+    });
+
+    it("accepts --parent at the safe-integer cap and nests the reply under that comment", async () => {
+        const parentId = String(COMMENT_ID_CAP);
+        await withTempDir(async (dir) => {
+            await makeFixture(dir);
+            vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+            const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+
+            const created = await runCommentFromArgv(["--author", "Test", "--initials", "T", "--", dir, parentId, "Parent"]);
+            expect(created).toBe(0);
+            const reply = await runCommentFromArgv([dir, "2", "Reply", "--author", "Test", "--initials", "T", `--parent=${parentId}`]);
+
+            expect(reply).toBe(0);
+            expect(stderr).not.toHaveBeenCalled();
+            const comments = await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8");
+            expect(comments).toContain(`w:id="${parentId}"`);
+            expect(comments).toContain(`w:id="2"`);
+            const extended = await fs.readFile(path.join(dir, "word", "commentsExtended.xml"), "utf-8");
+            const parentPara = parseXml(comments).getElementsByTagName("w:p").item(0)!.getAttribute("w14:paraId");
+            const replyEx = parseXml(extended).getElementsByTagName("w15:commentEx").item(1)!;
+            expect(replyEx.getAttribute("w15:paraIdParent")).toBe(parentPara);
         });
     });
 });
@@ -3761,10 +3827,23 @@ describe("runCommentFromArgv", () => {
                 await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
                 const code = await runCommentFromArgv([dir, "0", "Hello world", "--author", "Test", "--initials", "T"]);
                 expect(code).toBe(0);
+                const dom = parseXml(await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8"));
+                const comments = getElementsByTagNameNSAll(dom, WORD_MAIN_NAMESPACE, "comment");
+                expect(comments).toHaveLength(1);
+                expect(comments[0]!.getAttributeNS(WORD_MAIN_NAMESPACE, "id")).toBe("0");
+                expect(comments[0]!.getAttributeNS(WORD_MAIN_NAMESPACE, "author")).toBe("Test");
+                expect(comments[0]!.getAttributeNS(WORD_MAIN_NAMESPACE, "initials")).toBe("T");
+                expect(getElementsByTagNameNSAll(comments[0]!, WORD_MAIN_NAMESPACE, "t").map((t) => t.textContent)).toEqual([
+                    "Hello world",
+                ]);
             });
             const out = stdout.join("");
             expect(out).toContain("Added comment 0");
-            expect(out).toContain("<w:commentRangeStart");
+            expect(out.match(/<w:(?:commentRangeStart|commentRangeEnd|commentReference) w:id="\d+"\/>/g)).toEqual([
+                '<w:commentRangeStart w:id="0"/>',
+                '<w:commentRangeEnd w:id="0"/>',
+                '<w:commentReference w:id="0"/>',
+            ]);
         } finally {
             restore();
         }
@@ -3776,12 +3855,33 @@ describe("runCommentFromArgv", () => {
             await withTempDir(async (dir) => {
                 await makePackageFixture(dir, officeDocumentRels("word/document.xml"), "word/document.xml");
                 expect(await runCommentFromArgv([dir, "0", "first", "--author", "Test", "--initials", "T"])).toBe(0);
-                const code = await runCommentFromArgv([dir, "1", "reply", "--author", "Test", "--initials", "T", "--parent", "0"]);
+                stdout.length = 0;
+                const code = await runCommentFromArgv([dir, "1", "reply", "--author", "Reviewer", "--initials", "R", "--parent", "0"]);
                 expect(code).toBe(0);
+                const dom = parseXml(await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8"));
+                const comments = getElementsByTagNameNSAll(dom, WORD_MAIN_NAMESPACE, "comment");
+                expect(
+                    comments.map((comment) => ({
+                        id: comment.getAttributeNS(WORD_MAIN_NAMESPACE, "id"),
+                        author: comment.getAttributeNS(WORD_MAIN_NAMESPACE, "author"),
+                        initials: comment.getAttributeNS(WORD_MAIN_NAMESPACE, "initials"),
+                        text: getElementsByTagNameNSAll(comment, WORD_MAIN_NAMESPACE, "t").map((t) => t.textContent),
+                    })),
+                ).toEqual([
+                    { id: "0", author: "Test", initials: "T", text: ["first"] },
+                    { id: "1", author: "Reviewer", initials: "R", text: ["reply"] },
+                ]);
             });
             const out = stdout.join("");
             expect(out).toContain("Added reply 1");
-            expect(out).toContain('w:id="0"/><w:commentRangeStart w:id="1"');
+            expect(out.match(/<w:(?:commentRangeStart|commentRangeEnd|commentReference) w:id="\d+"\/>/g)).toEqual([
+                '<w:commentRangeStart w:id="0"/>',
+                '<w:commentRangeStart w:id="1"/>',
+                '<w:commentRangeEnd w:id="1"/>',
+                '<w:commentRangeEnd w:id="0"/>',
+                '<w:commentReference w:id="0"/>',
+                '<w:commentReference w:id="1"/>',
+            ]);
         } finally {
             restore();
         }
@@ -3812,7 +3912,9 @@ describe("runCommentFromArgv", () => {
         try {
             const code = await runCommentFromArgv(["some-dir", "abc", "text", "--author", "T", "--initials", "T"]);
             expect(code).toBe(1);
-            expect(stderr.join("")).toBe("Error: commentId must be an integer (got abc)\n");
+            expect(stderr.join("")).toBe(
+                "Error: commentId must be a decimal integer from 0 to 9007199254740991 without leading zeros (got abc)\n",
+            );
         } finally {
             restore();
         }
@@ -3823,7 +3925,9 @@ describe("runCommentFromArgv", () => {
         try {
             const code = await runCommentFromArgv(["some-dir", "1", "text", "--author", "T", "--initials", "T", "--parent", "abc"]);
             expect(code).toBe(1);
-            expect(stderr.join("")).toBe("Error: --parent must be an integer (got abc)\n");
+            expect(stderr.join("")).toBe(
+                "Error: --parent must be a decimal integer from 0 to 9007199254740991 without leading zeros (got abc)\n",
+            );
         } finally {
             restore();
         }
@@ -3857,6 +3961,7 @@ describe("comment.ts entry-point guard", () => {
             expect(stdout).toHaveBeenCalled();
         } finally {
             process.argv = argv;
+            exit.mockRestore();
             stdout.mockRestore();
         }
     });

@@ -66,6 +66,46 @@ const withEocdComment = (bytes: Buffer, comment: string): Buffer => {
     return out;
 };
 
+/**
+ * Copy this archive's ZIP64 end record into the EOCD comment. JSZip searches
+ * for a ZIP64 signature when the locator misses, and that copy is the one the
+ * search finds (APPNOTE 4.3.15, #521).
+ */
+const withZip64EndRecordComment = (bytes: Buffer): Buffer => {
+    const eocd = bytes.length - 22;
+    const record = eocd - 76;
+    const comment = Buffer.from(bytes.subarray(record, record + 56));
+    const out = Buffer.concat([bytes, comment]);
+    out.writeUInt16LE(comment.length, eocd + 20);
+    return out;
+};
+
+/** Central records in the opposite order. Local records and the EOCD stay put (APPNOTE 4.4.1.3). */
+const reverseCentralRecordOrder = (bytes: Buffer): Buffer => {
+    const eocd = bytes.length - 22;
+    const cd = bytes.readUInt32LE(eocd + 16);
+    const records: Buffer[] = [];
+    let offset = cd;
+    while (offset < eocd && bytes.readUInt32LE(offset) === 0x02014b50) {
+        const length = 46 + bytes.readUInt16LE(offset + 28) + bytes.readUInt16LE(offset + 30) + bytes.readUInt16LE(offset + 32);
+        records.push(Buffer.from(bytes.subarray(offset, offset + length)));
+        offset += length;
+    }
+    return Buffer.concat([bytes.subarray(0, cd), ...records.reverse(), bytes.subarray(offset)]);
+};
+
+/** The locator's absolute offset names the ZIP64 end record that ends where the locator begins. */
+const expectZip64LocatorNamesAdjacentRecord = (bytes: Uint8Array): void => {
+    const keyed = Buffer.from(bytes);
+    const view = readCentralDirectoryView(keyed);
+    expect(view?.zip64).toBe(true);
+    const locator = view!.eocdOffset - 20;
+    expect(keyed.readUInt32LE(locator)).toBe(0x07064b50);
+    const named = Number(keyed.readBigUInt64LE(locator + 8));
+    expect(named).toBe(locator - 56);
+    expect(keyed.readUInt32LE(named)).toBe(0x06064b50);
+};
+
 describe("archiveWithoutEntries (#629)", () => {
     it("drops the matching central records and keeps every other entry's own bytes", async () => {
         const bytes = buildRawZip([
@@ -262,7 +302,20 @@ describe("centralKeyedArchive (#445)", () => {
         const bytes = buildRawZip([{ name: "central.xml", localName: "local.xml", content: "A" }], { zip64: true });
         expect(await jszipNames(bytes)).toEqual(["local.xml"]);
         expect(await loadedContents(bytes)).toEqual({ "central.xml": "A" });
-        expect(centralKeyedArchive(bytes)).not.toBe(bytes);
+        const keyed = centralKeyedArchive(bytes);
+        expect(keyed).not.toBe(bytes);
+        expectZip64LocatorNamesAdjacentRecord(keyed);
+    });
+
+    it("names the moved ZIP64 end record when the EOCD comment carries another one (#521)", async () => {
+        const bytes = withZip64EndRecordComment(
+            buildRawZip([{ name: "central.xml", localName: "local.xml", content: "A" }], { zip64: true }),
+        );
+        expect(bytes.readUInt32LE(bytes.length - 56)).toBe(0x06064b50);
+        const keyed = centralKeyedArchive(bytes);
+        expect(await loadedContents(bytes)).toEqual({ "central.xml": "A" });
+        expect(keyed).not.toBe(bytes);
+        expectZip64LocatorNamesAdjacentRecord(keyed);
     });
 
     it("strips an Info-ZIP unicode path field when it rebuilds the local name", async () => {
@@ -282,6 +335,21 @@ describe("centralKeyedArchive (#445)", () => {
         expect(keyed).not.toBe(bytes);
         expect(await jszipNames(keyed)).toEqual(["b.xml", "central.xml"]);
         expect(await loadedContents(bytes)).toEqual({ "b.xml": "B", "central.xml": "A" });
+    });
+
+    it("rebuilds local names when central records are not in local-header order (APPNOTE 4.4.1.3)", async () => {
+        const ordered = buildRawZip([
+            { name: "central.xml", localName: "local.xml", content: "A" },
+            { name: "b.xml", content: "B" },
+        ]);
+        const bytes = reverseCentralRecordOrder(ordered);
+        const records = readCentralDirectoryView(bytes)!.records;
+        expect(records.map((record) => record.name)).toEqual(["b.xml", "central.xml"]);
+        expect(records[0]!.localHeaderOffset).toBeGreaterThan(records[1]!.localHeaderOffset);
+        const keyed = centralKeyedArchive(bytes);
+        expect(await jszipNames(keyed)).toEqual(["b.xml", "central.xml"]);
+        expect(await loadedContents(bytes)).toEqual({ "b.xml": "B", "central.xml": "A" });
+        expect(keyed).not.toBe(bytes);
     });
 
     it("returns the bytes as given when a compressed stream overruns the directory", () => {

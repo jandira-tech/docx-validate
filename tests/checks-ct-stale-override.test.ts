@@ -46,6 +46,42 @@ describe("ct-stale-override", () => {
     it("uses OPC equivalence, including unreserved escapes", async () => {
         expect(await run(types(override("/WORD/%73tyles.xml")), { "word/styles.xml": "<styles/>" })).toEqual([]);
     });
+    for (const profile of ["word-valid", "strict"] as const) {
+        for (const stream of ["[Content_Types].xml", "[content_types].XML"]) {
+            it(`does not count ${stream} as an Override target under ${profile}`, async () => {
+                const ctx = ValidationContext.fromEntries({ [stream]: types(override("/%5BContent_Types%5D.xml")) });
+                expect(await createDefaultCheckRegistry().get("ct-stale-override")?.run(ctx, profile)).toEqual([
+                    expect.objectContaining({ code: "ct-stale-override", severity: "warning", path: stream }),
+                ]);
+                expect(await run(types(override("/%5BContent_Types%5D.xml")), { "%5BContent_Types%5D.xml": "<part/>" }, profile)).toEqual(
+                    [],
+                );
+            });
+        }
+    }
+    it("looks up many Overrides without rescanning the part names for each", async () => {
+        const parts = Object.fromEntries(Array.from({ length: 256 }, (_, i) => [`customXml/item${i}.xml`, "<part/>"]));
+        const declarations = Object.keys(parts).map((name) => override(`/${name.toUpperCase()}`));
+        const ctx = ValidationContext.fromEntries({
+            "[Content_Types].xml": types(declarations.join("") + override("/absent.xml")),
+            ...parts,
+        });
+        let nameReads = 0;
+        // Count work on the input rather than relying on wall-clock timing.
+        ctx.partNames.forEach((name, index) => {
+            Object.defineProperty(ctx.partNames, index, {
+                get: () => {
+                    nameReads += 1;
+                    return name;
+                },
+            });
+        });
+        const result = await createDefaultCheckRegistry().get("ct-stale-override")?.run(ctx, "word-valid");
+        expect(result).toEqual([
+            expect.objectContaining({ code: "ct-stale-override", severity: "warning", message: expect.stringContaining("/absent.xml") }),
+        ]);
+        expect(nameReads).toBeLessThan(ctx.partNames.length * 8);
+    });
     it("does not replace grammar checks", async () => {
         expect(await run(types('<Override ContentType="application/xml"/>' + override("") + override("/word//bad.xml")))).toEqual([]);
     });

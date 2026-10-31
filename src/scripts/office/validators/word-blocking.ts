@@ -620,8 +620,14 @@ export const isWordBlockingIssue = (
             // and opened both clean in a header the main document relates
             // but does not use (#1125).
             const path = issue.path?.replace(/\\/g, "/");
+            // A content-type-declared XML story may have any extension or
+            // folder (#1217). Reuse the caller's read set; sidecars keep their
+            // separately observed policy below, and unused stories stay absent.
+            // Only a `_rels/<owner>.rels` sidecar is a relationships part; a
+            // story stored under another `.rels` name is read as its type.
+            const readPart = path !== undefined && !isOpcRelationshipsPart(path) && wordReadParts.has(canonicalPartName(path));
             return (
-                (isWordXmlPart(path) && facts.unreadByWord !== true) ||
+                ((isWordXmlPart(path) || readPart) && facts.unreadByWord !== true) ||
                 isPackageRelationshipsPart(path) ||
                 isDocumentRelationshipsPart(path, storyRootParts)
             );

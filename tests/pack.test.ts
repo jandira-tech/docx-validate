@@ -21,6 +21,7 @@ import JSZip from "jszip";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
+import * as simplifyRedlines from "../src/scripts/office/helpers/simplify-redlines";
 import { pack, runPackFromArgv } from "../src/scripts/office/pack";
 import { unpack } from "../src/scripts/office/unpack";
 import { validate } from "../src/scripts/office/validate";
@@ -162,6 +163,37 @@ describe("pack", () => {
         });
     });
 
+    it("refuses a symbolic link created after the preflight scan (#1199, codex on #1200)", async () => {
+        await withTempDir(async (dir) => {
+            const inputDir = path.join(dir, "src");
+            const outputFile = path.join(dir, "out.docx");
+            for (const [name, content] of Object.entries(MINIMAL_PARTS)) {
+                const file = path.join(inputDir, name);
+                await fs.mkdir(path.dirname(file), { recursive: true });
+                await fs.writeFile(file, content);
+            }
+            await fs.writeFile(path.join(dir, "outside.bin"), "outside");
+            // The second listing of the input root is staging's: a writer adds the link between the two.
+            const readdir = fs.readdir;
+            let listings = 0;
+            fs.readdir = (async (target: string, ...rest: unknown[]) => {
+                if (target === inputDir && ++listings === 2)
+                    await fs.symlink(path.join(dir, "outside.bin"), path.join(inputDir, "alias.bin"));
+                return (readdir as (...args: unknown[]) => unknown).call(fs, target, ...rest);
+            }) as typeof fs.readdir;
+            try {
+                const result = await pack(inputDir, outputFile, { validate: false });
+
+                expect(listings).toBe(2);
+                expect(result.ok).toBe(false);
+                expect(result.message).toBe("Error: alias.bin is a symbolic link");
+                await expect(fs.stat(outputFile)).rejects.toMatchObject({ code: "ENOENT" });
+            } finally {
+                fs.readdir = readdir;
+            }
+        });
+    });
+
     it("packs a directory into a .docx zip without validation", async () => {
         await withTempDir(async (dir) => {
             const inputDir = path.join(dir, "src");
@@ -211,6 +243,55 @@ describe("pack", () => {
             expect(documentRels).toMatch(/\/><\/Relationships>/);
             const rootRels = await zip.file("_rels/.rels")!.async("string");
             expect(rootRels).toBe(documentRels);
+        });
+    });
+
+    it.each(["_RELS", "_%72els"])("condenses relationships under the OPC-equivalent folder %s", async (folder) => {
+        await withTempDir(async (dir) => {
+            const inputDir = path.join(dir, "src");
+            const outputFile = path.join(dir, "out.docx");
+            const rels =
+                '<?xml version="1.0" encoding="UTF-8"?>\n' +
+                '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n' +
+                '  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXmlProps" Target="itemProps1.xml"/>\n' +
+                "</Relationships>";
+            await writeUnpacked(inputDir, {
+                document: "<w:body><w:p><w:r><w:t>hello</w:t></w:r></w:p></w:body>",
+            });
+            const part = `customXml/${folder}/item1.xml.rels`;
+            await fs.mkdir(path.join(inputDir, "customXml", folder), { recursive: true });
+            await fs.writeFile(path.join(inputDir, part), rels, "utf8");
+
+            await expect(pack(inputDir, outputFile, { validate: false })).resolves.toMatchObject({ ok: true });
+
+            const zip = await JSZip.loadAsync(await fs.readFile(outputFile));
+            const written = await zip.file(part)!.async("string");
+            expect(written).toMatch(/<Relationships[^>]*><Relationship /);
+            expect(written).toMatch(/\/><\/Relationships>/);
+        });
+    });
+
+    it.each([".rels", "payload.rels"])("preserves binary %s outside a relationships folder", async (name) => {
+        await withTempDir(async (dir) => {
+            const inputDir = path.join(dir, "src");
+            const outputFile = path.join(dir, "out.docx");
+            const part = `word/media/${name}`;
+            const payload = Buffer.from([0x80, 0xff, 0x01, 0xe2, 0x80, 0x9c, 0x02]);
+            const contentTypes = MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/${part}" ContentType="application/octet-stream"/></Types>`,
+            );
+            await writeUnpacked(inputDir, {
+                document: "<w:body><w:p><w:r><w:t>hello</w:t></w:r></w:p></w:body>",
+                contentTypes,
+            });
+            await fs.mkdir(path.join(inputDir, "word", "media"), { recursive: true });
+            await fs.writeFile(path.join(inputDir, part), payload);
+
+            await expect(pack(inputDir, outputFile, { validate: false })).resolves.toMatchObject({ ok: true });
+
+            const zip = await JSZip.loadAsync(await fs.readFile(outputFile));
+            expect(await zip.file(part)!.async("nodebuffer")).toEqual(payload);
         });
     });
 
@@ -428,16 +509,24 @@ describe("pack validation integration", () => {
 
     it("uses the explicit author as the default inference fallback", async () => {
         await withTempDir(async (dir) => {
+            const inferred = vi.spyOn(simplifyRedlines, "inferAuthor");
             const input = path.join(dir, "input");
             const original = path.join(dir, "original.docx");
             const output = path.join(dir, "out.docx");
-            await writePackageParts(input);
+            // The unpacked tree differs from the original, so a pack that copies
+            // the original archive cannot satisfy the output assertion.
+            await writePackageParts(input, {
+                ...MINIMAL_PARTS,
+                "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace("<w:t>Hello</w:t>", "<w:t>PackedInputOnly</w:t>"),
+            });
             await fs.writeFile(original, await buildMinimalDocx());
             const result = await pack(input, output, { original, author: "Alice" });
             expect(result.ok).toBe(true);
             expect(result.validationLog).toBe("All validations PASSED!");
+            expect(inferred).toHaveBeenCalledTimes(1);
+            expect(inferred).toHaveBeenCalledWith(path.resolve(input), path.resolve(original), "Alice");
             const zip = await JSZip.loadAsync(await fs.readFile(output));
-            expect(await zip.file("word/document.xml")!.async("string")).toContain("Hello");
+            expect(await zip.file("word/document.xml")!.async("string")).toContain("PackedInputOnly");
         });
     });
 
@@ -514,12 +603,18 @@ describe("pack validation integration", () => {
         await withTempDir(async (dir) => {
             const input = path.join(dir, "input");
             const output = path.join(dir, "out.pptx");
-            await writePackageParts(input, MINIMAL_PPTX_PARTS);
+            const rels = MINIMAL_PPTX_PARTS["ppt/slides/_rels/slide1.xml.rels"]!;
+            const layout = rels.match(/<Relationship [^>]*\/slideLayout"[^>]*\/>/)?.[0];
+            if (layout === undefined) throw new Error("minimal slide relationships have no slideLayout");
+            await writePackageParts(input, {
+                ...MINIMAL_PPTX_PARTS,
+                "ppt/slides/_rels/slide1.xml.rels": rels.replace(layout, `${layout}${layout.replace('Id="rId1"', 'Id="rId2"')}`),
+            });
             const result = await pack(input, output);
-            expect(result.ok).toBe(true);
-            expect(result.validationLog).toBe("All validations PASSED!");
-            const zip = await JSZip.loadAsync(await fs.readFile(output));
-            expect(await zip.file("ppt/presentation.xml")!.async("string")).toContain("<p:presentation ");
+            expect(result.ok).toBe(false);
+            expect(result.message).toBe(`Error: Validation failed for ${input}`);
+            expect(result.issues).toContainEqual(expect.objectContaining({ code: "slide-layout-duplicate", severity: "error" }));
+            await expect(fs.access(output)).rejects.toThrow();
         });
     });
 });

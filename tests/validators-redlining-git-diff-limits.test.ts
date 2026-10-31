@@ -89,6 +89,13 @@ describe("getGitWordDiff execution limits", () => {
 
         expect(await getGitWordDiff("a\n", "b\n")).toBe("[-a-]{+b+}");
         expect(spawnSyncMock).toHaveBeenCalledTimes(2);
+        const [, granularArgs] = spawnSyncMock.mock.calls[0]!;
+        expect(spawnSyncMock).toHaveBeenNthCalledWith(
+            2,
+            "git",
+            ["diff", "--word-diff=plain", "-U0", "--no-index", granularArgs![5], granularArgs![6]],
+            expect.any(Object),
+        );
     });
 
     it("returns null when spawning git throws", async () => {

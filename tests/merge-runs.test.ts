@@ -276,6 +276,7 @@ describe("mergeRuns", () => {
 
             const after = await fs.readFile(docPath, "utf8");
             expect((after.match(/<w:r[ >]/g) ?? []).length).toBe(2);
+            expect(after).toContain("<w:r><w:rPr><w:b/></w:rPr><w:t>a</w:t></w:r><w:r><w:t>b</w:t></w:r>");
         });
     });
 

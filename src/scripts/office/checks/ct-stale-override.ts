@@ -15,7 +15,13 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { CONTENT_TYPES_NAMESPACE, findContentTypesStream, findEquivalentPart, partNameViolation } from "../../../lib/content-types";
+import {
+    CONTENT_TYPES_NAMESPACE,
+    equivalentPartLookup,
+    findContentTypesStream,
+    isContentTypesStreamName,
+    partNameViolation,
+} from "../../../lib/content-types";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
 
 export const CT_STALE_OVERRIDE = "ct-stale-override";
@@ -38,10 +44,11 @@ export const ctStaleOverrideCheck: CheckDefinition = {
         if (stream === undefined) return [];
         const parsed = ctx.effectiveXml(stream);
         if (!parsed?.ok) return [];
+        const findPart = equivalentPartLookup(ctx.partNames.filter((name) => !isContentTypesStreamName(name)));
         return getElementsByTagNameNSAll(parsed.document, CONTENT_TYPES_NAMESPACE, "Override").flatMap((element) => {
             const name = element.getAttribute("PartName");
             // Malformed or absent names already have ct-override-partname-invalid.
-            if (name === null || partNameViolation(name) !== undefined || findEquivalentPart(ctx.partNames, name) !== undefined) return [];
+            if (name === null || partNameViolation(name) !== undefined || findPart(name) !== undefined) return [];
             return [
                 {
                     severity: "warning" as const,

@@ -112,7 +112,7 @@ export const understoodNamespacesForPart = (part: string): ReadonlySet<string> =
 // In these slots preserve the foreign payload for the schema's lax verdict.
 // The Strict schemas declare the same slots (iso-strict/dml-chart.xsd:29,
 // sml.xsd:224, dml-main.xsd:181, pml.xsd:759).
-const EXTENSION_NAMESPACES = new Set([
+export const EXTENSION_NAMESPACES: ReadonlySet<string> = new Set([
     "http://schemas.openxmlformats.org/drawingml/2006/chart",
     NS.A,
     NS.P,

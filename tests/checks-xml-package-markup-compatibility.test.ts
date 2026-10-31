@@ -16,6 +16,7 @@
 import { describe, expect, it } from "vitest";
 import { ValidationContext } from "../src/lib/validation-context";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
+import { MINIMAL_PARTS } from "./support/minimal-docx";
 
 const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
 const root = (body: string, attrs = "") => `<x:root xmlns:x="urn:probe" xmlns:mc="${MC}" ${attrs}>${body}</x:root>`;
@@ -74,4 +75,58 @@ describe("xml-package-markup-compatibility", () => {
         expect(await run(root('<x:a mc:Ignorable="p"/>'), "customXml/item.bin")).toEqual([]);
         expect(await run("<broken")).toEqual([]);
     });
+    for (const profile of ["word-valid", "strict"] as const) {
+        for (const main of ["word/document.bin", "other/main.xml"]) {
+            it(`leaves the related ${main} to the Word check under ${profile} (#1217)`, async () => {
+                const parts = { ...MINIMAL_PARTS };
+                delete parts["word/document.xml"];
+                parts["_rels/.rels"] = parts["_rels/.rels"]!.replace("word/document.xml", main);
+                parts["[Content_Types].xml"] = parts["[Content_Types].xml"]!.replace("/word/document.xml", `/${main}`);
+                parts[main] = root('<x:a mc:Ignorable="missing"/>');
+                const issues = await createDefaultCheckRegistry()
+                    .get("xml-package-markup-compatibility")
+                    ?.run(ValidationContext.fromEntries(parts), profile);
+                expect(issues).toEqual([]);
+                expect(
+                    await createDefaultCheckRegistry().get("word-markup-compatibility")?.run(ValidationContext.fromEntries(parts), profile),
+                ).toEqual([expect.objectContaining({ path: main, severity: "error", code: "mce-unbound-prefix" })]);
+            });
+        }
+        for (const [part, segment] of [
+            ["other/header.bin", "header"],
+            ["other/settings.xml", "settings"],
+        ] as const) {
+            it(`assigns a related ${segment} outside word/ to its compatibility check under ${profile} (#1217)`, async () => {
+                const parts = { ...MINIMAL_PARTS };
+                parts["word/_rels/document.xml.rels"] = parts["word/_rels/document.xml.rels"]!.replace(
+                    "</Relationships>",
+                    `<Relationship Id="header" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/${segment}" Target="../${part}"/></Relationships>`,
+                );
+                parts["word/document.xml"] = parts["word/document.xml"]!.replace(
+                    "<w:sectPr>",
+                    segment === "header"
+                        ? '<w:sectPr><w:headerReference xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="header" w:type="default"/>'
+                        : "<w:sectPr>",
+                );
+                parts["[Content_Types].xml"] = parts["[Content_Types].xml"]!.replace(
+                    "</Types>",
+                    `<Override PartName="/${part}" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${segment}+xml"/></Types>`,
+                );
+                parts[part] = root("", 'xmlns:p="urn:unknown" mc:MustUnderstand="p"');
+                const ctx = ValidationContext.fromEntries(parts);
+                const packageIssues = await createDefaultCheckRegistry().get("xml-package-markup-compatibility")?.run(ctx, profile);
+                const wordIssues = await createDefaultCheckRegistry().get("word-markup-compatibility")?.run(ctx, profile);
+                if (segment === "header") {
+                    expect(packageIssues).toEqual([]);
+                    expect(wordIssues).toEqual([expect.objectContaining({ path: part, severity: "error" })]);
+                } else {
+                    // Settings are not story parts; the package check retains them.
+                    expect(packageIssues).toEqual([
+                        expect.objectContaining({ path: part, severity: profile === "strict" ? "error" : "warning" }),
+                    ]);
+                    expect(wordIssues).toEqual([]);
+                }
+            });
+        }
+    }
 });

@@ -15,6 +15,7 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
+import { EXTENSION_NAMESPACES } from "../../../lib/markup-compatibility";
 import type { ValidationIssue } from "../../../lib/types";
 import { wordReadStoryParts } from "../../../lib/word-read-parts";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
@@ -38,6 +39,7 @@ export function fieldBalanceProblems(root: Element): string[] {
             continue;
         }
         const { element } = step;
+        if (element.localName === "ext" && EXTENSION_NAMESPACES.has(element.namespaceURI ?? "")) continue;
         const isWord = WORD.has(element.namespaceURI ?? "");
         const current: Field[] = isWord && SCOPES.has(element.localName) ? [] : step.fields;
         if (current !== step.fields) pending.push({ finish: current });
@@ -75,7 +77,7 @@ export const wordFieldBalanceCheck: CheckDefinition = {
                     severity: profile === "strict" ? "error" : "warning",
                     code: WORD_FIELD_UNBALANCED,
                     path: part,
-                    message: `Unbalanced complex field: ${problem} Word-blocking status is unknown.`,
+                    message: `Unbalanced complex field: ${problem}`,
                 });
         }
         return issues;

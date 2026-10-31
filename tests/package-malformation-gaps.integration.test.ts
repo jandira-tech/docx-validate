@@ -18,6 +18,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { validate } from "../src/scripts/office/validate";
 import { withTempDir } from "../src/lib/run-cli";
+import { compatibilityMainParts, compatibilityStoryParts } from "./support/word-compatibility-parts";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 const customXml =
@@ -111,4 +112,101 @@ describe("package malformation gap integration", () => {
             expect(result.valid).toBe(true);
             expect(result.issues.filter((i) => i.severity !== "info")).toEqual([]);
         });
+});
+
+describe("Word-read markup compatibility regardless of stored name (#1217)", () => {
+    const mc = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+    const defects = [
+        {
+            name: "MustUnderstand",
+            code: "mce-must-understand",
+            mutate: (xml: string) => xml.replace("<w:body>", '<w:body xmlns:p="urn:unknown" mc:MustUnderstand="p">'),
+        },
+        {
+            name: "Requires",
+            code: "mce-malformed",
+            mutate: (xml: string) =>
+                xml.replace(
+                    "<w:body>",
+                    '<w:body><mc:AlternateContent><mc:Choice Requires="missing"><w:p/></mc:Choice><mc:Fallback/></mc:AlternateContent>',
+                ),
+        },
+        {
+            name: "character data",
+            code: "mce-malformed",
+            mutate: (xml: string) =>
+                xml.replace(
+                    "<w:body>",
+                    '<w:body><mc:AlternateContent><mc:Choice Requires="w14"><w:p/></mc:Choice>Stray<mc:Fallback/></mc:AlternateContent>',
+                ),
+        },
+    ];
+    for (const main of ["word/document.bin", "other/main.xml"]) {
+        for (const defect of defects) {
+            for (const checks of [
+                undefined,
+                ["word-markup-compatibility"],
+                ["word-markup-compatibility", "xml-package-markup-compatibility"],
+            ]) {
+                it(`${defect.name} blocks ${main}, selection: ${checks?.join(",") ?? "full"}`, async () => {
+                    const parts = compatibilityMainParts(main);
+                    parts[main] = defect.mutate(parts[main]!);
+                    const result = await run(parts, "word-valid", checks);
+                    expect(result.issues.filter((issue) => issue.code === defect.code && issue.path === main)).toEqual([
+                        expect.objectContaining({
+                            severity: "error",
+                            ...(defect.name === "character data" ? { message: expect.stringContaining("sessions 65 and 67") } : {}),
+                        }),
+                    ]);
+                    expect(result.valid).toBe(false);
+                });
+            }
+        }
+        // The schema walk and the Word check both see this part under strict;
+        // #1213 alone reported the character data twice there (grok, #1217).
+        it(`reports character data in ${main} once under strict`, async () => {
+            const parts = compatibilityMainParts(main);
+            parts[main] = defects[2]!.mutate(parts[main]!);
+            const result = await run(parts, "strict");
+            expect(result.issues.filter((issue) => issue.code === "mce-malformed" && issue.path === main)).toEqual([
+                expect.objectContaining({ severity: "error", message: expect.stringContaining("sessions 65 and 67") }),
+            ]);
+            expect(result.valid).toBe(false);
+        });
+        it(`accepts the renamed main calibration ${main}`, async () => {
+            expect((await run(compatibilityMainParts(main), "word-valid")).valid).toBe(true);
+        });
+    }
+    // A story named like a relationships part outside a _rels folder is no
+    // relationships part (OPC Part 2 §9.3); Word reads it as its relationship
+    // types it (grok on #1218).
+    for (const part of ["other/footer.rels", "word/footer1.rels"]) {
+        it(`a used footer stored as ${part} blocks an unknown MustUnderstand`, async () => {
+            const xml = `<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:mc="${mc}" xmlns:p="urn:unknown" mc:MustUnderstand="p"><w:p><w:r><w:t>Foot</w:t></w:r></w:p></w:ftr>`;
+            const result = await run(compatibilityStoryParts(part, "footer", xml), "word-valid");
+            expect(result.issues.filter((issue) => issue.code === "mce-must-understand" && issue.path === part)).toEqual([
+                expect.objectContaining({ severity: "error" }),
+            ]);
+            expect(result.valid).toBe(false);
+        });
+    }
+    for (const extension of ["xml", "bin"]) {
+        for (const used of [false, true]) {
+            for (const defect of defects.slice(0, 2)) {
+                for (const checks of [undefined, ["word-markup-compatibility", "xml-package-markup-compatibility"]]) {
+                    it(`${used ? "used" : "unused"} header.${extension} ${defect.name}, selection: ${checks?.join(",") ?? "full"}`, async () => {
+                        const part = `word/header1.${extension}`;
+                        const main = defect.mutate(MINIMAL_PARTS["word/document.xml"]!);
+                        const body = main.slice(main.indexOf("<w:body"), main.indexOf("</w:body>") + "</w:body>".length);
+                        const xml = `<w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:mc="${mc}" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml">${body}</w:hdr>`;
+                        const result = await run(compatibilityStoryParts(part, "header", xml, used), "word-valid", checks);
+                        expect(result.issues.filter((issue) => issue.code === defect.code && issue.path === part)).toEqual([
+                            expect.objectContaining({ severity: used ? "error" : "warning" }),
+                        ]);
+                        expect(result.valid).toBe(!used);
+                    });
+                }
+            }
+        }
+    }
 });

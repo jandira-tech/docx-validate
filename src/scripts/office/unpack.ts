@@ -38,6 +38,7 @@ import path from "node:path";
 import { Command } from "commander";
 import JSZip from "jszip";
 
+import { isRelationshipsFolderName } from "../../lib/content-types";
 import { commanderExitCode, runCli } from "../../lib/run-cli";
 import { readXmlPart, writeXmlText } from "../../lib/xml-part-io";
 import { parseXml, prettyXml } from "../../lib/xml-helpers";
@@ -183,7 +184,7 @@ async function collectXmlFiles(root: string): Promise<string[]> {
                 await walk(full);
             } else if (entry.isFile()) {
                 const name = entry.name.toLowerCase();
-                if (name.endsWith(".xml") || name.endsWith(".rels")) {
+                if (name.endsWith(".xml") || (name.endsWith(".rels") && isRelationshipsFolderName(path.basename(dir)))) {
                     out.push(full);
                 }
             }

@@ -21,6 +21,8 @@ import JSZip from "jszip";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
+import { getElementsByTagNameNSAll, parseXml } from "../src/lib/xml-helpers";
+import { pack } from "../src/scripts/office/pack";
 import { unpack, runUnpackFromArgv } from "../src/scripts/office/unpack";
 import { buildDocx as buildMinimalDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildRawZip } from "./support/raw-zip";
@@ -88,6 +90,63 @@ async function buildDocx(target: string, parts: DocxParts): Promise<void> {
 }
 
 describe("unpack", () => {
+    it.each([" <!--c--> ", "\u00a0<!--c-->"])("preserves text beside comments through unpack and pack (#1219): %j", async (content) => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "text.docx");
+            const outputDir = path.join(dir, "out");
+            const packedFile = path.join(dir, "round-trip.docx");
+            const text = `<w:t xml:space="preserve">${content}</w:t>`;
+            await buildDocx(inputFile, { document: `<w:body><w:p><w:r>${text}</w:r></w:p></w:body>` });
+            const textNodes = (xml: string) =>
+                getElementsByTagNameNSAll(parseXml(xml), "*", "t").map((element) =>
+                    Array.from(element.childNodes)
+                        .filter((child) => child.nodeType === 3)
+                        .map((child) => child.nodeValue),
+                );
+            const original = await JSZip.loadAsync(await fs.readFile(inputFile));
+            const expected = textNodes(await original.file("word/document.xml")!.async("string"));
+
+            expect((await unpack(inputFile, outputDir, { mergeRuns: false, simplifyRedlines: false })).ok).toBe(true);
+            const unpacked = textNodes(await fs.readFile(path.join(outputDir, "word/document.xml"), "utf8"));
+            expect((await pack(outputDir, packedFile, { validate: false })).ok).toBe(true);
+            const packed = await JSZip.loadAsync(await fs.readFile(packedFile));
+            expect({ unpacked, packed: textNodes(await packed.file("word/document.xml")!.async("string")) }).toEqual({
+                unpacked: expected,
+                packed: expected,
+            });
+        });
+    });
+
+    it("preserves w:t text bytes through unpack and pack (#1219)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "text.docx");
+            const outputDir = path.join(dir, "out");
+            const packedFile = path.join(dir, "round-trip.docx");
+            const textElements = [
+                '<w:t xml:space="preserve"> a  b </w:t>',
+                "<w:t>Hello</w:t>",
+                '<w:t xml:space="preserve"> </w:t>',
+                '<w:t xml:space="preserve">\t a\n  b\t </w:t>',
+                "<w:t>&amp; &lt; &gt;</w:t>",
+            ];
+            await buildDocx(inputFile, {
+                document: `<w:body><w:p>${textElements.map((text) => `<w:r>${text}</w:r>`).join("")}</w:p></w:body>`,
+            });
+
+            expect((await unpack(inputFile, outputDir, { mergeRuns: false, simplifyRedlines: false })).ok).toBe(true);
+            const unpackedXml = await fs.readFile(path.join(outputDir, "word/document.xml"), "utf8");
+            // Compare lexical bytes, including whitespace and entity escapes,
+            // rather than normalized DOM text or the outer ZIP envelope.
+            const textBytes = (xml: string) => Buffer.from((xml.match(/<w:t\b[^>]*>[\s\S]*?<\/w:t>/g) ?? []).join(""));
+            const expected = Buffer.from(textElements.join(""));
+            expect(textBytes(unpackedXml)).toEqual(expected);
+
+            expect((await pack(outputDir, packedFile, { validate: false })).ok).toBe(true);
+            const zip = await JSZip.loadAsync(await fs.readFile(packedFile));
+            expect(textBytes(await zip.file("word/document.xml")!.async("string"))).toEqual(expected);
+        });
+    });
+
     it("keeps raw JSZip's UTF-8 fallback for flag-less CP437 names (#480)", async () => {
         await withTempDir(async (dir) => {
             const inputFile = path.join(dir, "cp437.docx");
@@ -155,12 +214,9 @@ describe("unpack", () => {
 
             const docXml = await fs.readFile(path.join(outputDir, "word", "document.xml"), "utf8");
             expect((docXml.match(/<w:ins[ >]/g) ?? []).length).toBe(1);
-            // After pretty-printing the source XML, mergeRuns combines two
-            // <w:t> children into one whose data carries the indent whitespace
-            // that the pretty-printer left between them. Accept either compact
-            // output or whitespace-separated output.
-            expect(docXml).toMatch(/foo\s*bar/);
-            expect(docXml).toMatch(/x\s*y/);
+            // Pretty-printing must not introduce text between merged runs.
+            expect(docXml).toContain("<w:t>foobar</w:t>");
+            expect(docXml).toContain("<w:t>xy</w:t>");
 
             const contentTypes = await fs.readFile(path.join(outputDir, "[Content_Types].xml"), "utf8");
             expect(contentTypes).toMatch(/<Types/);
@@ -194,6 +250,53 @@ describe("unpack", () => {
             expect(documentRels).toMatch(/\/>\n<\/Relationships>/);
             const rootRels = await fs.readFile(path.join(outputDir, "_rels", ".rels"), "utf8");
             expect(rootRels).toBe(documentRels);
+        });
+    });
+
+    it.each(["_RELS", "_%72els"])("pretty-prints relationships under the OPC-equivalent folder %s", async (folder) => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "input.docx");
+            const outputDir = path.join(dir, "out");
+            const rels = MINIMAL_PARTS["_rels/.rels"]!.replace(/\n/g, "");
+            const part = `customXml/${folder}/item1.xml.rels`;
+            await fs.writeFile(inputFile, await buildMinimalDocx({ ...MINIMAL_PARTS, [part]: rels }));
+
+            const result = await unpack(inputFile, outputDir, {
+                mergeRuns: false,
+                simplifyRedlines: false,
+            });
+            expect(result.ok).toBe(true);
+
+            const written = await fs.readFile(path.join(outputDir, part), "utf8");
+            expect(written).toMatch(/<Relationships[^>]*>\n {2}<Relationship /);
+        });
+    });
+
+    it.each([".rels", "payload.rels"])("preserves binary %s outside a relationships folder", async (name) => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "input.docx");
+            const outputDir = path.join(dir, "out");
+            const part = `word/media/${name}`;
+            const payload = Buffer.from([0x80, 0xff, 0x01, 0xe2, 0x80, 0x9c, 0x02]);
+            const contentTypes = MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/${part}" ContentType="application/octet-stream"/></Types>`,
+            );
+            await fs.writeFile(
+                inputFile,
+                await buildMinimalDocx({
+                    ...MINIMAL_PARTS,
+                    "[Content_Types].xml": contentTypes,
+                    [part]: payload,
+                }),
+            );
+
+            const result = await unpack(inputFile, outputDir, {
+                mergeRuns: false,
+                simplifyRedlines: false,
+            });
+            expect(result.ok).toBe(true);
+            expect(await fs.readFile(path.join(outputDir, part))).toEqual(payload);
         });
     });
 
@@ -534,14 +637,19 @@ describe("unpack", () => {
 });
 
 describe("unpack error handling integration", () => {
-    it.each([true, false])("reports a missing main document with simplifyRedlines=%s", async (simplifyRedlines) => {
+    it.each([
+        [true, false],
+        [false, true],
+    ] as const)("reports a missing main document with simplifyRedlines=%s and mergeRuns=%s", async (simplifyRedlines, mergeRuns) => {
         await withTempDir(async (dir) => {
             const input = path.join(dir, "missing-main.docx");
             const output = path.join(dir, "out");
             const parts = { ...MINIMAL_PARTS };
             delete parts["word/document.xml"];
             await fs.writeFile(input, await buildMinimalDocx(parts));
-            expect(await unpack(input, output, { simplifyRedlines })).toEqual({
+            // Each row enables only one helper. With both on, a missing
+            // document is reported by whichever helper runs first.
+            expect(await unpack(input, output, { simplifyRedlines, mergeRuns })).toEqual({
                 ok: false,
                 message: `Error: ${path.join(output, "word", "document.xml")} not found`,
             });

@@ -299,72 +299,129 @@ export const serializeXml = (node: Node, encoding?: string): string => {
     return xml.replace(/^(<\?xml\b(?:(?!\?>)[\s\S])*?encoding\s*=\s*)(["'])[^"']*\2/i, `$1$2${encoding}$2`);
 };
 
-// Match the former /<[^/!?][^>]*>$/ suffix check in one backward scan.
-// Retrying the regex at each '<' made comments with repeated '< ' quadratic.
-const hasOpeningTagSuffix = (line: string): boolean => {
-    const end = line.length - 1;
-    if (line[end] !== ">") {
-        return false;
-    }
-    for (let i = end - 1; i >= 0; i -= 1) {
-        // An earlier '>' can only be consumed as the tag's second character.
-        if (line[i] === ">") {
-            return i > 0 && line[i - 1] === "<";
+/** Tokenize serialized XML in one forward scan, keeping declarations and quoted markup opaque. */
+const prettyXmlTokens = (raw: string): string[] => {
+    const tokens: string[] = [];
+    let offset = 0;
+    while (offset < raw.length) {
+        const start = offset;
+        const terminator = raw.startsWith("<!--", start)
+            ? "-->"
+            : raw.startsWith("<![CDATA[", start)
+              ? "]]>"
+              : raw.startsWith("<?", start)
+                ? "?>"
+                : undefined;
+        if (terminator !== undefined) {
+            const end = raw.indexOf(terminator, start + 2);
+            offset = end < 0 ? raw.length : end + terminator.length;
+        } else if (raw[start] !== "<") {
+            const end = raw.indexOf("<", start);
+            offset = end < 0 ? raw.length : end;
+        } else {
+            const doctype = raw.startsWith("<!DOCTYPE", start);
+            let subsetDepth = 0;
+            let quote: string | undefined;
+            offset += 1;
+            while (offset < raw.length) {
+                const char = raw[offset];
+                if (quote !== undefined) {
+                    if (char === quote) {
+                        quote = undefined;
+                    }
+                } else if (doctype && (raw.startsWith("<!--", offset) || raw.startsWith("<?", offset))) {
+                    // Brackets and '>' inside a subset's comment or PI are data.
+                    const close = raw.startsWith("<!--", offset) ? "-->" : "?>";
+                    const end = raw.indexOf(close, offset + 2);
+                    offset = end < 0 ? raw.length : end + close.length;
+                    continue;
+                } else if (char === '"' || char === "'") {
+                    quote = char;
+                } else if (doctype && char === "[") {
+                    subsetDepth += 1;
+                } else if (doctype && char === "]") {
+                    subsetDepth -= 1;
+                } else if (char === ">" && subsetDepth === 0) {
+                    offset += 1;
+                    break;
+                }
+                offset += 1;
+            }
         }
-        if (i < end - 1 && line[i] === "<" && !"/!?".includes(line[i + 1])) {
-            return true;
-        }
+        tokens.push(raw.slice(start, offset));
     }
-    return false;
+    return tokens;
 };
 
 /**
- * Pretty-print a DOM `Document` with the given indent (default two spaces).
- * Mirrors Python's `doc.toprettyxml(indent="  ")`.
- *
- * Implementation note: `@xmldom` does not have a built-in pretty-printer, so
- * we walk the serialized output and re-indent. This is good enough for
- * human-readable diffs; do NOT use the result as the canonical form for
- * roundtrip comparison (whitespace inside `xml:space="preserve"` runs
- * survives but surrounding indentation is reflowed).
+ * Pretty-print a DOM node with the given indent (default two spaces).
+ * Like Python's `toprettyxml`, keep a sole text child beside its tags, even
+ * when it contains only whitespace. Keep mixed content intact too: adding
+ * indentation there would change its text. xml:space="preserve" and text-
+ * bearing local names also keep the entire element verbatim. Only element-
+ * only content is re-indented; serialized text and opaque markup are copied.
  */
 export const prettyXml = (node: Node, indent = "  "): string => {
     const raw = serializeXml(node);
-    // Match either: an XML comment (<!-- ... -->, may contain '>'), any other
-    // tag/decl/PI, or a run of text. The comment branch must come first so
-    // comments containing '>' don't terminate the [^>]+ branch prematurely.
-    const tokens = raw.match(/<(?:!--[\s\S]*?--|[^>]+)>|[^<]+/g) ?? [];
+    const tokens = prettyXmlTokens(raw);
+    // A caller can print a subtree whose xml:space was declared above it.
+    let inheritedPreserve = false;
+    for (let ancestor = node.parentNode; ancestor; ancestor = ancestor.parentNode) {
+        if (ancestor.nodeType === 1) {
+            const space = (ancestor as Element).getAttributeNS("http://www.w3.org/XML/1998/namespace", "space");
+            if (space === "preserve" || space === "default") {
+                inheritedPreserve = space === "preserve";
+                break;
+            }
+        }
+    }
+    const textNames = new Set(["t", "delText", "instrText", "delInstrText"]);
+    const stack: { start: number; hasText: boolean; preserve: boolean }[] = [];
+    const inlineEnds = new Map<number, number>();
+    for (const [i, token] of tokens.entries()) {
+        if (token.startsWith("</")) {
+            const parent = stack.pop();
+            if (parent && (parent.hasText || (i === parent.start + 2 && !tokens[i - 1].startsWith("<")))) {
+                inlineEnds.set(parent.start, i);
+            }
+        } else if (token.startsWith("<![CDATA[") || (!token.startsWith("<") && /[^ \t\n\r]/.test(token))) {
+            const parent = stack[stack.length - 1];
+            if (parent) {
+                parent.hasText = true;
+            }
+        } else if (token.startsWith("<") && !token.startsWith("<!") && !token.startsWith("<?") && !token.endsWith("/>")) {
+            // XMLSerializer writes attributes in double quotes. Using XML's
+            // whitespace class here keeps Unicode text out of markup rules.
+            const space = /[ \t\n\r]xml:space="(preserve|default)"/.exec(token)?.[1];
+            const preserve = space === undefined ? (stack[stack.length - 1]?.preserve ?? inheritedPreserve) : space === "preserve";
+            const [, name] = /^<([^ \t\n\r/>]+)/.exec(token)!;
+            const localName = name.slice(name.indexOf(":") + 1);
+            stack.push({ start: i, hasText: preserve || textNames.has(localName), preserve });
+        }
+    }
+
     let depth = 0;
     const lines: string[] = [];
-    for (const token of tokens) {
-        if (token.startsWith("<?") || token.startsWith("<!")) {
+    for (let i = 0; i < tokens.length; i += 1) {
+        const token = tokens[i];
+        const end = inlineEnds.get(i);
+        if (end !== undefined) {
+            // Copy the entire span so no whitespace is injected beside text,
+            // including around child elements inside mixed content.
+            lines.push(indent.repeat(depth) + tokens.slice(i, end + 1).join(""));
+            i = end;
+        } else if (token.startsWith("<?") || token.startsWith("<!")) {
             lines.push(indent.repeat(depth) + token);
-            continue;
-        }
-        if (token.startsWith("</")) {
+        } else if (token.startsWith("</")) {
             depth = Math.max(0, depth - 1);
             lines.push(indent.repeat(depth) + token);
-            continue;
-        }
-        if (token.startsWith("<") && !token.endsWith("/>")) {
+        } else if (token.startsWith("<")) {
             lines.push(indent.repeat(depth) + token);
-            depth += 1;
-            continue;
-        }
-        if (token.startsWith("<") && token.endsWith("/>")) {
-            lines.push(indent.repeat(depth) + token);
-            continue;
-        }
-        const trimmed = token.replace(/\s+/g, " ").trim();
-        if (trimmed === "") {
-            continue;
-        }
-        if (lines.length > 0 && !lines[lines.length - 1].endsWith(">")) {
-            lines[lines.length - 1] += trimmed;
-        } else if (lines.length > 0 && hasOpeningTagSuffix(lines[lines.length - 1])) {
-            lines[lines.length - 1] += trimmed;
-        } else {
-            lines.push(indent.repeat(depth) + trimmed);
+            if (!token.endsWith("/>")) {
+                depth += 1;
+            }
+        } else if (/[^ \t\n\r]/.test(token)) {
+            lines.push(token);
         }
     }
     return lines.join("\n");
