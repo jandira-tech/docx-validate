@@ -162,6 +162,17 @@ describe("Word-read markup compatibility regardless of stored name (#1217)", () 
                 });
             }
         }
+        // The schema walk and the Word check both see this part under strict;
+        // #1213 alone reported the character data twice there (grok, #1217).
+        it(`reports character data in ${main} once under strict`, async () => {
+            const parts = compatibilityMainParts(main);
+            parts[main] = defects[2]!.mutate(parts[main]!);
+            const result = await run(parts, "strict");
+            expect(result.issues.filter((issue) => issue.code === "mce-malformed" && issue.path === main)).toEqual([
+                expect.objectContaining({ severity: "error", message: expect.stringContaining("sessions 65 and 67") }),
+            ]);
+            expect(result.valid).toBe(false);
+        });
         it(`accepts the renamed main calibration ${main}`, async () => {
             expect((await run(compatibilityMainParts(main), "word-valid")).valid).toBe(true);
         });
