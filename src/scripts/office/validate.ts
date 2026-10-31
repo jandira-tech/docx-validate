@@ -99,7 +99,7 @@ import { PPTXSchemaValidator } from "./validators/pptx";
 import { validateRedlining } from "./validators/redlining";
 import { propertiesParts } from "../../lib/properties-parts";
 import { wordReadParts, wordPossiblyReadParts, wordStoryRootParts } from "../../lib/word-read-parts";
-import { CT_DUPLICATE_DECLARATION } from "../../lib/content-types";
+import { canonicalPartName, CT_DUPLICATE_DECLARATION } from "../../lib/content-types";
 import { isWordBlockingIssue, isUnreadByWord, needsPossiblyReadParts } from "./validators/word-blocking";
 import { explainWordError } from "./validators/word-error-explanations";
 import { archiveWithoutEntries, loadCentralNamedArchive } from "../../lib/zip-central-names";
@@ -922,11 +922,16 @@ function findingsUnderProfile(
     // covers both, as the full run's validateNamespaces walk does.
     const outcomes = run.outcomes.map((outcome) => {
         if (outcome.id !== "word-markup-compatibility" || !context || !run.executed.includes(outcome.id)) return outcome;
-        const roots = context.partNames.filter(isMarkupCompatibilityJudgedPart).flatMap((name) => {
-            const parsed = context.xml(name);
-            const root = parsed?.ok ? parsed.document.documentElement : undefined;
-            return root ? rootIgnorableIssues(root, name) : [];
-        });
+        // Additional read XML parts are already named by this outcome's
+        // errors, so root-Ignorable pairing needs no second read-model walk.
+        const reportedParts = new Set(outcome.issues.flatMap((issue) => (issue.path === undefined ? [] : [canonicalPartName(issue.path)])));
+        const roots = context.partNames
+            .filter((name) => isMarkupCompatibilityJudgedPart(name) || reportedParts.has(canonicalPartName(name)))
+            .flatMap((name) => {
+                const parsed = context.xml(name);
+                const root = parsed?.ok ? parsed.document.documentElement : undefined;
+                return root ? rootIgnorableIssues(root, name) : [];
+            });
         return { ...outcome, issues: withoutRestatedIgnorablePrefixes({ valid: run.valid, issues: [...roots, ...outcome.issues] }).issues };
     });
     // Equivalent names, escaped unreserved characters, escaped separators and

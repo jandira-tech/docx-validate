@@ -15,12 +15,12 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { isContentTypesStreamName } from "../../../lib/content-types";
+import { canonicalPartName, isContentTypesStreamName } from "../../../lib/content-types";
 import { xmlPartNames } from "./xml";
-import { isMarkupCompatibilityJudgedPart } from "./word-markup-compatibility";
+import { markupCompatibilityJudgedParts } from "./word-markup-compatibility";
 
 /**
- * Complement word-markup-compatibility outside its folder/sidecar scope.
+ * Complement word-markup-compatibility outside its shared judged scope.
  * The content-types stream has ct-markup-compatibility. Reuse the processor:
  * ancestor scope, opaque extension slots and unselected content stay correct.
  * Keep mce-* codes so existing root-Ignorable deduplication still works.
@@ -31,9 +31,10 @@ export const xmlPackageMarkupCompatibilityCheck: CheckDefinition = {
     groups: ["xml"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx, profile) =>
-        [...xmlPartNames(ctx.partNames, (part) => ctx.bytes(part))]
-            .filter((part) => !isMarkupCompatibilityJudgedPart(part) && !isContentTypesStreamName(part))
+    run: async (ctx, profile) => {
+        const judged = await markupCompatibilityJudgedParts(ctx, profile);
+        return [...xmlPartNames(ctx.partNames, (part) => ctx.bytes(part))]
+            .filter((part) => !judged.has(canonicalPartName(part)) && !isContentTypesStreamName(part))
             .flatMap((part) =>
                 ctx
                     .compatibilityIssues(part)
@@ -42,5 +43,6 @@ export const xmlPackageMarkupCompatibilityCheck: CheckDefinition = {
                         ...issue,
                         severity: profile === "strict" ? ("error" as const) : ("warning" as const),
                     })),
-            ),
+            );
+    },
 };

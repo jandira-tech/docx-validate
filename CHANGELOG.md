@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- Judge markup compatibility in every XML story Word reads, including a main document or used header stored as `.bin` and a main document outside `word/` ([#1217](https://github.com/jandira-tech/docx-validate/issues/1217)). These parts now keep their `.xml` twins' Word-valid blocking verdict and conditional Word-session citations, without duplicate package findings; unused binary headers still warn. Session 32 showed Word reads `word/document.bin` as the main document; no session has shown it a `.bin` story with these compatibility defects.
+
 - Four package-consistency checks from an external malformation audit ([#1212](https://github.com/jandira-tech/docx-validate/issues/1212)): `ct-stale-override` (an `Override` naming no stored part; a warning under every profile, as Word opened one clean in sessions 3c to 7), `word-field-unbalanced` (`w:fldChar` begin/separate/end nesting in the stories Word reads), `word-move-range-unpaired` (move ranges without a counterpart of the same name, or without their end) and `xml-package-markup-compatibility` (an undeclared `mc:Ignorable` or `Requires` prefix in package XML outside the Word-read parts, such as `customXml/`). The last three warn under word-valid, as no Word session has shown their shapes, and are errors under strict. Lenient is unchanged.
 
 ## [0.54.0-rc.2] — 2026-10-30
