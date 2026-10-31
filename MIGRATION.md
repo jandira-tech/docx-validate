@@ -4,7 +4,9 @@ Notes for upgrading between breaking releases of `docx-validate`.
 The project follows [SemVer](https://semver.org/spec/v2.0.0.html); under `0.x`,
 minor versions carry breaking changes.
 
-## 0.54.0-rc.3
+## 0.60.0
+
+This section covers the changes since 0.52.0. Coming from 0.5.0, the previous release on npm's `latest` tag, also read the 0.53.0-rc.1 and 0.51.x → 0.52.0 sections below.
 
 ### Breaking: DOCX/DOCM default to `word-valid`
 
