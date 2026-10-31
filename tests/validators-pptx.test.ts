@@ -1320,10 +1320,7 @@ describe("PPTX-specific checks when a part cannot be parsed", () => {
     it("validateUuidIds ignores attributes whose local name does not end in id", async () => {
         await withTempDir(async (dir) => {
             const badUuid = "1234567890abcdefGHIJKLMNOpqrstuv";
-            await writeFile(
-                path.join(dir, "ppt", "slides", "slide1.xml"),
-                presentationXml(`<p:custom title="${badUuid}"/>`),
-            );
+            await writeFile(path.join(dir, "ppt", "slides", "slide1.xml"), presentationXml(`<p:custom title="${badUuid}"/>`));
             expect(await makeValidator(dir).validateUuidIds()).toEqual({ valid: true, issues: [] });
         });
     });
@@ -1363,13 +1360,16 @@ describe("PPTX-specific checks when a part cannot be parsed", () => {
             expect((await makeValidator(dir).validateNotesSlideReferences()).issues).toContainEqual(
                 expect.objectContaining({ code: "notes-rels-parse", path: "ppt/slides/_rels/slide1.xml.rels" }),
             );
+            // Two Target-less sidecars stay valid only when both are skipped.
+            // Storing one stand-in target for each counts them as one shared
+            // notes part and reports notes-shared.
             await writeFile(
                 path.join(dir, "ppt", "slides", "_rels", "slide1.xml.rels"),
                 relsXml(`<Relationship Id="rId1" Type="${R_NS}/notesSlide"/>`),
             );
             await writeFile(
                 path.join(dir, "ppt", "slides", "_rels", "slide2.xml.rels"),
-                relsXml(`<Relationship Id="rId1" Type="${R_NS}/notesSlide" Target="../notesSlides/notesSlide1.xml"/>`),
+                relsXml(`<Relationship Id="rId2" Type="${R_NS}/notesSlide"/>`),
             );
             expect(await makeValidator(dir).validateNotesSlideReferences()).toEqual({ valid: true, issues: [] });
         });
