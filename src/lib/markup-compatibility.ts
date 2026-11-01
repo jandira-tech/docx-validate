@@ -313,11 +313,10 @@ export const applyMarkupCompatibility = (
             processContent,
         };
         const { attributes } = element;
-        for (let i = attributes.length - 1; i >= 0; i--) {
+        const attrsToRemove = [];
+        // eslint-disable-next-line typescript/prefer-for-of -- for loop is intentional for performance on custom xmldom objects
+        for (let i = 0; i < attributes.length; i++) {
             const attr = attributes[i];
-            if (!attr) {
-                continue;
-            }
             // Word understands Office extension attributes even when the part
             // omits Ignorable. The ISO schemas cannot validate these attributes;
             // remove them only from this clone and diagnose the missing directive.
@@ -332,15 +331,18 @@ export const applyMarkupCompatibility = (
                 names.add(attr.name);
                 undeclaredExtensions.set(attr.namespaceURI, names);
                 extensionAttributeCount += 1;
-                element.removeAttributeNode(attr);
+                attrsToRemove.push(attr);
                 continue;
             }
             if (
                 attr.namespaceURI === NS.MC ||
                 (attr.namespaceURI && ignorable.has(attr.namespaceURI) && !opts.understood.has(attr.namespaceURI))
             ) {
-                element.removeAttributeNode(attr);
+                attrsToRemove.push(attr);
             }
+        }
+        for (const attr of attrsToRemove) {
+            element.removeAttributeNode(attr);
         }
         if (element.namespaceURI === NS.MC && element.localName === "AlternateContent") {
             for (const child of children(element)) {

@@ -54,5 +54,6 @@
 **Action:** Rebase a bot PR before judging it, and judge its head again before merging, since the bot may push after the rebase.
 
 ## 2024-11-01 - [Avoid Array.from on childNodes and attributes]
+
 **Learning:** `xmldom` returns custom NodeList objects for `childNodes` and `attributes` which are expensive to convert via `Array.from()`.
 **Action:** Use native for loops to iterate over `childNodes` and `attributes` instead of `Array.from` combined with `.filter` or `.some`. Since `childNodes` can be accessed by index `childNodes[i]`, traditional `for` loops are much faster.
