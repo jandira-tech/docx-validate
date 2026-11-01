@@ -131,7 +131,18 @@ const tokens = (value: string): string[] => value.trim().split(/\s+/).filter(Boo
 const NCNAME_START =
     "A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u{10000}-\u{EFFFF}";
 const NCNAME = new RegExp(`^[${NCNAME_START}][${NCNAME_START}0-9.\\-\u00B7\u0300-\u036F\u203F-\u2040]*$`, "u");
-const children = (element: Element): Element[] => Array.from(element.childNodes).filter((node) => node.nodeType === 1) as Element[];
+const children = (element: Element): Element[] => {
+    const result: Element[] = [];
+    const { childNodes } = element;
+    // eslint-disable-next-line typescript/prefer-for-of -- for loop is intentional for performance on custom xmldom objects
+    for (let i = 0; i < childNodes.length; i++) {
+        const node = childNodes[i];
+        if (node && node.nodeType === 1) {
+            result.push(node as Element);
+        }
+    }
+    return result;
+};
 // Word 16.115 offered recovery for character data directly inside an
 // mc:AlternateContent — before the Choice, between the Choice and the
 // Fallback, after the Fallback, after a Choice with no Fallback and between
@@ -142,8 +153,17 @@ const children = (element: Element): Element[] => Array.from(element.childNodes)
 // (session 67 s67b). Whitespace is note 8's [ \t\n\r], which pretty-printed
 // parts carry; mc.xsd declares none of the three elements mixed, so it
 // cannot draw Word's line. CDATA sections are unprobed.
-const holdsCharacterData = (element: Element): boolean =>
-    Array.from(element.childNodes).some((node) => node.nodeType === 3 && (node.nodeValue ?? "").match(/[^ \t\n\r]/) !== null);
+const holdsCharacterData = (element: Element): boolean => {
+    const { childNodes } = element;
+    // eslint-disable-next-line typescript/prefer-for-of -- for loop is intentional for performance on custom xmldom objects
+    for (let i = 0; i < childNodes.length; i++) {
+        const node = childNodes[i];
+        if (node && node.nodeType === 3 && (node.nodeValue ?? "").match(/[^ \t\n\r]/) !== null) {
+            return true;
+        }
+    }
+    return false;
+};
 
 // A part alone cannot show its package's conformance class, and sessions 65
 // and 67 stored Transitional packages, so the processor reports the finding
@@ -292,7 +312,11 @@ export const applyMarkupCompatibility = (
             ignorable,
             processContent,
         };
-        for (const attr of Array.from(element.attributes)) {
+        const { attributes } = element;
+        const attrsToRemove = [];
+        // eslint-disable-next-line typescript/prefer-for-of -- for loop is intentional for performance on custom xmldom objects
+        for (let i = 0; i < attributes.length; i++) {
+            const attr = attributes[i];
             // Word understands Office extension attributes even when the part
             // omits Ignorable. The ISO schemas cannot validate these attributes;
             // remove them only from this clone and diagnose the missing directive.
@@ -307,15 +331,18 @@ export const applyMarkupCompatibility = (
                 names.add(attr.name);
                 undeclaredExtensions.set(attr.namespaceURI, names);
                 extensionAttributeCount += 1;
-                element.removeAttributeNode(attr);
+                attrsToRemove.push(attr);
                 continue;
             }
             if (
                 attr.namespaceURI === NS.MC ||
                 (attr.namespaceURI && ignorable.has(attr.namespaceURI) && !opts.understood.has(attr.namespaceURI))
             ) {
-                element.removeAttributeNode(attr);
+                attrsToRemove.push(attr);
             }
+        }
+        for (const attr of attrsToRemove) {
+            element.removeAttributeNode(attr);
         }
         if (element.namespaceURI === NS.MC && element.localName === "AlternateContent") {
             for (const child of children(element)) {
