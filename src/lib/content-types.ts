@@ -246,18 +246,15 @@ export const canonicalPartName = (partName: string): string => {
  * does not depend on how `names` is ordered; `undefined` when no entry is
  * equivalent (#344, #349).
  */
+const equivalentPartCache = new WeakMap<readonly string[], (partName: string) => string | undefined>();
+
 export const findEquivalentPart = (names: readonly string[], partName: string): string | undefined => {
-    if (names.includes(partName)) {
-        return partName;
+    let lookup = equivalentPartCache.get(names);
+    if (lookup === undefined) {
+        lookup = equivalentPartLookup(names);
+        equivalentPartCache.set(names, lookup);
     }
-    const key = canonicalPartName(partName);
-    let found: string | undefined;
-    for (const name of names) {
-        if (canonicalPartName(name) === key && (found === undefined || name < found)) {
-            found = name;
-        }
-    }
-    return found;
+    return lookup(partName);
 };
 
 /** An absolute URI names no package part, whatever its TargetMode says. */
