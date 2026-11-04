@@ -239,6 +239,8 @@ export const canonicalPartName = (partName: string): string => {
     return asciiLowercase(out);
 };
 
+const findEquivalentPartCache = new WeakMap<readonly string[], (partName: string) => string | undefined>();
+
 /**
  * The entry in `names` that `partName` names under OPC part-name
  * equivalence ({@link canonicalPartName}), preferring an exact match and
@@ -247,17 +249,12 @@ export const canonicalPartName = (partName: string): string => {
  * equivalent (#344, #349).
  */
 export const findEquivalentPart = (names: readonly string[], partName: string): string | undefined => {
-    if (names.includes(partName)) {
-        return partName;
+    let lookup = findEquivalentPartCache.get(names);
+    if (lookup === undefined) {
+        lookup = equivalentPartLookup(names);
+        findEquivalentPartCache.set(names, lookup);
     }
-    const key = canonicalPartName(partName);
-    let found: string | undefined;
-    for (const name of names) {
-        if (canonicalPartName(name) === key && (found === undefined || name < found)) {
-            found = name;
-        }
-    }
-    return found;
+    return lookup(partName);
 };
 
 /** An absolute URI names no package part, whatever its TargetMode says. */
