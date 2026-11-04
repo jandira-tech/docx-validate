@@ -52,3 +52,7 @@
 
 **Learning:** Every open bot PR was compared with main after #1172, file by file, against the closest version in main's history. #686's change is #1172. #936 adds only a comment and an `if (childNodes)` guard, and `childNodes` is never undefined on an xmldom node. #1168 splits the old `getElementsByTagNameNSAll` into four loops, a function `walkElements` and its element index have since replaced. #677 downgrades `actions/checkout` and `actions/setup-node`. After the rebase, #685, #686 and #1168 each received a commit that restored their pre-#1169 tree, about 151,000 deleted lines.
 **Action:** Rebase a bot PR before judging it, and judge its head again before merging, since the bot may push after the rebase.
+
+## 2024-11-04 - Cache OPC-equivalent part lookups
+**Learning:** In the `docx-validate` repository, `findEquivalentPart` performs an O(N) linear scan over package parts and calls `canonicalPartName` on every item, resulting in a significant performance bottleneck when resolving paths for many relationships. Because the `ValidationContext` maintains referential stability for its internal `this.names` array (returned as `partNames`), we can cache the `equivalentPartLookup` map function (e.g., via a `WeakMap`) keyed on the `names` array itself.
+**Action:** When repeatedly looking up canonical part names against a static list of package parts (e.g., in `findEquivalentPart`), use a `WeakMap` cache of the `equivalentPartLookup` function to transform O(N) loops into O(1) lookups for stable `names` references.
