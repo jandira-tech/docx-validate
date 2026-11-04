@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:footnotes xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh wp14">
+  <w:footnote w:type="separator" w:id="-1">
+    <w:p w14:paraId="36B9958B" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:separator/>
+      </w:r>
+    </w:p>
+  </w:footnote>
+  <w:footnote w:type="continuationSeparator" w:id="0">
+    <w:p w14:paraId="1B512E62" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:continuationSeparator/>
+      </w:r>
+    </w:p>
+  </w:footnote>
+  <w:footnote w:id="1">
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Testonotaapidipagina"/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="142"/>
+        </w:tabs>
+        <w:ind w:left="284" w:hanging="284"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="5339" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5335" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Caratteredellanota"/>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:footnoteRef/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5336" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:tab/>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5337" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5338" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:t>Oltre ai direttori tecnici per ogni tipo di impresa, vanno indicati: il titolare per le imprese individuali, tutti i soci per le società in nome collettivo, i soci accomandatari per le società in accomandita semplice; per gli altri tipi di società e i consorzi gli amministratori muniti di potere di rappresentanza, di direzione e controllo, il socio unico persona fisica ovvero il socio di maggioranza in caso di società con meno di quattro soci.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+  </w:footnote>
+  <w:footnote w:id="2">
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Testonotaapidipagina"/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="142"/>
+        </w:tabs>
+        <w:ind w:left="284" w:hanging="284"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="5342" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5340" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Caratteredellanota"/>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:footnoteRef/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5341" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:tab/>
+          <w:t xml:space="preserve">Elencare le persone fisiche che avevano potere di rappresentanza, di direzione e controllo e i direttori tecnici.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+  </w:footnote>
+  <w:footnote w:id="3">
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Testonotaapidipagina"/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:ind w:left="284" w:hanging="284"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="5345" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5343" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Caratteredellanota"/>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:footnoteRef/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5344" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:tab/>
+          <w:t>Devono essere dichiarate tutte le condanne penali subite, ivi comprese quelle per le quali si abbia beneficiato della non menzione, ad eccezione di quelle relative a reati depenalizzati, ovvero per le quali è intervenuta la riabilitazione, ovvero quando il reato è stato dichiarato estinto dopo la condanna, ovvero in caso di revoca della condanna stessa.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+  </w:footnote>
+  <w:footnote w:id="4">
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Testonotaapidipagina"/>
+        <w:ind w:left="284" w:hanging="284"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="5349" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5346" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Caratteredellanota"/>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:footnoteRef/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5347" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5348" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:t>La dichiarazione segue le stesse regole indicate nella precedente nota.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+  </w:footnote>
+  <w:footnote w:id="5">
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Testonotaapidipagina"/>
+        <w:ind w:left="284" w:hanging="284"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="5353" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5350" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Rimandonotaapidipagina"/>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:footnoteRef/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5351" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5352" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:tab/>
+          <w:t>Per gli appalti pari o superiori ad euro 40.000 fino alla soglia comunitaria è obbligatoria la pubblicazione sulla Gazzetta Ufficiale, per quelli sopra soglia, è obbligatoria anche la pubblicazione su almeno 2 quotidiani locali e 2 nazionali.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+  </w:footnote>
+  <w:footnote w:id="6">
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Testonotaapidipagina"/>
+        <w:ind w:left="284" w:hanging="284"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="5357" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5354" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Rimandonotaapidipagina"/>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:footnoteRef/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5355" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5356" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:tab/>
+          <w:t>Sulla cifra da richiedere all&#x2019;operatore economico, vedere deliberazione ANAC del 5 marzo 2014 che contiene l&#x2019;esatta indicazione dei criteri per la riscossione della somma. Sotto i 150.000 euro non è richiesta alcuna somma all&#x2019;operatore economico.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+  </w:footnote>
+</w:footnotes>

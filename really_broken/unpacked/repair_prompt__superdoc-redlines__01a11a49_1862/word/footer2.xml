@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:ftr xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" mc:Ignorable="w14 wp14">
+  <w:tbl>
+    <w:tblPr>
+      <w:tblW w:w="9720" w:type="dxa"/>
+      <w:jc w:val="left"/>
+      <w:tblInd w:w="0" w:type="dxa"/>
+      <w:tblBorders>
+        <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+        <w:insideH w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+      </w:tblBorders>
+      <w:tblCellMar>
+        <w:top w:w="0" w:type="dxa"/>
+        <w:left w:w="0" w:type="dxa"/>
+        <w:bottom w:w="0" w:type="dxa"/>
+        <w:right w:w="0" w:type="dxa"/>
+      </w:tblCellMar>
+    </w:tblPr>
+    <w:tblGrid>
+      <w:gridCol w:w="711"/>
+      <w:gridCol w:w="1192"/>
+      <w:gridCol w:w="7817"/>
+    </w:tblGrid>
+    <w:tr>
+      <w:trPr>
+        <w:trHeight w:val="142" w:hRule="atLeast"/>
+      </w:trPr>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="711" w:type="dxa"/>
+          <w:vMerge w:val="restart"/>
+          <w:tcBorders>
+            <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            <w:insideH w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+          </w:tcBorders>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vAlign w:val="center"/>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:pStyle w:val="Normal"/>
+            <w:ind w:right="7370" w:hanging="0"/>
+            <w:jc w:val="right"/>
+            <w:rPr>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:sz w:val="14"/>
+              <w:szCs w:val="14"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:cs="Times" w:ascii="Times" w:hAnsi="Times"/>
+              <w:lang w:val="en-US" w:eastAsia="en-US"/>
+            </w:rPr>
+            <w:drawing>
+              <wp:inline distT="0" distB="0" distL="0" distR="0">
+                <wp:extent cx="443230" cy="188595"/>
+                <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                <wp:docPr id="1" name="Immagine 4" descr=""/>
+                <wp:cNvGraphicFramePr>
+                  <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+                </wp:cNvGraphicFramePr>
+                <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                  <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                      <pic:nvPicPr>
+                        <pic:cNvPr id="1" name="Immagine 4" descr=""/>
+                        <pic:cNvPicPr>
+                          <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                        </pic:cNvPicPr>
+                      </pic:nvPicPr>
+                      <pic:blipFill>
+                        <a:blip r:embed="rId1"/>
+                        <a:srcRect l="-79" t="-188" r="794" b="-188"/>
+                        <a:stretch>
+                          <a:fillRect/>
+                        </a:stretch>
+                      </pic:blipFill>
+                      <pic:spPr bwMode="auto">
+                        <a:xfrm>
+                          <a:off x="0" y="0"/>
+                          <a:ext cx="443230" cy="188595"/>
+                        </a:xfrm>
+                        <a:prstGeom prst="rect">
+                          <a:avLst/>
+                        </a:prstGeom>
+                      </pic:spPr>
+                    </pic:pic>
+                  </a:graphicData>
+                </a:graphic>
+              </wp:inline>
+            </w:drawing>
+          </w:r>
+        </w:p>
+      </w:tc>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="1192" w:type="dxa"/>
+          <w:tcBorders>
+            <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            <w:insideH w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+          </w:tcBorders>
+          <w:shd w:fill="FFFFFF" w:val="clear"/>
+          <w:vAlign w:val="center"/>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:pStyle w:val="Normal"/>
+            <w:jc w:val="center"/>
+            <w:rPr>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:sz w:val="10"/>
+              <w:szCs w:val="10"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:cs="Arial" w:ascii="Arial" w:hAnsi="Arial"/>
+              <w:sz w:val="10"/>
+              <w:szCs w:val="10"/>
+            </w:rPr>
+            <w:t xml:space="preserve">Cod.
+            </w:t>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:cs="Arial" w:ascii="Arial" w:hAnsi="Arial"/>
+              <w:sz w:val="10"/>
+              <w:szCs w:val="10"/>
+              <w:lang w:eastAsia="en-US"/>
+            </w:rPr>
+            <w:t>853610.a-bis.7.i
+            </w:t>
+          </w:r>
+        </w:p>
+      </w:tc>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="7817" w:type="dxa"/>
+          <w:tcBorders/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vAlign w:val="center"/>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:pStyle w:val="Normal"/>
+            <w:snapToGrid w:val="false"/>
+            <w:ind w:right="87" w:hanging="0"/>
+            <w:rPr>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:sz w:val="10"/>
+              <w:szCs w:val="10"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:cs="Arial" w:ascii="Arial" w:hAnsi="Arial"/>
+              <w:sz w:val="10"/>
+              <w:szCs w:val="10"/>
+            </w:rPr>
+          </w:r>
+        </w:p>
+      </w:tc>
+    </w:tr>
+    <w:tr>
+      <w:trPr>
+        <w:trHeight w:val="142" w:hRule="atLeast"/>
+      </w:trPr>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="711" w:type="dxa"/>
+          <w:vMerge w:val="continue"/>
+          <w:tcBorders>
+            <w:top w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+          </w:tcBorders>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vAlign w:val="center"/>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:pStyle w:val="Normal"/>
+            <w:snapToGrid w:val="false"/>
+            <w:rPr>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:sz w:val="14"/>
+              <w:szCs w:val="14"/>
+              <w:lang w:eastAsia="ar-SA"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:cs="Arial" w:ascii="Arial" w:hAnsi="Arial"/>
+              <w:sz w:val="14"/>
+              <w:szCs w:val="14"/>
+              <w:lang w:eastAsia="ar-SA"/>
+            </w:rPr>
+          </w:r>
+        </w:p>
+      </w:tc>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="1192" w:type="dxa"/>
+          <w:tcBorders>
+            <w:top w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+          </w:tcBorders>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vAlign w:val="center"/>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:pStyle w:val="Normal"/>
+            <w:jc w:val="center"/>
+            <w:rPr>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:sz w:val="10"/>
+              <w:szCs w:val="10"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:cs="Arial" w:ascii="Arial" w:hAnsi="Arial"/>
+              <w:sz w:val="10"/>
+              <w:szCs w:val="10"/>
+            </w:rPr>
+            <w:t>Grafiche E. Gaspari
+            </w:t>
+          </w:r>
+        </w:p>
+      </w:tc>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="7817" w:type="dxa"/>
+          <w:tcBorders/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vAlign w:val="center"/>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:pStyle w:val="Normal"/>
+            <w:ind w:right="87" w:hanging="0"/>
+            <w:jc w:val="right"/>
+            <w:rPr>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:sz w:val="10"/>
+              <w:szCs w:val="10"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:cs="Arial" w:ascii="Arial" w:hAnsi="Arial"/>
+              <w:sz w:val="10"/>
+              <w:szCs w:val="10"/>
+            </w:rPr>
+            <w:t xml:space="preserve">Pag.
+            </w:t>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:cs="Arial" w:ascii="Arial" w:hAnsi="Arial"/>
+              <w:sz w:val="10"/>
+              <w:szCs w:val="10"/>
+            </w:rPr>
+            <w:fldChar w:fldCharType="begin"/>
+          </w:r>
+          <w:r>
+            <w:instrText>PAGE
+            </w:instrText>
+          </w:r>
+          <w:r>
+            <w:fldChar w:fldCharType="separate"/>
+          </w:r>
+          <w:r>
+            <w:t>1
+            </w:t>
+          </w:r>
+          <w:r>
+            <w:fldChar w:fldCharType="end"/>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:cs="Arial" w:ascii="Arial" w:hAnsi="Arial"/>
+              <w:sz w:val="10"/>
+              <w:szCs w:val="10"/>
+            </w:rPr>
+            <w:t xml:space="preserve">di
+            </w:t>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:cs="Arial" w:ascii="Arial" w:hAnsi="Arial"/>
+              <w:bCs/>
+              <w:sz w:val="10"/>
+              <w:szCs w:val="10"/>
+            </w:rPr>
+            <w:fldChar w:fldCharType="begin"/>
+          </w:r>
+          <w:r>
+            <w:instrText>NUMPAGES \* ARABIC
+            </w:instrText>
+          </w:r>
+          <w:r>
+            <w:fldChar w:fldCharType="separate"/>
+          </w:r>
+          <w:r>
+            <w:t>1
+            </w:t>
+          </w:r>
+          <w:r>
+            <w:fldChar w:fldCharType="end"/>
+          </w:r>
+        </w:p>
+      </w:tc>
+    </w:tr>
+  </w:tbl>
+  <w:p>
+    <w:pPr>
+      <w:pStyle w:val="Normal"/>
+      <w:tabs>
+        <w:tab w:val="center" w:pos="4819" w:leader="none"/>
+        <w:tab w:val="right" w:pos="9638" w:leader="none"/>
+      </w:tabs>
+      <w:rPr>
+        <w:sz w:val="10"/>
+      </w:rPr>
+    </w:pPr>
+    <w:r>
+      <w:rPr>
+        <w:sz w:val="10"/>
+      </w:rPr>
+    </w:r>
+  </w:p>
+</w:ftr>

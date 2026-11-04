@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:hdr xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
+  <w:p>
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+      <w:ind w:left="-900"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="205" w:date="2000-01-01T00:00:00Z"/>
+        <w:noProof/>
+        <w:color w:val="003399"/>
+        <w:lang w:val="ro-RO" w:eastAsia="ro-RO"/>
+      </w:rPr>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="202" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Trajan Pro" w:hAnsi="Trajan Pro"/>
+          <w:noProof/>
+        </w:rPr>
+        <w:pict>
+          <v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe">
+            <v:stroke joinstyle="miter"/>
+            <v:path gradientshapeok="t" o:connecttype="rect"/>
+          </v:shapetype>
+          <v:shape id="Text Box 26" o:spid="_x0000_s4098" type="#_x0000_t202" style="position:absolute;left:0;text-align:left;margin-left:296.45pt;margin-top:3pt;width:245.1pt;height:38.55pt;z-index:251657216;visibility:visible;mso-width-relative:margin;mso-height-relative:margin" o:gfxdata="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&#10;AAAA5wUAAAAA&#10;" stroked="f">
+            <v:textbox>
+              <w:txbxContent>
+                <w:p>
+                  <w:pPr>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Trajan Pro" w:hAnsi="Trajan Pro"/>
+                      <w:noProof/>
+                      <w:lang w:val="ro-RO" w:eastAsia="ro-RO"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Trajan Pro" w:hAnsi="Trajan Pro"/>
+                      <w:noProof/>
+                      <w:lang w:val="ro-RO" w:eastAsia="ro-RO"/>
+                    </w:rPr>
+                    <w:delText xml:space="preserve">
+                    </w:delText>
+                  </w:r>
+                  <w:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Trajan Pro" w:hAnsi="Trajan Pro"/>
+                      <w:noProof/>
+                      <w:lang w:val="ro-RO" w:eastAsia="ro-RO"/>
+                    </w:rPr>
+                    <w:delText>Casa Națională dePensii Publice
+                    </w:delText>
+                  </w:r>
+                </w:p>
+                <w:p>
+                  <w:pPr>
+                    <w:pStyle w:val="Header"/>
+                    <w:tabs>
+                      <w:tab w:val="left" w:pos="8775"/>
+                      <w:tab w:val="right" w:pos="10066"/>
+                    </w:tabs>
+                    <w:ind w:left="-900"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+                      <w:b/>
+                      <w:color w:val="7F7F7F"/>
+                      <w:sz w:val="20"/>
+                      <w:szCs w:val="20"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+                      <w:noProof/>
+                      <w:color w:val="7F7F7F"/>
+                      <w:sz w:val="20"/>
+                      <w:szCs w:val="20"/>
+                      <w:lang w:val="ro-RO" w:eastAsia="ro-RO"/>
+                    </w:rPr>
+                    <w:delText xml:space="preserve">
+                    </w:delText>
+                  </w:r>
+                  <w:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+                      <w:noProof/>
+                      <w:color w:val="7F7F7F"/>
+                      <w:sz w:val="20"/>
+                      <w:szCs w:val="20"/>
+                      <w:lang w:val="ro-RO" w:eastAsia="ro-RO"/>
+                    </w:rPr>
+                    <w:delText>Nesecret
+                    </w:delText>
+                  </w:r>
+                </w:p>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:line="276" w:lineRule="auto"/>
+                    <w:ind w:left="993"/>
+                    <w:jc w:val="center"/>
+                  </w:pPr>
+                </w:p>
+                <w:p/>
+              </w:txbxContent>
+            </v:textbox>
+          </v:shape>
+        </w:pict>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="203" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+        </w:rPr>
+        <w:pict>
+          <v:shape id="Text Box 21" o:spid="_x0000_s4097" type="#_x0000_t202" style="position:absolute;left:0;text-align:left;margin-left:42.8pt;margin-top:3pt;width:211.6pt;height:34.8pt;z-index:251656192;visibility:visible;mso-width-percent:400;mso-height-percent:200;mso-width-percent:400;mso-height-percent:200;mso-width-relative:margin;mso-height-relative:margin" o:gfxdata="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&#10;8wAAAOgFAAAAAA==&#10;" stroked="f">
+            <v:textbox style="mso-fit-shape-to-text:t">
+              <w:txbxContent>
+                <w:p>
+                  <w:pPr>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Trajan Pro" w:hAnsi="Trajan Pro"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Trajan Pro" w:hAnsi="Trajan Pro"/>
+                    </w:rPr>
+                    <w:delText>Ministerul Muncii
+                    </w:delText>
+                  </w:r>
+                </w:p>
+                <w:p>
+                  <w:pPr>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Trajan Pro" w:hAnsi="Trajan Pro"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Trajan Pro" w:hAnsi="Trajan Pro"/>
+                    </w:rPr>
+                    <w:delText>Și justiției sociale
+                    </w:delText>
+                  </w:r>
+                </w:p>
+              </w:txbxContent>
+            </v:textbox>
+          </v:shape>
+        </w:pict>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="204" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+          <w:lang w:val="ro-RO" w:eastAsia="ro-RO"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+    </w:del>
+  </w:p>
+  <w:p>
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+      <w:tabs>
+        <w:tab w:val="left" w:pos="8775"/>
+        <w:tab w:val="right" w:pos="10066"/>
+      </w:tabs>
+      <w:ind w:left="-900"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="207" w:date="2000-01-01T00:00:00Z"/>
+        <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+        <w:noProof/>
+        <w:color w:val="7F7F7F"/>
+        <w:lang w:val="ro-RO" w:eastAsia="ro-RO"/>
+      </w:rPr>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="206" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+          <w:noProof/>
+          <w:color w:val="003399"/>
+          <w:lang w:val="ro-RO" w:eastAsia="ro-RO"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+    </w:del>
+  </w:p>
+  <w:p>
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+      <w:tabs>
+        <w:tab w:val="left" w:pos="8775"/>
+        <w:tab w:val="right" w:pos="10066"/>
+      </w:tabs>
+      <w:ind w:left="-900"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="208" w:date="2000-01-01T00:00:00Z"/>
+        <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+        <w:noProof/>
+        <w:color w:val="7F7F7F"/>
+        <w:lang w:val="ro-RO" w:eastAsia="ro-RO"/>
+      </w:rPr>
+    </w:pPr>
+  </w:p>
+  <w:p>
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+      <w:tabs>
+        <w:tab w:val="left" w:pos="8775"/>
+        <w:tab w:val="right" w:pos="10066"/>
+      </w:tabs>
+      <w:ind w:left="-900"/>
+      <w:jc w:val="right"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="209" w:date="2000-01-01T00:00:00Z"/>
+        <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+        <w:noProof/>
+        <w:color w:val="7F7F7F"/>
+        <w:lang w:val="ro-RO" w:eastAsia="ro-RO"/>
+      </w:rPr>
+    </w:pPr>
+  </w:p>
+</w:hdr>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:ftr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid wp14">
+  <w:p>
+    <w:pPr>
+      <w:rPr>
+        <w:ins w:author="Open-Xml-PowerTools" w:id="321" w:date="2000-01-01T00:00:00Z"/>
+      </w:rPr>
+    </w:pPr>
+  </w:p>
+  <w:p>
+    <w:pPr>
+      <w:rPr>
+        <w:ins w:author="Open-Xml-PowerTools" w:id="322" w:date="2000-01-01T00:00:00Z"/>
+      </w:rPr>
+    </w:pPr>
+  </w:p>
+  <w:p>
+    <w:pPr>
+      <w:pPrChange w:author="Open-Xml-PowerTools" w:id="335" w:date="2000-01-01T00:00:00Z">
+        <w:pPr>
+          <w:pStyle w:val="Pieddepage"/>
+        </w:pPr>
+      </w:pPrChange>
+    </w:pPr>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="323" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:tab/>
+        <w:t>Page -
+        </w:t>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="324" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:fldChar w:fldCharType="begin"/>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="325" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:instrText xml:space="preserve">PAGE
+        </w:instrText>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="326" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:fldChar w:fldCharType="separate"/>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="327" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+        </w:rPr>
+        <w:t>2
+        </w:t>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="328" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:fldChar w:fldCharType="end"/>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="329" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:t xml:space="preserve">-
+        </w:t>
+      </w:r>
+    </w:ins>
+    <w:del w:author="Open-Xml-PowerTools" w:id="331" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delText xml:space="preserve">Fiche réalisée par
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:hyperlink r:id="rId1" w:history="1">
+      <w:del w:author="Open-Xml-PowerTools" w:id="332" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Lienhypertexte"/>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:delText>http://pasmafaute.com
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:hyperlink>
+    <w:del w:author="Open-Xml-PowerTools" w:id="333" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delText xml:space="preserve">Modifications autorisées pour usage personnel uniquement. Ne pas diffuser.
+        </w:delText>
+      </w:r>
+    </w:del>
+  </w:p>
+</w:ftr>

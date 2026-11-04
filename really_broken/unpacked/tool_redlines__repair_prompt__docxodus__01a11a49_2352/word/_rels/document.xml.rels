@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://lattes.cnpq.br/5629180386235266" TargetMode="External" Id="rId8"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml" Id="rId13"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml" Id="rId3"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="mailto:maria.bmoliveira@ufpe.br" TargetMode="External" Id="rId7"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://lattes.cnpq.br/5876714282971001" TargetMode="External" Id="rId12"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml" Id="rId2"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/item1.xml" Id="rId1"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="mailto:maria.bmoliveira@ufpe.br" TargetMode="External" Id="rId6"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://lattes.cnpq.br/6960902824058791" TargetMode="External" Id="rId11"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings" Target="webSettings.xml" Id="rId5"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://lattes.cnpq.br/1529606079794689" TargetMode="External" Id="rId10"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml" Id="rId4"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="mailto:magalhaeskm@gmail.com" TargetMode="External" Id="rId9"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml" Id="rId14"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="mailto:obec@repec.cz" TargetMode="External" Id="rIdRemap1"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="/word/media/Pe1947ebab7ea068811aa5ead1c2dd050.png" Id="R1"/>
+</Relationships>

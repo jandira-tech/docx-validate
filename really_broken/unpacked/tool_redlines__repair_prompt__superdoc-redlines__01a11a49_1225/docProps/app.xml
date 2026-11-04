@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ap:Properties xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" xmlns:ap="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties">
+  <ap:Pages>21
+  </ap:Pages>
+  <ap:Words>9167
+  </ap:Words>
+  <ap:Characters>50421
+  </ap:Characters>
+  <ap:DocSecurity>0
+  </ap:DocSecurity>
+  <ap:Lines>420
+  </ap:Lines>
+  <ap:Paragraphs>118
+  </ap:Paragraphs>
+  <ap:ScaleCrop>false
+  </ap:ScaleCrop>
+  <ap:HeadingPairs>
+    <vt:vector baseType="variant" size="4">
+      <vt:variant>
+        <vt:lpstr>Title
+        </vt:lpstr>
+      </vt:variant>
+      <vt:variant>
+        <vt:i4>1
+        </vt:i4>
+      </vt:variant>
+      <vt:variant>
+        <vt:lpstr>Titel
+        </vt:lpstr>
+      </vt:variant>
+      <vt:variant>
+        <vt:i4>1
+        </vt:i4>
+      </vt:variant>
+    </vt:vector>
+  </ap:HeadingPairs>
+  <ap:TitlesOfParts>
+    <vt:vector baseType="lpstr" size="2">
+      <vt:lpstr/>
+      <vt:lpstr/>
+    </vt:vector>
+  </ap:TitlesOfParts>
+  <ap:LinksUpToDate>false
+  </ap:LinksUpToDate>
+  <ap:CharactersWithSpaces>59470
+  </ap:CharactersWithSpaces>
+  <ap:SharedDoc>false
+  </ap:SharedDoc>
+</ap:Properties>

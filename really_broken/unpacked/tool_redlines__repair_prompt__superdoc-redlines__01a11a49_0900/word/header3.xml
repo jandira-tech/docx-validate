@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:hdr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du wp14">
+  <w:tbl>
+    <w:tblPr>
+      <w:tblStyle w:val="TableNormal"/>
+      <w:tblW w:w="0" w:type="auto"/>
+      <w:tblInd w:w="65" w:type="dxa"/>
+      <w:tblBorders>
+        <w:top w:val="single" w:sz="4" w:space="0" w:color="808080"/>
+        <w:left w:val="single" w:sz="4" w:space="0" w:color="808080"/>
+        <w:bottom w:val="single" w:sz="4" w:space="0" w:color="808080"/>
+        <w:right w:val="single" w:sz="4" w:space="0" w:color="808080"/>
+        <w:insideH w:val="single" w:sz="4" w:space="0" w:color="808080"/>
+        <w:insideV w:val="single" w:sz="4" w:space="0" w:color="808080"/>
+      </w:tblBorders>
+      <w:tblLayout w:type="fixed"/>
+      <w:tblLook w:val="01E0" w:firstRow="1" w:lastRow="1" w:firstColumn="1" w:lastColumn="1" w:noHBand="0" w:noVBand="0"/>
+    </w:tblPr>
+    <w:tblGrid>
+      <w:gridCol w:w="3260"/>
+      <w:gridCol w:w="4963"/>
+      <w:gridCol w:w="2268"/>
+    </w:tblGrid>
+    <w:tr w:rsidR="00221F06" w14:paraId="195BF33D" w14:textId="77777777" w:rsidTr="00E11DF2">
+      <w:trPr>
+        <w:trHeight w:val="395"/>
+      </w:trPr>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="3260" w:type="dxa"/>
+          <w:vMerge w:val="restart"/>
+        </w:tcPr>
+        <w:p w14:paraId="526E5AFC" w14:textId="1AECC1A1" w:rsidR="00221F06" w:rsidRPr="0016607F" w:rsidRDefault="0016607F" w:rsidP="0016607F">
+          <w:pPr>
+            <w:pStyle w:val="TableParagraph"/>
+            <w:spacing w:before="0"/>
+            <w:rPr>
+              <w:sz w:val="18"/>
+              <w:lang w:val="es-CO"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r w:rsidRPr="0016607F">
+            <w:rPr>
+              <w:noProof/>
+              <w:sz w:val="18"/>
+              <w:lang w:val="es-CO"/>
+            </w:rPr>
+            <w:drawing>
+              <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="0BA903E3" wp14:editId="4E6049B4">
+                <wp:extent cx="2063750" cy="548640"/>
+                <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                <wp:docPr id="937552078" name="Imagen 2"/>
+                <wp:cNvGraphicFramePr>
+                  <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+                </wp:cNvGraphicFramePr>
+                <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                  <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                      <pic:nvPicPr>
+                        <pic:cNvPr id="0" name="Picture 6"/>
+                        <pic:cNvPicPr>
+                          <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                        </pic:cNvPicPr>
+                      </pic:nvPicPr>
+                      <pic:blipFill>
+                        <a:blip r:embed="rId1">
+                          <a:extLst>
+                            <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                              <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                            </a:ext>
+                          </a:extLst>
+                        </a:blip>
+                        <a:srcRect/>
+                        <a:stretch>
+                          <a:fillRect/>
+                        </a:stretch>
+                      </pic:blipFill>
+                      <pic:spPr bwMode="auto">
+                        <a:xfrm>
+                          <a:off x="0" y="0"/>
+                          <a:ext cx="2063750" cy="548640"/>
+                        </a:xfrm>
+                        <a:prstGeom prst="rect">
+                          <a:avLst/>
+                        </a:prstGeom>
+                        <a:noFill/>
+                        <a:ln>
+                          <a:noFill/>
+                        </a:ln>
+                      </pic:spPr>
+                    </pic:pic>
+                  </a:graphicData>
+                </a:graphic>
+              </wp:inline>
+            </w:drawing>
+          </w:r>
+        </w:p>
+      </w:tc>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="4963" w:type="dxa"/>
+          <w:vMerge w:val="restart"/>
+        </w:tcPr>
+        <w:p w14:paraId="6EA563C4" w14:textId="77777777" w:rsidR="00221F06" w:rsidRPr="00D74298" w:rsidRDefault="00221F06" w:rsidP="00221F06">
+          <w:pPr>
+            <w:pStyle w:val="TableParagraph"/>
+            <w:spacing w:before="135" w:line="237" w:lineRule="auto"/>
+            <w:ind w:left="803" w:right="546" w:hanging="248"/>
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+            </w:rPr>
+          </w:pPr>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+            </w:rPr>
+            <w:t>AUTORIZACIÓN
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+              <w:spacing w:val="-8"/>
+            </w:rPr>
+            <w:t xml:space="preserve">
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+            </w:rPr>
+            <w:t>DE
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+              <w:spacing w:val="-8"/>
+            </w:rPr>
+            <w:t xml:space="preserve">
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+            </w:rPr>
+            <w:t>USO
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+              <w:spacing w:val="-9"/>
+            </w:rPr>
+            <w:t xml:space="preserve">
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+            </w:rPr>
+            <w:t>PARA
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+              <w:spacing w:val="-8"/>
+            </w:rPr>
+            <w:t xml:space="preserve">
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+            </w:rPr>
+            <w:t>PUBLICAR
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+              <w:spacing w:val="-6"/>
+            </w:rPr>
+            <w:t xml:space="preserve">
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+            </w:rPr>
+            <w:t>Y ADMINISTRAR TRABAJOS DE GRADO
+            </w:t>
+          </w:r>
+        </w:p>
+      </w:tc>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="2268" w:type="dxa"/>
+        </w:tcPr>
+        <w:p w14:paraId="59F14E76" w14:textId="77777777" w:rsidR="00221F06" w:rsidRPr="00D74298" w:rsidRDefault="00221F06" w:rsidP="00221F06">
+          <w:pPr>
+            <w:pStyle w:val="TableParagraph"/>
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+              <w:sz w:val="20"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+              <w:spacing w:val="-2"/>
+              <w:sz w:val="20"/>
+            </w:rPr>
+            <w:t>CÓDIGO:
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+              <w:spacing w:val="11"/>
+              <w:sz w:val="20"/>
+            </w:rPr>
+            <w:t xml:space="preserve">
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+              <w:spacing w:val="-2"/>
+              <w:sz w:val="20"/>
+            </w:rPr>
+            <w:t>FO-FT-
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+              <w:spacing w:val="-5"/>
+              <w:sz w:val="20"/>
+            </w:rPr>
+            <w:t>020
+            </w:t>
+          </w:r>
+        </w:p>
+      </w:tc>
+    </w:tr>
+    <w:tr w:rsidR="00221F06" w14:paraId="0C395672" w14:textId="77777777" w:rsidTr="00E11DF2">
+      <w:trPr>
+        <w:trHeight w:val="398"/>
+      </w:trPr>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="3260" w:type="dxa"/>
+          <w:vMerge/>
+          <w:tcBorders>
+            <w:top w:val="nil"/>
+          </w:tcBorders>
+        </w:tcPr>
+        <w:p w14:paraId="778F33FD" w14:textId="77777777" w:rsidR="00221F06" w:rsidRDefault="00221F06" w:rsidP="00221F06">
+          <w:pPr>
+            <w:rPr>
+              <w:sz w:val="2"/>
+              <w:szCs w:val="2"/>
+            </w:rPr>
+          </w:pPr>
+        </w:p>
+      </w:tc>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="4963" w:type="dxa"/>
+          <w:vMerge/>
+          <w:tcBorders>
+            <w:top w:val="nil"/>
+          </w:tcBorders>
+        </w:tcPr>
+        <w:p w14:paraId="4BCA6007" w14:textId="77777777" w:rsidR="00221F06" w:rsidRDefault="00221F06" w:rsidP="00221F06">
+          <w:pPr>
+            <w:rPr>
+              <w:sz w:val="2"/>
+              <w:szCs w:val="2"/>
+            </w:rPr>
+          </w:pPr>
+        </w:p>
+      </w:tc>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="2268" w:type="dxa"/>
+        </w:tcPr>
+        <w:p w14:paraId="2DD2D4C5" w14:textId="77777777" w:rsidR="00221F06" w:rsidRPr="00D74298" w:rsidRDefault="00221F06" w:rsidP="00221F06">
+          <w:pPr>
+            <w:pStyle w:val="TableParagraph"/>
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+              <w:sz w:val="20"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+              <w:sz w:val="20"/>
+            </w:rPr>
+            <w:t>VERSIÓN:
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+              <w:spacing w:val="-10"/>
+              <w:sz w:val="20"/>
+            </w:rPr>
+            <w:t xml:space="preserve">
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00D74298">
+            <w:rPr>
+              <w:rFonts w:ascii="Aptos Narrow" w:hAnsi="Aptos Narrow"/>
+              <w:b/>
+              <w:spacing w:val="-5"/>
+              <w:sz w:val="20"/>
+            </w:rPr>
+            <w:t>01
+            </w:t>
+          </w:r>
+        </w:p>
+      </w:tc>
+    </w:tr>
+  </w:tbl>
+  <w:p w14:paraId="484EB546" w14:textId="02BE1D15" w:rsidR="00BF5EF7" w:rsidRDefault="00BF5EF7">
+    <w:pPr>
+      <w:pStyle w:val="Textoindependiente"/>
+      <w:spacing w:line="14" w:lineRule="auto"/>
+      <w:rPr>
+        <w:sz w:val="20"/>
+      </w:rPr>
+    </w:pPr>
+  </w:p>
+</w:hdr>

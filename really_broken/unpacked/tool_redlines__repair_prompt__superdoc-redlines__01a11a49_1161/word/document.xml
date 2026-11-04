@@ -1,0 +1,1515 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:lc="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du wp14" xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006">
+  <w:body>
+    <w:p w:rsidRDefault="003B7F82" w:rsidR="003B7F82" w:rsidP="003B7F82">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:firstLine="709"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidRDefault="003B7F82" w:rsidR="003B7F82" w:rsidP="003B7F82" w:rsidRPr="003B7F82">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:firstLine="709"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="96d2f0b2-8f61-4feb-bc26-245ea51e2a4c" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText>Додаток
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="96d2f0b2-8f61-4feb-bc26-245ea51e2a4c" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidRPr="003B7F82">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:t>O genoma da sombra do montado
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="003B7F82" w:rsidR="003B7F82" w:rsidP="003B7F82" w:rsidRPr="003B7F82">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:firstLine="709"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="09912b06-47bd-4672-936e-ca9454a7ce3d" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText>до інформаційної картки
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="09912b06-47bd-4672-936e-ca9454a7ce3d" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidRPr="003B7F82">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:t xml:space="preserve">A cortiça é um material natural de origem biológica com propriedades fantásticas. Desde cedo a humanidade reconheceu a sua utilidade em diversos aspectos da vida quotidiana, entre elas a de ser um excelente isolante térmico e material leve. Hoje em dia as suas aplicações são vastíssimas, desde o seu uso na construção civil, no vestuário e calçado, e até na indústria aeroespacial.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="00C94CC2" w:rsidR="00C94CC2" w:rsidP="003B7F82" w:rsidRPr="00C94CC2">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="265cb22b-3213-4a56-84fb-8e55c67b6cf7" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidRPr="00C94CC2">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>Міському голові
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="265cb22b-3213-4a56-84fb-8e55c67b6cf7" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidR="00956E2F">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Portugal sempre foi um grande produtor de cortiça e este é um elemento importante da economia portuguesa. Isto só é possível pelo clima apropriado em algumas regiões do país para a cultura do sobreiro (nome científico Quercus suber), a árvore de cuja &#x201C;casca&#x201D; se extrai a cortiça. O sobreiro é a árvore nacional de Portugal e um símbolo da paisagem no Sudoeste europeu. O sobreiro é uma peça fundamental de um ecossistema único: o montado. O declínio do montado tem preocupado empresários, agricultores e cientistas. Diversos esforços têm sido feitos nas últimas décadas para encontrar soluções para proteger o montado. Um destes esforços foi o início há cerca de cinco anos da sequenciação do genoma do sobreiro. O conhecimento do genoma do sobreiro permite detectar problemas nestas árvores e na qualidade da cortiça produzida num espaço de tempo muito mais curto do que o que é possível com a técnicas tradicionais, algumas destas demorando dezenas de anos.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="00E606F3" w:rsidR="00956E2F" w:rsidP="003B7F82">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="17962e72-7087-4a01-82d2-fbec90583a5a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>п
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>.А
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>ндрію
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>Найді
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="17962e72-7087-4a01-82d2-fbec90583a5a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:t>O conhecimento do genoma do sobreiro pode permitir, através de técnicas genéticas e de biologia molecular, detetar precocemente características de interesse, como a qualidade da cortiça, a tolerância às pressões ambientais ou a resistência às pragas, mas também porque se pode melhorar a espécie, aumentar a sua diversidade genética e certificar os produtos resultantes, explicou M. Margarida Oliveira, investigadora no Instituto de Tecnologia Química e Biológica António Xavier, da Universidade Nova de Lisboa, numa apresentação do projecto &#x201C;Genosuber – Sequenciação do Genoma do Sobreiro, em 2013.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="00956E2F" w:rsidR="00C94CC2" w:rsidP="00956E2F" w:rsidRPr="00C94CC2">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="right"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="66e81e84-e32a-4f59-893e-14abe3315617" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">___
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>___
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>__________________________
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidR="00C94CC2">
+        <w:softHyphen/>
+      </w:r>
+      <w:r w:rsidR="00C94CC2">
+        <w:softHyphen/>
+      </w:r>
+      <w:r w:rsidR="00C94CC2">
+        <w:softHyphen/>
+      </w:r>
+      <w:del w:id="66e81e84-e32a-4f59-893e-14abe3315617" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidR="00AE62F3">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>___________
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="66e81e84-e32a-4f59-893e-14abe3315617" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidR="00AE62F3">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:t>Finalmente, esta semana foi publicado na revista científica Scientific Data (https://www.nature.com/articles/sdata201869), do grupo Nature, o artigo em que se revela uma primeira versão do genoma do sobreiro. O estúdio foi efectuado por uma equipa de 21 cientistas portugueses e uma espanhola de diversas instituições: coordenada pelo Centro de Biotecnologia Agrícola e Agro-Alimentar do Alentejo (Cebal, em Beja), a equipa do Genosuber contou com cientistas do parque tecnológico Biocant (em Cantanhede), do Instituto de Biologia Experimental e Tecnológica, do Instituto Nacional de Investigação Agrária e Veterinária e do Instituto de Tecnologia Química e Biológica (ITQB) – os três últimos em Oeiras.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="00C94CC2" w:rsidR="00C94CC2" w:rsidP="00C94CC2" w:rsidRPr="00240000">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="0b18dcd8-4b3b-4f31-8a2e-32d73169c250" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+          </w:rPr>
+          <w:delText>(прізвище,ім&#x2019;я, по-батькові)
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="0b18dcd8-4b3b-4f31-8a2e-32d73169c250" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidRPr="00240000">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Embora ainda não seja a versão final, esta é a caracterização genética mais completa do sobreiro alguma vez divulgada. Ficamos assim a conhecer melhor os genes que compõem a árvore que dá sombra ao montado e a saber que tem o sobreiro tem 953 milhões de pares de bases no ADN, um terço da dimensão do genoma Humano.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="006F3D04" w:rsidR="00AE62F3" w:rsidP="00AE62F3" w:rsidRPr="00C94CC2">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="right"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="abda8491-f939-44bb-be6c-ac25a5185a23" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText>_
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText>___
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText>_______
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText>______________________________
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText>____________
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText>_
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="abda8491-f939-44bb-be6c-ac25a5185a23" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidR="00DC4434">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:t>Para este trabalho os cientistas tiveram que escolher um sobreiro que garantisse ser &#x201C;um sobreiro puro&#x201D; e não um híbrido resultante do cruzamento de sobreiro com azinheiras. O escolhido foi o sobreiro de Montargil que tem uma idade entre 125 e 150 anos.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="00C94CC2" w:rsidR="00AE62F3" w:rsidP="00DC4434" w:rsidRPr="00DC4434">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="right"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="514b2c45-2095-43a2-922a-25a12d2b1deb" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidRPr="00C94CC2">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+          </w:rPr>
+          <w:delText>(
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+          </w:rPr>
+          <w:delText>адреса)
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText>___
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText>__________________________________________
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText>_________
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="514b2c45-2095-43a2-922a-25a12d2b1deb" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidR="00DC4434">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:t>António Piedade
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="00AE62F3" w:rsidR="00AE62F3" w:rsidP="00AE62F3" w:rsidRPr="00DC4434">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="720061f4-901a-4fc8-92c3-8a6d51d49008" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+          </w:rPr>
+          <w:delText>(паспорт)
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="720061f4-901a-4fc8-92c3-8a6d51d49008" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidRPr="00DC4434">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:t>Ciência na Imprensa regional – Ciência Viva
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="00AE62F3" w:rsidR="00AE62F3" w:rsidP="00AE62F3" w:rsidRPr="00C94CC2">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="d988a0e5-3205-4bf2-98da-5da057a00fd3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText>___
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText>_______________________________________________
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00AE62F3" w:rsidR="006F3D04" w:rsidP="006F3D04" w:rsidRPr="006F3D04">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="d988a0e5-3205-4bf2-98da-5da057a00fd3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+          </w:rPr>
+          <w:delText>(ідентифікаційний код)
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="006F3D04" w:rsidR="00C94CC2" w:rsidP="006F3D04" w:rsidRPr="006F3D04">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="d988a0e5-3205-4bf2-98da-5da057a00fd3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText>№ телефону
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          </w:rPr>
+          <w:delText>_________________________________________
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="006F3D04" w:rsidR="006F3D04" w:rsidP="00C94CC2">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidRDefault="00C94CC2" w:rsidR="00C94CC2" w:rsidP="00671764" w:rsidRPr="00671764">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="6ddf95ed-902e-47ed-8332-4b50e805a38f" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidRPr="00671764">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>Заява
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00671764" w:rsidR="00671764" w:rsidP="00671764" w:rsidRPr="00671764">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="6ddf95ed-902e-47ed-8332-4b50e805a38f" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidRPr="00671764">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText>про надання одноразової грошової допомоги
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00671764" w:rsidR="00671764" w:rsidP="00671764" w:rsidRPr="00C94CC2">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidRDefault="00C94CC2" w:rsidR="00090BCF" w:rsidP="00090BCF">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="6dbc7ba6-56a2-468d-840a-4376e3328f47" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidRPr="00C94CC2">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Прошу надати одноразову грошову допомогу у зв&#x2019;язку з
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>_____________
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>________________________________________________________________
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>____
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00090BCF" w:rsidR="00090BCF" w:rsidP="00090BCF">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="6dbc7ba6-56a2-468d-840a-4376e3328f47" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>(
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText>вказати причину надання допомоги
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText>)
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00223527" w:rsidR="00223527" w:rsidP="00090BCF" w:rsidRPr="00090BCF">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="6dbc7ba6-56a2-468d-840a-4376e3328f47" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText>________________________________________________________________________________
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00090BCF" w:rsidR="00DC4434" w:rsidP="00DC4434">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="6dbc7ba6-56a2-468d-840a-4376e3328f47" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>згідно поданих документів.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00DC4434" w:rsidR="00DC4434" w:rsidP="00DC4434">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="6dbc7ba6-56a2-468d-840a-4376e3328f47" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Допомогу прошу виплатити через:
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00DC4434" w:rsidR="00DC4434" w:rsidP="00DC4434">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidRDefault="00373CC2" w:rsidR="00DC4434" w:rsidP="00DC4434">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <mc:AlternateContent>
+          <mc:Choice Requires="wps">
+            <w:drawing/>
+          </mc:Choice>
+        </mc:AlternateContent>
+      </w:r>
+    </w:p>
+    <w:p w:rsidRDefault="00DC4434" w:rsidR="00DC4434" w:rsidP="00DC4434" w:rsidRPr="00DC4434">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="4710"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="4ff6732e-c1b4-46e2-b562-1a493e7a1082" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidRPr="00DC4434">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+          </w:rPr>
+          <w:delText>(вказати номер відділення зв&#x2019;язку)
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00373CC2" w:rsidR="00DC4434" w:rsidP="00DC4434">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1260"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <mc:AlternateContent>
+          <mc:Choice Requires="wps">
+            <w:drawing/>
+          </mc:Choice>
+        </mc:AlternateContent>
+      </w:r>
+    </w:p>
+    <w:p w:rsidRDefault="00DC4434" w:rsidR="00DC4434" w:rsidP="00DC4434" w:rsidRPr="00DC4434">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="4710"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="067259d6-d365-4bba-b7aa-ca171b7b699e" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+          </w:rPr>
+          <w:delText>(вказати назву уповноваженого банку)
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00DC4434" w:rsidR="00C94CC2" w:rsidP="00DC4434">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="067259d6-d365-4bba-b7aa-ca171b7b699e" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>№___________________________________________________________________
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00DC4434" w:rsidR="00DC4434" w:rsidP="00DC4434" w:rsidRPr="00DC4434">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="4710"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:ind w:firstLine="567"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+          <w:sz w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="067259d6-d365-4bba-b7aa-ca171b7b699e" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidRPr="00382394">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="20"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">(
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+          </w:rPr>
+          <w:delText>вказати номер особового рахунку в уповноваженому банку)
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00956E2F" w:rsidR="00C94CC2" w:rsidP="00C94CC2">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="067259d6-d365-4bba-b7aa-ca171b7b699e" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidRPr="00956E2F">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>До заяви додаю:
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00956E2F" w:rsidR="00956E2F" w:rsidP="00392A65">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="067259d6-d365-4bba-b7aa-ca171b7b699e" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>1.___________________________________________________________________
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00956E2F" w:rsidR="00956E2F" w:rsidP="00392A65">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="067259d6-d365-4bba-b7aa-ca171b7b699e" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>2.___________________________________________________________________
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00956E2F" w:rsidR="00956E2F" w:rsidP="00392A65">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="067259d6-d365-4bba-b7aa-ca171b7b699e" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>3.___________________________________________________________________
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00956E2F" w:rsidR="00956E2F" w:rsidP="00392A65">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="067259d6-d365-4bba-b7aa-ca171b7b699e" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>4.___________________________________________________________________
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00956E2F" w:rsidR="00956E2F" w:rsidP="00392A65">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="067259d6-d365-4bba-b7aa-ca171b7b699e" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>5.___________________________________________________________________
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00956E2F" w:rsidR="00956E2F" w:rsidP="00392A65">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="067259d6-d365-4bba-b7aa-ca171b7b699e" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>6.___________________________________________________________________
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="008B3649" w:rsidR="008B3649" w:rsidP="00392A65">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidRDefault="00392A65" w:rsidR="00392A65" w:rsidP="00392A65" w:rsidRPr="008B3649">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="47a530e8-8e77-4d1d-88c3-3aa688c5249d" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidRPr="008B3649">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>Заявник:
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00392A65" w:rsidR="00392A65" w:rsidP="00392A65">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="47a530e8-8e77-4d1d-88c3-3aa688c5249d" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidRPr="00392A65">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText>_____________
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00392A65">
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00392A65">
+        <w:tab/>
+      </w:r>
+      <w:del w:id="47a530e8-8e77-4d1d-88c3-3aa688c5249d" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidRPr="00392A65">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">_____________
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText>________________
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText>_____
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00392A65" w:rsidR="00392A65" w:rsidP="00392A65" w:rsidRPr="00392A65">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="47a530e8-8e77-4d1d-88c3-3aa688c5249d" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">(дата)
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">(
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">підпис)
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText>(прізвище, ініціали)
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="008B3649" w:rsidR="008B3649" w:rsidP="00392A65">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidRDefault="00E606F3" w:rsidR="00E606F3" w:rsidP="00E606F3">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="2b0dbfe8-7206-49ea-bc54-d85c265d2a43" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>Адміністратор управління «Центр надання адміністративних послуг»:
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00392A65" w:rsidR="00392A65" w:rsidP="00392A65">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="2b0dbfe8-7206-49ea-bc54-d85c265d2a43" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z" w:rsidRPr="00392A65">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText>_____________
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00392A65">
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00392A65">
+        <w:tab/>
+      </w:r>
+      <w:del w:id="2b0dbfe8-7206-49ea-bc54-d85c265d2a43" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">_____________
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">_______________
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText>_____
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00392A65" w:rsidR="00392A65" w:rsidP="00392A65" w:rsidRPr="00392A65">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="2b0dbfe8-7206-49ea-bc54-d85c265d2a43" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-10T19:30:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">(дата)
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">( підпис)
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">(прізвище, ініціали)
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w:rsidRDefault="00392A65" w:rsidR="00392A65" w:rsidP="00392A65" w:rsidRPr="00392A65">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidRDefault="00F21871" w:rsidR="00F21871" w:rsidP="00F21871" w:rsidRPr="00392A65">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:sectPr w:rsidR="00F21871" w:rsidRPr="00392A65" w:rsidSect="00392A65">
+      <w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="0" w:right="850" w:bottom="567" w:left="1417" w:header="708" w:footer="708" w:gutter="0"/>
+      <w:cols w:space="708"/>
+      <w:docGrid w:linePitch="360"/>
+    </w:sectPr>
+  </w:body>
+</w:document>

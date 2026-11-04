@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:ftr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se wp14">
+  <w:p w14:paraId="3E3DD59E" w14:textId="1393E5FF">
+    <w:pPr>
+      <w:pStyle w:val="Footer"/>
+      <w:pBdr>
+        <w:top w:val="single" w:sz="4" w:space="1" w:color="auto"/>
+      </w:pBdr>
+      <w:tabs>
+        <w:tab w:val="clear" w:pos="4513"/>
+        <w:tab w:val="clear" w:pos="9026"/>
+        <w:tab w:val="left" w:pos="3969"/>
+        <w:tab w:val="left" w:pos="7938"/>
+        <w:tab w:val="left" w:pos="12900"/>
+      </w:tabs>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="4213" w:date="2000-01-01T00:00:00Z"/>
+      </w:rPr>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4186" w:date="2000-01-01T00:00:00Z">
+      <w:proofErr w:type="spellStart"/>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4187" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delText>AQSH
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4188" w:date="2000-01-01T00:00:00Z">
+      <w:proofErr w:type="spellEnd"/>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4189" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delText>: Template C4
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4190" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:tab/>
+        <w:delText xml:space="preserve">201
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4191" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delText>9
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4192" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delText>-20
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4193" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delText>20
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4194" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delText xml:space="preserve">(v
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4195" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delText>2
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4196" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delText xml:space="preserve">,
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4197" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delText>March
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4198" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delText xml:space="preserve">201
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4199" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delText>9
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4200" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delText>)
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4201" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:tab/>
+        <w:delText xml:space="preserve">Page
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4202" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+          <w:sz w:val="16"/>
+        </w:rPr>
+        <w:fldChar w:fldCharType="begin"/>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4203" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delInstrText xml:space="preserve">PAGE
+        </w:delInstrText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4204" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+          <w:sz w:val="16"/>
+        </w:rPr>
+        <w:fldChar w:fldCharType="separate"/>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4205" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:noProof/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delText>21
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4206" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+          <w:sz w:val="16"/>
+        </w:rPr>
+        <w:fldChar w:fldCharType="end"/>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4207" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:delText xml:space="preserve">of
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4208" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+          <w:sz w:val="16"/>
+        </w:rPr>
+        <w:fldChar w:fldCharType="begin"/>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4209" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+          <w:sz w:val="16"/>
+        </w:rPr>
+        <w:delInstrText xml:space="preserve">NUMPAGES
+        </w:delInstrText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4210" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+          <w:sz w:val="16"/>
+        </w:rPr>
+        <w:fldChar w:fldCharType="separate"/>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4211" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+          <w:noProof/>
+          <w:sz w:val="16"/>
+        </w:rPr>
+        <w:delText>33
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="4212" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+          <w:sz w:val="16"/>
+        </w:rPr>
+        <w:fldChar w:fldCharType="end"/>
+      </w:r>
+    </w:del>
+  </w:p>
+  <w:p w14:paraId="3E3DD59F" w14:textId="77777777">
+    <w:pPr>
+      <w:pStyle w:val="Footer"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="4214" w:date="2000-01-01T00:00:00Z"/>
+      </w:rPr>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="3E3DD5A0" w14:textId="77777777">
+    <w:pPr>
+      <w:pStyle w:val="Footer"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="4215" w:date="2000-01-01T00:00:00Z"/>
+      </w:rPr>
+    </w:pPr>
+  </w:p>
+</w:ftr>

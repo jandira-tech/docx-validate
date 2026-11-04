@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:ftr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 wp14">
+  <w:p w:rsidRPr="00F33FD6" w:rsidR="00F33FD6" w:rsidP="00F33FD6" w:rsidRDefault="00F33FD6">
+    <w:pPr>
+      <w:pStyle w:val="Fuzeile"/>
+      <w:pBdr>
+        <w:top w:val="single" w:color="365F91" w:themeColor="accent1" w:themeShade="BF" w:sz="6" w:space="3"/>
+      </w:pBdr>
+      <w:rPr>
+        <w:sz w:val="18"/>
+      </w:rPr>
+    </w:pPr>
+    <w:r>
+      <w:rPr>
+        <w:noProof/>
+        <w:sz w:val="18"/>
+        <w:lang w:eastAsia="de-CH"/>
+      </w:rPr>
+      <w:t xml:space="preserve">Wetterwaffen Razzia – JETZT!
+      </w:t>
+    </w:r>
+    <w:r w:rsidRPr="00D10E2E">
+      <w:rPr>
+        <w:sz w:val="18"/>
+      </w:rPr>
+      <w:ptab w:alignment="right" w:relativeTo="margin" w:leader="none"/>
+    </w:r>
+    <w:r w:rsidRPr="00D10E2E">
+      <w:rPr>
+        <w:bCs/>
+        <w:sz w:val="18"/>
+      </w:rPr>
+      <w:fldChar w:fldCharType="begin"/>
+    </w:r>
+    <w:r w:rsidRPr="00D10E2E">
+      <w:rPr>
+        <w:bCs/>
+        <w:sz w:val="18"/>
+      </w:rPr>
+      <w:instrText>PAGE \* Arabic \* MERGEFORMAT
+      </w:instrText>
+    </w:r>
+    <w:r w:rsidRPr="00D10E2E">
+      <w:rPr>
+        <w:bCs/>
+        <w:sz w:val="18"/>
+      </w:rPr>
+      <w:fldChar w:fldCharType="separate"/>
+    </w:r>
+    <w:r w:rsidR="00FE2F5D">
+      <w:rPr>
+        <w:bCs/>
+        <w:noProof/>
+        <w:sz w:val="18"/>
+      </w:rPr>
+      <w:t>1
+      </w:t>
+    </w:r>
+    <w:r w:rsidRPr="00D10E2E">
+      <w:rPr>
+        <w:bCs/>
+        <w:sz w:val="18"/>
+      </w:rPr>
+      <w:fldChar w:fldCharType="end"/>
+    </w:r>
+    <w:r w:rsidRPr="00D10E2E">
+      <w:rPr>
+        <w:sz w:val="18"/>
+      </w:rPr>
+      <w:t xml:space="preserve">/
+      </w:t>
+    </w:r>
+    <w:r w:rsidRPr="00D10E2E">
+      <w:rPr>
+        <w:bCs/>
+        <w:sz w:val="18"/>
+      </w:rPr>
+      <w:fldChar w:fldCharType="begin"/>
+    </w:r>
+    <w:r w:rsidRPr="00D10E2E">
+      <w:rPr>
+        <w:bCs/>
+        <w:sz w:val="18"/>
+      </w:rPr>
+      <w:instrText>NUMPAGES \* Arabic \* MERGEFORMAT
+      </w:instrText>
+    </w:r>
+    <w:r w:rsidRPr="00D10E2E">
+      <w:rPr>
+        <w:bCs/>
+        <w:sz w:val="18"/>
+      </w:rPr>
+      <w:fldChar w:fldCharType="separate"/>
+    </w:r>
+    <w:r w:rsidR="00FE2F5D">
+      <w:rPr>
+        <w:bCs/>
+        <w:noProof/>
+        <w:sz w:val="18"/>
+      </w:rPr>
+      <w:t>1
+      </w:t>
+    </w:r>
+    <w:r w:rsidRPr="00D10E2E">
+      <w:rPr>
+        <w:bCs/>
+        <w:sz w:val="18"/>
+      </w:rPr>
+      <w:fldChar w:fldCharType="end"/>
+    </w:r>
+  </w:p>
+</w:ftr>

@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:hdr xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" mc:Ignorable="w14">
+  <w:p w14:paraId="43F11588" w14:textId="77777777">
+    <w:pPr>
+      <w:pStyle w:val="stBilgi"/>
+      <w:pBdr>
+        <w:bottom w:val="thickThinSmallGap" w:sz="24" w:space="18" w:color="622423" w:themeColor="accent2" w:themeShade="7F"/>
+      </w:pBdr>
+      <w:rPr>
+        <w:ins w:author="Open-Xml-PowerTools" w:id="169" w:date="2000-01-01T00:00:00Z"/>
+        <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma"/>
+        <w:b/>
+        <w:noProof/>
+        <w:color w:val="000000" w:themeColor="text1"/>
+        <w:sz w:val="18"/>
+        <w:szCs w:val="18"/>
+        <w:lang w:eastAsia="tr-TR"/>
+      </w:rPr>
+    </w:pPr>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="168" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma"/>
+          <w:b/>
+          <w:noProof/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="18"/>
+          <w:szCs w:val="18"/>
+          <w:lang w:eastAsia="tr-TR"/>
+        </w:rPr>
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+    </w:ins>
+  </w:p>
+  <w:tbl>
+    <w:tblPr>
+      <w:tblStyle w:val="TabloKlavuzu"/>
+      <w:tblW w:w="0" w:type="auto"/>
+      <w:tblBorders>
+        <w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+        <w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+        <w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+        <w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+        <w:insideH w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+        <w:insideV w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+      </w:tblBorders>
+      <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+    </w:tblPr>
+    <w:tblGrid>
+      <w:gridCol w:w="1281"/>
+      <w:gridCol w:w="6495"/>
+      <w:gridCol w:w="1296"/>
+    </w:tblGrid>
+    <w:tr w14:paraId="3C0C621C" w14:textId="77777777">
+      <w:trPr>
+        <w:trHeight w:val="991"/>
+        <w:ins w:author="Open-Xml-PowerTools" w:id="170" w:date="2000-01-01T00:00:00Z"/>
+      </w:trPr>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="1242" w:type="dxa"/>
+        </w:tcPr>
+        <w:p w14:paraId="12D3D402" w14:textId="77777777">
+          <w:pPr>
+            <w:pStyle w:val="stBilgi"/>
+            <w:rPr>
+              <w:ins w:author="Open-Xml-PowerTools" w:id="172" w:date="2000-01-01T00:00:00Z"/>
+              <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma"/>
+              <w:b/>
+              <w:color w:val="000000" w:themeColor="text1"/>
+              <w:sz w:val="18"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="171" w:date="2000-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma"/>
+                <w:b/>
+                <w:noProof/>
+                <w:color w:val="000000" w:themeColor="text1"/>
+                <w:sz w:val="18"/>
+                <w:szCs w:val="18"/>
+                <w:lang w:val="tr-TR" w:eastAsia="tr-TR"/>
+              </w:rPr>
+              <w:drawing>
+                <wp:inline distT="0" distB="0" distL="0" distR="0" p21:anchorId="0E7CFD62" p21:editId="6C114854" xmlns:p21="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing">
+                  <wp:extent cx="676275" cy="733424"/>
+                  <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                  <wp:docPr id="2" name="Resim 2"/>
+                  <wp:cNvGraphicFramePr>
+                    <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+                  </wp:cNvGraphicFramePr>
+                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                      <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                        <pic:nvPicPr>
+                          <pic:cNvPr id="0" name="Picture 1"/>
+                          <pic:cNvPicPr>
+                            <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                          </pic:cNvPicPr>
+                        </pic:nvPicPr>
+                        <pic:blipFill>
+                          <a:blip r:embed="R1">
+                            <a:extLst>
+                              <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                              </a:ext>
+                            </a:extLst>
+                          </a:blip>
+                          <a:srcRect/>
+                          <a:stretch>
+                            <a:fillRect/>
+                          </a:stretch>
+                        </pic:blipFill>
+                        <pic:spPr bwMode="auto">
+                          <a:xfrm>
+                            <a:off x="0" y="0"/>
+                            <a:ext cx="677977" cy="735270"/>
+                          </a:xfrm>
+                          <a:prstGeom prst="rect">
+                            <a:avLst/>
+                          </a:prstGeom>
+                          <a:noFill/>
+                        </pic:spPr>
+                      </pic:pic>
+                    </a:graphicData>
+                  </a:graphic>
+                </wp:inline>
+              </w:drawing>
+            </w:r>
+          </w:ins>
+        </w:p>
+      </w:tc>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="6750" w:type="dxa"/>
+        </w:tcPr>
+        <w:p w14:paraId="6378FCC8" w14:textId="77777777">
+          <w:pPr>
+            <w:pStyle w:val="stBilgi"/>
+            <w:pBdr>
+              <w:bottom w:val="thickThinSmallGap" w:sz="24" w:space="13" w:color="622423" w:themeColor="accent2" w:themeShade="7F"/>
+            </w:pBdr>
+            <w:rPr>
+              <w:ins w:author="Open-Xml-PowerTools" w:id="173" w:date="2000-01-01T00:00:00Z"/>
+              <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma"/>
+              <w:b/>
+              <w:color w:val="000000" w:themeColor="text1"/>
+              <w:sz w:val="18"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+        </w:p>
+        <w:p w14:paraId="33867D5E" w14:textId="77777777">
+          <w:pPr>
+            <w:pStyle w:val="stBilgi"/>
+            <w:pBdr>
+              <w:bottom w:val="thickThinSmallGap" w:sz="24" w:space="13" w:color="622423" w:themeColor="accent2" w:themeShade="7F"/>
+            </w:pBdr>
+            <w:jc w:val="center"/>
+            <w:rPr>
+              <w:ins w:author="Open-Xml-PowerTools" w:id="176" w:date="2000-01-01T00:00:00Z"/>
+              <w:b/>
+              <w:color w:val="000000" w:themeColor="text1"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="174" w:date="2000-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:b/>
+                <w:color w:val="000000" w:themeColor="text1"/>
+                <w:szCs w:val="18"/>
+              </w:rPr>
+              <w:t xml:space="preserve">T.C.
+              </w:t>
+            </w:r>
+          </w:ins>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="175" w:date="2000-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:b/>
+                <w:color w:val="000000" w:themeColor="text1"/>
+                <w:szCs w:val="18"/>
+              </w:rPr>
+              <w:t xml:space="preserve">
+              </w:t>
+            </w:r>
+          </w:ins>
+        </w:p>
+        <w:p w14:paraId="49844A87" w14:textId="77777777">
+          <w:pPr>
+            <w:pStyle w:val="stBilgi"/>
+            <w:pBdr>
+              <w:bottom w:val="thickThinSmallGap" w:sz="24" w:space="13" w:color="622423" w:themeColor="accent2" w:themeShade="7F"/>
+            </w:pBdr>
+            <w:jc w:val="center"/>
+            <w:rPr>
+              <w:ins w:author="Open-Xml-PowerTools" w:id="178" w:date="2000-01-01T00:00:00Z"/>
+              <w:b/>
+              <w:color w:val="000000" w:themeColor="text1"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="177" w:date="2000-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:b/>
+                <w:color w:val="000000" w:themeColor="text1"/>
+                <w:szCs w:val="18"/>
+              </w:rPr>
+              <w:t>AMASYA ÜNİVERSİTESİ
+              </w:t>
+            </w:r>
+          </w:ins>
+        </w:p>
+        <w:p w14:paraId="732BEC8A" w14:textId="77777777">
+          <w:pPr>
+            <w:pStyle w:val="stBilgi"/>
+            <w:pBdr>
+              <w:bottom w:val="thickThinSmallGap" w:sz="24" w:space="13" w:color="622423" w:themeColor="accent2" w:themeShade="7F"/>
+            </w:pBdr>
+            <w:jc w:val="center"/>
+            <w:rPr>
+              <w:ins w:author="Open-Xml-PowerTools" w:id="180" w:date="2000-01-01T00:00:00Z"/>
+              <w:rFonts w:eastAsiaTheme="majorEastAsia"/>
+              <w:b/>
+              <w:color w:val="000000" w:themeColor="text1"/>
+              <w:sz w:val="36"/>
+              <w:szCs w:val="32"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="179" w:date="2000-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:b/>
+                <w:color w:val="000000" w:themeColor="text1"/>
+                <w:szCs w:val="18"/>
+              </w:rPr>
+              <w:t>GİRİŞİMSEL OLMAYAN KLİNİK ARAŞTIRMALAR ETİK KURULU
+              </w:t>
+            </w:r>
+          </w:ins>
+        </w:p>
+        <w:p w14:paraId="771E5F9E" w14:textId="77777777">
+          <w:pPr>
+            <w:pStyle w:val="stBilgi"/>
+            <w:rPr>
+              <w:ins w:author="Open-Xml-PowerTools" w:id="181" w:date="2000-01-01T00:00:00Z"/>
+              <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma"/>
+              <w:b/>
+              <w:color w:val="000000" w:themeColor="text1"/>
+              <w:sz w:val="18"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+        </w:p>
+      </w:tc>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="1296" w:type="dxa"/>
+        </w:tcPr>
+        <w:p w14:paraId="63472968" w14:textId="77777777">
+          <w:pPr>
+            <w:pStyle w:val="stBilgi"/>
+            <w:rPr>
+              <w:ins w:author="Open-Xml-PowerTools" w:id="183" w:date="2000-01-01T00:00:00Z"/>
+              <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma"/>
+              <w:b/>
+              <w:color w:val="000000" w:themeColor="text1"/>
+              <w:sz w:val="18"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="182" w:date="2000-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:noProof/>
+                <w:lang w:val="tr-TR" w:eastAsia="tr-TR"/>
+              </w:rPr>
+              <w:drawing>
+                <wp:inline distT="0" distB="0" distL="0" distR="0" p21:anchorId="6E10B367" p21:editId="11BF5E0C" xmlns:p21="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing">
+                  <wp:extent cx="676275" cy="733425"/>
+                  <wp:effectExtent l="0" t="0" r="9525" b="0"/>
+                  <wp:docPr id="1" name="Resim 1" descr="amasya Ã¼niversitesi logo ile ilgili gÃ¶rsel sonucu"/>
+                  <wp:cNvGraphicFramePr>
+                    <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+                  </wp:cNvGraphicFramePr>
+                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                      <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                        <pic:nvPicPr>
+                          <pic:cNvPr id="0" name="Picture 2" descr="amasya Ã¼niversitesi logo ile ilgili gÃ¶rsel sonucu"/>
+                          <pic:cNvPicPr>
+                            <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                          </pic:cNvPicPr>
+                        </pic:nvPicPr>
+                        <pic:blipFill>
+                          <a:blip r:embed="R2">
+                            <a:extLst>
+                              <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                              </a:ext>
+                            </a:extLst>
+                          </a:blip>
+                          <a:srcRect/>
+                          <a:stretch>
+                            <a:fillRect/>
+                          </a:stretch>
+                        </pic:blipFill>
+                        <pic:spPr bwMode="auto">
+                          <a:xfrm>
+                            <a:off x="0" y="0"/>
+                            <a:ext cx="675170" cy="732226"/>
+                          </a:xfrm>
+                          <a:prstGeom prst="rect">
+                            <a:avLst/>
+                          </a:prstGeom>
+                          <a:noFill/>
+                          <a:ln>
+                            <a:noFill/>
+                          </a:ln>
+                        </pic:spPr>
+                      </pic:pic>
+                    </a:graphicData>
+                  </a:graphic>
+                </wp:inline>
+              </w:drawing>
+            </w:r>
+          </w:ins>
+        </w:p>
+      </w:tc>
+    </w:tr>
+  </w:tbl>
+  <w:p>
+    <w:pPr>
+      <w:pPrChange w:author="Open-Xml-PowerTools" w:id="188" w:date="2000-01-01T00:00:00Z">
+        <w:pPr>
+          <w:pStyle w:val="header"/>
+          <w:tabs>
+            <w:tab w:val="left" w:pos="1275"/>
+            <w:tab w:val="clear" w:pos="4419"/>
+            <w:tab w:val="clear" w:pos="8838"/>
+          </w:tabs>
+        </w:pPr>
+      </w:pPrChange>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="185" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="Ninguno"/>
+        </w:rPr>
+        <w:drawing xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+          <wp:inline distT="0" distB="0" distL="0" distR="0">
+            <wp:extent cx="5612003" cy="1439512"/>
+            <wp:effectExtent l="0" t="0" r="0" b="0"/>
+            <wp:docPr id="1073741825" name="officeArt object" descr="Imagen 57"/>
+            <wp:cNvGraphicFramePr/>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="1073741825" name="Imagen 57" descr="Imagen 57"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId1">
+                      <a:extLst/>
+                    </a:blip>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr>
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="5612003" cy="1439512"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:ln w="12700" cap="flat">
+                      <a:noFill/>
+                      <a:miter lim="400000"/>
+                    </a:ln>
+                    <a:effectLst/>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="186" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="Ninguno"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+    </w:del>
+  </w:p>
+</w:hdr>

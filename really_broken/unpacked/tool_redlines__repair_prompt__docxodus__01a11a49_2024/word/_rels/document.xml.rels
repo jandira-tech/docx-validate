@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings" Target="webSettings.xml" Id="rId3"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml" Id="rId2"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml" Id="rId1"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml" Id="rId6"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml" Id="rId5"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.jpeg" Id="rId4"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://www.sciencedirect.com/science/article/abs/pii/S0966979522001261?via%3Dihub=" TargetMode="External" Id="rId7"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://www.fullpicture.app/item/84a90f5ddadc5c3e41a64f0a67024dad" TargetMode="External" Id="rId8"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://www.sciencedirect.com/science/article/abs/pii/S0966979522001261?via%3Dihub=" TargetMode="External" Id="R1"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://www.fullpicture.app/item/84a90f5ddadc5c3e41a64f0a67024dad" TargetMode="External" Id="R2"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="/word/theme/P793018ea27585ffc216b2857999ebeef.xml" Id="R3"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="/word/footer1.xml" Id="rIdFooter"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="/word/numbering.xml" Id="rIdNumbering"/>
+</Relationships>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
+  <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="ContentTypeId">
+    <vt:lpwstr>0x0101009FFE7A2FBA144D4699EC54818DF680F2005ABABAF747229842AE0F8226E6E82ADE
+    </vt:lpwstr>
+  </property>
+  <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="3" name="_dlc_DocIdItemGuid">
+    <vt:lpwstr>48f4079d-e0d0-40cb-93b7-c55f776e4b09
+    </vt:lpwstr>
+  </property>
+  <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="4" name="_docset_NoMedatataSyncRequired">
+    <vt:lpwstr>False
+    </vt:lpwstr>
+  </property>
+  <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="5" name="BZ_Forum">
+    <vt:lpwstr>5;#Tweede Kamer|ae4ca303-e726-4734-9896-95997da81ef8
+    </vt:lpwstr>
+  </property>
+  <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="6" name="BZ_Country">
+    <vt:lpwstr>4;#The Netherlands|7f69a7bb-478c-499d-a6cf-5869916dfee4
+    </vt:lpwstr>
+  </property>
+  <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="7" name="BZ_Theme">
+    <vt:lpwstr>1;#Government and politics general|f5582845-956c-4a2a-a45d-d6cd41ad8764;#2;#Policy cycle|49bccde8-da9f-4055-a5bb-3ddd916651b2;#3;#Domestic politics|05fcf44e-e973-4ce4-86ea-be70c5cc9351
+    </vt:lpwstr>
+  </property>
+  <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="8" name="BZ_Classification">
+    <vt:lpwstr>6;#UNCLASSIFIED|d92c6340-bc14-4cb2-a9a6-6deda93c493b;#7;#NO MARKING|879e64ec-6597-483b-94db-f5f70afd7299
+    </vt:lpwstr>
+  </property>
+  <property name="SuperdocVersion" fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="9">
+    <vt:lpwstr>1.10.0
+    </vt:lpwstr>
+  </property>
+  <property name="DocumentGuid" fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="10">
+    <vt:lpwstr>1EFA9614-0639-419B-A685-200409073BEE
+    </vt:lpwstr>
+  </property>
+</Properties>

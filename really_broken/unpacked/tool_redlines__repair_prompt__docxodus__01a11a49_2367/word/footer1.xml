@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:ftr xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
+  <w:p p10:paraId="770F39B7" p10:textId="77777777" xmlns:p10="http://schemas.microsoft.com/office/word/2010/wordml">
+    <w:pPr>
+      <w:pStyle w:val="a3"/>
+      <w:framePr w:wrap="around" w:vAnchor="text" w:hAnchor="margin" w:xAlign="right" w:y="1"/>
+      <w:rPr>
+        <w:ins w:author="Open-Xml-PowerTools" w:id="1057" w:date="2000-01-01T00:00:00Z"/>
+        <w:rStyle w:val="a5"/>
+      </w:rPr>
+    </w:pPr>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="1052" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="a5"/>
+        </w:rPr>
+        <w:fldChar w:fldCharType="begin"/>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="1053" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="a5"/>
+        </w:rPr>
+        <w:instrText xml:space="preserve">PAGE
+        </w:instrText>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="1054" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="a5"/>
+        </w:rPr>
+        <w:fldChar w:fldCharType="separate"/>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="1055" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="a5"/>
+          <w:noProof/>
+        </w:rPr>
+        <w:t>1
+        </w:t>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="1056" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="a5"/>
+        </w:rPr>
+        <w:fldChar w:fldCharType="end"/>
+      </w:r>
+    </w:ins>
+  </w:p>
+  <w:customXmlDelRangeStart w:author="Open-Xml-PowerTools" w:id="1065" w:date="2000-01-01T00:00:00Z"/>
+  <w:sdt>
+    <w:sdtPr>
+      <w:id w:val="16280234"/>
+      <w:docPartObj>
+        <w:docPartGallery w:val="Page Numbers (Bottom of Page)"/>
+        <w:docPartUnique/>
+      </w:docPartObj>
+    </w:sdtPr>
+    <w:sdtContent>
+      <w:customXmlDelRangeEnd w:id="1065"/>
+      <w:p>
+        <w:pPr>
+          <w:pStyle w:val="Footer"/>
+          <w:jc w:val="center"/>
+          <w:rPr>
+            <w:del w:author="Open-Xml-PowerTools" w:id="1064" w:date="2000-01-01T00:00:00Z"/>
+          </w:rPr>
+        </w:pPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="1059" w:date="2000-01-01T00:00:00Z">
+          <w:r>
+            <w:fldChar w:fldCharType="begin"/>
+          </w:r>
+        </w:del>
+        <w:del w:author="Open-Xml-PowerTools" w:id="1060" w:date="2000-01-01T00:00:00Z">
+          <w:r>
+            <w:delInstrText xml:space="preserve">PAGE \* MERGEFORMAT
+            </w:delInstrText>
+          </w:r>
+        </w:del>
+        <w:del w:author="Open-Xml-PowerTools" w:id="1061" w:date="2000-01-01T00:00:00Z">
+          <w:r>
+            <w:fldChar w:fldCharType="separate"/>
+          </w:r>
+        </w:del>
+        <w:del w:author="Open-Xml-PowerTools" w:id="1062" w:date="2000-01-01T00:00:00Z">
+          <w:r>
+            <w:rPr>
+              <w:noProof/>
+            </w:rPr>
+            <w:delText>7
+            </w:delText>
+          </w:r>
+        </w:del>
+        <w:del w:author="Open-Xml-PowerTools" w:id="1063" w:date="2000-01-01T00:00:00Z">
+          <w:r>
+            <w:fldChar w:fldCharType="end"/>
+          </w:r>
+        </w:del>
+      </w:p>
+      <w:customXmlDelRangeStart w:author="Open-Xml-PowerTools" w:id="1066" w:date="2000-01-01T00:00:00Z"/>
+    </w:sdtContent>
+  </w:sdt>
+  <w:customXmlDelRangeEnd w:id="1066"/>
+  <w:p>
+    <w:pPr>
+      <w:ind w:right="360"/>
+      <w:pPrChange w:author="Open-Xml-PowerTools" w:id="1068" w:date="2000-01-01T00:00:00Z">
+        <w:pPr>
+          <w:pStyle w:val="Footer"/>
+        </w:pPr>
+      </w:pPrChange>
+    </w:pPr>
+  </w:p>
+</w:ftr>

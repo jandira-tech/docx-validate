@@ -1,0 +1,2679 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 wp14">
+  <w:body>
+    <w:p>
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="4" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:noProof/>
+            <w:sz w:val="18"/>
+            <w:szCs w:val="18"/>
+          </w:rPr>
+          <w:drawing>
+            <wp:anchor distT="0" distB="71755" distL="144145" distR="114300" simplePos="0" relativeHeight="251662336" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1">
+              <wp:simplePos x="0" y="0"/>
+              <wp:positionH relativeFrom="column">
+                <wp:posOffset>3554095
+                </wp:posOffset>
+              </wp:positionH>
+              <wp:positionV relativeFrom="paragraph">
+                <wp:posOffset>-10795
+                </wp:posOffset>
+              </wp:positionV>
+              <wp:extent cx="2228400" cy="1382400"/>
+              <wp:effectExtent l="0" t="0" r="635" b="8255"/>
+              <wp:wrapSquare wrapText="left"/>
+              <wp:docPr id="5" name="Grafik 5" descr="C:\Users\W\3WAR\2P\1IT\_git\SW\KlaTvVideoDocGen.git\KlaTvVideoDocGen\Material\MissingVideoImage.png">
+                <a:hlinkClick xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" r:id="rIdRemap1"/>
+              </wp:docPr>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:nvPicPr>
+                      <pic:cNvPr id="0" name="Picture 3" descr="C:\Users\W\3WAR\2P\1IT\_git\SW\KlaTvVideoDocGen.git\KlaTvVideoDocGen\Material\MissingVideoImage.png"/>
+                      <pic:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                      </pic:cNvPicPr>
+                    </pic:nvPicPr>
+                    <pic:blipFill>
+                      <a:blip r:embed="R1" cstate="print">
+                        <a:extLst>
+                          <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                            <a14:useLocalDpi xmlns="" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                          </a:ext>
+                        </a:extLst>
+                      </a:blip>
+                      <a:srcRect/>
+                      <a:stretch>
+                        <a:fillRect/>
+                      </a:stretch>
+                    </pic:blipFill>
+                    <pic:spPr bwMode="auto">
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="2228400" cy="1382400"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:noFill/>
+                      <a:ln>
+                        <a:noFill/>
+                      </a:ln>
+                    </pic:spPr>
+                  </pic:pic>
+                </a:graphicData>
+              </a:graphic>
+            </wp:anchor>
+          </w:drawing>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="2" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="texttitelsize"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="808080" w:themeColor="background1" w:themeShade="80"/>
+            <w:sz w:val="20"/>
+          </w:rPr>
+          <w:t>So seh ich's
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="3" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:noProof/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="7" w:date="2000-01-01T00:00:00Z"/>
+          <w:rStyle w:val="texttitelsize"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="44"/>
+          <w:szCs w:val="44"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:noProof/>
+          </w:rPr>
+          <w:drawing>
+            <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251658240" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1">
+              <wp:simplePos x="0" y="0"/>
+              <wp:positionH relativeFrom="column">
+                <wp:posOffset>-542607
+                </wp:posOffset>
+              </wp:positionH>
+              <wp:positionV relativeFrom="paragraph">
+                <wp:posOffset>-254317
+                </wp:posOffset>
+              </wp:positionV>
+              <wp:extent cx="381000" cy="381000"/>
+              <wp:effectExtent l="0" t="0" r="0" b="0"/>
+              <wp:wrapTight wrapText="bothSides">
+                <wp:wrapPolygon edited="0">
+                  <wp:start x="0" y="0"/>
+                  <wp:lineTo x="0" y="20520"/>
+                  <wp:lineTo x="20520" y="20520"/>
+                  <wp:lineTo x="20520" y="0"/>
+                  <wp:lineTo x="0" y="0"/>
+                </wp:wrapPolygon>
+              </wp:wrapTight>
+              <wp:docPr id="2" name="Grafik 2" descr="C:\Temp\QR-Code_klaTv_cut.png"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:nvPicPr>
+                      <pic:cNvPr id="0" name="Picture 2" descr="C:\Temp\QR-Code_klaTv_cut.png"/>
+                      <pic:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                      </pic:cNvPicPr>
+                    </pic:nvPicPr>
+                    <pic:blipFill>
+                      <a:blip r:embed="R2" cstate="print">
+                        <a:extLst>
+                          <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                            <a14:useLocalDpi xmlns="" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                          </a:ext>
+                        </a:extLst>
+                      </a:blip>
+                      <a:srcRect/>
+                      <a:stretch>
+                        <a:fillRect/>
+                      </a:stretch>
+                    </pic:blipFill>
+                    <pic:spPr bwMode="auto">
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="381000" cy="381000"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:noFill/>
+                      <a:ln>
+                        <a:noFill/>
+                      </a:ln>
+                    </pic:spPr>
+                  </pic:pic>
+                </a:graphicData>
+              </a:graphic>
+            </wp:anchor>
+          </w:drawing>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="6" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="texttitelsize"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:sz w:val="44"/>
+            <w:szCs w:val="44"/>
+          </w:rPr>
+          <w:t>Was wäre? Vorwort von Erin
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="9" w:date="2000-01-01T00:00:00Z"/>
+          <w:rStyle w:val="edit"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:b/>
+          <w:color w:val="000000"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="8" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:b/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:t>Was wäre, wenn? Bestimmt haben Sie sich diese Frage auch schon öfters gestellt. Und sie wird immer wieder gestellt. Wäre es doch nur anders gekommen! Was wäre, wenn Ihr Leben nicht als lebenswert gegolten hätte? Erin setzt sich persönlich mit diesen grundlegenden Fragen des Lebens in der folgenden Sendung auseinander.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="44" w:date="2000-01-01T00:00:00Z"/>
+          <w:rStyle w:val="edit"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:color w:val="000000"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="10" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:t>Was wäre, wenn ich beim Joggen nicht gestolpert wäre? Hätte ich meine Sportkarriere nicht an den Nagel hängen müssen?
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="11" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+          <w:t>Was wäre wohl aus dieser einmaligen Chance zu di
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="12" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:t>esem Vorstellungsgespräch gewor
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="13" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:t>den, wenn ich nur nicht den Zug verpasst hätte?
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="14" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="15" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+          <w:t>Ja, genau. Uns beschäftigt doch immer wieder mal die Frage: „Was wäre, wenn?&#x201C;
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="16" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+          <w:t xml:space="preserve">Ich denke, ihr wisst, wovon ich rede und die Antworten sind dann meistens unerfüllte Wunschträume. Doch was ist, wenn dich dein Leben mit einer ganz anderen Frage konfrontiert?
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="17" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="18" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+          <w:t>Was wäre, wenn ich nicht geboren wäre?
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="19" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="20" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+          <w:t>Ja genau, du hast richtig gehört – was wäre, wenn ich oder wenn du gar nicht geboren worden wärst? Ich habe letztens mit Schrecken festgestellt, dass ich es auch fast nicht geschafft hätte auf die Welt zu kommen. Begonnen bei meiner Urgroßmutter, die auch schon für meine Oma einen Abtreibungstermin hatte und meine Eltern, die auch schon für meine Abtreibung einen Termin hatten. Doch wie ihr seht, hatte das Lebe
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="21" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:t>n etwas anderes im Sinn mit mir
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="22" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:t xml:space="preserve">und ich sitze hier und ich bin richtig glücklich, dass ich hier sitzen darf und ich genieße mein Leben mit meiner Familie, mit meinen wunderbaren Freunden und ich möc
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="23" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:t>hte es überhaupt nicht mehr her
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="24" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:t>geben.
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="25" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="26" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+          <w:t xml:space="preserve">Doch in dieser ganzen Thematik kam mir die Frage, was wäre, wenn meine beste Freundin oder mein bester Freund nicht hier wären? Wer wäre da, der mir hilft, wenn es mir schlecht geht? Oder mit wem könnte ich die Freude teilen, wenn es mir gut geht, wenn etwas gelungen ist? Es ist doch immer so schön, wenn jemand hier ist, mit dem man die Dinge teilen kann. Ja, überlege du einmal, was wäre, wenn dein bester Freund oder deine beste Freundin nicht hier wären. Da würde doch so etwas Wichtiges fehlen in deinem
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="27" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:t>Leben. Und ich habe einfach wie
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="28" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:t xml:space="preserve">der richtig neu gemerkt, wie wertvoll jeder Mensch auf dieser Erde ist. Jeder Mensch in mei-nem Leben ist einfach unendlich wertvoll und einfach nicht mehr wegzudenken.
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="29" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="30" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+          <w:t xml:space="preserve">Ja, ich habe dann nachrecherchiert und mit Schrecken festgestellt, dass 56 Millionen Babys jährlich abgetrieben werden. Das hat mich so geschmerzt. Auch die Vorgehensweise, wie sie einfach aus dem Mutterleib herausgerissen werden, in Stücken und sie leben noch. Sie sind nicht einfach nichts. Das ist ein kleines Baby, an dem schon fast alles funktionstüchtig ist und das hat mich richtig geschmerzt und hat mir fast den Magen umgedreht. Darum ist ein Lied entstanden, das wir uns nachher anschauen werden. Die Vision dieses Liedes ist einfach,
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="31" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:lastRenderedPageBreak/>
+          <w:t xml:space="preserve">dass es Leben retten kann, dass jeder, der mal in diese Situation kommen mag, zu dieser Frage, abtreiben oder nicht, dass er sich einfach für das Leben entscheiden kann, weil es ein-fach unendlich wertvoll ist. Solche Kinder, solche Menschen, die dann einfach nicht da wären, die einfach fehlen. Jedes Baby hat ein Recht auf Leben.
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="32" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="33" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+          <w:t>Jetzt, bevor wir das Lied anschauen, noch eine ganz kleine Information an alle Schweizer. Bitte alle Schweizer gut zuhören: Es gibt zwei Volksinitiativen, die super zu diesem Thema passen. Die eine heißt: „Einmal darüber schlafen&#x201C; – eine Abtreibung ist kein belangloser Entscheid. Deshalb soll mindestens ein Tag Bedenkzeit zur Regel werden.
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="34" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+          <w:t xml:space="preserve">Die zweite Initiative geht um: „Lebensfähige Babys retten&#x201C;
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="35" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:t>– ein bereits außerhalb des Mut
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="36" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:t>terleibes lebensfähiges Baby soll ein absolutes Recht auf Leben haben.
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="37" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="38" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+          <w:t>Die Unterschriftenbogen zu diesen zwei Initiativen könnt ihr
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="39" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:t xml:space="preserve">unterhalb der Sendung herunter
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="40" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:t>laden. Und ich bedanke mich bei allen, die diese Initiativen unterschreiben und mithelfen, dass das vor das Volk kommt.
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="41" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:br/>
+          <w:t>Ich verabschiede mich jetzt. Ich habe alles gesagt, was mir auf dem Herzen ist. Schaut euch das Lied an, verteilt es, verlinkt es. Ich bin Erin, die seit 26 J
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="42" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:t>ahren das Leben genießt und kei
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="43" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:t>nen Menschen mehr hergeben möchte – tschau!
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="46" w:date="2000-01-01T00:00:00Z"/>
+          <w:rStyle w:val="edit"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:b/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="18"/>
+          <w:szCs w:val="18"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="45" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:b/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="18"/>
+            <w:szCs w:val="18"/>
+          </w:rPr>
+          <w:t>von eg.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="6" w:space="8" w:color="365F91" w:themeColor="accent1" w:themeShade="BF"/>
+        </w:pBdr>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="48" w:date="2000-01-01T00:00:00Z"/>
+          <w:rStyle w:val="edit"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:b/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="18"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="47" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:b/>
+            <w:color w:val="000000"/>
+            <w:szCs w:val="18"/>
+          </w:rPr>
+          <w:t>Quellen:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="50" w:date="2000-01-01T00:00:00Z"/>
+          <w:rStyle w:val="edit"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="18"/>
+        </w:rPr>
+      </w:pPr>
+      <w:hyperlink r:id="rIdRemap2" w:history="1">
+        <w:ins w:author="Open-Xml-PowerTools" w:id="49" w:date="2000-01-01T00:00:00Z">
+          <w:r>
+            <w:rPr>
+              <w:rStyle w:val="Hyperlink"/>
+              <w:sz w:val="18"/>
+            </w:rPr>
+            <w:t>https://schwarzlicht.org/p/blog/2020-10-17-abtreibungen-weltweit.html
+            </w:t>
+          </w:r>
+        </w:ins>
+      </w:hyperlink>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="6" w:space="8" w:color="365F91" w:themeColor="accent1" w:themeShade="BF"/>
+        </w:pBdr>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="52" w:date="2000-01-01T00:00:00Z"/>
+          <w:rStyle w:val="edit"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:b/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="18"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="51" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:b/>
+            <w:color w:val="000000"/>
+            <w:szCs w:val="18"/>
+          </w:rPr>
+          <w:t>Das könnte Sie auch interessieren:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:keepLines/>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="59" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="18"/>
+          <w:szCs w:val="18"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="53" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">#Abtreibung -
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:hyperlink r:id="rIdRemap3" w:history="1">
+        <w:ins w:author="Open-Xml-PowerTools" w:id="54" w:date="2000-01-01T00:00:00Z">
+          <w:r>
+            <w:rPr>
+              <w:rStyle w:val="Hyperlink"/>
+            </w:rPr>
+            <w:t>www.kla.tv/Abtreibung
+            </w:t>
+          </w:r>
+        </w:ins>
+      </w:hyperlink>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="55" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:br/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="56" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:br/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="57" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">#SoSehIchs - So seh ich's -
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:hyperlink r:id="rIdRemap4" w:history="1">
+        <w:ins w:author="Open-Xml-PowerTools" w:id="58" w:date="2000-01-01T00:00:00Z">
+          <w:r>
+            <w:rPr>
+              <w:rStyle w:val="Hyperlink"/>
+            </w:rPr>
+            <w:t>www.kla.tv/SoSehIchs
+            </w:t>
+          </w:r>
+        </w:ins>
+      </w:hyperlink>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="6" w:space="8" w:color="365F91" w:themeColor="accent1" w:themeShade="BF"/>
+        </w:pBdr>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="62" w:date="2000-01-01T00:00:00Z"/>
+          <w:rStyle w:val="edit"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:b/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="18"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="60" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:noProof/>
+            <w:sz w:val="18"/>
+            <w:szCs w:val="18"/>
+          </w:rPr>
+          <w:drawing>
+            <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251659264" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1">
+              <wp:simplePos x="0" y="0"/>
+              <wp:positionH relativeFrom="column">
+                <wp:posOffset>14605
+                </wp:posOffset>
+              </wp:positionH>
+              <wp:positionV relativeFrom="paragraph">
+                <wp:posOffset>454025
+                </wp:posOffset>
+              </wp:positionV>
+              <wp:extent cx="990600" cy="719455"/>
+              <wp:effectExtent l="0" t="0" r="0" b="4445"/>
+              <wp:wrapTight wrapText="bothSides">
+                <wp:wrapPolygon edited="0">
+                  <wp:start x="831" y="0"/>
+                  <wp:lineTo x="0" y="1144"/>
+                  <wp:lineTo x="0" y="19446"/>
+                  <wp:lineTo x="415" y="21162"/>
+                  <wp:lineTo x="831" y="21162"/>
+                  <wp:lineTo x="20354" y="21162"/>
+                  <wp:lineTo x="21185" y="20018"/>
+                  <wp:lineTo x="21185" y="1144"/>
+                  <wp:lineTo x="20354" y="0"/>
+                  <wp:lineTo x="831" y="0"/>
+                </wp:wrapPolygon>
+              </wp:wrapTight>
+              <wp:docPr id="1" name="Grafik 1" descr="C:\Users\W\3WAR\2P\1IT\_git\SW\KlaTvVideoDocGen.git\KlaTvVideoDocGen\Material\klatv_logo_200dpi-forf2.75x1.99cm.png">
+                <a:hlinkClick xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" r:id="R3"/>
+              </wp:docPr>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:nvPicPr>
+                      <pic:cNvPr id="0" name="Picture 1" descr="C:\Users\W\3WAR\2P\1IT\_git\SW\KlaTvVideoDocGen.git\KlaTvVideoDocGen\Material\klatv_logo_200dpi-forf2.75x1.99cm.png"/>
+                      <pic:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                      </pic:cNvPicPr>
+                    </pic:nvPicPr>
+                    <pic:blipFill>
+                      <a:blip r:embed="R4" cstate="print">
+                        <a:extLst>
+                          <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                            <a14:useLocalDpi xmlns="" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                          </a:ext>
+                        </a:extLst>
+                      </a:blip>
+                      <a:srcRect/>
+                      <a:stretch>
+                        <a:fillRect/>
+                      </a:stretch>
+                    </pic:blipFill>
+                    <pic:spPr bwMode="auto">
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="990600" cy="719455"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:noFill/>
+                      <a:ln>
+                        <a:noFill/>
+                      </a:ln>
+                    </pic:spPr>
+                  </pic:pic>
+                </a:graphicData>
+              </a:graphic>
+            </wp:anchor>
+          </w:drawing>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="61" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:b/>
+            <w:color w:val="000000"/>
+            <w:szCs w:val="18"/>
+          </w:rPr>
+          <w:t>Kla.TV – Die anderen Nachrichten ... frei – unabhängig – unzensiert ...
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Listenabsatz"/>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="13"/>
+        </w:numPr>
+        <w:ind w:hanging="357"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="64" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="63" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t>was die Medien nicht verschweigen sollten ...
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Listenabsatz"/>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="13"/>
+        </w:numPr>
+        <w:ind w:hanging="357"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="66" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="65" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t>wenig Gehörtes vom Volk, für das Volk ...
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Listenabsatz"/>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="13"/>
+        </w:numPr>
+        <w:ind w:hanging="357"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="69" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="67" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">tägliche News ab 19:45 Uhr auf
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:hyperlink r:id="R5" w:history="1">
+        <w:ins w:author="Open-Xml-PowerTools" w:id="68" w:date="2000-01-01T00:00:00Z">
+          <w:r>
+            <w:rPr>
+              <w:rStyle w:val="Hyperlink"/>
+            </w:rPr>
+            <w:t>www.kla.tv
+            </w:t>
+          </w:r>
+        </w:ins>
+      </w:hyperlink>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:ind w:firstLine="357"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="71" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="70" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Dranbleiben lohnt sich!
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:keepLines/>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="74" w:date="2000-01-01T00:00:00Z"/>
+          <w:rStyle w:val="Hyperlink"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="72" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:b/>
+            <w:sz w:val="18"/>
+            <w:szCs w:val="18"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Kostenloses Abonnement mit wöchentlichen News per E-Mail erhalten Sie unter:
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:hyperlink r:id="R6" w:history="1">
+        <w:ins w:author="Open-Xml-PowerTools" w:id="73" w:date="2000-01-01T00:00:00Z">
+          <w:r>
+            <w:rPr>
+              <w:rStyle w:val="Hyperlink"/>
+              <w:b/>
+            </w:rPr>
+            <w:t>www.kla.tv/abo
+            </w:t>
+          </w:r>
+        </w:ins>
+      </w:hyperlink>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="6" w:space="8" w:color="365F91" w:themeColor="accent1" w:themeShade="BF"/>
+        </w:pBdr>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="76" w:date="2000-01-01T00:00:00Z"/>
+          <w:rStyle w:val="edit"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:b/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="18"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="75" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:b/>
+            <w:color w:val="000000"/>
+            <w:szCs w:val="18"/>
+          </w:rPr>
+          <w:t>Sicherheitshinweis:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="78" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="18"/>
+          <w:szCs w:val="18"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="77" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="edit"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:color w:val="000000"/>
+            <w:szCs w:val="18"/>
+          </w:rPr>
+          <w:t>Gegenstimmen werden leider immer weiter zensiert und unterdrückt. Solange wir nicht gemäß den Interessen und Ideologien der Systempresse berichten, müssen wir jederzeit damit rechnen, dass Vorwände gesucht werden, um Kla.TV zu sperren oder zu schaden.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:keepLines/>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="83" w:date="2000-01-01T00:00:00Z"/>
+          <w:rStyle w:val="Hyperlink"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="79" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:b/>
+            <w:sz w:val="18"/>
+            <w:szCs w:val="18"/>
+          </w:rPr>
+          <w:t>Vernetzen Sie sich darum heute noch internetunabhängig!
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="80" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:b/>
+            <w:sz w:val="18"/>
+            <w:szCs w:val="18"/>
+          </w:rPr>
+          <w:br/>
+          <w:t>Klicken Sie hier:
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="81" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:sz w:val="18"/>
+            <w:szCs w:val="18"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:hyperlink r:id="R7" w:history="1">
+        <w:ins w:author="Open-Xml-PowerTools" w:id="82" w:date="2000-01-01T00:00:00Z">
+          <w:r>
+            <w:rPr>
+              <w:rStyle w:val="Hyperlink"/>
+              <w:b/>
+            </w:rPr>
+            <w:t>www.kla.tv/vernetzung
+            </w:t>
+          </w:r>
+        </w:ins>
+      </w:hyperlink>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="6" w:space="8" w:color="365F91" w:themeColor="accent1" w:themeShade="BF"/>
+        </w:pBdr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="91" w:date="2000-01-01T00:00:00Z"/>
+          <w:i/>
+          <w:iCs/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="84" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:i/>
+            <w:iCs/>
+          </w:rPr>
+          <w:lastRenderedPageBreak/>
+          <w:t>Lizenz:
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="85" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:i/>
+            <w:iCs/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="86" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkStart w:id="0" w:name="_GoBack"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="87" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:i/>
+            <w:iCs/>
+            <w:noProof/>
+            <w:position w:val="-6"/>
+          </w:rPr>
+          <w:drawing>
+            <wp:inline distT="0" distB="0" distL="0" distR="0">
+              <wp:extent cx="374650" cy="184150"/>
+              <wp:effectExtent l="0" t="0" r="6350" b="6350"/>
+              <wp:docPr id="16" name="Grafik 16" descr="C:\Users\W\Downloads\ccby_transparent.png"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:nvPicPr>
+                      <pic:cNvPr id="16" name="Grafik 16" descr="C:\Users\W\Downloads\ccby_transparent.png"/>
+                      <pic:cNvPicPr>
+                        <a:picLocks noChangeAspect="1"/>
+                      </pic:cNvPicPr>
+                    </pic:nvPicPr>
+                    <pic:blipFill>
+                      <a:blip r:embed="R8" cstate="print">
+                        <a:extLst>
+                          <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                            <a14:useLocalDpi xmlns="" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                          </a:ext>
+                        </a:extLst>
+                      </a:blip>
+                      <a:srcRect/>
+                      <a:stretch>
+                        <a:fillRect/>
+                      </a:stretch>
+                    </pic:blipFill>
+                    <pic:spPr bwMode="auto">
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="374650" cy="184150"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:noFill/>
+                      <a:ln>
+                        <a:noFill/>
+                      </a:ln>
+                    </pic:spPr>
+                  </pic:pic>
+                </a:graphicData>
+              </a:graphic>
+            </wp:inline>
+          </w:drawing>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="88" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkEnd w:id="0"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="89" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:i/>
+            <w:iCs/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="90" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:i/>
+            <w:iCs/>
+          </w:rPr>
+          <w:t>Creative Commons-Lizenz mit Namensnennung
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="body"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="95" w:date="2000-01-01T00:00:00Z"/>
+          <w:noProof w:val="0"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="92" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cs="Arial"/>
+            <w:sz w:val="12"/>
+            <w:szCs w:val="12"/>
+          </w:rPr>
+          <w:t>Verbreitung und Wiederaufbereitung ist mit Namensnennung erwünscht! Das Material darf jedoch nicht aus dem Kontext gerissen präsentiert werden. Mit öffentlichen Geldern (GEZ, Serafe, GIS, ...) finanzierte Institutionen ist die Verwendung ohne Rückfrage untersagt. Verstöße können strafrechtlich verfolgt werden.
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:del w:author="Open-Xml-PowerTools" w:id="94" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:drawing>
+            <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251668480" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="7ECE4FE6" wp14:editId="4BDC3971">
+              <wp:simplePos x="0" y="0"/>
+              <wp:positionH relativeFrom="column">
+                <wp:posOffset>0
+                </wp:posOffset>
+              </wp:positionH>
+              <wp:positionV relativeFrom="paragraph">
+                <wp:posOffset>-635
+                </wp:posOffset>
+              </wp:positionV>
+              <wp:extent cx="2752090" cy="504190"/>
+              <wp:effectExtent l="0" t="0" r="0" b="3810"/>
+              <wp:wrapNone/>
+              <wp:docPr id="2" name="Picture 2"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:nvPicPr>
+                      <pic:cNvPr id="0" name="co_cdot_div_engsp_300_rgb_ltrhd.png"/>
+                      <pic:cNvPicPr/>
+                    </pic:nvPicPr>
+                    <pic:blipFill>
+                      <a:blip r:embed="rId7">
+                        <a:extLst>
+                          <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                            <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                          </a:ext>
+                        </a:extLst>
+                      </a:blip>
+                      <a:stretch>
+                        <a:fillRect/>
+                      </a:stretch>
+                    </pic:blipFill>
+                    <pic:spPr>
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="2752090" cy="504190"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                    </pic:spPr>
+                  </pic:pic>
+                </a:graphicData>
+              </a:graphic>
+              <wp14:sizeRelV relativeFrom="margin">
+                <wp14:pctHeight>0
+                </wp14:pctHeight>
+              </wp14:sizeRelV>
+            </wp:anchor>
+          </w:drawing>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="230F5F74" w14:textId="72A5CD7F">
+      <w:pPr>
+        <w:pStyle w:val="body"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="96" w:date="2000-01-01T00:00:00Z"/>
+          <w:noProof w:val="0"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="1FCDB983" w14:textId="083C8050">
+      <w:pPr>
+        <w:pStyle w:val="body"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="97" w:date="2000-01-01T00:00:00Z"/>
+          <w:noProof w:val="0"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="32529E4C" w14:textId="1413241A">
+      <w:pPr>
+        <w:pStyle w:val="body"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="99" w:date="2000-01-01T00:00:00Z"/>
+          <w:noProof w:val="0"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Open-Xml-PowerTools" w:id="98" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+            <w:color w:val="auto"/>
+            <w:sz w:val="24"/>
+          </w:rPr>
+          <mc:AlternateContent>
+            <mc:Choice Requires="wps">
+              <w:drawing>
+                <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251659264" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="6BDE2B3D" wp14:editId="2B08E160">
+                  <wp:simplePos x="0" y="0"/>
+                  <wp:positionH relativeFrom="column">
+                    <wp:posOffset>1010920
+                    </wp:posOffset>
+                  </wp:positionH>
+                  <wp:positionV relativeFrom="paragraph">
+                    <wp:posOffset>5080
+                    </wp:posOffset>
+                  </wp:positionV>
+                  <wp:extent cx="1638300" cy="359410"/>
+                  <wp:effectExtent l="0" t="0" r="0" b="2540"/>
+                  <wp:wrapNone/>
+                  <wp:docPr id="5" name="Text Box 28"/>
+                  <wp:cNvGraphicFramePr>
+                    <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+                  </wp:cNvGraphicFramePr>
+                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                      <wps:wsp>
+                        <wps:cNvSpPr txBox="1">
+                          <a:spLocks noChangeArrowheads="1"/>
+                        </wps:cNvSpPr>
+                        <wps:spPr bwMode="auto">
+                          <a:xfrm>
+                            <a:off x="0" y="0"/>
+                            <a:ext cx="1638300" cy="359410"/>
+                          </a:xfrm>
+                          <a:prstGeom prst="rect">
+                            <a:avLst/>
+                          </a:prstGeom>
+                          <a:noFill/>
+                          <a:ln>
+                            <a:noFill/>
+                          </a:ln>
+                          <a:extLst>
+                            <a:ext uri="{909E8E84-426E-40DD-AFC4-6F175D3DCCD1}">
+                              <a14:hiddenFill xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main">
+                                <a:solidFill>
+                                  <a:srgbClr val="FFFFFF"/>
+                                </a:solidFill>
+                              </a14:hiddenFill>
+                            </a:ext>
+                            <a:ext uri="{91240B29-F687-4F45-9708-019B960494DF}">
+                              <a14:hiddenLine xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" w="9525">
+                                <a:solidFill>
+                                  <a:srgbClr val="000000"/>
+                                </a:solidFill>
+                                <a:miter lim="800000"/>
+                                <a:headEnd/>
+                                <a:tailEnd/>
+                              </a14:hiddenLine>
+                            </a:ext>
+                          </a:extLst>
+                        </wps:spPr>
+                        <wps:txbx>
+                          <w:txbxContent>
+                            <w:p w14:paraId="01DD47AF" w14:textId="5921FAC1">
+                              <w:pPr>
+                                <w:pStyle w:val="returnaddress"/>
+                                <w:spacing w:line="240" w:lineRule="auto"/>
+                              </w:pPr>
+                              <w:r>
+                                <w:delText>Project Development Branch
+                                </w:delText>
+                              </w:r>
+                            </w:p>
+                            <w:p w14:paraId="500B35F6" w14:textId="079D9688">
+                              <w:pPr>
+                                <w:pStyle w:val="returnaddress"/>
+                                <w:spacing w:line="240" w:lineRule="auto"/>
+                              </w:pPr>
+                              <w:r>
+                                <w:delText>Standards and Specifications Unit
+                                </w:delText>
+                              </w:r>
+                            </w:p>
+                          </w:txbxContent>
+                        </wps:txbx>
+                        <wps:bodyPr rot="0" vert="horz" wrap="square" lIns="0" tIns="118872" rIns="0" bIns="0" anchor="t" anchorCtr="0" upright="1">
+                          <a:noAutofit/>
+                        </wps:bodyPr>
+                      </wps:wsp>
+                    </a:graphicData>
+                  </a:graphic>
+                  <wp14:sizeRelH relativeFrom="page">
+                    <wp14:pctWidth>0
+                    </wp14:pctWidth>
+                  </wp14:sizeRelH>
+                  <wp14:sizeRelV relativeFrom="page">
+                    <wp14:pctHeight>0
+                    </wp14:pctHeight>
+                  </wp14:sizeRelV>
+                </wp:anchor>
+              </w:drawing>
+            </mc:Choice>
+            <mc:Fallback>
+              <w:pict>
+                <v:shapetype w14:anchorId="6BDE2B3D" id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe">
+                  <v:stroke joinstyle="miter"/>
+                  <v:path gradientshapeok="t" o:connecttype="rect"/>
+                </v:shapetype>
+                <v:shape id="Text Box 28" o:spid="_x0000_s1026" type="#_x0000_t202" style="position:absolute;margin-left:79.6pt;margin-top:.4pt;width:129pt;height:28.3pt;z-index:251659264;visibility:visible;mso-wrap-style:square;mso-width-percent:0;mso-height-percent:0;mso-wrap-distance-left:9pt;mso-wrap-distance-top:0;mso-wrap-distance-right:9pt;mso-wrap-distance-bottom:0;mso-position-horizontal:absolute;mso-position-horizontal-relative:text;mso-position-vertical:absolute;mso-position-vertical-relative:text;mso-width-percent:0;mso-height-percent:0;mso-width-relative:page;mso-height-relative:page;v-text-anchor:top" o:gfxdata="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&#10;AA==&#10;" filled="f" stroked="f">
+                  <v:textbox inset="0,9.36pt,0,0">
+                    <w:txbxContent>
+                      <w:p w14:paraId="01DD47AF" w14:textId="5921FAC1">
+                        <w:pPr>
+                          <w:pStyle w:val="returnaddress"/>
+                          <w:spacing w:line="240" w:lineRule="auto"/>
+                        </w:pPr>
+                        <w:r>
+                          <w:delText>Project Development Branch
+                          </w:delText>
+                        </w:r>
+                      </w:p>
+                      <w:p w14:paraId="500B35F6" w14:textId="079D9688">
+                        <w:pPr>
+                          <w:pStyle w:val="returnaddress"/>
+                          <w:spacing w:line="240" w:lineRule="auto"/>
+                        </w:pPr>
+                        <w:r>
+                          <w:delText>Standards and Specifications Unit
+                          </w:delText>
+                        </w:r>
+                      </w:p>
+                    </w:txbxContent>
+                  </v:textbox>
+                </v:shape>
+              </w:pict>
+            </mc:Fallback>
+          </mc:AlternateContent>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="57FB63B8" w14:textId="2D0B2D0E">
+      <w:pPr>
+        <w:pStyle w:val="body"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="100" w:date="2000-01-01T00:00:00Z"/>
+          <w:noProof w:val="0"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="622D6089" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="body"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="101" w:date="2000-01-01T00:00:00Z"/>
+          <w:noProof w:val="0"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="6026CCAD" w14:textId="6C1E015D">
+      <w:pPr>
+        <w:pStyle w:val="body"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="103" w:date="2000-01-01T00:00:00Z"/>
+          <w:noProof w:val="0"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Open-Xml-PowerTools" w:id="102" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <mc:AlternateContent>
+            <mc:Choice Requires="wps">
+              <w:drawing>
+                <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251664384" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="3835EFBB" wp14:editId="42C3C9B5">
+                  <wp:simplePos x="0" y="0"/>
+                  <wp:positionH relativeFrom="column">
+                    <wp:posOffset>44450
+                    </wp:posOffset>
+                  </wp:positionH>
+                  <wp:positionV relativeFrom="paragraph">
+                    <wp:posOffset>39370
+                    </wp:posOffset>
+                  </wp:positionV>
+                  <wp:extent cx="6409690" cy="215900"/>
+                  <wp:effectExtent l="0" t="0" r="10160" b="12700"/>
+                  <wp:wrapThrough wrapText="bothSides">
+                    <wp:wrapPolygon edited="0">
+                      <wp:start x="0" y="0"/>
+                      <wp:lineTo x="0" y="20965"/>
+                      <wp:lineTo x="21570" y="20965"/>
+                      <wp:lineTo x="21570" y="0"/>
+                      <wp:lineTo x="0" y="0"/>
+                    </wp:wrapPolygon>
+                  </wp:wrapThrough>
+                  <wp:docPr id="8" name="Text Box 7"/>
+                  <wp:cNvGraphicFramePr>
+                    <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+                  </wp:cNvGraphicFramePr>
+                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                      <wps:wsp>
+                        <wps:cNvSpPr txBox="1">
+                          <a:spLocks noChangeArrowheads="1"/>
+                        </wps:cNvSpPr>
+                        <wps:spPr bwMode="auto">
+                          <a:xfrm>
+                            <a:off x="0" y="0"/>
+                            <a:ext cx="6409690" cy="215900"/>
+                          </a:xfrm>
+                          <a:prstGeom prst="rect">
+                            <a:avLst/>
+                          </a:prstGeom>
+                          <a:noFill/>
+                          <a:ln>
+                            <a:noFill/>
+                          </a:ln>
+                          <a:extLst>
+                            <a:ext uri="{909E8E84-426E-40DD-AFC4-6F175D3DCCD1}">
+                              <a14:hiddenFill xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main">
+                                <a:solidFill>
+                                  <a:srgbClr val="FFFFFF"/>
+                                </a:solidFill>
+                              </a14:hiddenFill>
+                            </a:ext>
+                            <a:ext uri="{91240B29-F687-4F45-9708-019B960494DF}">
+                              <a14:hiddenLine xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" w="9525">
+                                <a:solidFill>
+                                  <a:srgbClr val="000000"/>
+                                </a:solidFill>
+                                <a:miter lim="800000"/>
+                                <a:headEnd/>
+                                <a:tailEnd/>
+                              </a14:hiddenLine>
+                            </a:ext>
+                          </a:extLst>
+                        </wps:spPr>
+                        <wps:txbx>
+                          <w:txbxContent>
+                            <w:p w14:paraId="73341B49" w14:textId="77777777">
+                              <w:pPr>
+                                <w:pStyle w:val="body"/>
+                                <w:spacing w:line="320" w:lineRule="exact"/>
+                                <w:jc w:val="center"/>
+                                <w:rPr>
+                                  <w:b/>
+                                  <w:bCs/>
+                                  <w:caps/>
+                                  <w:sz w:val="28"/>
+                                  <w:szCs w:val="28"/>
+                                </w:rPr>
+                              </w:pPr>
+                              <w:r>
+                                <w:rPr>
+                                  <w:b/>
+                                  <w:bCs/>
+                                  <w:caps/>
+                                  <w:sz w:val="28"/>
+                                  <w:szCs w:val="28"/>
+                                </w:rPr>
+                                <w:delText>Memorandum
+                                </w:delText>
+                              </w:r>
+                            </w:p>
+                            <w:p w14:paraId="1A0446CC" w14:textId="77777777"/>
+                            <w:p w14:paraId="4BC9A152" w14:textId="77777777"/>
+                            <w:p w14:paraId="113EA354" w14:textId="77777777"/>
+                            <w:p w14:paraId="2B0C8D82" w14:textId="77777777"/>
+                            <w:p w14:paraId="1B9D6C5A" w14:textId="77777777"/>
+                            <w:p w14:paraId="01526E0C" w14:textId="77777777"/>
+                            <w:p w14:paraId="5254826C" w14:textId="77777777"/>
+                          </w:txbxContent>
+                        </wps:txbx>
+                        <wps:bodyPr rot="0" vert="horz" wrap="square" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t" anchorCtr="0" upright="1">
+                          <a:noAutofit/>
+                        </wps:bodyPr>
+                      </wps:wsp>
+                    </a:graphicData>
+                  </a:graphic>
+                  <wp14:sizeRelH relativeFrom="page">
+                    <wp14:pctWidth>0
+                    </wp14:pctWidth>
+                  </wp14:sizeRelH>
+                  <wp14:sizeRelV relativeFrom="page">
+                    <wp14:pctHeight>0
+                    </wp14:pctHeight>
+                  </wp14:sizeRelV>
+                </wp:anchor>
+              </w:drawing>
+            </mc:Choice>
+            <mc:Fallback>
+              <w:pict>
+                <v:shape w14:anchorId="3835EFBB" id="Text Box 7" o:spid="_x0000_s1027" type="#_x0000_t202" style="position:absolute;margin-left:3.5pt;margin-top:3.1pt;width:504.7pt;height:17pt;z-index:251664384;visibility:visible;mso-wrap-style:square;mso-width-percent:0;mso-height-percent:0;mso-wrap-distance-left:9pt;mso-wrap-distance-top:0;mso-wrap-distance-right:9pt;mso-wrap-distance-bottom:0;mso-position-horizontal:absolute;mso-position-horizontal-relative:text;mso-position-vertical:absolute;mso-position-vertical-relative:text;mso-width-percent:0;mso-height-percent:0;mso-width-relative:page;mso-height-relative:page;v-text-anchor:top" o:gfxdata="UEsDBBQABgAIAAAAIQC2gziS/gAAAOEBAAATAAAAW0NvbnRlbnRfVHlwZXNdLnhtbJSRQU7DMBBF&#10;90jcwfIWJU67QAgl6YK0S0CoHGBkTxKLZGx5TGhvj5O2G0SRWNoz/78nu9wcxkFMGNg6quQqL6RA&#10;0s5Y6ir5vt9lD1JwBDIwOMJKHpHlpr69KfdHjyxSmriSfYz+USnWPY7AufNIadK6MEJMx9ApD/oD&#10;OlTrorhX2lFEilmcO2RdNtjC5xDF9pCuTyYBB5bi6bQ4syoJ3g9WQ0ymaiLzg5KdCXlKLjvcW893&#10;SUOqXwnz5DrgnHtJTxOsQfEKIT7DmDSUCaxw7Rqn8787ZsmRM9e2VmPeBN4uqYvTtW7jvijg9N/y&#10;JsXecLq0q+WD6m8AAAD//wMAUEsDBBQABgAIAAAAIQA4/SH/1gAAAJQBAAALAAAAX3JlbHMvLnJl&#10;bHOkkMFqwzAMhu+DvYPRfXGawxijTi+j0GvpHsDYimMaW0Yy2fr2M4PBMnrbUb/Q94l/f/hMi1qR&#10;JVI2sOt6UJgd+ZiDgffL8ekFlFSbvV0oo4EbChzGx4f9GRdb25HMsYhqlCwG5lrLq9biZkxWOiqY&#10;22YiTra2kYMu1l1tQD30/bPm3wwYN0x18gb45AdQl1tp5j/sFB2T0FQ7R0nTNEV3j6o9feQzro1i&#10;OWA14Fm+Q8a1a8+Bvu/d/dMb2JY5uiPbhG/ktn4cqGU/er3pcvwCAAD//wMAUEsDBBQABgAIAAAA&#10;IQBnTa8rsAIAALAFAAAOAAAAZHJzL2Uyb0RvYy54bWysVNuOmzAQfa/Uf7D8znIpIQGFrLIhVJW2&#10;F2m3H+CACVbBprYT2Fb9945NSDa7L1VbHqzBHp+5nONZ3g5tg45UKiZ4iv0bDyPKC1Eyvk/x18fc&#10;WWCkNOElaQSnKX6iCt+u3r5Z9l1CA1GLpqQSAQhXSd+luNa6S1xXFTVtiboRHeVwWAnZEg2/cu+W&#10;kvSA3jZu4HmR2wtZdlIUVCnYzcZDvLL4VUUL/bmqFNWoSTHkpu0q7bozq7takmQvSVez4pQG+Yss&#10;WsI4BD1DZUQTdJDsFVTLCimUqPRNIVpXVBUrqK0BqvG9F9U81KSjthZojurObVL/D7b4dPwiEStT&#10;DERx0gJFj3TQ6E4MaG6603cqAaeHDtz0ANvAsq1Udfei+KYQF5ua8D1dSyn6mpISsvPNTffZ1RFH&#10;GZBd/1GUEIYctLBAQyVb0zpoBgJ0YOnpzIxJpYDNKPTiKIajAs4CfxZ7ljqXJNPtTir9nooWGSPF&#10;Epi36OR4r7TJhiSTiwnGRc6axrLf8KsNcBx3IDZcNWcmC0vmz9iLt4vtInTCINo6oZdlzjrfhE6U&#10;+/NZ9i7bbDL/l4nrh0nNypJyE2YSlh/+GXEniY+SOEtLiYaVBs6kpOR+t2kkOhIQdm4/23M4ubi5&#10;12nYJkAtL0ryg9C7C2InjxZzJ8zDmRPPvYXj+fFdHHlhHGb5dUn3jNN/Lwn1KY5nwWwU0yXpF7V5&#10;9ntdG0lapmF0NKwF7Z6dSGIkuOWlpVYT1oz2s1aY9C+tALonoq1gjUZHtephN9iXYdVsxLwT5RMo&#10;WAoQGGgRxh4YtZA/MOphhKRYfT8QSTFqPnB4BWbeTIacjN1kEF7A1RRrjEZzo8e5dOgk29eAPL4z&#10;LtbwUipmRXzJ4vS+YCzYWk4jzMyd5//W6zJoV78BAAD//wMAUEsDBBQABgAIAAAAIQBeAiBH3QAA&#10;AAcBAAAPAAAAZHJzL2Rvd25yZXYueG1sTI/BTsMwEETvSPyDtUjcqN2oChCyqSoEJyTUNBw4OvE2&#10;iRqvQ+y24e/rnuA4mtHMm3w920GcaPK9Y4TlQoEgbpzpuUX4qt4fnkD4oNnowTEh/JKHdXF7k+vM&#10;uDOXdNqFVsQS9plG6EIYMyl905HVfuFG4ujt3WR1iHJqpZn0OZbbQSZKpdLqnuNCp0d67ag57I4W&#10;YfPN5Vv/81lvy33ZV9Wz4o/0gHh/N29eQASaw18YrvgRHYrIVLsjGy8GhMf4JCCkCYirq5bpCkSN&#10;sFIJyCKX//mLCwAAAP//AwBQSwECLQAUAAYACAAAACEAtoM4kv4AAADhAQAAEwAAAAAAAAAAAAAA&#10;AAAAAAAAW0NvbnRlbnRfVHlwZXNdLnhtbFBLAQItABQABgAIAAAAIQA4/SH/1gAAAJQBAAALAAAA&#10;AAAAAAAAAAAAAC8BAABfcmVscy8ucmVsc1BLAQItABQABgAIAAAAIQBnTa8rsAIAALAFAAAOAAAA&#10;AAAAAAAAAAAAAC4CAABkcnMvZTJvRG9jLnhtbFBLAQItABQABgAIAAAAIQBeAiBH3QAAAAcBAAAP&#10;AAAAAAAAAAAAAAAAAAoFAABkcnMvZG93bnJldi54bWxQSwUGAAAAAAQABADzAAAAFAYAAAAA&#10;" filled="f" stroked="f">
+                  <v:textbox inset="0,0,0,0">
+                    <w:txbxContent>
+                      <w:p w14:paraId="73341B49" w14:textId="77777777">
+                        <w:pPr>
+                          <w:pStyle w:val="body"/>
+                          <w:spacing w:line="320" w:lineRule="exact"/>
+                          <w:jc w:val="center"/>
+                          <w:rPr>
+                            <w:b/>
+                            <w:bCs/>
+                            <w:caps/>
+                            <w:sz w:val="28"/>
+                            <w:szCs w:val="28"/>
+                          </w:rPr>
+                        </w:pPr>
+                        <w:r>
+                          <w:rPr>
+                            <w:b/>
+                            <w:bCs/>
+                            <w:caps/>
+                            <w:sz w:val="28"/>
+                            <w:szCs w:val="28"/>
+                          </w:rPr>
+                          <w:delText>Memorandum
+                          </w:delText>
+                        </w:r>
+                      </w:p>
+                      <w:p w14:paraId="1A0446CC" w14:textId="77777777"/>
+                      <w:p w14:paraId="4BC9A152" w14:textId="77777777"/>
+                      <w:p w14:paraId="113EA354" w14:textId="77777777"/>
+                      <w:p w14:paraId="2B0C8D82" w14:textId="77777777"/>
+                      <w:p w14:paraId="1B9D6C5A" w14:textId="77777777"/>
+                      <w:p w14:paraId="01526E0C" w14:textId="77777777"/>
+                      <w:p w14:paraId="5254826C" w14:textId="77777777"/>
+                    </w:txbxContent>
+                  </v:textbox>
+                  <w10:wrap type="through"/>
+                </v:shape>
+              </w:pict>
+            </mc:Fallback>
+          </mc:AlternateContent>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="23657FED" w14:textId="2D9E7CB5">
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+        <w:keepLines/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1440"/>
+          <w:tab w:val="left" w:pos="3600"/>
+          <w:tab w:val="left" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-187"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="113" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Open-Xml-PowerTools" w:id="104" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+            <w:bCs/>
+          </w:rPr>
+          <w:delText>DATE
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="105" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>:
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="106" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="107" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>January
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="108" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="109" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>6
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="110" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>, 201
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="111" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>7
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="112" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="07E97CAB" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+        <w:keepLines/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1440"/>
+          <w:tab w:val="left" w:pos="3600"/>
+          <w:tab w:val="left" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-187"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="114" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="12D09749" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+        <w:keepLines/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1440"/>
+          <w:tab w:val="left" w:pos="3600"/>
+          <w:tab w:val="left" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-187"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="119" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Open-Xml-PowerTools" w:id="115" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+            <w:bCs/>
+          </w:rPr>
+          <w:delText>TO
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="116" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>:
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="117" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="118" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>All holders of Standard Special Provisions
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="63BB489E" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+        <w:keepLines/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1440"/>
+          <w:tab w:val="left" w:pos="3600"/>
+          <w:tab w:val="left" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-187"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="120" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="2360703C" w14:textId="6748824A">
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+        <w:keepLines/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1440"/>
+          <w:tab w:val="left" w:pos="3600"/>
+          <w:tab w:val="left" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-187"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="123" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Open-Xml-PowerTools" w:id="121" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="122" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="25072E9B" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+        <w:keepLines/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="3600"/>
+          <w:tab w:val="left" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-187"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="124" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="1F93AD87" w14:textId="67666A30">
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+        <w:keepLines/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1440"/>
+          <w:tab w:val="left" w:pos="3600"/>
+          <w:tab w:val="left" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-187"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="129" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Open-Xml-PowerTools" w:id="125" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+            <w:bCs/>
+          </w:rPr>
+          <w:delText>FROM
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="126" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>:
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="127" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="128" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Larry Brinck, Standards and Specifications Engineer
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="7F74D6E0" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+        <w:keepLines/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="3600"/>
+          <w:tab w:val="left" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-187"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="130" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="52FC6BF1" w14:textId="00AF4C32">
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+        <w:keepLines/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1440"/>
+          <w:tab w:val="left" w:pos="3600"/>
+          <w:tab w:val="left" w:pos="4680"/>
+        </w:tabs>
+        <w:ind w:left="1440" w:right="-187" w:hanging="1440"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="137" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Open-Xml-PowerTools" w:id="131" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+            <w:bCs/>
+          </w:rPr>
+          <w:delText>SUBJECT
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="132" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>:
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="133" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="134" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">The
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="135" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Minimum
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="136" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Wages on Federal Aid Projects
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="0F7C96FF" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+        <w:keepLines/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1440"/>
+          <w:tab w:val="left" w:pos="3600"/>
+          <w:tab w:val="left" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-187"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="138" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="496DAC49" w14:textId="49A299E6">
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+        <w:keepLines/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1440"/>
+          <w:tab w:val="left" w:pos="3600"/>
+          <w:tab w:val="left" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-187"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="174" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Open-Xml-PowerTools" w:id="139" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Effective this date, our unit is issuing
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="140" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>the
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="141" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">revised
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="142" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText>Minimum Wages, Colorado, U.S. Department of La
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="143" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText>bor
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="144" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText>,
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="145" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText xml:space="preserve">General Decision Number
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="146" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellStart"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="147" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText>CO1
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="148" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText>7
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="149" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText>00
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="150" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText>1
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="151" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText>7
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="152" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellEnd"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="153" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">standard special provision. This revised standard special is
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="154" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="gramStart"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="155" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>4
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="156" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="gramEnd"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="157" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="158" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">pages long, and
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="159" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">is
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="160" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">dated
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="161" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText>January 0
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="162" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText>6
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="163" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText>, 201
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="164" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText>7
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="165" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="166" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">It is to be included in all federal aid projects beginning with projects that have bid openings on
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="167" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText>January 1
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="168" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText>6
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="169" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText>, 201
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="170" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+            <w:b/>
+          </w:rPr>
+          <w:delText>7
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="171" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">or later.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="172" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="173" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Use this standard special provision on all federal-aid projects with contracts exceeding $2000, except for non-ARRA projects on roadways classified as local roads or rural minor collectors, which are exempt. Projects on local roads, rural minor collectors, and enhancement projects funded with ARRA funds are not exempt.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="1C05E7A6" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+        <w:keepLines/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1440"/>
+          <w:tab w:val="left" w:pos="3600"/>
+          <w:tab w:val="left" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-187"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="175" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="29949A81" w14:textId="17A63A41">
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+        <w:keepLines/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1440"/>
+          <w:tab w:val="left" w:pos="3600"/>
+          <w:tab w:val="left" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-187"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="191" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Open-Xml-PowerTools" w:id="176" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">This new decision did not change any wages or fringe benefits for any job classification. It just changed the General Decision Number from
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="177" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellStart"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="178" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>CO1
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="179" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>6
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="180" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>001
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="181" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>7
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="182" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellEnd"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="183" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">to
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="184" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellStart"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="185" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>CO1
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="186" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>7
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="187" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>001
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="188" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>7
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="189" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellEnd"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="190" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="7690F54D" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+        <w:keepLines/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1440"/>
+          <w:tab w:val="left" w:pos="3600"/>
+          <w:tab w:val="left" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-187"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="192" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="37C148AD" w14:textId="60D124F1">
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+        <w:keepLines/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1440"/>
+          <w:tab w:val="left" w:pos="3600"/>
+          <w:tab w:val="left" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-187"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="196" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Open-Xml-PowerTools" w:id="193" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>If you have any questions or comments, please contact this office.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="194" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkStart w:id="1" w:name="_GoBack"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="195" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkEnd w:id="1"/>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="70D32994" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+        <w:keepLines/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1440"/>
+          <w:tab w:val="left" w:pos="3600"/>
+          <w:tab w:val="left" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-187"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="197" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="5D3484FA" w14:textId="77777777">
+      <w:pPr>
+        <w:keepLines/>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="18"/>
+          <w:szCs w:val="18"/>
+        </w:rPr>
+        <w:pPrChange w:author="Open-Xml-PowerTools" w:id="199" w:date="2000-01-01T00:00:00Z">
+          <w:pPr>
+            <w:pStyle w:val="body"/>
+            <w:spacing w:line="320" w:lineRule="exact"/>
+          </w:pPr>
+        </w:pPrChange>
+      </w:pPr>
+    </w:p>
+    <w:sectPr>
+      <w:headerReference w:type="default" r:id="rIdHeader"/>
+      <w:footerReference w:type="default" r:id="rId8"/>
+      <w:headerReference w:type="first" r:id="rId9"/>
+      <w:footerReference w:type="first" r:id="rId10"/>
+      <w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="1417" w:right="1417" w:bottom="1134" w:left="1417" w:header="708" w:footer="708" w:gutter="0"/>
+      <w:cols w:space="708"/>
+      <w:docGrid w:linePitch="360"/>
+      <w:sectPrChange w:author="Open-Xml-PowerTools" w:id="200" w:date="2000-01-01T00:00:00Z">
+        <w:sectPr>
+          <w:pgSz w:w="12240" w:h="15840"/>
+          <w:pgMar w:top="878" w:right="1800" w:bottom="720" w:left="1080" w:header="634" w:footer="2304" w:gutter="0"/>
+          <w:cols w:space="720"/>
+        </w:sectPr>
+      </w:sectPrChange>
+    </w:sectPr>
+  </w:body>
+</w:document>

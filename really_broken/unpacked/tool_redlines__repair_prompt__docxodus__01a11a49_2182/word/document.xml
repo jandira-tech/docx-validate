@@ -1,0 +1,4303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 wp14">
+  <w:body>
+    <w:p w14:paraId="0E51AC2E" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="1" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="auto"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="6E471BFA" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="2" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="auto"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="390939A9" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="4" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="auto"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="3" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+            <w:b/>
+            <w:bCs/>
+            <w:color w:val="auto"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+            <w:u w:val="single"/>
+          </w:rPr>
+          <w:t>TERMES DE REFERENCE
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="31F5DB57" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="5" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="auto"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="9449"/>
+      </w:tblGrid>
+      <w:tr w14:paraId="00C0B41F" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="6" w:date="2000-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9449" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="3FEC755E" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="2"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="11" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="7" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellStart"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="8" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t>Informations
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="9" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellEnd"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="10" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t xml:space="preserve">sur le stage
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="6D5F6C0A" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="1080"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="12" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w14:paraId="008810FC" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="13" w:date="2000-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9449" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="7BCABFBB" w14:textId="1A7865F9">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="31" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="14" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>Titre du stage :
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="15" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="16" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>Stage d&#x2019;
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="17" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Appui à l&#x2019;opérationnalisation des
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="18" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>outils
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="19" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">d&#x2019;engagement
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="20" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>s
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="21" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">digitaux des adolescent(e)s et des jeunes
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="22" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">:
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="23" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellStart"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="24" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>Ureport
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="25" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellEnd"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="26" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">et Internet Of Good
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="27" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellStart"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="28" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>Things
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="29" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellEnd"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="30" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">(IOGT)
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="2C2A6B29" w14:textId="77777777">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="32" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="725DDD6E" w14:textId="453D1AF3">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="50" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="33" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellStart"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="34" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="gramStart"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="35" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t>Superviseur
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="36" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellEnd"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="37" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t xml:space="preserve">:
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="38" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="gramEnd"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="39" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t xml:space="preserve">
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="40" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t>S
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="41" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t xml:space="preserve">ocial
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="42" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellStart"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="43" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t>B
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="44" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t>ehaviour
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="45" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellEnd"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="46" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t xml:space="preserve">
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="47" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t>C
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="48" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t>hange
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="49" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Specialist
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="1604C77D" w14:textId="77777777">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="56" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="51" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="gramStart"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="52" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t>Section :
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="53" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="gramEnd"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="54" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t xml:space="preserve">
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="55" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Social and Behavior Change
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="5065CA12" w14:textId="77777777">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="59" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="57" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>Lieu d&#x2019;affectation :
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="58" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Antananarivo
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="6C05EF33" w14:textId="25FD9963">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="62" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="60" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Durée :
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="61" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>6 mois
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="3AB66F7D" w14:textId="77777777">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="64" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="63" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Modalité :
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="03DFE0E9" w14:textId="34239737">
+            <w:pPr>
+              <w:tabs>
+                <w:tab w:val="left" w:pos="2742"/>
+                <w:tab w:val="left" w:pos="3944"/>
+              </w:tabs>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="73" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="65" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">A temps plein
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:customXmlInsRangeStart w:author="Open-Xml-PowerTools" w:id="67" w:date="2000-01-01T00:00:00Z"/>
+            <w:sdt>
+              <w:sdtPr>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:id w:val="1361089639"/>
+                <w14:checkbox>
+                  <w14:checked w14:val="1"/>
+                  <w14:checkedState w14:val="00FE" w14:font="Wingdings"/>
+                  <w14:uncheckedState w14:val="2610" w14:font="MS Gothic"/>
+                </w14:checkbox>
+              </w:sdtPr>
+              <w:sdtEndPr/>
+              <w:sdtContent>
+                <w:customXmlInsRangeEnd w:id="67"/>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="66" w:date="2000-01-01T00:00:00Z">
+                  <w:r>
+                    <w:rPr>
+                      <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                      <w:bCs/>
+                      <w:color w:val="auto"/>
+                      <w:sz w:val="22"/>
+                      <w:szCs w:val="22"/>
+                      <w:lang w:val="fr-FR"/>
+                    </w:rPr>
+                    <w:sym w:font="Wingdings" w:char="F0FE"/>
+                  </w:r>
+                </w:ins>
+                <w:customXmlInsRangeStart w:author="Open-Xml-PowerTools" w:id="68" w:date="2000-01-01T00:00:00Z"/>
+              </w:sdtContent>
+            </w:sdt>
+            <w:customXmlInsRangeEnd w:id="68"/>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="69" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">A temps partiel
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:customXmlInsRangeStart w:author="Open-Xml-PowerTools" w:id="71" w:date="2000-01-01T00:00:00Z"/>
+            <w:sdt>
+              <w:sdtPr>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:id w:val="426699734"/>
+                <w14:checkbox>
+                  <w14:checked w14:val="0"/>
+                  <w14:checkedState w14:val="00FE" w14:font="Wingdings"/>
+                  <w14:uncheckedState w14:val="2610" w14:font="MS Gothic"/>
+                </w14:checkbox>
+              </w:sdtPr>
+              <w:sdtEndPr/>
+              <w:sdtContent>
+                <w:customXmlInsRangeEnd w:id="71"/>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="70" w:date="2000-01-01T00:00:00Z">
+                  <w:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Segoe UI Symbol" w:eastAsia="MS Gothic" w:hAnsi="Segoe UI Symbol" w:cs="Segoe UI Symbol"/>
+                      <w:bCs/>
+                      <w:color w:val="auto"/>
+                      <w:sz w:val="22"/>
+                      <w:szCs w:val="22"/>
+                      <w:lang w:val="fr-FR"/>
+                    </w:rPr>
+                    <w:t>☐
+                    </w:t>
+                  </w:r>
+                </w:ins>
+                <w:customXmlInsRangeStart w:author="Open-Xml-PowerTools" w:id="72" w:date="2000-01-01T00:00:00Z"/>
+              </w:sdtContent>
+            </w:sdt>
+            <w:customXmlInsRangeEnd w:id="72"/>
+          </w:p>
+          <w:p w14:paraId="3EC3FD99" w14:textId="77777777">
+            <w:pPr>
+              <w:tabs>
+                <w:tab w:val="left" w:pos="2742"/>
+                <w:tab w:val="center" w:pos="4616"/>
+                <w:tab w:val="left" w:pos="5034"/>
+              </w:tabs>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="82" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="74" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">En présentiel
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:customXmlInsRangeStart w:author="Open-Xml-PowerTools" w:id="76" w:date="2000-01-01T00:00:00Z"/>
+            <w:sdt>
+              <w:sdtPr>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:id w:val="503013915"/>
+                <w14:checkbox>
+                  <w14:checked w14:val="0"/>
+                  <w14:checkedState w14:val="00FE" w14:font="Wingdings"/>
+                  <w14:uncheckedState w14:val="2610" w14:font="MS Gothic"/>
+                </w14:checkbox>
+              </w:sdtPr>
+              <w:sdtEndPr/>
+              <w:sdtContent>
+                <w:customXmlInsRangeEnd w:id="76"/>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="75" w:date="2000-01-01T00:00:00Z">
+                  <w:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Segoe UI Symbol" w:eastAsia="MS Gothic" w:hAnsi="Segoe UI Symbol" w:cs="Segoe UI Symbol"/>
+                      <w:bCs/>
+                      <w:color w:val="auto"/>
+                      <w:sz w:val="22"/>
+                      <w:szCs w:val="22"/>
+                      <w:lang w:val="fr-FR"/>
+                    </w:rPr>
+                    <w:t>☐
+                    </w:t>
+                  </w:r>
+                </w:ins>
+                <w:customXmlInsRangeStart w:author="Open-Xml-PowerTools" w:id="77" w:date="2000-01-01T00:00:00Z"/>
+              </w:sdtContent>
+            </w:sdt>
+            <w:customXmlInsRangeEnd w:id="77"/>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="78" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">A distance
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:customXmlInsRangeStart w:author="Open-Xml-PowerTools" w:id="80" w:date="2000-01-01T00:00:00Z"/>
+            <w:sdt>
+              <w:sdtPr>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:id w:val="1563525547"/>
+                <w14:checkbox>
+                  <w14:checked w14:val="0"/>
+                  <w14:checkedState w14:val="00FE" w14:font="Wingdings"/>
+                  <w14:uncheckedState w14:val="2610" w14:font="MS Gothic"/>
+                </w14:checkbox>
+              </w:sdtPr>
+              <w:sdtEndPr/>
+              <w:sdtContent>
+                <w:customXmlInsRangeEnd w:id="80"/>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="79" w:date="2000-01-01T00:00:00Z">
+                  <w:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Segoe UI Symbol" w:eastAsia="MS Gothic" w:hAnsi="Segoe UI Symbol" w:cs="Segoe UI Symbol"/>
+                      <w:bCs/>
+                      <w:color w:val="auto"/>
+                      <w:sz w:val="22"/>
+                      <w:szCs w:val="22"/>
+                      <w:lang w:val="fr-FR"/>
+                    </w:rPr>
+                    <w:t>☐
+                    </w:t>
+                  </w:r>
+                </w:ins>
+                <w:customXmlInsRangeStart w:author="Open-Xml-PowerTools" w:id="81" w:date="2000-01-01T00:00:00Z"/>
+              </w:sdtContent>
+            </w:sdt>
+            <w:customXmlInsRangeEnd w:id="81"/>
+          </w:p>
+          <w:p w14:paraId="7FE49DD6" w14:textId="77777777">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="84" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="83" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w14:paraId="7F0038EF" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="85" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="auto"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="single"/>
+          <w:lang w:val="fr-FR"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="9449"/>
+      </w:tblGrid>
+      <w:tr w14:paraId="704D14AE" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="86" w:date="2000-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9449" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="46951B2A" w14:textId="7F8CD212">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="2"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="90" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="87" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Contexte
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="88" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>organisationnelle
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="89" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">et objectifs du stage
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="614006AD" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="1080"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="91" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w14:paraId="6D4B2F7A" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="92" w:date="2000-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9449" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="581F3E63" w14:textId="77777777">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="94" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="93" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:u w:val="single"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>Contexte :
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="41A93A73" w14:textId="77777777">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="96" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="95" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>L&#x2019;UNICEF Madagascar lance un programme de stage pour l'année 2024. Ce Programme offre aux étudiants et aux récents diplômés issus de milieux universitaires la possibilité de renforcer leur capacité à travers un cadre de travail et un encadrement professionnel. Les stagiaires de l&#x2019;UNICEF bénéficient d'opportunités d'apprentissage par l'expérience dans le secteur humanitaire et d'une expérience de stage significative qui soutiendra leur développement académique, professionnel et personnel.
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="55754918" w14:textId="60F20AD2">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="134" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="97" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Au regard du poids démographique des jeunes Madagascar et étant témoin de l&#x2019;impact positif du grand potentiel d&#x2019;investissement des jeunes pour le bien-être des populations, UNICEF Madagascar renforce ses efforts pour s&#x2019;engager auprès
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="98" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>adolescents et des jeunes particulièrement des filles
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="99" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">à tous les niveaux. La section Social and Behavior
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="100" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>Change (
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="101" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>SBC) contribue
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="102" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">à la mise en œuvre
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="103" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>de la composante
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="104" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">participation
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="105" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>et engagement
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="106" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">des adolescent(e)s et des jeunes à travers les plateformes communautaires et digitaux. Les outils
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="107" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>U-Report
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="108" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">et Internet of Good Things sont dédiés à promouvoir l&#x2019;expression et l&#x2019;apprentissage des adolescent(e)s et des jeunes. Dans le cadre de la mise en œuvre de son nouveau programme pays, UNICEF prévoit de renforcer
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="109" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">sa stratégie d&#x2019;utilisation de IOGT et
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="110" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>U-Report
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="111" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">en appui aux secteurs (Wash, Nutrition, Protection de l&#x2019;enfant, Sante,
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="112" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Education)
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="113" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>en
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="114" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">mettant un focus
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="115" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">sur
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="116" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>la participation accrue d
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="117" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">es
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="118" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">adolescentes et
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="119" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>d
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="120" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>es jeunes filles
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="121" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="122" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="gramStart"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="123" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>et
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="124" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="125" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>en
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="126" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="gramEnd"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="127" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">déployant des ressources pour le
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="128" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>développement
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="129" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">de contenus
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="130" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>thématiques
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="131" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">li
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="132" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>é
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="133" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">s aux droits de l&#x2019;enfant.
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="0B10D773" w14:textId="77777777">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="135" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="302886D7" w14:textId="676284DE">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="138" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="136" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:u w:val="single"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Objectifs du
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="137" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:u w:val="single"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>stage :
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="1DC9A533" w14:textId="77777777">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="140" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="139" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>Le programme de stage a pour objectifs de :
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="496792B9" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="3"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="142" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="141" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Exposer des jeunes universitaires au travail de l&#x2019;UNICEF,
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="5BD346C1" w14:textId="18C2ED7D">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="3"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="145" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="143" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>R
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="144" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>enforcer ainsi leurs capacités en offrant un cadre de travail et un encadrement professionnel
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="534E40EA" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="3"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="147" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="146" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>Promouvoir l&#x2019;image de l&#x2019;UNICEF comme employeur de choix
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="7C1D32F0" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="3"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="149" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="148" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Susciter de l&#x2019;intérêt pour le travail de l&#x2019;UNICEF
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="07380A8A" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="3"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="151" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="150" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>A Long terme, répondre à la question de la distribution genre du bureau et la question de l&#x2019;inclusion, en favorisant la présence des femmes et des personnes avec handicaps.
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="0BF91299" w14:textId="77777777">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="152" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w14:paraId="7869487D" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="153" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="auto"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="single"/>
+          <w:lang w:val="fr-FR"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="7A0ED646" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="154" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="auto"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="single"/>
+          <w:lang w:val="fr-FR"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="263F26CE" w14:textId="091DA63C">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="155" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="auto"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="single"/>
+          <w:lang w:val="fr-FR"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="5FC06B8D" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="156" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="auto"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="single"/>
+          <w:lang w:val="fr-FR"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="9449"/>
+      </w:tblGrid>
+      <w:tr w14:paraId="10D49BA8" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="157" w:date="2000-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9449" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="73EADB55" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="2"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="159" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="158" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>Fonctions clés et taches connexes
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="13ED474A" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="1080"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="160" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w14:paraId="609C8F7E" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="161" w:date="2000-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9449" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="4764313B" w14:textId="77777777">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="163" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="162" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>Résumé des fonctions clés :
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="69C17CEC" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="164" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="662E9E1E" w14:textId="197AEA0E">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="7"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="172" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="165" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>Fournir un appui technique pour la création
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="166" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">,
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="167" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">la
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="168" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>mise à jour
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="169" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">et la modération des contenus sectoriels pour les adolescents(e)s et les jeunes sur le
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="170" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>site web
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="171" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">IOGT
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="57C3C0B4" w14:textId="263568DB">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="7"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="182" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="173" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Participer
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="174" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>à
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="175" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">la mise en œuvre de la feuille de route IOGT en
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="176" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">collaboration avec les partenaires gouvernementaux, les
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="177" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>organisations de la société civil (
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="178" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>OSC
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="179" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>)
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="180" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">et
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="181" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">les agences de communications
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="0C40EDCE" w14:textId="7EB4F930">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="7"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="187" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="183" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>Contribuer à la conception de sondages U
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="184" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>-
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="185" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>REPORT, en assurant la liaison av
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="186" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>ec les équipes du programme, le comité de pilotage et les partenaires nationaux
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="31EFBF52" w14:textId="5088297F">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="7"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="196" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="188" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Contribuer à l&#x2019;élaboration et la mise
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="189" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">en œuvre
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="190" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>d
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="191" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>es
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="192" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">plans de dissémination des résultats des sondages
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="193" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>U-Report
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="194" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="195" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="MS Mincho" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>au niveau national, régional et districts.
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="558B6B34" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="197" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w14:paraId="7139BA4C" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="198" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="auto"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="single"/>
+          <w:lang w:val="fr-FR"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="9449"/>
+      </w:tblGrid>
+      <w:tr w14:paraId="66A5EC0A" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="199" w:date="2000-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9449" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="4EACFA88" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="2"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="204" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="200" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Qualifications
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="201" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellStart"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="202" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t>requises
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="203" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellEnd"/>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="5D14163C" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="1080"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="205" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w14:paraId="128A8317" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="206" w:date="2000-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9449" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="065D1939" w14:textId="77777777">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="207" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="3C9D4E2A" w14:textId="35CE9435">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="1"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="209" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="208" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Avoir fini la L3 ou être inscrit en M1 en sciences sociales, communication, journalisme
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="7D47A5F8" w14:textId="44C7B139">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="1"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="211" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="210" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>Avoir des compétences en design graphique et PAO serait un atout
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="79CC6C68" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="1"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="214" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="212" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">La maitrise d&#x2019;au
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="213" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsia="Times New Roman" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>moins une des langues de travail des Nations Unies, notamment le français ou l'anglais, est requise.
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="3267D91A" w14:textId="25714C78">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="1"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="225" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="215" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellStart"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="216" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t>Etre
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="217" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellEnd"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="218" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t xml:space="preserve">
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="219" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t xml:space="preserve">de
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="220" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellStart"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="221" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t>nationalit
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="222" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t>é
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="223" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellEnd"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="224" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Malagasy
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="55009615" w14:textId="77777777">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="226" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w14:paraId="66D3CC90" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="227" w:date="2000-01-01T00:00:00Z"/>
+          <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="auto"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="9449"/>
+      </w:tblGrid>
+      <w:tr w14:paraId="17FF1E58" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="228" w:date="2000-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9449" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w14:paraId="665BADE4" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="2"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="233" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="229" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellStart"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="230" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t>Déroulement
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="231" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellEnd"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="232" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                </w:rPr>
+                <w:t xml:space="preserve">et conditions du stage
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="662AEE26" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="1080"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="234" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w14:paraId="7F4A0452" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="235" w:date="2000-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9449" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="313BD715" w14:textId="77777777">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="236" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="5FB7148C" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="4"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="241" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="237" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Le
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="238" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>stagiaire sera soutenu et guidé par un
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="239" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="240" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>superviseur qui lui fournira un soutien adéquat et une supervision guidée tout au long de la mission de stage
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="186C5D90" w14:textId="3FBCE06C">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="4"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="244" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="242" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Un plan de travail est élaboré au début du stage pour orienter le stagiaire sur les livrables attendus durant le stage. Ce plan
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="243" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>sera décomposé en plan de travail hebdomadaire et sa mise en œuvre sera suivi
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="0D9C297C" w14:textId="4AF11231">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="4"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="247" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="245" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Le plan de travail
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="246" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>est revu à la fin du stage et fera l&#x2019;objet d&#x2019;une évaluation de performance avec le superviseur
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="3AF03FBB" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="4"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="249" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="248" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>Le stagiaire a droit à 2,5 jours par mois de congé y compris pour des raisons médicales
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="2DC9BFED" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="4"/>
+              </w:numPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="255" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="250" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Le stagiaire percevra une allocation mensuelle payé par le bureau d'embauche équivalant au 70% du salaire mensuel d&#x2019;un GS-3
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="251" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellStart"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="252" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t>step
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="253" w:date="2000-01-01T00:00:00Z">
+              <w:proofErr w:type="spellEnd"/>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="254" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">1
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="2FD4BC84" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="5"/>
+              </w:numPr>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="258" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="256" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Le stagiaire percevra un perdiem selon les taux applicables de l'ONU lors des missions en dehors de son lieu d&#x2019;affectation
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="257" w:date="2000-01-01T00:00:00Z">
+              <w:bookmarkStart w:id="0" w:name="_Hlk81226204"/>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="0F50F07E" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="5"/>
+              </w:numPr>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="261" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="259" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="22"/>
+                  <w:szCs w:val="22"/>
+                  <w:lang w:val="fr-FR"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Le stagiaire sera équipé avec un matériel de travail durant sa prestation.
+                </w:t>
+              </w:r>
+            </w:ins>
+            <w:ins w:author="Open-Xml-PowerTools" w:id="260" w:date="2000-01-01T00:00:00Z">
+              <w:bookmarkEnd w:id="0"/>
+            </w:ins>
+          </w:p>
+          <w:p w14:paraId="2F26D1C3" w14:textId="77777777">
+            <w:pPr>
+              <w:spacing w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Open-Xml-PowerTools" w:id="262" w:date="2000-01-01T00:00:00Z"/>
+                <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorHAnsi"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="auto"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:u w:val="single"/>
+                <w:lang w:val="fr-FR"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w14:paraId="69C0E82C" w14:textId="3F6F9423">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="267" w:date="2000-01-01T00:00:00Z"/>
+          <w:b/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Open-Xml-PowerTools" w:id="264" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Disseminated
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="265" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText>BCG
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="266" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:sz w:val="28"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">and Lupus Vulgaris
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="623EC89D" w14:textId="2388ADF0">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="272" w:date="2000-01-01T00:00:00Z"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Open-Xml-PowerTools" w:id="268" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>Sarah Band
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="269" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">&amp;
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="270" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>Francis J Gilchrist
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="271" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="438CACCE" w14:textId="3E35030E">
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="328" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Open-Xml-PowerTools" w:id="273" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">A
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="274" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>three-year-old
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="275" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">boy
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="276" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">was found to have a
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="277" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>non-tender
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="278" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>,
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="279" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">bony swelling at the base of
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="280" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>his
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="281" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">right thumb
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="282" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">after presenting to Accident and Emergency with an unrelated injury
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="283" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="284" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="285" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>On further questioning t
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="286" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">he parents
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="287" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>revealed
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="288" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="289" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>the swelling
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="290" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">had been present for approximately six months and was increasing in size.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="291" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">A hand x-ray showed an
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="292" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">enlarged right first metacarpal
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="293" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">containing lytic and
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="294" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>sclerotic areas
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="295" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">suggestive of chronic osteomyelitis. See Figure 1A.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="296" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>A
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="297" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">raised red/purple
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="298" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>plaque
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="299" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="300" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">was also noted
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="301" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">on the
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="302" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>lateral
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="303" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">aspect of
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="304" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>the child&#x2019;s
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="305" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">left upper arm
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="306" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">in keeping with lupus vulgaris (LV).
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="307" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">See Figure 1B.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="308" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">This had a
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="309" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>ppear
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="310" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>ed after neonatal B
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="311" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>acill
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="312" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>us
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="313" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="314" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellStart"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="315" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>Calmette
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="316" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellEnd"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="317" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">-Guerin
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="318" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>(BCG) vaccination and
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="319" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="320" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>was
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="321" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="322" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>gradually increas
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="323" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>ing
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="324" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">in size.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="325" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>He was clinically well with an otherwise normal examination
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="326" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">and was thriving
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="327" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="5449329C" w14:textId="22ED6492">
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:del w:author="Open-Xml-PowerTools" w:id="368" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Open-Xml-PowerTools" w:id="329" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">Tuberculosis or disseminated BCG infection was suspected and he underwent biopsies of the relevant sites.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="330" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:i/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Mycobacterium
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="331" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellStart"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="332" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:i/>
+          </w:rPr>
+          <w:delText>bovis
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="333" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellEnd"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="334" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">was cultured from
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="335" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">both
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="336" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">skin and bone
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="337" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>biopsies
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="338" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">with
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="339" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>p
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="340" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">olymerase chain reaction
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="341" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>confirm
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="342" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">ing
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="343" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>BCG strain
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="344" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">with pyrazinamide resistance.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="345" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>T
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="346" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">he child was prescribed 12 months of rifampicin and isoniazid with
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="347" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellStart"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="348" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>ethambutol
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="349" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellEnd"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="350" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">added for the first four months. After
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="351" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>s
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="352" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>ix months
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="353" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">of
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="354" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">treatment
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="355" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">the
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="356" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">LV had subsided to leave scarring (Figure
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="357" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>2
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="358" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>A) and
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="359" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">the s
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="360" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>w
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="361" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>elling and x-ray changes had resolved
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="362" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">. See
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="363" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>Figure 2
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="364" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>B
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="365" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="366" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">Initial screening for an immunodeficienc
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="367" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>y was negative but he remains under investigation.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="136741BD" w14:textId="07AF8F8C">
+      <w:pPr>
+        <w:rPr>
+          <w:color w:val="auto"/>
+        </w:rPr>
+        <w:pPrChange w:author="Open-Xml-PowerTools" w:id="386" w:date="2000-01-01T00:00:00Z">
+          <w:pPr>
+            <w:jc w:val="both"/>
+          </w:pPr>
+        </w:pPrChange>
+      </w:pPr>
+      <w:del w:author="Open-Xml-PowerTools" w:id="369" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>D
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="370" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">isseminated BCG
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="371" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">is diagnosed by confirming
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="372" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>BCG i
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="373" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">nfection in one or more anatomical sites distant
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="374" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>from the injection site
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="375" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="376" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">Sites include bone, liver
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="377" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">and
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="378" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>spleen
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="379" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkStart w:id="1" w:name="_GoBack"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="380" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkEnd w:id="1"/>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="381" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">. It is a rare complication of BCG vaccination and is usually associated with immunodeficiency and a high mortality.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="382" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+            <w:lang w:eastAsia="en-GB"/>
+          </w:rPr>
+          <mc:AlternateContent>
+            <mc:Choice Requires="wps">
+              <w:drawing>
+                <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251659264" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="70FC2062" wp14:editId="7EFA5EC0">
+                  <wp:simplePos x="0" y="0"/>
+                  <wp:positionH relativeFrom="column">
+                    <wp:posOffset>7637780
+                    </wp:posOffset>
+                  </wp:positionH>
+                  <wp:positionV relativeFrom="paragraph">
+                    <wp:posOffset>161290
+                    </wp:posOffset>
+                  </wp:positionV>
+                  <wp:extent cx="557530" cy="722630"/>
+                  <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                  <wp:wrapNone/>
+                  <wp:docPr id="5" name="TextBox 12"/>
+                  <wp:cNvGraphicFramePr/>
+                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                      <wps:wsp>
+                        <wps:cNvSpPr txBox="1"/>
+                        <wps:spPr>
+                          <a:xfrm>
+                            <a:off x="0" y="0"/>
+                            <a:ext cx="557530" cy="722630"/>
+                          </a:xfrm>
+                          <a:prstGeom prst="rect">
+                            <a:avLst/>
+                          </a:prstGeom>
+                          <a:noFill/>
+                        </wps:spPr>
+                        <wps:txbx>
+                          <w:txbxContent>
+                            <w:p w14:paraId="5ED9C7C5" w14:textId="684ED14B">
+                              <w:pPr>
+                                <w:rPr>
+                                  <w:sz w:val="24"/>
+                                  <w:szCs w:val="24"/>
+                                </w:rPr>
+                              </w:pPr>
+                              <w:r>
+                                <w:rPr>
+                                  <w:rFonts w:hAnsi="Calibri"/>
+                                  <w:b/>
+                                  <w:bCs/>
+                                  <w:color w:val="FFFFFF" w:themeColor="background1"/>
+                                  <w:kern w:val="24"/>
+                                  <w:sz w:val="48"/>
+                                  <w:szCs w:val="48"/>
+                                </w:rPr>
+                                <w:delText>1B
+                                </w:delText>
+                              </w:r>
+                            </w:p>
+                          </w:txbxContent>
+                        </wps:txbx>
+                        <wps:bodyPr wrap="square" rtlCol="0">
+                          <a:spAutoFit/>
+                        </wps:bodyPr>
+                      </wps:wsp>
+                    </a:graphicData>
+                  </a:graphic>
+                </wp:anchor>
+              </w:drawing>
+            </mc:Choice>
+            <mc:Fallback>
+              <w:pict>
+                <v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe">
+                  <v:stroke joinstyle="miter"/>
+                  <v:path gradientshapeok="t" o:connecttype="rect"/>
+                </v:shapetype>
+                <v:shape id="TextBox 12" o:spid="_x0000_s1026" type="#_x0000_t202" style="position:absolute;left:0;text-align:left;margin-left:601.4pt;margin-top:12.7pt;width:43.9pt;height:56.9pt;z-index:251659264;visibility:visible;mso-wrap-style:square;mso-wrap-distance-left:9pt;mso-wrap-distance-top:0;mso-wrap-distance-right:9pt;mso-wrap-distance-bottom:0;mso-position-horizontal:absolute;mso-position-horizontal-relative:text;mso-position-vertical:absolute;mso-position-vertical-relative:text;v-text-anchor:top" o:gfxdata="UEsDBBQABgAIAAAAIQC2gziS/gAAAOEBAAATAAAAW0NvbnRlbnRfVHlwZXNdLnhtbJSRQU7DMBBF&#10;90jcwfIWJU67QAgl6YK0S0CoHGBkTxKLZGx5TGhvj5O2G0SRWNoz/78nu9wcxkFMGNg6quQqL6RA&#10;0s5Y6ir5vt9lD1JwBDIwOMJKHpHlpr69KfdHjyxSmriSfYz+USnWPY7AufNIadK6MEJMx9ApD/oD&#10;OlTrorhX2lFEilmcO2RdNtjC5xDF9pCuTyYBB5bi6bQ4syoJ3g9WQ0ymaiLzg5KdCXlKLjvcW893&#10;SUOqXwnz5DrgnHtJTxOsQfEKIT7DmDSUCaxw7Rqn8787ZsmRM9e2VmPeBN4uqYvTtW7jvijg9N/y&#10;JsXecLq0q+WD6m8AAAD//wMAUEsDBBQABgAIAAAAIQA4/SH/1gAAAJQBAAALAAAAX3JlbHMvLnJl&#10;bHOkkMFqwzAMhu+DvYPRfXGawxijTi+j0GvpHsDYimMaW0Yy2fr2M4PBMnrbUb/Q94l/f/hMi1qR&#10;JVI2sOt6UJgd+ZiDgffL8ekFlFSbvV0oo4EbChzGx4f9GRdb25HMsYhqlCwG5lrLq9biZkxWOiqY&#10;22YiTra2kYMu1l1tQD30/bPm3wwYN0x18gb45AdQl1tp5j/sFB2T0FQ7R0nTNEV3j6o9feQzro1i&#10;OWA14Fm+Q8a1a8+Bvu/d/dMb2JY5uiPbhG/ktn4cqGU/er3pcvwCAAD//wMAUEsDBBQABgAIAAAA&#10;IQDmpHcUlAEAAA0DAAAOAAAAZHJzL2Uyb0RvYy54bWysUk1v2zAMvRfYfxB0X5y4SFsYcYqtRXcZ&#10;ugHtfoAiS7EAS1RJJXb+fSklTYvuNuwiUfx4enzk6nbyg9gbJAehlYvZXAoTNHQubFv55/nh640U&#10;lFTo1ADBtPJgSN6uv1ysxtiYGnoYOoOCQQI1Y2xln1Jsqop0b7yiGUQTOGgBvUr8xG3VoRoZ3Q9V&#10;PZ9fVSNgFxG0IWLv/TEo1wXfWqPTL2vJJDG0krmlcmI5N/ms1ivVbFHF3ukTDfUPLLxygT89Q92r&#10;pMQO3V9Q3mkEAptmGnwF1jptSg/czWL+qZunXkVTemFxKJ5lov8Hqx/3v1G4rpVLKYLyPKJnM6Xv&#10;MIlFndUZIzWc9BQ5LU3s5ym/+YmduenJos83tyM4zjofztoymNDsXC6vl5cc0Ry6rusrthm9ei+O&#10;SOmHAS+y0Urk0RVF1f4npWPqW0r+K8CDG4bszwyPTLKVps10or2B7sCsR55uK+llp9BIgWm4g7IM&#10;GYXit11ipPJBLj/WnFBZ80LxtB95qB/fJet9i9evAAAA//8DAFBLAwQUAAYACAAAACEAgawIIN8A&#10;AAAMAQAADwAAAGRycy9kb3ducmV2LnhtbEyPzU7DMBCE70i8g7VI3KhdQyuaxqkqfiQOXCjhvo3d&#10;JCJeR7HbpG/P9kRvM5rR7Lf5ZvKdOLkhtoEMzGcKhKMq2JZqA+X3+8MziJiQLHaBnIGzi7Apbm9y&#10;zGwY6cuddqkWPEIxQwNNSn0mZawa5zHOQu+Is0MYPCa2Qy3tgCOP+05qpZbSY0t8ocHevTSu+t0d&#10;vYGU7HZ+Lt98/PiZPl/HRlULLI25v5u2axDJTem/DBd8RoeCmfbhSDaKjr1WmtmTAb14AnFp6JVa&#10;gtizelxpkEUur58o/gAAAP//AwBQSwECLQAUAAYACAAAACEAtoM4kv4AAADhAQAAEwAAAAAAAAAA&#10;AAAAAAAAAAAAW0NvbnRlbnRfVHlwZXNdLnhtbFBLAQItABQABgAIAAAAIQA4/SH/1gAAAJQBAAAL&#10;AAAAAAAAAAAAAAAAAC8BAABfcmVscy8ucmVsc1BLAQItABQABgAIAAAAIQDmpHcUlAEAAA0DAAAO&#10;AAAAAAAAAAAAAAAAAC4CAABkcnMvZTJvRG9jLnhtbFBLAQItABQABgAIAAAAIQCBrAgg3wAAAAwB&#10;AAAPAAAAAAAAAAAAAAAAAO4DAABkcnMvZG93bnJldi54bWxQSwUGAAAAAAQABADzAAAA+gQAAAAA&#10;" filled="f" stroked="f">
+                  <v:textbox style="mso-fit-shape-to-text:t">
+                    <w:txbxContent>
+                      <w:p w14:paraId="5ED9C7C5" w14:textId="684ED14B">
+                        <w:pPr>
+                          <w:rPr>
+                            <w:sz w:val="24"/>
+                            <w:szCs w:val="24"/>
+                          </w:rPr>
+                        </w:pPr>
+                        <w:r>
+                          <w:rPr>
+                            <w:rFonts w:hAnsi="Calibri"/>
+                            <w:b/>
+                            <w:bCs/>
+                            <w:color w:val="FFFFFF" w:themeColor="background1"/>
+                            <w:kern w:val="24"/>
+                            <w:sz w:val="48"/>
+                            <w:szCs w:val="48"/>
+                          </w:rPr>
+                          <w:delText>1B
+                          </w:delText>
+                        </w:r>
+                      </w:p>
+                    </w:txbxContent>
+                  </v:textbox>
+                </v:shape>
+              </w:pict>
+            </mc:Fallback>
+          </mc:AlternateContent>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="383" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>L
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:del w:author="Open-Xml-PowerTools" w:id="384" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">V is a form of cutaneous tuberculosis and a rare, local complication of BCG vaccination.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:sectPr>
+      <w:headerReference w:type="first" r:id="rIdHeader2"/>
+      <w:headerReference w:type="default" r:id="rIdHeader"/>
+      <w:footerReference w:type="default" r:id="rIdFooter"/>
+      <w:pgSz w:w="11907" w:h="16839" w:code="9"/>
+      <w:pgMar w:top="1800" w:right="1224" w:bottom="1440" w:left="1224" w:header="720" w:footer="720" w:gutter="0"/>
+      <w:cols w:space="720"/>
+      <w:titlePg/>
+      <w:docGrid w:linePitch="326"/>
+      <w:sectPrChange w:author="Open-Xml-PowerTools" w:id="387" w:date="2000-01-01T00:00:00Z">
+        <w:sectPr>
+          <w:pgSz w:w="11906" w:h="16838"/>
+          <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/>
+          <w:cols w:space="708"/>
+          <w:docGrid w:linePitch="360"/>
+        </w:sectPr>
+      </w:sectPrChange>
+    </w:sectPr>
+  </w:body>
+</w:document>

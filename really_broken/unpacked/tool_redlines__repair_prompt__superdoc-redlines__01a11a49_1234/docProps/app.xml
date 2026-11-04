@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties">
+  <Template>Normal.dotm
+  </Template>
+  <TotalTime>0
+  </TotalTime>
+  <Pages>43
+  </Pages>
+  <Words>55033
+  </Words>
+  <Characters>31369
+  </Characters>
+  <Application>Microsoft Office Word
+  </Application>
+  <DocSecurity>0
+  </DocSecurity>
+  <Lines>261
+  </Lines>
+  <Paragraphs>172
+  </Paragraphs>
+  <ScaleCrop>false
+  </ScaleCrop>
+  <HeadingPairs>
+    <vt:vector xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" size="2" baseType="variant">
+      <vt:variant>
+        <vt:lpstr>Pavadinimas
+        </vt:lpstr>
+      </vt:variant>
+      <vt:variant>
+        <vt:i4>1
+        </vt:i4>
+      </vt:variant>
+    </vt:vector>
+  </HeadingPairs>
+  <TitlesOfParts>
+    <vt:vector xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" size="1" baseType="lpstr">
+      <vt:lpstr>PATVIRTINTA
+      </vt:lpstr>
+    </vt:vector>
+  </TitlesOfParts>
+  <Company/>
+  <LinksUpToDate>false
+  </LinksUpToDate>
+  <CharactersWithSpaces>86230
+  </CharactersWithSpaces>
+  <SharedDoc>false
+  </SharedDoc>
+  <HyperlinkBase/>
+  <HyperlinksChanged>false
+  </HyperlinksChanged>
+  <AppVersion>14.0000
+  </AppVersion>
+</Properties>

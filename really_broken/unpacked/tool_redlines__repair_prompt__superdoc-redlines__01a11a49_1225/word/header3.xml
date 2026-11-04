@@ -1,0 +1,1429 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<w:hdr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh wp14">
+  <w:p w14:paraId="65C99FD6" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="0305B3D5" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="0CD092C0" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+    <w:r w:rsidRPr="00F534B6">
+      <w:rPr>
+        <w:noProof/>
+        <w:highlight w:val="yellow"/>
+      </w:rPr>
+      <mc:AlternateContent>
+        <mc:Choice Requires="wps">
+          <w:drawing>
+            <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251658241" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="443342F6" wp14:editId="7D9CAF1B">
+              <wp:simplePos x="0" y="0"/>
+              <wp:positionH relativeFrom="margin">
+                <wp:posOffset>-23177
+                </wp:posOffset>
+              </wp:positionH>
+              <wp:positionV relativeFrom="page">
+                <wp:posOffset>1928813
+                </wp:posOffset>
+              </wp:positionV>
+              <wp:extent cx="4892040" cy="1743075"/>
+              <wp:effectExtent l="0" t="0" r="3810" b="9525"/>
+              <wp:wrapNone/>
+              <wp:docPr id="50" name="Text Box 50"/>
+              <wp:cNvGraphicFramePr/>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                  <wps:wsp>
+                    <wps:cNvSpPr txBox="1"/>
+                    <wps:spPr>
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="4892040" cy="1743075"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:solidFill>
+                        <a:schemeClr val="lt1"/>
+                      </a:solidFill>
+                      <a:ln w="6350">
+                        <a:noFill/>
+                      </a:ln>
+                      <a:effectLst/>
+                    </wps:spPr>
+                    <wps:style>
+                      <a:lnRef idx="0">
+                        <a:schemeClr val="accent1"/>
+                      </a:lnRef>
+                      <a:fillRef idx="0">
+                        <a:schemeClr val="accent1"/>
+                      </a:fillRef>
+                      <a:effectRef idx="0">
+                        <a:schemeClr val="accent1"/>
+                      </a:effectRef>
+                      <a:fontRef idx="minor">
+                        <a:schemeClr val="dk1"/>
+                      </a:fontRef>
+                    </wps:style>
+                    <wps:txbx>
+                      <w:txbxContent>
+                        <w:p w14:paraId="49C2C975" w14:textId="7B55CB07" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:pStyle w:val="Header"/>
+                          </w:pPr>
+                          <w:r>
+                            <w:t xml:space="preserve">Aan de
+                            </w:t>
+                          </w:r>
+                          <w:r w:rsidR="00D51983">
+                            <w:t>V
+                            </w:t>
+                          </w:r>
+                          <w:r>
+                            <w:t xml:space="preserve">oorzitter van de
+                            </w:t>
+                          </w:r>
+                        </w:p>
+                        <w:p w14:paraId="381B1540" w14:textId="41BA399D" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:pStyle w:val="Header"/>
+                          </w:pPr>
+                          <w:r>
+                            <w:t xml:space="preserve">Tweede
+                            </w:t>
+                          </w:r>
+                          <w:r w:rsidR="00D51983">
+                            <w:t>K
+                            </w:t>
+                          </w:r>
+                          <w:r>
+                            <w:t>amer der Staten-Generaal
+                            </w:t>
+                          </w:r>
+                        </w:p>
+                        <w:p w14:paraId="001EF36D" w14:textId="30B58EA1" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:pStyle w:val="Header"/>
+                          </w:pPr>
+                          <w:r>
+                            <w:t>Prinses Irenestraat 6
+                            </w:t>
+                          </w:r>
+                        </w:p>
+                        <w:p w14:paraId="402D77D3" w14:textId="654A4B40" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:pStyle w:val="Header"/>
+                          </w:pPr>
+                          <w:r>
+                            <w:t>Den Haag
+                            </w:t>
+                          </w:r>
+                        </w:p>
+                        <w:p w14:paraId="50B767A4" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="00CF7C5C" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC"/>
+                      </w:txbxContent>
+                    </wps:txbx>
+                    <wps:bodyPr rot="0" spcFirstLastPara="0" vertOverflow="overflow" horzOverflow="overflow" vert="horz" wrap="square" lIns="0" tIns="0" rIns="0" bIns="0" numCol="1" spcCol="0" rtlCol="0" fromWordArt="0" anchor="t" anchorCtr="0" forceAA="0" compatLnSpc="1">
+                      <a:prstTxWarp prst="textNoShape">
+                        <a:avLst/>
+                      </a:prstTxWarp>
+                      <a:noAutofit/>
+                    </wps:bodyPr>
+                  </wps:wsp>
+                </a:graphicData>
+              </a:graphic>
+              <wp14:sizeRelH relativeFrom="margin">
+                <wp14:pctWidth>0
+                </wp14:pctWidth>
+              </wp14:sizeRelH>
+              <wp14:sizeRelV relativeFrom="margin">
+                <wp14:pctHeight>0
+                </wp14:pctHeight>
+              </wp14:sizeRelV>
+            </wp:anchor>
+          </w:drawing>
+        </mc:Choice>
+        <mc:Fallback>
+          <w:pict>
+            <v:shapetype w14:anchorId="443342F6" id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe">
+              <v:stroke joinstyle="miter"/>
+              <v:path gradientshapeok="t" o:connecttype="rect"/>
+            </v:shapetype>
+            <v:shape id="Text Box 50" o:spid="_x0000_s1027" type="#_x0000_t202" style="position:absolute;margin-left:-1.8pt;margin-top:151.9pt;width:385.2pt;height:137.25pt;z-index:251658241;visibility:visible;mso-wrap-style:square;mso-width-percent:0;mso-height-percent:0;mso-wrap-distance-left:9pt;mso-wrap-distance-top:0;mso-wrap-distance-right:9pt;mso-wrap-distance-bottom:0;mso-position-horizontal:absolute;mso-position-horizontal-relative:margin;mso-position-vertical:absolute;mso-position-vertical-relative:page;mso-width-percent:0;mso-height-percent:0;mso-width-relative:margin;mso-height-relative:margin;v-text-anchor:top" o:gfxdata="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 " fillcolor="white [3201]" stroked="f" strokeweight=".5pt">
+              <v:textbox inset="0,0,0,0">
+                <w:txbxContent>
+                  <w:p w14:paraId="49C2C975" w14:textId="7B55CB07" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                    <w:pPr>
+                      <w:pStyle w:val="Header"/>
+                    </w:pPr>
+                    <w:r>
+                      <w:t xml:space="preserve">Aan de
+                      </w:t>
+                    </w:r>
+                    <w:r w:rsidR="00D51983">
+                      <w:t>V
+                      </w:t>
+                    </w:r>
+                    <w:r>
+                      <w:t xml:space="preserve">oorzitter van de
+                      </w:t>
+                    </w:r>
+                  </w:p>
+                  <w:p w14:paraId="381B1540" w14:textId="41BA399D" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                    <w:pPr>
+                      <w:pStyle w:val="Header"/>
+                    </w:pPr>
+                    <w:r>
+                      <w:t xml:space="preserve">Tweede
+                      </w:t>
+                    </w:r>
+                    <w:r w:rsidR="00D51983">
+                      <w:t>K
+                      </w:t>
+                    </w:r>
+                    <w:r>
+                      <w:t>amer der Staten-Generaal
+                      </w:t>
+                    </w:r>
+                  </w:p>
+                  <w:p w14:paraId="001EF36D" w14:textId="30B58EA1" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                    <w:pPr>
+                      <w:pStyle w:val="Header"/>
+                    </w:pPr>
+                    <w:r>
+                      <w:t>Prinses Irenestraat 6
+                      </w:t>
+                    </w:r>
+                  </w:p>
+                  <w:p w14:paraId="402D77D3" w14:textId="654A4B40" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                    <w:pPr>
+                      <w:pStyle w:val="Header"/>
+                    </w:pPr>
+                    <w:r>
+                      <w:t>Den Haag
+                      </w:t>
+                    </w:r>
+                  </w:p>
+                  <w:p w14:paraId="50B767A4" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="00CF7C5C" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC"/>
+                </w:txbxContent>
+              </v:textbox>
+              <w10:wrap anchorx="margin" anchory="page"/>
+            </v:shape>
+          </w:pict>
+        </mc:Fallback>
+      </mc:AlternateContent>
+    </w:r>
+  </w:p>
+  <w:p w14:paraId="270FEC20" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="28E25088" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="0D384122" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="42277305" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="7E744D18" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="4EBEA075" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="021E8365" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="67A379D4" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="0585A671" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="734F0128" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="38EC6001" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="5F2BE598" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="3213F341" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="4267C1D4" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="2183CB38" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="5817D7B8" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="25BB8669" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="26203872" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+  </w:p>
+  <w:p w14:paraId="3D224023" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+    </w:pPr>
+    <w:r w:rsidRPr="00F534B6">
+      <w:rPr>
+        <w:noProof/>
+        <w:highlight w:val="yellow"/>
+      </w:rPr>
+      <mc:AlternateContent>
+        <mc:Choice Requires="wps">
+          <w:drawing>
+            <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251658243" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="7EF6938B" wp14:editId="54873BB3">
+              <wp:simplePos x="0" y="0"/>
+              <wp:positionH relativeFrom="margin">
+                <wp:align>left
+                </wp:align>
+              </wp:positionH>
+              <wp:positionV relativeFrom="page">
+                <wp:posOffset>3679264
+                </wp:posOffset>
+              </wp:positionV>
+              <wp:extent cx="4752000" cy="576000"/>
+              <wp:effectExtent l="0" t="0" r="0" b="0"/>
+              <wp:wrapNone/>
+              <wp:docPr id="61" name="Text Box 61"/>
+              <wp:cNvGraphicFramePr/>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                  <wps:wsp>
+                    <wps:cNvSpPr txBox="1"/>
+                    <wps:spPr>
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="4752000" cy="576000"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:solidFill>
+                        <a:schemeClr val="lt1"/>
+                      </a:solidFill>
+                      <a:ln w="6350">
+                        <a:noFill/>
+                      </a:ln>
+                      <a:effectLst/>
+                    </wps:spPr>
+                    <wps:style>
+                      <a:lnRef idx="0">
+                        <a:schemeClr val="accent1"/>
+                      </a:lnRef>
+                      <a:fillRef idx="0">
+                        <a:schemeClr val="accent1"/>
+                      </a:fillRef>
+                      <a:effectRef idx="0">
+                        <a:schemeClr val="accent1"/>
+                      </a:effectRef>
+                      <a:fontRef idx="minor">
+                        <a:schemeClr val="dk1"/>
+                      </a:fontRef>
+                    </wps:style>
+                    <wps:txbx>
+                      <w:txbxContent>
+                        <w:p w14:paraId="5CC4A49B" w14:textId="0B0828E5" w:rsidR="00D1454E" w:rsidRPr="00F51C07" w:rsidRDefault="00D1454E">
+                          <w:r w:rsidRPr="00F51C07">
+                            <w:t>Datum
+                            </w:t>
+                          </w:r>
+                          <w:r w:rsidRPr="00F51C07">
+                            <w:tab/>
+                          </w:r>
+                          <w:r w:rsidR="00315226">
+                            <w:t>31
+                            </w:t>
+                          </w:r>
+                          <w:r>
+                            <w:t xml:space="preserve">
+                            </w:t>
+                          </w:r>
+                          <w:r w:rsidR="00E71320">
+                            <w:t>januari
+                            </w:t>
+                          </w:r>
+                          <w:r>
+                            <w:t xml:space="preserve">202
+                            </w:t>
+                          </w:r>
+                          <w:r w:rsidR="00E71320">
+                            <w:t>4
+                            </w:t>
+                          </w:r>
+                        </w:p>
+                        <w:p w14:paraId="7EEBB5B5" w14:textId="35951945" w:rsidR="00D1454E" w:rsidRPr="00103620" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:r w:rsidRPr="00E20D12">
+                            <w:t xml:space="preserve">Betreft
+                            </w:t>
+                          </w:r>
+                          <w:r w:rsidRPr="00E20D12">
+                            <w:tab/>
+                          </w:r>
+                          <w:r>
+                            <w:t xml:space="preserve">Beantwoording schriftelijke vragen eerste termijn begrotingsbehandeling Buitenlandse Handel en Ontwikkelingssamenwerking
+                            </w:t>
+                          </w:r>
+                        </w:p>
+                        <w:p w14:paraId="33A6D412" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="00F51C07" w:rsidRDefault="00D1454E"/>
+                      </w:txbxContent>
+                    </wps:txbx>
+                    <wps:bodyPr rot="0" spcFirstLastPara="0" vertOverflow="overflow" horzOverflow="overflow" vert="horz" wrap="square" lIns="0" tIns="0" rIns="0" bIns="0" numCol="1" spcCol="0" rtlCol="0" fromWordArt="0" anchor="t" anchorCtr="0" forceAA="0" compatLnSpc="1">
+                      <a:prstTxWarp prst="textNoShape">
+                        <a:avLst/>
+                      </a:prstTxWarp>
+                      <a:noAutofit/>
+                    </wps:bodyPr>
+                  </wps:wsp>
+                </a:graphicData>
+              </a:graphic>
+              <wp14:sizeRelH relativeFrom="margin">
+                <wp14:pctWidth>0
+                </wp14:pctWidth>
+              </wp14:sizeRelH>
+              <wp14:sizeRelV relativeFrom="margin">
+                <wp14:pctHeight>0
+                </wp14:pctHeight>
+              </wp14:sizeRelV>
+            </wp:anchor>
+          </w:drawing>
+        </mc:Choice>
+        <mc:Fallback>
+          <w:pict>
+            <v:shape w14:anchorId="7EF6938B" id="Text Box 61" o:spid="_x0000_s1028" type="#_x0000_t202" style="position:absolute;margin-left:0;margin-top:289.7pt;width:374.15pt;height:45.35pt;z-index:251658243;visibility:visible;mso-wrap-style:square;mso-width-percent:0;mso-height-percent:0;mso-wrap-distance-left:9pt;mso-wrap-distance-top:0;mso-wrap-distance-right:9pt;mso-wrap-distance-bottom:0;mso-position-horizontal:left;mso-position-horizontal-relative:margin;mso-position-vertical:absolute;mso-position-vertical-relative:page;mso-width-percent:0;mso-height-percent:0;mso-width-relative:margin;mso-height-relative:margin;v-text-anchor:top" o:gfxdata="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 " fillcolor="white [3201]" stroked="f" strokeweight=".5pt">
+              <v:textbox inset="0,0,0,0">
+                <w:txbxContent>
+                  <w:p w14:paraId="5CC4A49B" w14:textId="0B0828E5" w:rsidR="00D1454E" w:rsidRPr="00F51C07" w:rsidRDefault="00D1454E">
+                    <w:r w:rsidRPr="00F51C07">
+                      <w:t>Datum
+                      </w:t>
+                    </w:r>
+                    <w:r w:rsidRPr="00F51C07">
+                      <w:tab/>
+                    </w:r>
+                    <w:r w:rsidR="00315226">
+                      <w:t>31
+                      </w:t>
+                    </w:r>
+                    <w:r>
+                      <w:t xml:space="preserve">
+                      </w:t>
+                    </w:r>
+                    <w:r w:rsidR="00E71320">
+                      <w:t>januari
+                      </w:t>
+                    </w:r>
+                    <w:r>
+                      <w:t xml:space="preserve">202
+                      </w:t>
+                    </w:r>
+                    <w:r w:rsidR="00E71320">
+                      <w:t>4
+                      </w:t>
+                    </w:r>
+                  </w:p>
+                  <w:p w14:paraId="7EEBB5B5" w14:textId="35951945" w:rsidR="00D1454E" w:rsidRPr="00103620" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                    <w:r w:rsidRPr="00E20D12">
+                      <w:t xml:space="preserve">Betreft
+                      </w:t>
+                    </w:r>
+                    <w:r w:rsidRPr="00E20D12">
+                      <w:tab/>
+                    </w:r>
+                    <w:r>
+                      <w:t xml:space="preserve">Beantwoording schriftelijke vragen eerste termijn begrotingsbehandeling Buitenlandse Handel en Ontwikkelingssamenwerking
+                      </w:t>
+                    </w:r>
+                  </w:p>
+                  <w:p w14:paraId="33A6D412" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="00F51C07" w:rsidRDefault="00D1454E"/>
+                </w:txbxContent>
+              </v:textbox>
+              <w10:wrap anchorx="margin" anchory="page"/>
+            </v:shape>
+          </w:pict>
+        </mc:Fallback>
+      </mc:AlternateContent>
+    </w:r>
+    <w:r w:rsidRPr="00F534B6">
+      <w:rPr>
+        <w:noProof/>
+        <w:highlight w:val="yellow"/>
+      </w:rPr>
+      <mc:AlternateContent>
+        <mc:Choice Requires="wps">
+          <w:drawing>
+            <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251658240" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="630A13C6" wp14:editId="14A5734A">
+              <wp:simplePos x="0" y="0"/>
+              <wp:positionH relativeFrom="page">
+                <wp:posOffset>3540760
+                </wp:posOffset>
+              </wp:positionH>
+              <wp:positionV relativeFrom="page">
+                <wp:posOffset>162
+                </wp:posOffset>
+              </wp:positionV>
+              <wp:extent cx="4013835" cy="1745615"/>
+              <wp:effectExtent l="0" t="0" r="5715" b="6985"/>
+              <wp:wrapNone/>
+              <wp:docPr id="3" name="Text Box 3"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                  <wps:wsp>
+                    <wps:cNvSpPr txBox="1">
+                      <a:spLocks noChangeArrowheads="1"/>
+                    </wps:cNvSpPr>
+                    <wps:spPr bwMode="auto">
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="4013835" cy="1745615"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:noFill/>
+                      <a:ln>
+                        <a:noFill/>
+                      </a:ln>
+                      <a:extLst>
+                        <a:ext uri="{909E8E84-426E-40DD-AFC4-6F175D3DCCD1}">
+                          <a14:hiddenFill xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main">
+                            <a:solidFill>
+                              <a:srgbClr val="FFFFFF"/>
+                            </a:solidFill>
+                          </a14:hiddenFill>
+                        </a:ext>
+                        <a:ext uri="{91240B29-F687-4F45-9708-019B960494DF}">
+                          <a14:hiddenLine xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" w="9525">
+                            <a:solidFill>
+                              <a:srgbClr val="000000"/>
+                            </a:solidFill>
+                            <a:miter lim="800000"/>
+                            <a:headEnd/>
+                            <a:tailEnd/>
+                          </a14:hiddenLine>
+                        </a:ext>
+                      </a:extLst>
+                    </wps:spPr>
+                    <wps:txbx>
+                      <w:txbxContent>
+                        <w:tbl>
+                          <w:tblPr>
+                            <w:tblW w:w="0" w:type="auto"/>
+                            <w:tblLayout w:type="fixed"/>
+                            <w:tblCellMar>
+                              <w:left w:w="0" w:type="dxa"/>
+                              <w:right w:w="0" w:type="dxa"/>
+                            </w:tblCellMar>
+                            <w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="0" w:noVBand="0"/>
+                          </w:tblPr>
+                          <w:tblGrid>
+                            <w:gridCol w:w="737"/>
+                            <w:gridCol w:w="5263"/>
+                          </w:tblGrid>
+                          <w:tr w:rsidR="00D1454E" w14:paraId="39800748" w14:textId="77777777">
+                            <w:trPr>
+                              <w:trHeight w:val="2636"/>
+                            </w:trPr>
+                            <w:tc>
+                              <w:tcPr>
+                                <w:tcW w:w="737" w:type="dxa"/>
+                                <w:shd w:val="clear" w:color="auto" w:fill="auto"/>
+                              </w:tcPr>
+                              <w:p w14:paraId="551E8F66" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                                <w:pPr>
+                                  <w:spacing w:line="240" w:lineRule="auto"/>
+                                </w:pPr>
+                              </w:p>
+                            </w:tc>
+                            <w:tc>
+                              <w:tcPr>
+                                <w:tcW w:w="5263" w:type="dxa"/>
+                                <w:shd w:val="clear" w:color="auto" w:fill="auto"/>
+                              </w:tcPr>
+                              <w:p w14:paraId="10702675" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                                <w:pPr>
+                                  <w:spacing w:line="240" w:lineRule="auto"/>
+                                </w:pPr>
+                                <w:r>
+                                  <w:rPr>
+                                    <w:noProof/>
+                                  </w:rPr>
+                                  <w:drawing>
+                                    <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="1D8EB25C" wp14:editId="065D3942">
+                                      <wp:extent cx="2335530" cy="1586230"/>
+                                      <wp:effectExtent l="0" t="0" r="7620" b="0"/>
+                                      <wp:docPr id="1" name="Picture 1" descr="RO_BZ"/>
+                                      <wp:cNvGraphicFramePr>
+                                        <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+                                      </wp:cNvGraphicFramePr>
+                                      <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                                        <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                                          <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                                            <pic:nvPicPr>
+                                              <pic:cNvPr id="0" name="Picture 3" descr="RO_BZ"/>
+                                              <pic:cNvPicPr>
+                                                <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                                              </pic:cNvPicPr>
+                                            </pic:nvPicPr>
+                                            <pic:blipFill>
+                                              <a:blip r:embed="rId1">
+                                                <a:extLst>
+                                                  <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                                    <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                                                  </a:ext>
+                                                </a:extLst>
+                                              </a:blip>
+                                              <a:srcRect/>
+                                              <a:stretch>
+                                                <a:fillRect/>
+                                              </a:stretch>
+                                            </pic:blipFill>
+                                            <pic:spPr bwMode="auto">
+                                              <a:xfrm>
+                                                <a:off x="0" y="0"/>
+                                                <a:ext cx="2335530" cy="1586230"/>
+                                              </a:xfrm>
+                                              <a:prstGeom prst="rect">
+                                                <a:avLst/>
+                                              </a:prstGeom>
+                                              <a:noFill/>
+                                              <a:ln>
+                                                <a:noFill/>
+                                              </a:ln>
+                                            </pic:spPr>
+                                          </pic:pic>
+                                        </a:graphicData>
+                                      </a:graphic>
+                                    </wp:inline>
+                                  </w:drawing>
+                                </w:r>
+                              </w:p>
+                            </w:tc>
+                          </w:tr>
+                        </w:tbl>
+                        <w:p w14:paraId="7FA43882" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC"/>
+                      </w:txbxContent>
+                    </wps:txbx>
+                    <wps:bodyPr rot="0" vert="horz" wrap="square" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t" anchorCtr="0" upright="1">
+                      <a:noAutofit/>
+                    </wps:bodyPr>
+                  </wps:wsp>
+                </a:graphicData>
+              </a:graphic>
+              <wp14:sizeRelH relativeFrom="page">
+                <wp14:pctWidth>0
+                </wp14:pctWidth>
+              </wp14:sizeRelH>
+              <wp14:sizeRelV relativeFrom="page">
+                <wp14:pctHeight>0
+                </wp14:pctHeight>
+              </wp14:sizeRelV>
+            </wp:anchor>
+          </w:drawing>
+        </mc:Choice>
+        <mc:Fallback>
+          <w:pict>
+            <v:shapetype w14:anchorId="630A13C6" id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe">
+              <v:stroke joinstyle="miter"/>
+              <v:path gradientshapeok="t" o:connecttype="rect"/>
+            </v:shapetype>
+            <v:shape id="Text Box 3" o:spid="_x0000_s1029" type="#_x0000_t202" style="position:absolute;margin-left:278.8pt;margin-top:0;width:316.05pt;height:137.45pt;z-index:251658240;visibility:visible;mso-wrap-style:square;mso-width-percent:0;mso-height-percent:0;mso-wrap-distance-left:9pt;mso-wrap-distance-top:0;mso-wrap-distance-right:9pt;mso-wrap-distance-bottom:0;mso-position-horizontal:absolute;mso-position-horizontal-relative:page;mso-position-vertical:absolute;mso-position-vertical-relative:page;mso-width-percent:0;mso-height-percent:0;mso-width-relative:page;mso-height-relative:page;v-text-anchor:top" o:gfxdata="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 AAAEAAQA8wAAAEMFAAAAAA== " filled="f" stroked="f">
+              <v:textbox inset="0,0,0,0">
+                <w:txbxContent>
+                  <w:tbl>
+                    <w:tblPr>
+                      <w:tblW w:w="0" w:type="auto"/>
+                      <w:tblLayout w:type="fixed"/>
+                      <w:tblCellMar>
+                        <w:left w:w="0" w:type="dxa"/>
+                        <w:right w:w="0" w:type="dxa"/>
+                      </w:tblCellMar>
+                      <w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="0" w:noVBand="0"/>
+                    </w:tblPr>
+                    <w:tblGrid>
+                      <w:gridCol w:w="737"/>
+                      <w:gridCol w:w="5263"/>
+                    </w:tblGrid>
+                    <w:tr w:rsidR="00D1454E" w14:paraId="39800748" w14:textId="77777777">
+                      <w:trPr>
+                        <w:trHeight w:val="2636"/>
+                      </w:trPr>
+                      <w:tc>
+                        <w:tcPr>
+                          <w:tcW w:w="737" w:type="dxa"/>
+                          <w:shd w:val="clear" w:color="auto" w:fill="auto"/>
+                        </w:tcPr>
+                        <w:p w14:paraId="551E8F66" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:spacing w:line="240" w:lineRule="auto"/>
+                          </w:pPr>
+                        </w:p>
+                      </w:tc>
+                      <w:tc>
+                        <w:tcPr>
+                          <w:tcW w:w="5263" w:type="dxa"/>
+                          <w:shd w:val="clear" w:color="auto" w:fill="auto"/>
+                        </w:tcPr>
+                        <w:p w14:paraId="10702675" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:spacing w:line="240" w:lineRule="auto"/>
+                          </w:pPr>
+                          <w:r>
+                            <w:rPr>
+                              <w:noProof/>
+                            </w:rPr>
+                            <w:drawing>
+                              <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="1D8EB25C" wp14:editId="065D3942">
+                                <wp:extent cx="2335530" cy="1586230"/>
+                                <wp:effectExtent l="0" t="0" r="7620" b="0"/>
+                                <wp:docPr id="1" name="Picture 1" descr="RO_BZ"/>
+                                <wp:cNvGraphicFramePr>
+                                  <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+                                </wp:cNvGraphicFramePr>
+                                <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                                  <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                                    <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                                      <pic:nvPicPr>
+                                        <pic:cNvPr id="0" name="Picture 3" descr="RO_BZ"/>
+                                        <pic:cNvPicPr>
+                                          <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                                        </pic:cNvPicPr>
+                                      </pic:nvPicPr>
+                                      <pic:blipFill>
+                                        <a:blip r:embed="rId1">
+                                          <a:extLst>
+                                            <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                              <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                                            </a:ext>
+                                          </a:extLst>
+                                        </a:blip>
+                                        <a:srcRect/>
+                                        <a:stretch>
+                                          <a:fillRect/>
+                                        </a:stretch>
+                                      </pic:blipFill>
+                                      <pic:spPr bwMode="auto">
+                                        <a:xfrm>
+                                          <a:off x="0" y="0"/>
+                                          <a:ext cx="2335530" cy="1586230"/>
+                                        </a:xfrm>
+                                        <a:prstGeom prst="rect">
+                                          <a:avLst/>
+                                        </a:prstGeom>
+                                        <a:noFill/>
+                                        <a:ln>
+                                          <a:noFill/>
+                                        </a:ln>
+                                      </pic:spPr>
+                                    </pic:pic>
+                                  </a:graphicData>
+                                </a:graphic>
+                              </wp:inline>
+                            </w:drawing>
+                          </w:r>
+                        </w:p>
+                      </w:tc>
+                    </w:tr>
+                  </w:tbl>
+                  <w:p w14:paraId="7FA43882" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC"/>
+                </w:txbxContent>
+              </v:textbox>
+              <w10:wrap anchorx="page" anchory="page"/>
+            </v:shape>
+          </w:pict>
+        </mc:Fallback>
+      </mc:AlternateContent>
+    </w:r>
+    <w:r w:rsidRPr="00F534B6">
+      <w:rPr>
+        <w:noProof/>
+        <w:highlight w:val="yellow"/>
+      </w:rPr>
+      <mc:AlternateContent>
+        <mc:Choice Requires="wps">
+          <w:drawing>
+            <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251658242" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="2A44A7FD" wp14:editId="26ED610A">
+              <wp:simplePos x="0" y="0"/>
+              <wp:positionH relativeFrom="column">
+                <wp:posOffset>4831715
+                </wp:posOffset>
+              </wp:positionH>
+              <wp:positionV relativeFrom="page">
+                <wp:posOffset>1882775
+                </wp:posOffset>
+              </wp:positionV>
+              <wp:extent cx="1494000" cy="8096400"/>
+              <wp:effectExtent l="0" t="0" r="0" b="0"/>
+              <wp:wrapNone/>
+              <wp:docPr id="2" name="Text Box 2"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                  <wps:wsp>
+                    <wps:cNvSpPr txBox="1">
+                      <a:spLocks noChangeArrowheads="1"/>
+                    </wps:cNvSpPr>
+                    <wps:spPr bwMode="auto">
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="1494000" cy="8096400"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:noFill/>
+                      <a:ln>
+                        <a:noFill/>
+                      </a:ln>
+                      <a:effectLst/>
+                      <a:extLst>
+                        <a:ext uri="{909E8E84-426E-40DD-AFC4-6F175D3DCCD1}">
+                          <a14:hiddenFill xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main">
+                            <a:solidFill>
+                              <a:srgbClr val="FFFFFF"/>
+                            </a:solidFill>
+                          </a14:hiddenFill>
+                        </a:ext>
+                        <a:ext uri="{91240B29-F687-4F45-9708-019B960494DF}">
+                          <a14:hiddenLine xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" w="9525" algn="ctr">
+                            <a:solidFill>
+                              <a:srgbClr val="000000"/>
+                            </a:solidFill>
+                            <a:miter lim="800000"/>
+                            <a:headEnd/>
+                            <a:tailEnd/>
+                          </a14:hiddenLine>
+                        </a:ext>
+                        <a:ext uri="{AF507438-7753-43E0-B8FC-AC1667EBCBE1}">
+                          <a14:hiddenEffects xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main">
+                            <a:effectLst/>
+                          </a14:hiddenEffects>
+                        </a:ext>
+                      </a:extLst>
+                    </wps:spPr>
+                    <wps:txbx>
+                      <w:txbxContent>
+                        <w:p w14:paraId="6C250833" w14:textId="1D1CC4EF" w:rsidR="00D1454E" w:rsidRPr="00D57DDD" w:rsidRDefault="00D57DDD" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:rPr>
+                              <w:b/>
+                              <w:bCs/>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                            </w:rPr>
+                          </w:pPr>
+                          <w:r>
+                            <w:rPr>
+                              <w:b/>
+                              <w:bCs/>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                            </w:rPr>
+                            <w:t>Ministerie van Buitenlandse Zaken
+                            </w:t>
+                          </w:r>
+                        </w:p>
+                        <w:p w14:paraId="63B887A2" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="00EE5E5D" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:rPr>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                            </w:rPr>
+                          </w:pPr>
+                          <w:r>
+                            <w:rPr>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                            </w:rPr>
+                            <w:t>Rijnstraat 8
+                            </w:t>
+                          </w:r>
+                        </w:p>
+                        <w:p w14:paraId="39383C7A" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="008E4AAD" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:rPr>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                              <w:lang w:val="de-DE"/>
+                            </w:rPr>
+                          </w:pPr>
+                          <w:r w:rsidRPr="008E4AAD">
+                            <w:rPr>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                              <w:lang w:val="de-DE"/>
+                            </w:rPr>
+                            <w:t>2515 XP Den Haag
+                            </w:t>
+                          </w:r>
+                        </w:p>
+                        <w:p w14:paraId="3D74DA01" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="008E4AAD" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:rPr>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                              <w:lang w:val="de-DE"/>
+                            </w:rPr>
+                          </w:pPr>
+                          <w:r w:rsidRPr="008E4AAD">
+                            <w:rPr>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                              <w:lang w:val="de-DE"/>
+                            </w:rPr>
+                            <w:t>Postbus 20061
+                            </w:t>
+                          </w:r>
+                        </w:p>
+                        <w:p w14:paraId="46DC2F5B" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="008E4AAD" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:rPr>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                              <w:lang w:val="de-DE"/>
+                            </w:rPr>
+                          </w:pPr>
+                          <w:proofErr w:type="spellStart"/>
+                          <w:r w:rsidRPr="008E4AAD">
+                            <w:rPr>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                              <w:lang w:val="de-DE"/>
+                            </w:rPr>
+                            <w:t>Nederland
+                            </w:t>
+                          </w:r>
+                          <w:proofErr w:type="spellEnd"/>
+                        </w:p>
+                        <w:p w14:paraId="08118B7B" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="008E4AAD" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:rPr>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                              <w:lang w:val="de-DE"/>
+                            </w:rPr>
+                          </w:pPr>
+                          <w:r w:rsidRPr="008E4AAD">
+                            <w:rPr>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                              <w:lang w:val="de-DE"/>
+                            </w:rPr>
+                            <w:t>www.rijksoverheid.nl
+                            </w:t>
+                          </w:r>
+                        </w:p>
+                        <w:p w14:paraId="2420A3DC" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="008E4AAD" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:rPr>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                              <w:lang w:val="de-DE"/>
+                            </w:rPr>
+                          </w:pPr>
+                        </w:p>
+                        <w:p w14:paraId="133AEEEA" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="008E4AAD" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:rPr>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                              <w:lang w:val="de-DE"/>
+                            </w:rPr>
+                          </w:pPr>
+                        </w:p>
+                        <w:p w14:paraId="56EC3F21" w14:textId="32AD2B4F" w:rsidR="00D1454E" w:rsidRPr="008E4AAD" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:rPr>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                              <w:lang w:val="de-DE"/>
+                            </w:rPr>
+                          </w:pPr>
+                          <w:proofErr w:type="spellStart"/>
+                          <w:r w:rsidRPr="008E4AAD">
+                            <w:rPr>
+                              <w:b/>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                              <w:lang w:val="de-DE"/>
+                            </w:rPr>
+                            <w:t>Onze
+                            </w:t>
+                          </w:r>
+                          <w:proofErr w:type="spellEnd"/>
+                          <w:r w:rsidRPr="008E4AAD">
+                            <w:rPr>
+                              <w:b/>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                              <w:lang w:val="de-DE"/>
+                            </w:rPr>
+                            <w:t xml:space="preserve">
+                            </w:t>
+                          </w:r>
+                          <w:proofErr w:type="spellStart"/>
+                          <w:r w:rsidRPr="008E4AAD">
+                            <w:rPr>
+                              <w:b/>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                              <w:lang w:val="de-DE"/>
+                            </w:rPr>
+                            <w:t>Referentie
+                            </w:t>
+                          </w:r>
+                          <w:proofErr w:type="spellEnd"/>
+                          <w:r w:rsidRPr="008E4AAD">
+                            <w:rPr>
+                              <w:b/>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                              <w:lang w:val="de-DE"/>
+                            </w:rPr>
+                            <w:br/>
+                          </w:r>
+                          <w:sdt>
+                            <w:sdtPr>
+                              <w:rPr>
+                                <w:sz w:val="13"/>
+                                <w:szCs w:val="13"/>
+                                <w:lang w:val="de-DE"/>
+                              </w:rPr>
+                              <w:alias w:val="Referentie Kamer"/>
+                              <w:tag w:val="ReferentieKamer"/>
+                              <w:id w:val="947359939"/>
+                              <w:dataBinding w:prefixMappings="xmlns:ns0='http://schemas.microsoft.com/office/2006/metadata/properties' xmlns:ns1='http://www.w3.org/2001/XMLSchema-instance' xmlns:ns2='http://schemas.microsoft.com/office/infopath/2007/PartnerControls' xmlns:ns3='3ac1f0d2-97d5-438c-a350-acda985ad532' xmlns:ns4='a968f643-972d-4667-9c7d-fd76f2567ee3' " w:xpath="/ns0:properties[1]/documentManagement[1]/ns4:ReferentieKamer[1]" w:storeItemID="{D90A7673-9BD2-40F9-B2B7-7883DFC3A535}"/>
+                              <w:text/>
+                            </w:sdtPr>
+                            <w:sdtContent>
+                              <w:r w:rsidR="00D57DDD" w:rsidRPr="008E4AAD">
+                                <w:rPr>
+                                  <w:sz w:val="13"/>
+                                  <w:szCs w:val="13"/>
+                                  <w:lang w:val="de-DE"/>
+                                </w:rPr>
+                                <w:t>V/30012024/DOB-01
+                                </w:t>
+                              </w:r>
+                            </w:sdtContent>
+                          </w:sdt>
+                        </w:p>
+                        <w:p w14:paraId="403EB0B3" w14:textId="0705714C" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:rPr>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                            </w:rPr>
+                          </w:pPr>
+                          <w:r w:rsidRPr="005D7A68">
+                            <w:rPr>
+                              <w:b/>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                            </w:rPr>
+                            <w:t>Uw Referentie
+                            </w:t>
+                          </w:r>
+                          <w:r>
+                            <w:rPr>
+                              <w:b/>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                            </w:rPr>
+                            <w:br/>
+                          </w:r>
+                        </w:p>
+                        <w:p w14:paraId="400DA974" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                          <w:pPr>
+                            <w:rPr>
+                              <w:b/>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                            </w:rPr>
+                          </w:pPr>
+                          <w:r w:rsidRPr="0058359E">
+                            <w:rPr>
+                              <w:b/>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                            </w:rPr>
+                            <w:t>Bijlage(n)
+                            </w:t>
+                          </w:r>
+                        </w:p>
+                        <w:sdt>
+                          <w:sdtPr>
+                            <w:rPr>
+                              <w:sz w:val="13"/>
+                              <w:szCs w:val="13"/>
+                            </w:rPr>
+                            <w:alias w:val="Aantal bijlagen"/>
+                            <w:tag w:val="Aantal_x0020_bijlagen"/>
+                            <w:id w:val="-876847178"/>
+                            <w:showingPlcHdr/>
+                            <w:dataBinding w:prefixMappings="xmlns:ns0='http://schemas.microsoft.com/office/2006/metadata/properties' xmlns:ns1='http://www.w3.org/2001/XMLSchema-instance' xmlns:ns2='http://schemas.microsoft.com/office/infopath/2007/PartnerControls' xmlns:ns3='3ac1f0d2-97d5-438c-a350-acda985ad532' xmlns:ns4='a968f643-972d-4667-9c7d-fd76f2567ee3' " w:xpath="/ns0:properties[1]/documentManagement[1]/ns4:Aantal_x0020_bijlagen[1]" w:storeItemID="{81961AFE-0FF6-4063-9DD3-1D50F4EAA675}"/>
+                            <w:text/>
+                          </w:sdtPr>
+                          <w:sdtContent>
+                            <w:p w14:paraId="672AAC97" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="0058359E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                              <w:pPr>
+                                <w:rPr>
+                                  <w:sz w:val="13"/>
+                                  <w:szCs w:val="13"/>
+                                </w:rPr>
+                              </w:pPr>
+                              <w:r>
+                                <w:rPr>
+                                  <w:sz w:val="13"/>
+                                  <w:szCs w:val="13"/>
+                                </w:rPr>
+                                <w:t xml:space="preserve">
+                                </w:t>
+                              </w:r>
+                            </w:p>
+                          </w:sdtContent>
+                        </w:sdt>
+                      </w:txbxContent>
+                    </wps:txbx>
+                    <wps:bodyPr rot="0" vert="horz" wrap="square" lIns="91440" tIns="45720" rIns="91440" bIns="45720" anchor="t" anchorCtr="0" upright="1">
+                      <a:noAutofit/>
+                    </wps:bodyPr>
+                  </wps:wsp>
+                </a:graphicData>
+              </a:graphic>
+              <wp14:sizeRelH relativeFrom="page">
+                <wp14:pctWidth>0
+                </wp14:pctWidth>
+              </wp14:sizeRelH>
+              <wp14:sizeRelV relativeFrom="page">
+                <wp14:pctHeight>0
+                </wp14:pctHeight>
+              </wp14:sizeRelV>
+            </wp:anchor>
+          </w:drawing>
+        </mc:Choice>
+        <mc:Fallback>
+          <w:pict>
+            <v:shape w14:anchorId="2A44A7FD" id="Text Box 2" o:spid="_x0000_s1030" type="#_x0000_t202" style="position:absolute;margin-left:380.45pt;margin-top:148.25pt;width:117.65pt;height:637.5pt;z-index:251658242;visibility:visible;mso-wrap-style:square;mso-width-percent:0;mso-height-percent:0;mso-wrap-distance-left:9pt;mso-wrap-distance-top:0;mso-wrap-distance-right:9pt;mso-wrap-distance-bottom:0;mso-position-horizontal:absolute;mso-position-horizontal-relative:text;mso-position-vertical:absolute;mso-position-vertical-relative:page;mso-width-percent:0;mso-height-percent:0;mso-width-relative:page;mso-height-relative:page;v-text-anchor:top" o:gfxdata="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 eG1sUEsFBgAAAAAEAAQA8wAAAEwFAAAAAA== " filled="f" stroked="f">
+              <v:textbox>
+                <w:txbxContent>
+                  <w:p w14:paraId="6C250833" w14:textId="1D1CC4EF" w:rsidR="00D1454E" w:rsidRPr="00D57DDD" w:rsidRDefault="00D57DDD" w:rsidP="000D5DEC">
+                    <w:pPr>
+                      <w:rPr>
+                        <w:b/>
+                        <w:bCs/>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                      </w:rPr>
+                    </w:pPr>
+                    <w:r>
+                      <w:rPr>
+                        <w:b/>
+                        <w:bCs/>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                      </w:rPr>
+                      <w:t>Ministerie van Buitenlandse Zaken
+                      </w:t>
+                    </w:r>
+                  </w:p>
+                  <w:p w14:paraId="63B887A2" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="00EE5E5D" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                    <w:pPr>
+                      <w:rPr>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                      </w:rPr>
+                    </w:pPr>
+                    <w:r>
+                      <w:rPr>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                      </w:rPr>
+                      <w:t>Rijnstraat 8
+                      </w:t>
+                    </w:r>
+                  </w:p>
+                  <w:p w14:paraId="39383C7A" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="008E4AAD" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                    <w:pPr>
+                      <w:rPr>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                        <w:lang w:val="de-DE"/>
+                      </w:rPr>
+                    </w:pPr>
+                    <w:r w:rsidRPr="008E4AAD">
+                      <w:rPr>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                        <w:lang w:val="de-DE"/>
+                      </w:rPr>
+                      <w:t>2515 XP Den Haag
+                      </w:t>
+                    </w:r>
+                  </w:p>
+                  <w:p w14:paraId="3D74DA01" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="008E4AAD" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                    <w:pPr>
+                      <w:rPr>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                        <w:lang w:val="de-DE"/>
+                      </w:rPr>
+                    </w:pPr>
+                    <w:r w:rsidRPr="008E4AAD">
+                      <w:rPr>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                        <w:lang w:val="de-DE"/>
+                      </w:rPr>
+                      <w:t>Postbus 20061
+                      </w:t>
+                    </w:r>
+                  </w:p>
+                  <w:p w14:paraId="46DC2F5B" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="008E4AAD" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                    <w:pPr>
+                      <w:rPr>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                        <w:lang w:val="de-DE"/>
+                      </w:rPr>
+                    </w:pPr>
+                    <w:r w:rsidRPr="008E4AAD">
+                      <w:rPr>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                        <w:lang w:val="de-DE"/>
+                      </w:rPr>
+                      <w:t>Nederland
+                      </w:t>
+                    </w:r>
+                  </w:p>
+                  <w:p w14:paraId="08118B7B" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="008E4AAD" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                    <w:pPr>
+                      <w:rPr>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                        <w:lang w:val="de-DE"/>
+                      </w:rPr>
+                    </w:pPr>
+                    <w:r w:rsidRPr="008E4AAD">
+                      <w:rPr>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                        <w:lang w:val="de-DE"/>
+                      </w:rPr>
+                      <w:t>www.rijksoverheid.nl
+                      </w:t>
+                    </w:r>
+                  </w:p>
+                  <w:p w14:paraId="2420A3DC" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="008E4AAD" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                    <w:pPr>
+                      <w:rPr>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                        <w:lang w:val="de-DE"/>
+                      </w:rPr>
+                    </w:pPr>
+                  </w:p>
+                  <w:p w14:paraId="133AEEEA" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="008E4AAD" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                    <w:pPr>
+                      <w:rPr>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                        <w:lang w:val="de-DE"/>
+                      </w:rPr>
+                    </w:pPr>
+                  </w:p>
+                  <w:p w14:paraId="56EC3F21" w14:textId="32AD2B4F" w:rsidR="00D1454E" w:rsidRPr="008E4AAD" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                    <w:pPr>
+                      <w:rPr>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                        <w:lang w:val="de-DE"/>
+                      </w:rPr>
+                    </w:pPr>
+                    <w:r w:rsidRPr="008E4AAD">
+                      <w:rPr>
+                        <w:b/>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                        <w:lang w:val="de-DE"/>
+                      </w:rPr>
+                      <w:t>Onze Referentie
+                      </w:t>
+                    </w:r>
+                    <w:r w:rsidRPr="008E4AAD">
+                      <w:rPr>
+                        <w:b/>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                        <w:lang w:val="de-DE"/>
+                      </w:rPr>
+                      <w:br/>
+                    </w:r>
+                    <w:sdt>
+                      <w:sdtPr>
+                        <w:rPr>
+                          <w:sz w:val="13"/>
+                          <w:szCs w:val="13"/>
+                          <w:lang w:val="de-DE"/>
+                        </w:rPr>
+                        <w:alias w:val="Referentie Kamer"/>
+                        <w:tag w:val="ReferentieKamer"/>
+                        <w:id w:val="947359939"/>
+                        <w:dataBinding w:prefixMappings="xmlns:ns0='http://schemas.microsoft.com/office/2006/metadata/properties' xmlns:ns1='http://www.w3.org/2001/XMLSchema-instance' xmlns:ns2='http://schemas.microsoft.com/office/infopath/2007/PartnerControls' xmlns:ns3='3ac1f0d2-97d5-438c-a350-acda985ad532' xmlns:ns4='a968f643-972d-4667-9c7d-fd76f2567ee3' " w:xpath="/ns0:properties[1]/documentManagement[1]/ns4:ReferentieKamer[1]" w:storeItemID="{D90A7673-9BD2-40F9-B2B7-7883DFC3A535}"/>
+                        <w:text/>
+                      </w:sdtPr>
+                      <w:sdtEndPr/>
+                      <w:sdtContent>
+                        <w:r w:rsidR="00D57DDD" w:rsidRPr="008E4AAD">
+                          <w:rPr>
+                            <w:sz w:val="13"/>
+                            <w:szCs w:val="13"/>
+                            <w:lang w:val="de-DE"/>
+                          </w:rPr>
+                          <w:t>V/30012024/DOB-01
+                          </w:t>
+                        </w:r>
+                      </w:sdtContent>
+                    </w:sdt>
+                  </w:p>
+                  <w:p w14:paraId="403EB0B3" w14:textId="0705714C" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                    <w:pPr>
+                      <w:rPr>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                      </w:rPr>
+                    </w:pPr>
+                    <w:r w:rsidRPr="005D7A68">
+                      <w:rPr>
+                        <w:b/>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                      </w:rPr>
+                      <w:t>Uw Referentie
+                      </w:t>
+                    </w:r>
+                    <w:r>
+                      <w:rPr>
+                        <w:b/>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                      </w:rPr>
+                      <w:br/>
+                    </w:r>
+                  </w:p>
+                  <w:p w14:paraId="400DA974" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                    <w:pPr>
+                      <w:rPr>
+                        <w:b/>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                      </w:rPr>
+                    </w:pPr>
+                    <w:r w:rsidRPr="0058359E">
+                      <w:rPr>
+                        <w:b/>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                      </w:rPr>
+                      <w:t>Bijlage(n)
+                      </w:t>
+                    </w:r>
+                  </w:p>
+                  <w:sdt>
+                    <w:sdtPr>
+                      <w:rPr>
+                        <w:sz w:val="13"/>
+                        <w:szCs w:val="13"/>
+                      </w:rPr>
+                      <w:alias w:val="Aantal bijlagen"/>
+                      <w:tag w:val="Aantal_x0020_bijlagen"/>
+                      <w:id w:val="-876847178"/>
+                      <w:showingPlcHdr/>
+                      <w:dataBinding w:prefixMappings="xmlns:ns0='http://schemas.microsoft.com/office/2006/metadata/properties' xmlns:ns1='http://www.w3.org/2001/XMLSchema-instance' xmlns:ns2='http://schemas.microsoft.com/office/infopath/2007/PartnerControls' xmlns:ns3='3ac1f0d2-97d5-438c-a350-acda985ad532' xmlns:ns4='a968f643-972d-4667-9c7d-fd76f2567ee3' " w:xpath="/ns0:properties[1]/documentManagement[1]/ns4:Aantal_x0020_bijlagen[1]" w:storeItemID="{81961AFE-0FF6-4063-9DD3-1D50F4EAA675}"/>
+                      <w:text/>
+                    </w:sdtPr>
+                    <w:sdtEndPr/>
+                    <w:sdtContent>
+                      <w:p w14:paraId="672AAC97" w14:textId="77777777" w:rsidR="00D1454E" w:rsidRPr="0058359E" w:rsidRDefault="00D1454E" w:rsidP="000D5DEC">
+                        <w:pPr>
+                          <w:rPr>
+                            <w:sz w:val="13"/>
+                            <w:szCs w:val="13"/>
+                          </w:rPr>
+                        </w:pPr>
+                        <w:r>
+                          <w:rPr>
+                            <w:sz w:val="13"/>
+                            <w:szCs w:val="13"/>
+                          </w:rPr>
+                          <w:t xml:space="preserve">
+                          </w:t>
+                        </w:r>
+                      </w:p>
+                    </w:sdtContent>
+                  </w:sdt>
+                </w:txbxContent>
+              </v:textbox>
+              <w10:wrap anchory="page"/>
+            </v:shape>
+          </w:pict>
+        </mc:Fallback>
+      </mc:AlternateContent>
+    </w:r>
+  </w:p>
+</w:hdr>

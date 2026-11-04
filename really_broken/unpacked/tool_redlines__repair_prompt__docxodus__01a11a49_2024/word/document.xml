@@ -1,0 +1,658 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex wp14">
+  <w:body>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="4" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkStart w:id="1" w:name="_Toc1"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="2" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Article information:
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="3" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkEnd w:id="1"/>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="8" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="5" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">From stacking fault to phase transformation: A quantitative model of plastic deformation of CoCrFeMnNi under different strain rates - ScienceDirect
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="6" w:date="2000-01-01T00:00:00Z">
+        <w:br/>
+      </w:ins>
+      <w:hyperlink r:id="R1" w:history="1">
+        <w:ins w:author="Open-Xml-PowerTools" w:id="7" w:date="2000-01-01T00:00:00Z">
+          <w:r>
+            <w:rPr>
+              <w:color w:val="2980b9"/>
+              <w:u w:val="single"/>
+            </w:rPr>
+            <w:t xml:space="preserve">https://www.sciencedirect.com/science/article/abs/pii/S0966979522001261?via%3Dihub=
+            </w:t>
+          </w:r>
+        </w:ins>
+      </w:hyperlink>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="12" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="9" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkStart w:id="2" w:name="_Toc2"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="10" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Article summary:
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="11" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkEnd w:id="2"/>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="14" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="13" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">1. 高熵合金（HEAs）具有优异的综合性能，如高强度、高硬度、高韧性、高热稳定性和良好的耐腐蚀性，在航空航天、核能、催化剂、超导等领域具有广泛的应用前景。
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="16" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="15" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">2. Cantor合金是一种五元高熵合金，具有在低温下高强度和可塑性的特点。通过分子动力学模拟研究发现，在不同应变速率下，Cantor合金的塑性变形机制存在差异，包括堆垛层错网络和孪晶边界的形成与消失以及从FCC到HCP相变等。
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="18" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="17" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">3. 本研究通过分子动力学模拟探究了Cantor合金在不同应变速率下的微观结构演化和塑性变形机制，并提出了一个定量模型来描述中间应变速率下不同微观结构演化对合金强度的贡献。
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="22" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="19" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkStart w:id="3" w:name="_Toc3"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="20" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Article rating:
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="21" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkEnd w:id="3"/>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="24" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="23" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">Appears moderately imbalanced: The article provides some useful information, but is missing several important points or pieces of evidence that would be required to present the discussed topics in a balanced and reliable way. You are encouraged to seek a more balanced perspective on the presented issues by exploring the provided research topics and looking at different information sources.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="28" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="25" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkStart w:id="4" w:name="_Toc4"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="26" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Article analysis:
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="27" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkEnd w:id="4"/>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="30" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="29" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">这篇文章主要研究了CoCrFeMnNi高熵合金在不同应变速率下的塑性变形行为，并通过分子动力学模拟来探索其微观结构演化和变形机制。文章提到了CoCrFeMnNi合金在低应变速率下具有高强度和塑性，但在高应变速率下的变形机制尚不清楚。然而，对于这篇文章的批判性分析可以从以下几个方面展开：
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="32" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="31" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve"/>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="34" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="33" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">1. 偏见来源：文章没有明确提及作者的背景和潜在利益冲突，这可能导致偏见或倾向性结果的产生。
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="36" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="35" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve"/>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="38" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="37" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">2. 片面报道：文章只关注了CoCrFeMnNi合金的优点和应用前景，没有充分讨论其缺点和局限性。此外，文章未提及其他类似研究中可能存在的争议或相反观点。
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="40" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="39" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve"/>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="42" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="41" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">3. 无根据的主张：文章声称CoCrFeMnNi合金在低应变速率下具有高强度和塑性，但未提供足够的实验证据来支持这一主张。此外，在高应变速率下的变形机制也没有得到充分解释。
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="44" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="43" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve"/>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="46" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="45" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">4. 缺失的考虑点：文章没有讨论CoCrFeMnNi合金在实际应用中可能面临的挑战和风险，如材料失效、腐蚀性能等方面的问题。
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="48" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="47" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve"/>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="50" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="49" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">5. 所提出主张的缺失证据：文章提出了一个定量模型来描述合金在中等应变速率下不同微观结构演化对强度的贡献，但未提供足够的实验证据来支持这一模型的有效性。
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="52" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="51" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve"/>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="54" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="53" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">6. 未探索的反驳：文章没有探讨其他可能解释CoCrFeMnNi合金在不同应变速率下塑性变形行为的观点或理论，并未与其他相关研究进行比较或对比。
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="56" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="55" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve"/>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="58" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="57" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">7. 宣传内容和偏袒：文章过于强调CoCrFeMnNi合金的优点和潜力，而忽视了其局限性和可能存在的问题。这种宣传性语言可能导致读者对该合金过于乐观或误导。
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="60" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="59" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve"/>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="62" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="61" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">总体而言，这篇文章在介绍CoCrFeMnNi高熵合金及其应变速率下的塑性变形行为方面提供了一些有价值的信息。然而，它也存在一些潜在的偏见和不足之处，需要更全面、客观地考虑相关问题，并提供更多实验证据来支持其主张。
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="66" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="63" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkStart w:id="5" w:name="_Toc5"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="64" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Topics for further research:
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="65" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkEnd w:id="5"/>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="2"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="68" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="67" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">CoCrFeMnNi高熵合金的背景和潜在利益冲突
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="2"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="70" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="69" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">CoCrFeMnNi合金的缺点和局限性
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="2"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="72" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="71" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">CoCrFeMnNi合金在低应变速率下高强度和塑性的实验证据
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="2"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="74" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="73" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">CoCrFeMnNi合金在高应变速率下的变形机制的解释
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="2"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="76" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="75" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">CoCrFeMnNi合金在实际应用中可能面临的挑战和风险
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="2"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="78" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="77" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr/>
+          <w:t xml:space="preserve">CoCrFeMnNi合金在不同应变速率下塑性变形行为的其他可能解释或观点
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="82" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="79" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkStart w:id="6" w:name="_Toc6"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="80" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Report location:
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="81" w:date="2000-01-01T00:00:00Z">
+        <w:bookmarkEnd w:id="6"/>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:hyperlink r:id="R2" w:history="1">
+        <w:ins w:author="Open-Xml-PowerTools" w:id="83" w:date="2000-01-01T00:00:00Z">
+          <w:r>
+            <w:rPr>
+              <w:color w:val="2980b9"/>
+              <w:u w:val="single"/>
+            </w:rPr>
+            <w:t xml:space="preserve">https://www.fullpicture.app/item/84a90f5ddadc5c3e41a64f0a67024dad
+            </w:t>
+          </w:r>
+        </w:ins>
+      </w:hyperlink>
+      <w:del w:author="Open-Xml-PowerTools" w:id="85" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+            <w:cs/>
+          </w:rPr>
+          <w:drawing>
+            <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="5B2A2CD3" wp14:editId="4868F52A">
+              <wp:extent cx="5673256" cy="9090677"/>
+              <wp:effectExtent l="5715" t="0" r="0" b="0"/>
+              <wp:docPr id="1" name="รูปภาพ 1"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:nvPicPr>
+                      <pic:cNvPr id="0" name="Picture 1"/>
+                      <pic:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                      </pic:cNvPicPr>
+                    </pic:nvPicPr>
+                    <pic:blipFill>
+                      <a:blip r:embed="R3" cstate="print">
+                        <a:extLst>
+                          <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                            <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                          </a:ext>
+                        </a:extLst>
+                      </a:blip>
+                      <a:srcRect/>
+                      <a:stretch>
+                        <a:fillRect/>
+                      </a:stretch>
+                    </pic:blipFill>
+                    <pic:spPr bwMode="auto">
+                      <a:xfrm rot="16200000">
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="5677885" cy="9098095"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:noFill/>
+                      <a:ln>
+                        <a:noFill/>
+                      </a:ln>
+                    </pic:spPr>
+                  </pic:pic>
+                </a:graphicData>
+              </a:graphic>
+            </wp:inline>
+          </w:drawing>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:sectPr>
+      <w:footerReference w:type="default" r:id="rIdFooter"/>
+      <w:pgSz w:orient="portrait" w:w="11905.511811023622" w:h="16837.79527559055"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+      <w:cols w:num="1" w:space="720"/>
+      <w:sectPrChange w:author="Open-Xml-PowerTools" w:id="87" w:date="2000-01-01T00:00:00Z">
+        <w:sectPr>
+          <w:pgSz w:w="15840" w:h="12240" w:orient="landscape"/>
+          <w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="720" w:footer="720" w:gutter="0"/>
+          <w:cols w:space="720"/>
+          <w:docGrid w:linePitch="360"/>
+        </w:sectPr>
+      </w:sectPrChange>
+    </w:sectPr>
+  </w:body>
+</w:document>

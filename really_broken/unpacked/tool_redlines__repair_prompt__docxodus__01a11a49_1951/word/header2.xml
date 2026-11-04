@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<w:hdr xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
+  <w:tbl>
+    <w:tblPr>
+      <w:tblStyle w:val="Tabellengitternetz"/>
+      <w:tblpPr w:leftFromText="142" w:rightFromText="142" w:vertAnchor="text" w:tblpX="92" w:tblpY="1"/>
+      <w:tblOverlap w:val="never"/>
+      <w:tblW w:w="0" w:type="auto"/>
+      <w:tblBorders>
+        <w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+        <w:bottom w:val="single" w:sz="8" w:space="0" w:color="365F91" w:themeColor="accent1" w:themeShade="BF"/>
+        <w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+        <w:insideH w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+        <w:insideV w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+      </w:tblBorders>
+      <w:tblLook w:val="04A0"/>
+    </w:tblPr>
+    <w:tblGrid>
+      <w:gridCol w:w="7717"/>
+    </w:tblGrid>
+    <w:tr>
+      <w:trPr>
+        <w:ins w:author="Open-Xml-PowerTools" w:id="201" w:date="2000-01-01T00:00:00Z"/>
+      </w:trPr>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="7717" w:type="dxa"/>
+          <w:tcBorders>
+            <w:left w:val="nil"/>
+            <w:bottom w:val="single" w:sz="8" w:space="0" w:color="365F91" w:themeColor="accent1" w:themeShade="BF"/>
+          </w:tcBorders>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:pStyle w:val="Kopfzeile"/>
+            <w:rPr>
+              <w:ins w:author="Open-Xml-PowerTools" w:id="208" w:date="2000-01-01T00:00:00Z"/>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:sz w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="202" w:date="2000-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                <w:b/>
+                <w:sz w:val="18"/>
+              </w:rPr>
+              <w:t>Online-Link:
+              </w:t>
+            </w:r>
+          </w:ins>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="203" w:date="2000-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                <w:sz w:val="18"/>
+              </w:rPr>
+              <w:t xml:space="preserve">
+              </w:t>
+            </w:r>
+          </w:ins>
+          <w:hyperlink r:id="R1" w:history="1">
+            <w:ins w:author="Open-Xml-PowerTools" w:id="204" w:date="2000-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                  <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                  <w:sz w:val="18"/>
+                </w:rPr>
+                <w:t>www.kla.tv/22537
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:hyperlink>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="205" w:date="2000-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                <w:sz w:val="18"/>
+              </w:rPr>
+              <w:t xml:space="preserve">|
+              </w:t>
+            </w:r>
+          </w:ins>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="206" w:date="2000-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                <w:b/>
+                <w:sz w:val="18"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Veröffentlicht:
+              </w:t>
+            </w:r>
+          </w:ins>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="207" w:date="2000-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                <w:sz w:val="18"/>
+              </w:rPr>
+              <w:t>16.05.2022
+              </w:t>
+            </w:r>
+          </w:ins>
+        </w:p>
+        <w:p>
+          <w:pPr>
+            <w:pStyle w:val="Kopfzeile"/>
+            <w:rPr>
+              <w:ins w:author="Open-Xml-PowerTools" w:id="209" w:date="2000-01-01T00:00:00Z"/>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:sz w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+        </w:p>
+      </w:tc>
+    </w:tr>
+  </w:tbl>
+  <w:p>
+    <w:pPr>
+      <w:pStyle w:val="Kopfzeile"/>
+      <w:tabs>
+        <w:tab w:val="clear" w:pos="4536"/>
+        <w:tab w:val="clear" w:pos="9072"/>
+        <w:tab w:val="left" w:pos="7995"/>
+      </w:tabs>
+      <w:rPr>
+        <w:ins w:author="Open-Xml-PowerTools" w:id="211" w:date="2000-01-01T00:00:00Z"/>
+        <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+        <w:sz w:val="18"/>
+      </w:rPr>
+    </w:pPr>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="210" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:noProof/>
+          <w:sz w:val="18"/>
+          <w:szCs w:val="18"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251659264" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1">
+            <wp:simplePos x="0" y="0"/>
+            <wp:positionH relativeFrom="column">
+              <wp:posOffset>5039995
+              </wp:posOffset>
+            </wp:positionH>
+            <wp:positionV relativeFrom="paragraph">
+              <wp:posOffset>-172720
+              </wp:posOffset>
+            </wp:positionV>
+            <wp:extent cx="741045" cy="539750"/>
+            <wp:effectExtent l="0" t="0" r="1905" b="0"/>
+            <wp:wrapTight wrapText="bothSides">
+              <wp:wrapPolygon edited="0">
+                <wp:start x="0" y="0"/>
+                <wp:lineTo x="0" y="20584"/>
+                <wp:lineTo x="21100" y="20584"/>
+                <wp:lineTo x="21100" y="0"/>
+                <wp:lineTo x="0" y="0"/>
+              </wp:wrapPolygon>
+            </wp:wrapTight>
+            <wp:docPr id="3" name="Grafik 3" descr="C:\Users\W\3WAR\2P\1IT\_git\SW\KlaTvVideoDocGen.git\KlaTvVideoDocGen\Material\klatv_logo_200dpi-forf2.75x1.99cm.png">
+              <a:hlinkClick xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" r:id="R2"/>
+            </wp:docPr>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="Picture 1" descr="C:\Users\W\3WAR\2P\1IT\_git\SW\KlaTvVideoDocGen.git\KlaTvVideoDocGen\Material\klatv_logo_200dpi-forf2.75x1.99cm.png"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="R3">
+                      <a:extLst>
+                        <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                          <a14:useLocalDpi xmlns="" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                        </a:ext>
+                      </a:extLst>
+                    </a:blip>
+                    <a:srcRect/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="741045" cy="539750"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                    <a:ln>
+                      <a:noFill/>
+                    </a:ln>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:anchor>
+        </w:drawing>
+      </w:r>
+    </w:ins>
+  </w:p>
+</w:hdr>

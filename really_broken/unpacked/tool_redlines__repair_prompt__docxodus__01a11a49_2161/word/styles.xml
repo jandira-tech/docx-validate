@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" mc:Ignorable="w14">
+  <w:docDefaults>
+    <w:rPrDefault>
+      <w:rPr>
+        <w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Arial Unicode MS"/>
+        <w:b w:val="0"/>
+        <w:bCs w:val="0"/>
+        <w:i w:val="0"/>
+        <w:iCs w:val="0"/>
+        <w:caps w:val="0"/>
+        <w:smallCaps w:val="0"/>
+        <w:strike w:val="0"/>
+        <w:dstrike w:val="0"/>
+        <w:outline w:val="0"/>
+        <w:emboss w:val="0"/>
+        <w:imprint w:val="0"/>
+        <w:vanish w:val="0"/>
+        <w:color w:val="auto"/>
+        <w:spacing w:val="0"/>
+        <w:w w:val="100"/>
+        <w:kern w:val="0"/>
+        <w:position w:val="0"/>
+        <w:sz w:val="20"/>
+        <w:szCs w:val="20"/>
+        <w:u w:val="none" w:color="auto"/>
+        <w:bdr w:val="nil"/>
+        <w:vertAlign w:val="baseline"/>
+        <w:lang/>
+      </w:rPr>
+    </w:rPrDefault>
+    <w:pPrDefault>
+      <w:pPr>
+        <w:keepNext w:val="0"/>
+        <w:keepLines w:val="0"/>
+        <w:pageBreakBefore w:val="0"/>
+        <w:framePr w:anchorLock="0" w:w="0" w:h="0" w:vSpace="0" w:hSpace="0" w:xAlign="left" w:y="0" w:hRule="exact" w:vAnchor="margin"/>
+        <w:widowControl w:val="1"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="0"/>
+        </w:numPr>
+        <w:suppressLineNumbers w:val="0"/>
+        <w:pBdr>
+          <w:top w:val="nil"/>
+          <w:left w:val="nil"/>
+          <w:bottom w:val="nil"/>
+          <w:right w:val="nil"/>
+          <w:between w:val="nil"/>
+          <w:bar w:val="nil"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:color="auto" w:fill="auto"/>
+        <w:suppressAutoHyphens w:val="0"/>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+        <w:jc w:val="left"/>
+        <w:outlineLvl w:val="9"/>
+      </w:pPr>
+    </w:pPrDefault>
+  </w:docDefaults>
+  <w:style w:type="paragraph" w:default="1" w:styleId="Normal">
+    <w:name w:val="Normal"/>
+    <w:next w:val="Normal"/>
+    <w:pPr>
+      <w:spacing w:after="0" w:line="240" w:lineRule="auto" w:before="0" w:beforeAutospacing="0" w:afterAutospacing="0"/>
+      <w:pPrChange w:author="Open-Xml-PowerTools" w:id="217" w:date="2000-01-01T00:00:00Z">
+        <w:pPr/>
+      </w:pPrChange>
+    </w:pPr>
+    <w:rPr>
+      <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+      <w:kern w:val="0"/>
+      <w:sz w:val="20"/>
+      <w:szCs w:val="20"/>
+      <w:lang w:val="en-US"/>
+      <w:rPrChange w:author="Open-Xml-PowerTools" w:id="218" w:date="2000-01-01T00:00:00Z">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Arial Unicode MS"/>
+          <w:b w:val="0"/>
+          <w:bCs w:val="0"/>
+          <w:i w:val="0"/>
+          <w:iCs w:val="0"/>
+          <w:caps w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:dstrike w:val="0"/>
+          <w:outline w:val="0"/>
+          <w:emboss w:val="0"/>
+          <w:imprint w:val="0"/>
+          <w:vanish w:val="0"/>
+          <w:color w:val="auto"/>
+          <w:spacing w:val="0"/>
+          <w:w w:val="100"/>
+          <w:kern w:val="0"/>
+          <w:position w:val="0"/>
+          <w:u w:val="none" w:color="auto"/>
+          <w:bdr w:val="nil"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-US" w:eastAsia="en-US" w:bidi="ar-SA"/>
+        </w:rPr>
+      </w:rPrChange>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="character" w:default="1" w:styleId="Default Paragraph Font">
+    <w:name w:val="Default Paragraph Font"/>
+    <w:next w:val="Default Paragraph Font"/>
+  </w:style>
+  <w:style w:type="character" w:styleId="Hyperlink">
+    <w:name w:val="Hyperlink"/>
+    <w:rPr>
+      <w:u w:val="single"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="table" w:default="1" w:styleId="Table Normal">
+    <w:name w:val="Table Normal"/>
+    <w:next w:val="Table Normal"/>
+    <w:pPr/>
+    <w:tblPr>
+      <w:tblInd w:w="0" w:type="dxa"/>
+    </w:tblPr>
+    <w:trPr/>
+    <w:tcPr/>
+    <w:tblStylePr w:type="firstRow"/>
+    <w:tblStylePr w:type="lastRow"/>
+    <w:tblStylePr w:type="firstCol"/>
+    <w:tblStylePr w:type="lastCol"/>
+    <w:tblStylePr w:type="band1Vert"/>
+    <w:tblStylePr w:type="band2Vert"/>
+    <w:tblStylePr w:type="band1Horz"/>
+    <w:tblStylePr w:type="band2Horz"/>
+    <w:tblStylePr w:type="neCell"/>
+    <w:tblStylePr w:type="nwCell"/>
+    <w:tblStylePr w:type="seCell"/>
+    <w:tblStylePr w:type="swCell"/>
+  </w:style>
+  <w:style w:type="numbering" w:default="1" w:styleId="No List">
+    <w:name w:val="No List"/>
+    <w:next w:val="No List"/>
+    <w:pPr/>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="header">
+    <w:name w:val="header"/>
+    <w:next w:val="header"/>
+    <w:pPr>
+      <w:keepNext w:val="0"/>
+      <w:keepLines w:val="0"/>
+      <w:pageBreakBefore w:val="0"/>
+      <w:widowControl w:val="1"/>
+      <w:shd w:val="clear" w:color="auto" w:fill="auto"/>
+      <w:tabs>
+        <w:tab w:val="center" w:pos="4419"/>
+        <w:tab w:val="right" w:pos="8838"/>
+      </w:tabs>
+      <w:suppressAutoHyphens w:val="0"/>
+      <w:bidi w:val="0"/>
+      <w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/>
+      <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+      <w:jc w:val="left"/>
+      <w:outlineLvl w:val="9"/>
+    </w:pPr>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:cs="Arial Unicode MS" w:hAnsi="Calibri" w:eastAsia="Arial Unicode MS"/>
+      <w:b w:val="0"/>
+      <w:bCs w:val="0"/>
+      <w:i w:val="0"/>
+      <w:iCs w:val="0"/>
+      <w:caps w:val="0"/>
+      <w:smallCaps w:val="0"/>
+      <w:strike w:val="0"/>
+      <w:dstrike w:val="0"/>
+      <w:outline w:val="0"/>
+      <w:color w:val="000000"/>
+      <w:spacing w:val="0"/>
+      <w:kern w:val="0"/>
+      <w:position w:val="0"/>
+      <w:sz w:val="22"/>
+      <w:szCs w:val="22"/>
+      <w:u w:val="none" w:color="000000"/>
+      <w:shd w:val="nil" w:color="auto" w:fill="auto"/>
+      <w:vertAlign w:val="baseline"/>
+      <w:lang w:val="en-US"/>
+      <w14:textFill>
+        <w14:solidFill>
+          <w14:srgbClr w14:val="000000"/>
+        </w14:solidFill>
+      </w14:textFill>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="character" w:styleId="Ninguno">
+    <w:name w:val="Ninguno"/>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="footer">
+    <w:name w:val="footer"/>
+    <w:next w:val="footer"/>
+    <w:pPr>
+      <w:keepNext w:val="0"/>
+      <w:keepLines w:val="0"/>
+      <w:pageBreakBefore w:val="0"/>
+      <w:widowControl w:val="1"/>
+      <w:shd w:val="clear" w:color="auto" w:fill="auto"/>
+      <w:tabs>
+        <w:tab w:val="center" w:pos="4419"/>
+        <w:tab w:val="right" w:pos="8838"/>
+      </w:tabs>
+      <w:suppressAutoHyphens w:val="0"/>
+      <w:bidi w:val="0"/>
+      <w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/>
+      <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+      <w:jc w:val="left"/>
+      <w:outlineLvl w:val="9"/>
+    </w:pPr>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:cs="Arial Unicode MS" w:hAnsi="Calibri" w:eastAsia="Arial Unicode MS"/>
+      <w:b w:val="0"/>
+      <w:bCs w:val="0"/>
+      <w:i w:val="0"/>
+      <w:iCs w:val="0"/>
+      <w:caps w:val="0"/>
+      <w:smallCaps w:val="0"/>
+      <w:strike w:val="0"/>
+      <w:dstrike w:val="0"/>
+      <w:outline w:val="0"/>
+      <w:color w:val="000000"/>
+      <w:spacing w:val="0"/>
+      <w:kern w:val="0"/>
+      <w:position w:val="0"/>
+      <w:sz w:val="22"/>
+      <w:szCs w:val="22"/>
+      <w:u w:val="none" w:color="000000"/>
+      <w:shd w:val="nil" w:color="auto" w:fill="auto"/>
+      <w:vertAlign w:val="baseline"/>
+      <w:lang w:val="en-US"/>
+      <w14:textFill>
+        <w14:solidFill>
+          <w14:srgbClr w14:val="000000"/>
+        </w14:solidFill>
+      </w14:textFill>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Cuerpo">
+    <w:name w:val="Cuerpo"/>
+    <w:next w:val="Cuerpo"/>
+    <w:pPr>
+      <w:keepNext w:val="0"/>
+      <w:keepLines w:val="0"/>
+      <w:pageBreakBefore w:val="0"/>
+      <w:widowControl w:val="1"/>
+      <w:shd w:val="clear" w:color="auto" w:fill="auto"/>
+      <w:suppressAutoHyphens w:val="0"/>
+      <w:bidi w:val="0"/>
+      <w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/>
+      <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+      <w:jc w:val="center"/>
+      <w:outlineLvl w:val="9"/>
+    </w:pPr>
+    <w:rPr>
+      <w:rFonts w:ascii="Century Gothic" w:cs="Arial Unicode MS" w:hAnsi="Century Gothic" w:eastAsia="Arial Unicode MS"/>
+      <w:b w:val="0"/>
+      <w:bCs w:val="0"/>
+      <w:i w:val="0"/>
+      <w:iCs w:val="0"/>
+      <w:caps w:val="0"/>
+      <w:smallCaps w:val="0"/>
+      <w:strike w:val="0"/>
+      <w:dstrike w:val="0"/>
+      <w:outline w:val="0"/>
+      <w:color w:val="000000"/>
+      <w:spacing w:val="0"/>
+      <w:kern w:val="0"/>
+      <w:position w:val="0"/>
+      <w:sz w:val="24"/>
+      <w:szCs w:val="24"/>
+      <w:u w:val="none" w:color="000000"/>
+      <w:shd w:val="nil" w:color="auto" w:fill="auto"/>
+      <w:vertAlign w:val="baseline"/>
+      <w14:textOutline>
+        <w14:noFill/>
+      </w14:textOutline>
+      <w14:textFill>
+        <w14:solidFill>
+          <w14:srgbClr w14:val="000000"/>
+        </w14:solidFill>
+      </w14:textFill>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Cuerpo A">
+    <w:name w:val="Cuerpo A"/>
+    <w:next w:val="Cuerpo A"/>
+    <w:pPr>
+      <w:keepNext w:val="0"/>
+      <w:keepLines w:val="0"/>
+      <w:pageBreakBefore w:val="0"/>
+      <w:widowControl w:val="1"/>
+      <w:shd w:val="clear" w:color="auto" w:fill="auto"/>
+      <w:suppressAutoHyphens w:val="0"/>
+      <w:bidi w:val="0"/>
+      <w:spacing w:before="0" w:after="160" w:line="259" w:lineRule="auto"/>
+      <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+      <w:jc w:val="left"/>
+      <w:outlineLvl w:val="9"/>
+    </w:pPr>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:cs="Arial Unicode MS" w:hAnsi="Calibri" w:eastAsia="Arial Unicode MS"/>
+      <w:b w:val="0"/>
+      <w:bCs w:val="0"/>
+      <w:i w:val="0"/>
+      <w:iCs w:val="0"/>
+      <w:caps w:val="0"/>
+      <w:smallCaps w:val="0"/>
+      <w:strike w:val="0"/>
+      <w:dstrike w:val="0"/>
+      <w:outline w:val="0"/>
+      <w:color w:val="000000"/>
+      <w:spacing w:val="0"/>
+      <w:kern w:val="0"/>
+      <w:position w:val="0"/>
+      <w:sz w:val="22"/>
+      <w:szCs w:val="22"/>
+      <w:u w:val="none" w:color="000000"/>
+      <w:shd w:val="nil" w:color="auto" w:fill="auto"/>
+      <w:vertAlign w:val="baseline"/>
+      <w:lang w:val="es-ES_tradnl"/>
+      <w14:textOutline w14:w="12700" w14:cap="flat">
+        <w14:noFill/>
+        <w14:miter w14:lim="400000"/>
+      </w14:textOutline>
+      <w14:textFill>
+        <w14:solidFill>
+          <w14:srgbClr w14:val="000000"/>
+        </w14:solidFill>
+      </w14:textFill>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="character" w:styleId="VarsaylanParagrafYazTipi">
+    <w:name w:val="Default Paragraph Font"/>
+    <w:uiPriority w:val="1"/>
+    <w:semiHidden/>
+    <w:unhideWhenUsed/>
+  </w:style>
+  <w:style w:type="table" w:styleId="NormalTablo">
+    <w:name w:val="Normal Table"/>
+    <w:uiPriority w:val="99"/>
+    <w:semiHidden/>
+    <w:unhideWhenUsed/>
+    <w:tblPr>
+      <w:tblInd w:w="0" w:type="dxa"/>
+      <w:tblCellMar>
+        <w:top w:w="0" w:type="dxa"/>
+        <w:left w:w="108" w:type="dxa"/>
+        <w:bottom w:w="0" w:type="dxa"/>
+        <w:right w:w="108" w:type="dxa"/>
+      </w:tblCellMar>
+    </w:tblPr>
+  </w:style>
+  <w:style w:type="numbering" w:styleId="ListeYok">
+    <w:name w:val="No List"/>
+    <w:uiPriority w:val="99"/>
+    <w:semiHidden/>
+    <w:unhideWhenUsed/>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="stBilgi">
+    <w:name w:val="header"/>
+    <w:basedOn w:val="Normal"/>
+    <w:link w:val="stBilgiChar"/>
+    <w:uiPriority w:val="99"/>
+    <w:unhideWhenUsed/>
+    <w:rsid w:val="00281D5B"/>
+    <w:pPr>
+      <w:tabs>
+        <w:tab w:val="center" w:pos="4536"/>
+        <w:tab w:val="right" w:pos="9072"/>
+      </w:tabs>
+    </w:pPr>
+    <w:rPr>
+      <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+      <w:kern w:val="0"/>
+      <w:sz w:val="20"/>
+      <w:szCs w:val="20"/>
+      <w:lang w:val="en-US"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="character" w:customStyle="1" w:styleId="stBilgiChar">
+    <w:name w:val="Üst Bilgi Char"/>
+    <w:basedOn w:val="VarsaylanParagrafYazTipi"/>
+    <w:link w:val="stBilgi"/>
+    <w:uiPriority w:val="99"/>
+    <w:rsid w:val="00281D5B"/>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="AltBilgi">
+    <w:name w:val="footer"/>
+    <w:basedOn w:val="Normal"/>
+    <w:link w:val="AltBilgiChar"/>
+    <w:uiPriority w:val="99"/>
+    <w:unhideWhenUsed/>
+    <w:rsid w:val="00281D5B"/>
+    <w:pPr>
+      <w:tabs>
+        <w:tab w:val="center" w:pos="4536"/>
+        <w:tab w:val="right" w:pos="9072"/>
+      </w:tabs>
+    </w:pPr>
+    <w:rPr>
+      <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+      <w:kern w:val="0"/>
+      <w:sz w:val="20"/>
+      <w:szCs w:val="20"/>
+      <w:lang w:val="en-US"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="character" w:customStyle="1" w:styleId="AltBilgiChar">
+    <w:name w:val="Alt Bilgi Char"/>
+    <w:basedOn w:val="VarsaylanParagrafYazTipi"/>
+    <w:link w:val="AltBilgi"/>
+    <w:uiPriority w:val="99"/>
+    <w:rsid w:val="00281D5B"/>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="BalonMetni">
+    <w:name w:val="Balloon Text"/>
+    <w:basedOn w:val="Normal"/>
+    <w:link w:val="BalonMetniChar"/>
+    <w:uiPriority w:val="99"/>
+    <w:semiHidden/>
+    <w:unhideWhenUsed/>
+    <w:rsid w:val="00281D5B"/>
+    <w:rPr>
+      <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+      <w:kern w:val="0"/>
+      <w:sz w:val="16"/>
+      <w:szCs w:val="16"/>
+      <w:lang w:val="en-US"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="character" w:customStyle="1" w:styleId="BalonMetniChar">
+    <w:name w:val="Balon Metni Char"/>
+    <w:basedOn w:val="VarsaylanParagrafYazTipi"/>
+    <w:link w:val="BalonMetni"/>
+    <w:uiPriority w:val="99"/>
+    <w:semiHidden/>
+    <w:rsid w:val="00281D5B"/>
+    <w:rPr>
+      <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+      <w:sz w:val="16"/>
+      <w:szCs w:val="16"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="table" w:styleId="TabloKlavuzu">
+    <w:name w:val="Table Grid"/>
+    <w:basedOn w:val="NormalTablo"/>
+    <w:uiPriority w:val="59"/>
+    <w:rsid w:val="003D2879"/>
+    <w:pPr>
+      <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+    </w:pPr>
+    <w:tblPr>
+      <w:tblBorders>
+        <w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        <w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        <w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        <w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        <w:insideH w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        <w:insideV w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+      </w:tblBorders>
+    </w:tblPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="ListeParagraf">
+    <w:name w:val="List Paragraph"/>
+    <w:basedOn w:val="Normal"/>
+    <w:uiPriority w:val="34"/>
+    <w:qFormat/>
+    <w:rsid w:val="0033135E"/>
+    <w:pPr>
+      <w:ind w:left="720"/>
+      <w:contextualSpacing/>
+    </w:pPr>
+    <w:rPr>
+      <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+      <w:kern w:val="0"/>
+      <w:sz w:val="20"/>
+      <w:szCs w:val="20"/>
+      <w:lang w:val="en-US"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="DzMetin">
+    <w:name w:val="Plain Text"/>
+    <w:basedOn w:val="Normal"/>
+    <w:link w:val="DzMetinChar"/>
+    <w:uiPriority w:val="99"/>
+    <w:unhideWhenUsed/>
+    <w:rsid w:val="00363058"/>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:eastAsia="Calibri" w:hAnsi="Calibri" w:cs="Consolas"/>
+      <w:kern w:val="0"/>
+      <w:sz w:val="22"/>
+      <w:szCs w:val="21"/>
+      <w:lang w:val="tr-TR"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="character" w:customStyle="1" w:styleId="DzMetinChar">
+    <w:name w:val="Düz Metin Char"/>
+    <w:basedOn w:val="VarsaylanParagrafYazTipi"/>
+    <w:link w:val="DzMetin"/>
+    <w:uiPriority w:val="99"/>
+    <w:rsid w:val="00363058"/>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:eastAsia="Calibri" w:hAnsi="Calibri" w:cs="Consolas"/>
+      <w:szCs w:val="21"/>
+    </w:rPr>
+  </w:style>
+</w:styles>

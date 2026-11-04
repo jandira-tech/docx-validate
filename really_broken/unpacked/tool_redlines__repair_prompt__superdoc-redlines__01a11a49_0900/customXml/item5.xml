@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<p:properties xmlns:p="http://schemas.microsoft.com/office/2006/metadata/properties" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pc="http://schemas.microsoft.com/office/infopath/2007/PartnerControls">
+  <documentManagement>
+    <Fecha_x0020_de_x0020_actualización xmlns="2352441b-7ce6-47f6-80c6-499dcb1afdcd">2025-06-04T05:00:00+00:00
+    </Fecha_x0020_de_x0020_actualización>
+    <Versión_x0020_Documento xmlns="2352441b-7ce6-47f6-80c6-499dcb1afdcd">1
+    </Versión_x0020_Documento>
+    <Solicita xmlns="2352441b-7ce6-47f6-80c6-499dcb1afdcd">
+      <UserInfo>
+        <DisplayName>Angie Julieth Diaz B.
+        </DisplayName>
+        <AccountId>6944
+        </AccountId>
+        <AccountType/>
+      </UserInfo>
+    </Solicita>
+    <Tipo_x0020_de_x0020_Documento xmlns="2352441b-7ce6-47f6-80c6-499dcb1afdcd">CARACTERIZACIÓN
+    </Tipo_x0020_de_x0020_Documento>
+    <Proceso xmlns="2352441b-7ce6-47f6-80c6-499dcb1afdcd">AUTOEVALUACIÓN Y ACREDITACIÓN INSTITUCIONAL
+    </Proceso>
+    <Fecha_x0020_esperada_x0020_de_x0020_entrega xmlns="2352441b-7ce6-47f6-80c6-499dcb1afdcd" xsi:nil="true"/>
+    <Revisa xmlns="2352441b-7ce6-47f6-80c6-499dcb1afdcd">
+      <UserInfo>
+        <DisplayName>i:0#.f|membership|john.anzola@libertadores.edu.co
+        </DisplayName>
+        <AccountId>21570
+        </AccountId>
+        <AccountType/>
+      </UserInfo>
+      <UserInfo>
+        <DisplayName>i:0#.f|membership|laura.rojas@libertadores.edu.co
+        </DisplayName>
+        <AccountId>9206
+        </AccountId>
+        <AccountType/>
+      </UserInfo>
+    </Revisa>
+    <Código_x0020_Documento xmlns="2352441b-7ce6-47f6-80c6-499dcb1afdcd">FO-PL-001
+    </Código_x0020_Documento>
+    <Estado_x0020_Documento xmlns="2352441b-7ce6-47f6-80c6-499dcb1afdcd">Aprobado
+    </Estado_x0020_Documento>
+    <URLToCopy xmlns="2352441b-7ce6-47f6-80c6-499dcb1afdcd" xsi:nil="true"/>
+    <Enlace xmlns="7b1a13bb-4264-4291-9e03-781ad1ffdb32">
+      <Url xsi:nil="true"/>
+      <Description xsi:nil="true"/>
+    </Enlace>
+    <Fecha_x0020_de_x0020_revisado xmlns="2352441b-7ce6-47f6-80c6-499dcb1afdcd">2025-07-02T05:00:00+00:00
+    </Fecha_x0020_de_x0020_revisado>
+    <Aprueba xmlns="2352441b-7ce6-47f6-80c6-499dcb1afdcd">
+      <UserInfo>
+        <DisplayName>Vladimir Alfonso Ballesteros B.
+        </DisplayName>
+        <AccountId>167
+        </AccountId>
+        <AccountType/>
+      </UserInfo>
+    </Aprueba>
+    <Fecha_x0020_de_x0020_aprobación xmlns="2352441b-7ce6-47f6-80c6-499dcb1afdcd">2025-07-02T05:00:00+00:00
+    </Fecha_x0020_de_x0020_aprobación>
+  </documentManagement>
+</p:properties>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<w:ftr xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
+  <w:p>
+    <w:pPr>
+      <w:pBdr>
+        <w:top w:val="single" w:sz="4"/>
+      </w:pBdr>
+      <w:rPr>
+        <w:ins w:author="Open-Xml-PowerTools" w:id="90" w:date="2000-01-01T00:00:00Z"/>
+      </w:rPr>
+    </w:pPr>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="88" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Report created by
+        </w:t>
+      </w:r>
+    </w:ins>
+    <w:hyperlink r:id="R1" w:history="1">
+      <w:ins w:author="Open-Xml-PowerTools" w:id="89" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="2980b9"/>
+            <w:u w:val="single"/>
+          </w:rPr>
+          <w:t xml:space="preserve">FullPicture.app
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:hyperlink>
+  </w:p>
+</w:ftr>

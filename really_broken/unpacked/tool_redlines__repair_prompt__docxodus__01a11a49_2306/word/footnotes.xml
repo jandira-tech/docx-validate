@@ -1,0 +1,580 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:footnotes xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh wp14">
+  <w:footnote w:type="separator" w:id="-1">
+    <w:p w14:paraId="60BC38F8" w14:textId="77777777">
+      <w:r>
+        <w:separator/>
+      </w:r>
+    </w:p>
+  </w:footnote>
+  <w:footnote w:type="continuationSeparator" w:id="0">
+    <w:p w14:paraId="199A5540" w14:textId="77777777">
+      <w:r>
+        <w:continuationSeparator/>
+      </w:r>
+    </w:p>
+  </w:footnote>
+  <w:footnote w:id="1">
+    <w:p w14:paraId="670A57C0" w14:textId="3CA9FC36">
+      <w:pPr>
+        <w:pStyle w:val="FootnoteText"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="1114" w:date="2000-01-01T00:00:00Z"/>
+          <w:lang w:val="en-GB"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1055" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="FootnoteReference"/>
+          </w:rPr>
+          <w:footnoteRef/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1056" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">AI
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1057" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1058" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>Big Data
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1059" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1060" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellStart"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1061" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>BioTech
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1062" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellEnd"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1063" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1064" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>Blockchain
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1065" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1066" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellStart"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1067" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>CleanTech
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1068" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellEnd"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1069" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1070" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>Cybersecurity
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1071" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1072" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>E-commerce
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1073" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1074" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>EdTech
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1075" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1076" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>FinTech
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1077" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1078" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>Gaming
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1079" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1080" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>IoT/Hardware
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1081" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1082" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>Marketplace
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1083" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1084" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellStart"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1085" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>MarTech
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1086" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellEnd"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1087" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1088" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>MedTech
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1089" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1090" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>SaaS
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1091" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1092" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>VR/AR
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1093" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1094" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellStart"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1095" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>lub
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1096" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellEnd"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1097" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1098" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellStart"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1099" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>inne
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1100" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellEnd"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1101" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">w
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1102" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellStart"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1103" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>zależności
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1104" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellEnd"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1105" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">od
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1106" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellStart"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1107" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>profilu
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1108" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellEnd"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1109" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1110" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellStart"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1111" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t>Funduszu
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1112" w:date="2000-01-01T00:00:00Z">
+        <w:proofErr w:type="spellEnd"/>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1113" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">VC
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+  </w:footnote>
+  <w:footnote w:id="2">
+    <w:p w14:paraId="7CEC5A1F" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="FootnoteText"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="1117" w:date="2000-01-01T00:00:00Z"/>
+          <w:lang w:val="en-GB"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1115" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="FootnoteReference"/>
+          </w:rPr>
+          <w:footnoteRef/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1116" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:lang w:val="en-GB"/>
+          </w:rPr>
+          <w:t xml:space="preserve">https://www.unpri.org/about-us/what-are-the-principles-for-responsible-investment
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+  </w:footnote>
+  <w:footnote w:id="3">
+    <w:p w14:paraId="2B20F6C7" w14:textId="67B74040">
+      <w:pPr>
+        <w:pStyle w:val="FootnoteText"/>
+        <w:rPr>
+          <w:ins w:author="Open-Xml-PowerTools" w:id="1131" w:date="2000-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1118" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="FootnoteReference"/>
+          </w:rPr>
+          <w:footnoteRef/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1119" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1120" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">Sporządzony zgodnie ze wzorem przedstawionym w
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1121" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Załą
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1122" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t>cznik
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1123" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t>u nr
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1124" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">4
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1125" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1126" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">–
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1127" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Harmonogram
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1128" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1129" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Finansowy
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Open-Xml-PowerTools" w:id="1130" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:t>.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+  </w:footnote>
+</w:footnotes>

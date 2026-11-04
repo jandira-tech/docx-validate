@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:ftr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du wp14">
+  <w:p w14:paraId="4BCB7ED1" w14:textId="77777777">
+    <w:pPr>
+      <w:pStyle w:val="BodyText"/>
+      <w:spacing w:line="14" w:lineRule="auto"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="1334" w:date="2000-01-01T00:00:00Z"/>
+        <w:sz w:val="20"/>
+      </w:rPr>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="1333" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+          <w:sz w:val="20"/>
+        </w:rPr>
+        <mc:AlternateContent>
+          <mc:Choice Requires="wps">
+            <w:drawing>
+              <wp:anchor distT="0" distB="0" distL="0" distR="0" simplePos="0" relativeHeight="487462912" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="323C94F7" wp14:editId="592B883E">
+                <wp:simplePos x="0" y="0"/>
+                <wp:positionH relativeFrom="page">
+                  <wp:posOffset>3531234
+                  </wp:posOffset>
+                </wp:positionH>
+                <wp:positionV relativeFrom="page">
+                  <wp:posOffset>9248647
+                  </wp:posOffset>
+                </wp:positionV>
+                <wp:extent cx="711200" cy="177800"/>
+                <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                <wp:wrapNone/>
+                <wp:docPr id="1" name="Textbox 1"/>
+                <wp:cNvGraphicFramePr>
+                  <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+                </wp:cNvGraphicFramePr>
+                <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                  <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                    <wps:wsp>
+                      <wps:cNvSpPr txBox="1">
+                        <a:spLocks/>
+                      </wps:cNvSpPr>
+                      <wps:spPr>
+                        <a:xfrm>
+                          <a:off x="0" y="0"/>
+                          <a:ext cx="711200" cy="177800"/>
+                        </a:xfrm>
+                        <a:prstGeom prst="rect">
+                          <a:avLst/>
+                        </a:prstGeom>
+                      </wps:spPr>
+                      <wps:txbx>
+                        <w:txbxContent>
+                          <w:p w14:paraId="384F03BE" w14:textId="77777777">
+                            <w:pPr>
+                              <w:spacing w:line="264" w:lineRule="exact"/>
+                              <w:ind w:left="20"/>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Calibri"/>
+                                <w:b/>
+                                <w:sz w:val="24"/>
+                              </w:rPr>
+                            </w:pPr>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Calibri"/>
+                                <w:sz w:val="24"/>
+                              </w:rPr>
+                              <w:delText xml:space="preserve">Page
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Calibri"/>
+                                <w:b/>
+                                <w:sz w:val="24"/>
+                              </w:rPr>
+                              <w:fldChar w:fldCharType="begin"/>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Calibri"/>
+                                <w:b/>
+                                <w:sz w:val="24"/>
+                              </w:rPr>
+                              <w:delInstrText xml:space="preserve">PAGE
+                              </w:delInstrText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Calibri"/>
+                                <w:b/>
+                                <w:sz w:val="24"/>
+                              </w:rPr>
+                              <w:fldChar w:fldCharType="separate"/>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Calibri"/>
+                                <w:b/>
+                                <w:sz w:val="24"/>
+                              </w:rPr>
+                              <w:delText>1
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Calibri"/>
+                                <w:b/>
+                                <w:sz w:val="24"/>
+                              </w:rPr>
+                              <w:fldChar w:fldCharType="end"/>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Calibri"/>
+                                <w:b/>
+                                <w:spacing w:val="-1"/>
+                                <w:sz w:val="24"/>
+                              </w:rPr>
+                              <w:delText xml:space="preserve">
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Calibri"/>
+                                <w:sz w:val="24"/>
+                              </w:rPr>
+                              <w:delText xml:space="preserve">of
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Calibri"/>
+                                <w:b/>
+                                <w:spacing w:val="-10"/>
+                                <w:sz w:val="24"/>
+                              </w:rPr>
+                              <w:fldChar w:fldCharType="begin"/>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Calibri"/>
+                                <w:b/>
+                                <w:spacing w:val="-10"/>
+                                <w:sz w:val="24"/>
+                              </w:rPr>
+                              <w:delInstrText xml:space="preserve">NUMPAGES
+                              </w:delInstrText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Calibri"/>
+                                <w:b/>
+                                <w:spacing w:val="-10"/>
+                                <w:sz w:val="24"/>
+                              </w:rPr>
+                              <w:fldChar w:fldCharType="separate"/>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Calibri"/>
+                                <w:b/>
+                                <w:spacing w:val="-10"/>
+                                <w:sz w:val="24"/>
+                              </w:rPr>
+                              <w:delText>4
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Calibri"/>
+                                <w:b/>
+                                <w:spacing w:val="-10"/>
+                                <w:sz w:val="24"/>
+                              </w:rPr>
+                              <w:fldChar w:fldCharType="end"/>
+                            </w:r>
+                          </w:p>
+                        </w:txbxContent>
+                      </wps:txbx>
+                      <wps:bodyPr wrap="square" lIns="0" tIns="0" rIns="0" bIns="0" rtlCol="0">
+                        <a:noAutofit/>
+                      </wps:bodyPr>
+                    </wps:wsp>
+                  </a:graphicData>
+                </a:graphic>
+              </wp:anchor>
+            </w:drawing>
+          </mc:Choice>
+          <mc:Fallback>
+            <w:pict>
+              <v:shapetype w14:anchorId="323C94F7" id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe">
+                <v:stroke joinstyle="miter"/>
+                <v:path gradientshapeok="t" o:connecttype="rect"/>
+              </v:shapetype>
+              <v:shape id="Textbox 1" o:spid="_x0000_s1027" type="#_x0000_t202" style="position:absolute;margin-left:278.05pt;margin-top:728.25pt;width:56pt;height:14pt;z-index:-15853568;visibility:visible;mso-wrap-style:square;mso-wrap-distance-left:0;mso-wrap-distance-top:0;mso-wrap-distance-right:0;mso-wrap-distance-bottom:0;mso-position-horizontal:absolute;mso-position-horizontal-relative:page;mso-position-vertical:absolute;mso-position-vertical-relative:page;v-text-anchor:top" o:gfxdata="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&#10;" filled="f" stroked="f">
+                <v:textbox inset="0,0,0,0">
+                  <w:txbxContent>
+                    <w:p w14:paraId="384F03BE" w14:textId="77777777">
+                      <w:pPr>
+                        <w:spacing w:line="264" w:lineRule="exact"/>
+                        <w:ind w:left="20"/>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Calibri"/>
+                          <w:b/>
+                          <w:sz w:val="24"/>
+                        </w:rPr>
+                      </w:pPr>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Calibri"/>
+                          <w:sz w:val="24"/>
+                        </w:rPr>
+                        <w:delText xml:space="preserve">Page
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Calibri"/>
+                          <w:b/>
+                          <w:sz w:val="24"/>
+                        </w:rPr>
+                        <w:fldChar w:fldCharType="begin"/>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Calibri"/>
+                          <w:b/>
+                          <w:sz w:val="24"/>
+                        </w:rPr>
+                        <w:delInstrText xml:space="preserve">PAGE
+                        </w:delInstrText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Calibri"/>
+                          <w:b/>
+                          <w:sz w:val="24"/>
+                        </w:rPr>
+                        <w:fldChar w:fldCharType="separate"/>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Calibri"/>
+                          <w:b/>
+                          <w:sz w:val="24"/>
+                        </w:rPr>
+                        <w:delText>1
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Calibri"/>
+                          <w:b/>
+                          <w:sz w:val="24"/>
+                        </w:rPr>
+                        <w:fldChar w:fldCharType="end"/>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Calibri"/>
+                          <w:b/>
+                          <w:spacing w:val="-1"/>
+                          <w:sz w:val="24"/>
+                        </w:rPr>
+                        <w:delText xml:space="preserve">
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Calibri"/>
+                          <w:sz w:val="24"/>
+                        </w:rPr>
+                        <w:delText xml:space="preserve">of
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Calibri"/>
+                          <w:b/>
+                          <w:spacing w:val="-10"/>
+                          <w:sz w:val="24"/>
+                        </w:rPr>
+                        <w:fldChar w:fldCharType="begin"/>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Calibri"/>
+                          <w:b/>
+                          <w:spacing w:val="-10"/>
+                          <w:sz w:val="24"/>
+                        </w:rPr>
+                        <w:delInstrText xml:space="preserve">NUMPAGES
+                        </w:delInstrText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Calibri"/>
+                          <w:b/>
+                          <w:spacing w:val="-10"/>
+                          <w:sz w:val="24"/>
+                        </w:rPr>
+                        <w:fldChar w:fldCharType="separate"/>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Calibri"/>
+                          <w:b/>
+                          <w:spacing w:val="-10"/>
+                          <w:sz w:val="24"/>
+                        </w:rPr>
+                        <w:delText>4
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Calibri"/>
+                          <w:b/>
+                          <w:spacing w:val="-10"/>
+                          <w:sz w:val="24"/>
+                        </w:rPr>
+                        <w:fldChar w:fldCharType="end"/>
+                      </w:r>
+                    </w:p>
+                  </w:txbxContent>
+                </v:textbox>
+                <w10:wrap anchorx="page" anchory="page"/>
+              </v:shape>
+            </w:pict>
+          </mc:Fallback>
+        </mc:AlternateContent>
+      </w:r>
+    </w:del>
+  </w:p>
+</w:ftr>

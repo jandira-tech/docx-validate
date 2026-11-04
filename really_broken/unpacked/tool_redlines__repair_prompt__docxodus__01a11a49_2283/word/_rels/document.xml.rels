@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml" Id="rId8"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://senior-secondary.scsa.wa.edu.au/assessment/olna/prequalification-through-naplan" TargetMode="External" Id="rId13"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer2.xml" Id="rId18"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/item2.xml" Id="rId3"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml" Id="rId21"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml" Id="rId7"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/endnotes" Target="endnotes.xml" Id="rId12"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header2.xml" Id="rId17"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/item1.xml" Id="rId2"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml" Id="rId16"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/glossaryDocument" Target="glossary/document.xml" Id="rId20"/>
+  <Relationship Type="http://schemas.microsoft.com/office/2006/relationships/keyMapCustomizations" Target="customizations.xml" Id="rId1"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/item5.xml" Id="rId6"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes" Target="footnotes.xml" Id="rId11"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/item4.xml" Id="rId5"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml" Id="rId15"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings" Target="webSettings.xml" Id="rId10"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml" Id="rId19"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/item3.xml" Id="rId4"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml" Id="rId9"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://parent.scsa.wa.edu.au/" TargetMode="External" Id="rId14"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="/word/media/Pc3002eef9cb40706f3993f3500f758aa.jpeg" Id="R1"/>
+</Relationships>

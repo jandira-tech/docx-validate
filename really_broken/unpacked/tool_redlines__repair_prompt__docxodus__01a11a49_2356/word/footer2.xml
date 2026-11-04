@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:ftr xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
+  <w:p>
+    <w:pPr>
+      <w:pStyle w:val="Footer"/>
+      <w:ind w:firstLine="993"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="253" w:date="2000-01-01T00:00:00Z"/>
+        <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+        <w:color w:val="000000"/>
+        <w:sz w:val="14"/>
+        <w:szCs w:val="14"/>
+      </w:rPr>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="246" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="14"/>
+          <w:szCs w:val="14"/>
+        </w:rPr>
+        <w:delText>Str. Latin
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="247" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="14"/>
+          <w:szCs w:val="14"/>
+          <w:lang w:val="ro-RO"/>
+        </w:rPr>
+        <w:delText>ă
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="248" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="14"/>
+          <w:szCs w:val="14"/>
+        </w:rPr>
+        <w:delText>, nr. 8, Sector 2, Bucure
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="249" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="14"/>
+          <w:szCs w:val="14"/>
+          <w:lang w:val="ro-RO"/>
+        </w:rPr>
+        <w:delText>ş
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="250" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="14"/>
+          <w:szCs w:val="14"/>
+        </w:rPr>
+        <w:delText>ti
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="251" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="14"/>
+          <w:szCs w:val="14"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="252" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="14"/>
+          <w:szCs w:val="14"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+    </w:del>
+  </w:p>
+  <w:p>
+    <w:pPr>
+      <w:pStyle w:val="Footer"/>
+      <w:ind w:left="993"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="259" w:date="2000-01-01T00:00:00Z"/>
+        <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+        <w:color w:val="000000"/>
+        <w:sz w:val="14"/>
+        <w:szCs w:val="14"/>
+        <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+      </w:rPr>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="254" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="14"/>
+          <w:szCs w:val="14"/>
+        </w:rPr>
+        <w:delText>Tel.: +4 021 316 12 30
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="255" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="14"/>
+          <w:szCs w:val="14"/>
+        </w:rPr>
+        <w:delText xml:space="preserve">;
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="256" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="14"/>
+          <w:szCs w:val="14"/>
+        </w:rPr>
+        <w:delText xml:space="preserve">Fax:
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="257" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="apple-converted-space"/>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="14"/>
+          <w:szCs w:val="14"/>
+          <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+        </w:rPr>
+        <w:delText>
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="258" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="14"/>
+          <w:szCs w:val="14"/>
+        </w:rPr>
+        <w:delText>+4 021 316 88 61
+        </w:delText>
+      </w:r>
+    </w:del>
+  </w:p>
+  <w:p>
+    <w:pPr>
+      <w:pStyle w:val="Footer"/>
+      <w:ind w:left="993"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="261" w:date="2000-01-01T00:00:00Z"/>
+        <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+        <w:color w:val="000000"/>
+        <w:sz w:val="14"/>
+        <w:szCs w:val="14"/>
+        <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+      </w:rPr>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="260" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Trebuchet MS" w:hAnsi="Trebuchet MS"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="14"/>
+          <w:szCs w:val="14"/>
+          <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+        </w:rPr>
+        <w:delText>www.cnpp.ro
+        </w:delText>
+      </w:r>
+    </w:del>
+  </w:p>
+</w:ftr>

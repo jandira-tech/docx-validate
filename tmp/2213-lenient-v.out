@@ -1,0 +1,16 @@
+ERROR [word/document.xml]: <wp:extent> cx="-9525" is negative. Microsoft Word cannot open the file. Use a positive extent.
+  ↳ A wp:extent cx or cy is a negative integer. Word cannot open the file. Use a positive extent. Zero and positive extents are not this defect.
+ERROR [word/document.xml]: <wp:extent> cy="-12065" is negative. Microsoft Word cannot open the file. Use a positive extent.
+  ↳ A wp:extent cx or cy is a negative integer. Word cannot open the file. Use a positive extent. Zero and positive extents are not this defect.
+ERROR [word/document.xml]: <wp:extent> cx="-28575" is negative. Microsoft Word cannot open the file. Use a positive extent.
+  ↳ A wp:extent cx or cy is a negative integer. Word cannot open the file. Use a positive extent. Zero and positive extents are not this defect.
+ERROR [word/document.xml]: <wp:extent> cy="-41763" is negative. Microsoft Word cannot open the file. Use a positive extent.
+  ↳ A wp:extent cx or cy is a negative integer. Word cannot open the file. Use a positive extent. Zero and positive extents are not this defect.
+ERROR [word/document.xml]: <wp:extent> cx="-9525" is negative. Microsoft Word cannot open the file. Use a positive extent.
+  ↳ A wp:extent cx or cy is a negative integer. Word cannot open the file. Use a positive extent. Zero and positive extents are not this defect.
+ERROR [word/document.xml]: <wp:extent> cy="-6350" is negative. Microsoft Word cannot open the file. Use a positive extent.
+  ↳ A wp:extent cx or cy is a negative integer. Word cannot open the file. Use a positive extent. Zero and positive extents are not this defect.
+ERROR [word/document.xml]: <wp:extent> cx="-28575" is negative. Microsoft Word cannot open the file. Use a positive extent.
+  ↳ A wp:extent cx or cy is a negative integer. Word cannot open the file. Use a positive extent. Zero and positive extents are not this defect.
+ERROR [word/document.xml]: <wp:extent> cy="-21981" is negative. Microsoft Word cannot open the file. Use a positive extent.
+  ↳ A wp:extent cx or cy is a negative integer. Word cannot open the file. Use a positive extent. Zero and positive extents are not this defect.

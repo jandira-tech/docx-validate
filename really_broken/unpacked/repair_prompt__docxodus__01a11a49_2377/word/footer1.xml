@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:ftr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 wp14">
+  <w:p>
+    <w:pPr>
+      <w:pStyle w:val="903"/>
+      <w:pBdr/>
+      <w:tabs>
+        <w:tab w:val="center" w:leader="none" w:pos="4153"/>
+        <w:tab w:val="right" w:leader="none" w:pos="8306"/>
+      </w:tabs>
+      <w:spacing/>
+      <w:ind/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="1041" w:date="2000-01-01T00:00:00Z"/>
+      </w:rPr>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="1039" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="18"/>
+        </w:rPr>
+        <mc:AlternateContent>
+          <mc:Choice Requires="wpg">
+            <w:drawing>
+              <wp:anchor xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="524288" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1">
+                <wp:simplePos x="0" y="0"/>
+                <wp:positionH relativeFrom="margin">
+                  <wp:align>outside
+                  </wp:align>
+                </wp:positionH>
+                <wp:positionV relativeFrom="paragraph">
+                  <wp:posOffset>0
+                  </wp:posOffset>
+                </wp:positionV>
+                <wp:extent cx="1828800" cy="1828800"/>
+                <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                <wp:wrapNone/>
+                <wp:docPr id="1" name="_x0000_s2049"/>
+                <wp:cNvGraphicFramePr/>
+                <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                  <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                    <wps:wsp>
+                      <wps:cNvPr id="0" name=""/>
+                      <wps:cNvSpPr txBox="1"/>
+                      <wps:spPr bwMode="auto">
+                        <a:xfrm>
+                          <a:off x="0" y="0"/>
+                          <a:ext cx="1828800" cy="1828800"/>
+                        </a:xfrm>
+                        <a:prstGeom prst="rect">
+                          <a:avLst/>
+                        </a:prstGeom>
+                        <a:noFill/>
+                        <a:ln>
+                          <a:noFill/>
+                        </a:ln>
+                      </wps:spPr>
+                      <wps:txbx>
+                        <w:txbxContent>
+                          <w:p>
+                            <w:pPr>
+                              <w:pStyle w:val="903"/>
+                              <w:pBdr/>
+                              <w:tabs>
+                                <w:tab w:val="center" w:leader="none" w:pos="4153"/>
+                                <w:tab w:val="right" w:leader="none" w:pos="8306"/>
+                              </w:tabs>
+                              <w:spacing/>
+                              <w:ind/>
+                              <w:rPr>
+                                <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体" w:eastAsia="宋体"/>
+                                <w:sz w:val="28"/>
+                                <w:lang w:eastAsia="zh-CN"/>
+                              </w:rPr>
+                            </w:pPr>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                                <w:sz w:val="28"/>
+                                <w:lang w:eastAsia="zh-CN"/>
+                              </w:rPr>
+                              <w:delText xml:space="preserve">—
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                                <w:sz w:val="28"/>
+                                <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                              </w:rPr>
+                              <w:delText xml:space="preserve">
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                                <w:sz w:val="28"/>
+                                <w:lang w:eastAsia="zh-CN"/>
+                              </w:rPr>
+                              <w:fldChar w:fldCharType="begin"/>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                                <w:sz w:val="28"/>
+                                <w:lang w:eastAsia="zh-CN"/>
+                              </w:rPr>
+                              <w:delInstrText xml:space="preserve">PAGE \* MERGEFORMAT
+                              </w:delInstrText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                                <w:sz w:val="28"/>
+                                <w:lang w:eastAsia="zh-CN"/>
+                              </w:rPr>
+                              <w:fldChar w:fldCharType="separate"/>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                                <w:sz w:val="28"/>
+                                <w:lang w:eastAsia="zh-CN"/>
+                              </w:rPr>
+                              <w:delText xml:space="preserve">1
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                                <w:sz w:val="28"/>
+                                <w:lang w:eastAsia="zh-CN"/>
+                              </w:rPr>
+                              <w:fldChar w:fldCharType="end"/>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                                <w:sz w:val="28"/>
+                                <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                              </w:rPr>
+                              <w:delText xml:space="preserve">
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                                <w:sz w:val="28"/>
+                                <w:lang w:eastAsia="zh-CN"/>
+                              </w:rPr>
+                              <w:delText xml:space="preserve">—
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体" w:eastAsia="宋体"/>
+                                <w:sz w:val="28"/>
+                                <w:lang w:eastAsia="zh-CN"/>
+                              </w:rPr>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体" w:eastAsia="宋体"/>
+                                <w:sz w:val="28"/>
+                                <w:lang w:eastAsia="zh-CN"/>
+                              </w:rPr>
+                            </w:r>
+                          </w:p>
+                          <w:p>
+                            <w:pPr>
+                              <w:pStyle w:val="896"/>
+                              <w:pBdr/>
+                              <w:spacing/>
+                              <w:ind/>
+                            </w:pPr>
+                            <w:r/>
+                            <w:r/>
+                          </w:p>
+                        </w:txbxContent>
+                      </wps:txbx>
+                      <wps:bodyPr wrap="none" lIns="0" tIns="0" rIns="0" bIns="0" upright="1">
+                        <a:spAutoFit/>
+                      </wps:bodyPr>
+                    </wps:wsp>
+                  </a:graphicData>
+                </a:graphic>
+              </wp:anchor>
+            </w:drawing>
+          </mc:Choice>
+          <mc:Fallback>
+            <w:pict>
+              <v:shape id="shape 0" o:spid="_x0000_s0" o:spt="202" type="#_x0000_t202" style="position:absolute;z-index:524288;o:allowoverlap:true;o:allowincell:true;mso-position-horizontal-relative:margin;mso-position-horizontal:outside;mso-position-vertical-relative:text;margin-top:0.00pt;mso-position-vertical:absolute;width:144.00pt;height:144.00pt;mso-wrap-distance-left:9.00pt;mso-wrap-distance-top:0.00pt;mso-wrap-distance-right:9.00pt;mso-wrap-distance-bottom:0.00pt;visibility:visible;" filled="f" stroked="f">
+                <v:textbox inset="0,0,0,0">
+                  <w:txbxContent>
+                    <w:p>
+                      <w:pPr>
+                        <w:pStyle w:val="903"/>
+                        <w:pBdr/>
+                        <w:tabs>
+                          <w:tab w:val="center" w:leader="none" w:pos="4153"/>
+                          <w:tab w:val="right" w:leader="none" w:pos="8306"/>
+                        </w:tabs>
+                        <w:spacing/>
+                        <w:ind/>
+                        <w:rPr>
+                          <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体" w:eastAsia="宋体"/>
+                          <w:sz w:val="28"/>
+                          <w:lang w:eastAsia="zh-CN"/>
+                        </w:rPr>
+                      </w:pPr>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                          <w:sz w:val="28"/>
+                          <w:lang w:eastAsia="zh-CN"/>
+                        </w:rPr>
+                        <w:delText xml:space="preserve">—
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                          <w:sz w:val="28"/>
+                          <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                        </w:rPr>
+                        <w:delText xml:space="preserve">
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                          <w:sz w:val="28"/>
+                          <w:lang w:eastAsia="zh-CN"/>
+                        </w:rPr>
+                        <w:fldChar w:fldCharType="begin"/>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                          <w:sz w:val="28"/>
+                          <w:lang w:eastAsia="zh-CN"/>
+                        </w:rPr>
+                        <w:delInstrText xml:space="preserve">PAGE \* MERGEFORMAT
+                        </w:delInstrText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                          <w:sz w:val="28"/>
+                          <w:lang w:eastAsia="zh-CN"/>
+                        </w:rPr>
+                        <w:fldChar w:fldCharType="separate"/>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                          <w:sz w:val="28"/>
+                          <w:lang w:eastAsia="zh-CN"/>
+                        </w:rPr>
+                        <w:delText xml:space="preserve">1
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                          <w:sz w:val="28"/>
+                          <w:lang w:eastAsia="zh-CN"/>
+                        </w:rPr>
+                        <w:fldChar w:fldCharType="end"/>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                          <w:sz w:val="28"/>
+                          <w:lang w:val="en-US" w:eastAsia="zh-CN"/>
+                        </w:rPr>
+                        <w:delText xml:space="preserve">
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体"/>
+                          <w:sz w:val="28"/>
+                          <w:lang w:eastAsia="zh-CN"/>
+                        </w:rPr>
+                        <w:delText xml:space="preserve">—
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体" w:eastAsia="宋体"/>
+                          <w:sz w:val="28"/>
+                          <w:lang w:eastAsia="zh-CN"/>
+                        </w:rPr>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:hint="eastAsia" w:ascii="宋体" w:hAnsi="宋体" w:eastAsia="宋体"/>
+                          <w:sz w:val="28"/>
+                          <w:lang w:eastAsia="zh-CN"/>
+                        </w:rPr>
+                      </w:r>
+                    </w:p>
+                    <w:p>
+                      <w:pPr>
+                        <w:pStyle w:val="896"/>
+                        <w:pBdr/>
+                        <w:spacing/>
+                        <w:ind/>
+                      </w:pPr>
+                      <w:r/>
+                      <w:r/>
+                    </w:p>
+                  </w:txbxContent>
+                </v:textbox>
+              </v:shape>
+            </w:pict>
+          </mc:Fallback>
+        </mc:AlternateContent>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="1040" w:date="2000-01-01T00:00:00Z">
+      <w:r/>
+    </w:del>
+  </w:p>
+</w:ftr>

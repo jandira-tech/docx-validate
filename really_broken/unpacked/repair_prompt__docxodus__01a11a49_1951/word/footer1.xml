@@ -1,0 +1,535 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:ftr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 wp14">
+  <w:p w14:paraId="2FF47155" w14:textId="1C089F98">
+    <w:pPr>
+      <w:pStyle w:val="Footer"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="217" w:date="2000-01-01T00:00:00Z"/>
+      </w:rPr>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="214" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+        </w:rPr>
+        <mc:AlternateContent>
+          <mc:Choice Requires="wps">
+            <w:drawing>
+              <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251665408" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="1D684398" wp14:editId="28B7C06C">
+                <wp:simplePos x="0" y="0"/>
+                <wp:positionH relativeFrom="column">
+                  <wp:posOffset>44450
+                  </wp:posOffset>
+                </wp:positionH>
+                <wp:positionV relativeFrom="paragraph">
+                  <wp:posOffset>812800
+                  </wp:posOffset>
+                </wp:positionV>
+                <wp:extent cx="5323205" cy="228600"/>
+                <wp:effectExtent l="0" t="0" r="10795" b="0"/>
+                <wp:wrapNone/>
+                <wp:docPr id="4" name="Text Box 28"/>
+                <wp:cNvGraphicFramePr>
+                  <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+                </wp:cNvGraphicFramePr>
+                <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                  <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                    <wps:wsp>
+                      <wps:cNvSpPr txBox="1">
+                        <a:spLocks noChangeArrowheads="1"/>
+                      </wps:cNvSpPr>
+                      <wps:spPr bwMode="auto">
+                        <a:xfrm>
+                          <a:off x="0" y="0"/>
+                          <a:ext cx="5323205" cy="228600"/>
+                        </a:xfrm>
+                        <a:prstGeom prst="rect">
+                          <a:avLst/>
+                        </a:prstGeom>
+                        <a:noFill/>
+                        <a:ln>
+                          <a:noFill/>
+                        </a:ln>
+                        <a:extLst>
+                          <a:ext uri="{909E8E84-426E-40DD-AFC4-6F175D3DCCD1}">
+                            <a14:hiddenFill xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main">
+                              <a:solidFill>
+                                <a:srgbClr val="FFFFFF"/>
+                              </a:solidFill>
+                            </a14:hiddenFill>
+                          </a:ext>
+                          <a:ext uri="{91240B29-F687-4F45-9708-019B960494DF}">
+                            <a14:hiddenLine xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" w="9525">
+                              <a:solidFill>
+                                <a:srgbClr val="000000"/>
+                              </a:solidFill>
+                              <a:miter lim="800000"/>
+                              <a:headEnd/>
+                              <a:tailEnd/>
+                            </a14:hiddenLine>
+                          </a:ext>
+                        </a:extLst>
+                      </wps:spPr>
+                      <wps:txbx>
+                        <w:txbxContent>
+                          <w:p w14:paraId="197430CB" w14:textId="615531BA">
+                            <w:pPr>
+                              <w:pStyle w:val="returnaddressbottom"/>
+                              <w:jc w:val="left"/>
+                            </w:pPr>
+                            <w:r>
+                              <w:delText>4201 East Arkansas Ave.
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:delText>,
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:delText xml:space="preserve">4
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:vertAlign w:val="superscript"/>
+                              </w:rPr>
+                              <w:delText>th
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:delText xml:space="preserve">
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:delText>F
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:delText>loor
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:delText xml:space="preserve">Denver, CO
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:delText>80222
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                              </w:rPr>
+                              <w:delText>
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:delText xml:space="preserve">P
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:delText>303.757.
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:delText>9474
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                              </w:rPr>
+                              <w:delText>
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:delText xml:space="preserve">F
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:delText>303.757.9868
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:rPr>
+                                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                              </w:rPr>
+                              <w:delText>
+                              </w:delText>
+                            </w:r>
+                            <w:r>
+                              <w:delText>www.coloradodot.info
+                              </w:delText>
+                            </w:r>
+                          </w:p>
+                        </w:txbxContent>
+                      </wps:txbx>
+                      <wps:bodyPr rot="0" vert="horz" wrap="square" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t" anchorCtr="0" upright="1">
+                        <a:noAutofit/>
+                      </wps:bodyPr>
+                    </wps:wsp>
+                  </a:graphicData>
+                </a:graphic>
+                <wp14:sizeRelH relativeFrom="page">
+                  <wp14:pctWidth>0
+                  </wp14:pctWidth>
+                </wp14:sizeRelH>
+                <wp14:sizeRelV relativeFrom="page">
+                  <wp14:pctHeight>0
+                  </wp14:pctHeight>
+                </wp14:sizeRelV>
+              </wp:anchor>
+            </w:drawing>
+          </mc:Choice>
+          <mc:Fallback>
+            <w:pict>
+              <v:shapetype w14:anchorId="1D684398" id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe">
+                <v:stroke joinstyle="miter"/>
+                <v:path gradientshapeok="t" o:connecttype="rect"/>
+              </v:shapetype>
+              <v:shape id="_x0000_s1028" type="#_x0000_t202" style="position:absolute;margin-left:3.5pt;margin-top:64pt;width:419.15pt;height:18pt;z-index:251665408;visibility:visible;mso-wrap-style:square;mso-width-percent:0;mso-height-percent:0;mso-wrap-distance-left:9pt;mso-wrap-distance-top:0;mso-wrap-distance-right:9pt;mso-wrap-distance-bottom:0;mso-position-horizontal:absolute;mso-position-horizontal-relative:text;mso-position-vertical:absolute;mso-position-vertical-relative:text;mso-width-percent:0;mso-height-percent:0;mso-width-relative:page;mso-height-relative:page;v-text-anchor:top" o:gfxdata="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&#10;" filled="f" stroked="f">
+                <v:textbox inset="0,0,0,0">
+                  <w:txbxContent>
+                    <w:p w14:paraId="197430CB" w14:textId="615531BA">
+                      <w:pPr>
+                        <w:pStyle w:val="returnaddressbottom"/>
+                        <w:jc w:val="left"/>
+                      </w:pPr>
+                      <w:r>
+                        <w:delText>4201 East Arkansas Ave.
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:delText>,
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:delText xml:space="preserve">4
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:vertAlign w:val="superscript"/>
+                        </w:rPr>
+                        <w:delText>th
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:delText xml:space="preserve">
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:delText>F
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:delText>loor
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:delText xml:space="preserve">Denver, CO
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:delText>80222
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                        </w:rPr>
+                        <w:delText>
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:delText xml:space="preserve">P
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:delText>303.757.
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:delText>9474
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                        </w:rPr>
+                        <w:delText>
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:delText xml:space="preserve">F
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:delText>303.757.9868
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                        </w:rPr>
+                        <w:delText>
+                        </w:delText>
+                      </w:r>
+                      <w:r>
+                        <w:delText>www.coloradodot.info
+                        </w:delText>
+                      </w:r>
+                    </w:p>
+                  </w:txbxContent>
+                </v:textbox>
+              </v:shape>
+            </w:pict>
+          </mc:Fallback>
+        </mc:AlternateContent>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="215" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+        </w:rPr>
+        <w:drawing>
+          <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251662336" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="43F5D537" wp14:editId="49018542">
+            <wp:simplePos x="0" y="0"/>
+            <wp:positionH relativeFrom="column">
+              <wp:posOffset>5486400
+              </wp:posOffset>
+            </wp:positionH>
+            <wp:positionV relativeFrom="paragraph">
+              <wp:posOffset>740410
+              </wp:posOffset>
+            </wp:positionV>
+            <wp:extent cx="15240" cy="345440"/>
+            <wp:effectExtent l="25400" t="0" r="10160" b="0"/>
+            <wp:wrapNone/>
+            <wp:docPr id="70" name="Picture 70" descr="letterhead_line.png"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="Picture 25" descr="letterhead_line.png"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId1"/>
+                    <a:srcRect/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="15240" cy="345440"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                    <a:ln w="9525">
+                      <a:noFill/>
+                      <a:miter lim="800000"/>
+                      <a:headEnd/>
+                      <a:tailEnd/>
+                    </a:ln>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:anchor>
+        </w:drawing>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="216" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+        </w:rPr>
+        <w:drawing>
+          <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251663360" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="5A620C7E" wp14:editId="7E861D9A">
+            <wp:simplePos x="0" y="0"/>
+            <wp:positionH relativeFrom="column">
+              <wp:posOffset>5632450
+              </wp:posOffset>
+            </wp:positionH>
+            <wp:positionV relativeFrom="paragraph">
+              <wp:posOffset>530225
+              </wp:posOffset>
+            </wp:positionV>
+            <wp:extent cx="727710" cy="731520"/>
+            <wp:effectExtent l="25400" t="0" r="8890" b="0"/>
+            <wp:wrapNone/>
+            <wp:docPr id="71" name="Picture 71" descr="state_seal_gray_rgb.png"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="Picture 26" descr="state_seal_gray_rgb.png"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId2"/>
+                    <a:srcRect/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="727710" cy="731520"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                    <a:ln w="9525">
+                      <a:noFill/>
+                      <a:miter lim="800000"/>
+                      <a:headEnd/>
+                      <a:tailEnd/>
+                    </a:ln>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:anchor>
+        </w:drawing>
+      </w:r>
+    </w:del>
+  </w:p>
+  <w:p>
+    <w:pPr>
+      <w:pStyle w:val="Fuzeile"/>
+      <w:pBdr>
+        <w:top w:val="single" w:sz="6" w:space="3" w:color="365F91" w:themeColor="accent1" w:themeShade="BF"/>
+      </w:pBdr>
+      <w:rPr>
+        <w:ins w:author="Open-Xml-PowerTools" w:id="231" w:date="2000-01-01T00:00:00Z"/>
+        <w:sz w:val="18"/>
+      </w:rPr>
+    </w:pPr>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="218" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+          <w:sz w:val="18"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Was wäre? Vorwort von Erin
+        </w:t>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="219" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="18"/>
+        </w:rPr>
+        <w:ptab w:relativeTo="margin" w:alignment="right" w:leader="none"/>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="220" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:bCs/>
+          <w:sz w:val="18"/>
+        </w:rPr>
+        <w:fldChar w:fldCharType="begin"/>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="221" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:bCs/>
+          <w:sz w:val="18"/>
+        </w:rPr>
+        <w:instrText>PAGE \* Arabic \* MERGEFORMAT
+        </w:instrText>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="222" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:bCs/>
+          <w:sz w:val="18"/>
+        </w:rPr>
+        <w:fldChar w:fldCharType="separate"/>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="223" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:bCs/>
+          <w:noProof/>
+          <w:sz w:val="18"/>
+        </w:rPr>
+        <w:t>1
+        </w:t>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="224" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:bCs/>
+          <w:sz w:val="18"/>
+        </w:rPr>
+        <w:fldChar w:fldCharType="end"/>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="225" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="18"/>
+        </w:rPr>
+        <w:t xml:space="preserve">/
+        </w:t>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="226" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:fldChar w:fldCharType="begin"/>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="227" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:instrText xml:space="preserve">NUMPAGES \* Arabic \* MERGEFORMAT
+        </w:instrText>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="228" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:fldChar w:fldCharType="separate"/>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="229" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:bCs/>
+          <w:noProof/>
+          <w:sz w:val="18"/>
+        </w:rPr>
+        <w:t>3
+        </w:t>
+      </w:r>
+    </w:ins>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="230" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:fldChar w:fldCharType="end"/>
+      </w:r>
+    </w:ins>
+  </w:p>
+</w:ftr>

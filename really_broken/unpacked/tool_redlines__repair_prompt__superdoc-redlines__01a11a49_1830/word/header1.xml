@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:hdr xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:sl="http://schemas.openxmlformats.org/schemaLibrary/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:lc="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas" xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml">
+  <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000082">
+    <w:pPr>
+      <w:pageBreakBefore w:val="0"/>
+      <w:pBdr>
+        <w:top w:space="0" w:sz="0" w:val="nil"/>
+        <w:left w:space="0" w:sz="0" w:val="nil"/>
+        <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+        <w:right w:space="0" w:sz="0" w:val="nil"/>
+        <w:between w:space="0" w:sz="0" w:val="nil"/>
+      </w:pBdr>
+      <w:shd w:fill="auto" w:val="clear"/>
+      <w:tabs>
+        <w:tab w:val="right" w:leader="none" w:pos="7653.543307086615"/>
+      </w:tabs>
+      <w:spacing w:before="600" w:lineRule="auto"/>
+      <w:rPr>
+        <w:rFonts w:ascii="Nunito" w:cs="Nunito" w:eastAsia="Nunito" w:hAnsi="Nunito"/>
+        <w:color w:val="434343"/>
+      </w:rPr>
+    </w:pPr>
+    <w:r w:rsidDel="00000000" w:rsidR="00000000" w:rsidRPr="00000000">
+      <w:rPr>
+        <w:rFonts w:ascii="Nunito" w:cs="Nunito" w:eastAsia="Nunito" w:hAnsi="Nunito"/>
+        <w:color w:val="434343"/>
+        <w:rtl w:val="0"/>
+      </w:rPr>
+      <w:t xml:space="preserve">PLANES AA-AA {SIGLA ÓRGÃO/UNIDD/CENTRO&amp;NÚCLEO}
+      </w:t>
+    </w:r>
+    <w:r w:rsidDel="00000000" w:rsidR="00000000" w:rsidRPr="00000000">
+      <w:rPr>
+        <w:rFonts w:ascii="Nunito" w:cs="Nunito" w:eastAsia="Nunito" w:hAnsi="Nunito"/>
+        <w:color w:val="434343"/>
+        <w:rtl w:val="0"/>
+      </w:rPr>
+      <w:tab/>
+      <w:tab/>
+      <w:t xml:space="preserve">Página
+      </w:t>
+    </w:r>
+    <w:r w:rsidDel="00000000" w:rsidR="00000000" w:rsidRPr="00000000">
+      <w:rPr>
+        <w:rFonts w:ascii="Nunito" w:cs="Nunito" w:eastAsia="Nunito" w:hAnsi="Nunito"/>
+        <w:color w:val="434343"/>
+      </w:rPr>
+      <w:fldChar w:fldCharType="begin"/>
+      <w:instrText xml:space="preserve">PAGE
+      </w:instrText>
+      <w:fldChar w:fldCharType="separate"/>
+      <w:fldChar w:fldCharType="end"/>
+    </w:r>
+    <w:r w:rsidDel="00000000" w:rsidR="00000000" w:rsidRPr="00000000">
+      <w:rPr>
+        <w:rFonts w:ascii="Nunito" w:cs="Nunito" w:eastAsia="Nunito" w:hAnsi="Nunito"/>
+        <w:color w:val="434343"/>
+        <w:rtl w:val="0"/>
+      </w:rPr>
+      <w:t xml:space="preserve">/
+      </w:t>
+    </w:r>
+    <w:r w:rsidDel="00000000" w:rsidR="00000000" w:rsidRPr="00000000">
+      <w:rPr>
+        <w:rFonts w:ascii="Nunito" w:cs="Nunito" w:eastAsia="Nunito" w:hAnsi="Nunito"/>
+        <w:color w:val="434343"/>
+      </w:rPr>
+      <w:fldChar w:fldCharType="begin"/>
+      <w:instrText xml:space="preserve">NUMPAGES
+      </w:instrText>
+      <w:fldChar w:fldCharType="separate"/>
+      <w:fldChar w:fldCharType="end"/>
+    </w:r>
+    <w:r w:rsidDel="00000000" w:rsidR="00000000" w:rsidRPr="00000000">
+      <w:rPr>
+        <w:rtl w:val="0"/>
+      </w:rPr>
+    </w:r>
+  </w:p>
+  <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000083">
+    <w:pPr>
+      <w:pageBreakBefore w:val="0"/>
+      <w:pBdr>
+        <w:top w:space="0" w:sz="0" w:val="nil"/>
+        <w:left w:space="0" w:sz="0" w:val="nil"/>
+        <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+        <w:right w:space="0" w:sz="0" w:val="nil"/>
+        <w:between w:space="0" w:sz="0" w:val="nil"/>
+      </w:pBdr>
+      <w:shd w:fill="auto" w:val="clear"/>
+      <w:rPr/>
+    </w:pPr>
+    <w:r w:rsidDel="00000000" w:rsidR="00000000" w:rsidRPr="00000000">
+      <w:rPr/>
+      <w:drawing>
+        <wp:inline distB="114300" distT="114300" distL="114300" distR="114300">
+          <wp:extent cx="5943600" cy="50800"/>
+          <wp:effectExtent b="0" l="0" r="0" t="0"/>
+          <wp:docPr descr="linha horizontal" id="1" name="image2.png"/>
+          <a:graphic>
+            <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+              <pic:pic>
+                <pic:nvPicPr>
+                  <pic:cNvPr descr="linha horizontal" id="0" name="image2.png"/>
+                  <pic:cNvPicPr preferRelativeResize="0"/>
+                </pic:nvPicPr>
+                <pic:blipFill>
+                  <a:blip r:embed="rId1"/>
+                  <a:srcRect b="0" l="0" r="0" t="0"/>
+                  <a:stretch>
+                    <a:fillRect/>
+                  </a:stretch>
+                </pic:blipFill>
+                <pic:spPr>
+                  <a:xfrm>
+                    <a:off x="0" y="0"/>
+                    <a:ext cx="5943600" cy="50800"/>
+                  </a:xfrm>
+                  <a:prstGeom prst="rect"/>
+                  <a:ln/>
+                </pic:spPr>
+              </pic:pic>
+            </a:graphicData>
+          </a:graphic>
+        </wp:inline>
+      </w:drawing>
+    </w:r>
+    <w:r w:rsidDel="00000000" w:rsidR="00000000" w:rsidRPr="00000000">
+      <w:rPr>
+        <w:rtl w:val="0"/>
+      </w:rPr>
+    </w:r>
+  </w:p>
+</w:hdr>

@@ -1,0 +1,2780 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:lc="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du wp14" xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main">
+  <w:body>
+    <w:p w:rsidRDefault="000023E9" w:rsidR="00E81F93" w:rsidP="00F67ED1" w:rsidRPr="00C534E6">
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:lang w:val="en-US"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:noProof/>
+          <w:sz w:val="18"/>
+          <w:szCs w:val="18"/>
+          <w:lang w:eastAsia="de-CH"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:anchor distT="0" distB="71755" distL="144145" distR="114300" simplePos="0" relativeHeight="251662336" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1" wp14:editId="4DDE082A" wp14:anchorId="6C1A73EC">
+            <wp:simplePos x="0" y="0"/>
+            <wp:positionH relativeFrom="column">
+              <wp:posOffset>3554095
+              </wp:posOffset>
+            </wp:positionH>
+            <wp:positionV relativeFrom="paragraph">
+              <wp:posOffset>-10795
+              </wp:posOffset>
+            </wp:positionV>
+            <wp:extent cx="2228850" cy="1381125"/>
+            <wp:effectExtent l="0" t="0" r="635" b="8255"/>
+            <wp:wrapSquare wrapText="left"/>
+            <wp:docPr id="5" name="Grafik 5" descr="C:\Users\W\3WAR\2P\1IT\_git\SW\KlaTvVideoDocGen.git\KlaTvVideoDocGen\Material\MissingVideoImage.png">
+              <a:hlinkClick xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" r:id="rId8"/>
+            </wp:docPr>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="Picture 3" descr="C:\Users\W\3WAR\2P\1IT\_git\SW\KlaTvVideoDocGen.git\KlaTvVideoDocGen\Material\MissingVideoImage.png"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId9">
+                      <a:extLst>
+                        <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                          <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                        </a:ext>
+                      </a:extLst>
+                    </a:blip>
+                    <a:srcRect/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="2228400" cy="1382400"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                    <a:ln>
+                      <a:noFill/>
+                    </a:ln>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+            <wp14:sizeRelH relativeFrom="page">
+              <wp14:pctWidth>0
+              </wp14:pctWidth>
+            </wp14:sizeRelH>
+            <wp14:sizeRelV relativeFrom="page">
+              <wp14:pctHeight>0
+              </wp14:pctHeight>
+            </wp14:sizeRelV>
+          </wp:anchor>
+        </w:drawing>
+      </w:r>
+      <w:del w:id="eaa93de7-9923-473c-9825-62ecd815ca57" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidR="00E81F93" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="808080"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+            <w:sz w:val="20"/>
+          </w:rPr>
+          <w:delText>Medienkommentar
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="eaa93de7-9923-473c-9825-62ecd815ca57" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidR="00E81F93" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="808080"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+            <w:sz w:val="20"/>
+          </w:rPr>
+          <w:t>Job Title: Unqualified Specialist NotetakerGrade: 4
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="00F67ED1" w:rsidR="00101F75" w:rsidP="00F67ED1" w:rsidRPr="00C534E6">
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:rStyle w:val="texttitelsize"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:sz w:val="44"/>
+          <w:szCs w:val="44"/>
+          <w:lang w:val="en-US"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00F67ED1">
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:noProof/>
+          <w:lang w:eastAsia="de-CH"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251658240" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1" wp14:editId="7627B367" wp14:anchorId="20EB18EB">
+            <wp:simplePos x="0" y="0"/>
+            <wp:positionH relativeFrom="column">
+              <wp:posOffset>-542607
+              </wp:posOffset>
+            </wp:positionH>
+            <wp:positionV relativeFrom="paragraph">
+              <wp:posOffset>-254317
+              </wp:posOffset>
+            </wp:positionV>
+            <wp:extent cx="381000" cy="381000"/>
+            <wp:effectExtent l="0" t="0" r="0" b="0"/>
+            <wp:wrapTight wrapText="bothSides">
+              <wp:wrapPolygon edited="0">
+                <wp:start x="0" y="0"/>
+                <wp:lineTo x="0" y="20520"/>
+                <wp:lineTo x="20520" y="20520"/>
+                <wp:lineTo x="20520" y="0"/>
+                <wp:lineTo x="0" y="0"/>
+              </wp:wrapPolygon>
+            </wp:wrapTight>
+            <wp:docPr id="2" name="Grafik 2" descr="C:\Temp\QR-Code_klaTv_cut.png"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="Picture 2" descr="C:\Temp\QR-Code_klaTv_cut.png"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId10" cstate="print">
+                      <a:extLst>
+                        <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                          <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                        </a:ext>
+                      </a:extLst>
+                    </a:blip>
+                    <a:srcRect/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="381000" cy="381000"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                    <a:ln>
+                      <a:noFill/>
+                    </a:ln>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+            <wp14:sizeRelH relativeFrom="margin">
+              <wp14:pctWidth>0
+              </wp14:pctWidth>
+            </wp14:sizeRelH>
+            <wp14:sizeRelV relativeFrom="margin">
+              <wp14:pctHeight>0
+              </wp14:pctHeight>
+            </wp14:sizeRelV>
+          </wp:anchor>
+        </w:drawing>
+      </w:r>
+      <w:del w:id="ba2ae4c1-91aa-4ebd-b337-155809849a15" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidR="00B9284F" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+            <w:sz w:val="44"/>
+          </w:rPr>
+          <w:delText>Wetterwaffen Razzia – JETZT!
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="ba2ae4c1-91aa-4ebd-b337-155809849a15" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidR="00B9284F" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+            <w:sz w:val="44"/>
+          </w:rPr>
+          <w:t>Our Vision
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="00A71903" w:rsidR="00A71903" w:rsidP="00F67ED1" w:rsidRPr="00C534E6">
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:b/>
+          <w:color w:val="000000"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="84c9613b-5214-4667-9beb-8cd1843211dc" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Infolge schwerwiegender Indizien, dass die jüngsten Überschwemmungen durch Wetterwaffen entstanden sind, hat Christoph Hörstel von der Neuen Mitte (D) klare politische Forderungen: »Einen sofortigen Polizeieinsatz in Kanzleramt, Geheimdiensten und Bundeswehr.« Hörstel beweist, dass schon seit Jahrzehnten klare Belege von Katastrophen durch Wetterwaffen vorliegen. Das Volk müsse auf der Stelle wissen, welche Akten zu solchen Kriegsverbrechen genau vorliegen. Wer immer diese Offenlegung hindert, muss damit rechnen, nach erbrachten Beweisen, der Mitschuld an Kriegsverbrechen angezeigt zu werden. Hier nun ein Auszug aus Hörstels Rede.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="84c9613b-5214-4667-9beb-8cd1843211dc" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:t xml:space="preserve">A County where big ambitions, great connections and greener living give everyone the opportunity to prosper, be healthy and happy
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="00F67ED1" w:rsidR="00F67ED1" w:rsidP="00F67ED1" w:rsidRPr="00C534E6">
+      <w:pPr>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Infolge schwerwiegender Indizien, dass die jüngsten Überschwemmungen durch Wetterwaffen entstanden sind, hat Christoph Hörstel von der Neuen Mitte (D) klare politische Forderungen: »Einen sofortigen Polizeieinsatz in Kanzleramt, Geheimdiensten und Bundeswehr.« Hörstel beweist, dass schon seit Jahrzehnten klare Belege von Katastrophen durch Wetterwaffen vorliegen. Das Volk müsse auf der Stelle wissen, welche Akten zu solchen Kriegsverbrechen genau vorliegen. Wer immer diese Offenlegung hindert, muss damit rechnen, nach erbrachten Beweisen, der Mitschuld an Kriegsverbrechen angezeigt zu werden. Hier nun ein Auszug aus Hörstels Rede.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Der Fluss trat über die Ufer und riss in der Ortschaft Brücken, Straβen, Häuser, Geschäfte und Menschen mit. 34 starben. Das geschah nicht im Ruhrgebiet, das geschah vor fast 70 Jahren in England in der Nacht vom 15. auf den 16. August 1952.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Die Neue Mitte, meine Damen und Herren, heiβt Sie herzlich willkommen. Heute ist Samstag, der 17. Juli 2021 und es ist 13.30 Uhr.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">In respektvoller Erinnerung an unsere tapferen Vorkämpfer der damaligen DDR sollten wir diesen 17. Juli vielleicht zu unserem 17. Juni machen. Und eine Lehre ist auch: Auch die Westzonen in der alten Bundesrepublik hätten sich auflehnen sollen gegen ihre Besatzer. Wie immer, die Zensur: facebook deckelt und bestraft alle, die weiterleiten, posten usw. Vielen Dank für alle, die hier helfen. Das ist das einzige Gegenmittel gegen die Zensur, das wirkt, dass Sie Dinge verteilen. Danke.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Und was uns alle betrifft, das ist das, was im Ruhrgebiet und in Rheinland-Pfalz Schreckliches geschieht. Gestern wurden mehr als 100 Tote gezählt, heute früh waren es schon über 133. Das ist entsetzlich. Wir sind mit Herz und mit Hand bei den Menschen, die jetzt leiden, die um ihr Leben kämpfen, um ihre Existenz, um ihr Lebenswerk. Und auch die Niederlande und Belgien sind betroffen, müssen wir melden. In der Vorwoche war es Japan mit einem größeren Erdrutsch. In Belgien stürzte vor laufender Kamera ein Haus ein. Bundespräsident Steinmeier und Kanzlerkandidat Laschet sind im Rhein-Erft-Kreis unterwegs heute, in Ahrweiler werden noch viele vermisst. Es gibt Plünderungsversuche und Chaos an vielen Stellen natürlich. Das ist eine weitere Herausforderung. Alle Telefonnetze zeigen Störungen oder viele davon. Gas-, Telefon- und Stromleitungen sind betroffen und unterbrochen zum Teil. Und wenn Stromausfälle weiter die Pumpen lahmlegen, haben Kenner ausgerechnet, dann könnten bis zu 40 % des Ruhrgebietes unter Wasser kommen. Zum Glück haben die schweren Regenfälle im Moment nachgelassen, Problem allerdings: Das Tiefdruckgebiet weicht nicht so richtig, und in Baden-Württemberg wächst die Flutgefahr. Mehr Informationen gibt´s auf meiner Internetseite zu dieser Wochenübersicht. Unten in den pdfs haben wir jetzt getrennt nach Corona und Flut. Sehr gut ist auch, jetzt den Kartell-Medien zu folgen. Die haben natürlich eine eigene Agenda, aber sie berichten einigermaßen, wie soll man sagen, eventnah über die Dinge, die da jetzt passieren. Das ist immerhin etwas, was man tun kann. Sie verfolgen politische Ziele, darauf gehe ich ein.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>(…)
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Und nun machen wir einen ganz gewaltigen Schritt. Hier geht es in einer Weise um Deutschland und seine Menschen. Das hätte ich mir vor ein paar Tagen noch nicht träumen lassen. Wir können hier nicht einfach Katastrophen-Berichterstattung machen und vergessen, wer hier in Deutschland und woanders was macht. Und wer wie ich nun, warm und trocken, in Potsdam sitzt und dieses alles berichten muss, der tut gut daran, für die anderen, die jetzt leiden und die das nicht können und auch gar keinen Kopf dafür haben, sinnvollerweise, samt Angehörigen, Freunden, Verwandten usw. Bekannten, dass wir hier die Schuldigen jagen. Denn das muss sofort beginnen, sonst geht das alles gewaltig schief, denn die Propagandawelle läuft schon. Und das sehen wir als Dienst an jenen, denen es jetzt dreckig geht.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Höchst auffällig ist, dass die Logen- und Kartellpolitiker, der ganze Deep-State-Sumpf schreit: »Klimawandel«! Nicht wahr, das wissen die SOFORT. Bundesumweltminister und Svenja Schulze von der SPD meint, wir bräuchten jetzt eine, achten Sie auf die Wortwahl, „Anpassung an den Klimawandel, das sei eine Gemeinschaftsaufgabe von Bund und Ländern&#x201C;. Ich darf das kurz ins Deutsche übersetzen, ja: Wir kippen alles um, wir schränken weitere Freiheiten ein, nicht nur wegen Corona, sondern jetzt auch mit der Klimalüge im Hintergrund. Und, um möglichen regionalen Widerstand gar nicht erst aufkommen zu lassen, werden wir auch wieder die Kompetenzen des Bundes ausweiten, zu Lasten der Länder und der Regionen, und damit wird der verfassungsmäßige Föderalismus weiter ausgehebelt und die Zentralismus-Methode, die uns Adolf so gut vorgemacht hat, die zieht auch jetzt wieder. Und wir leben natürlich in einem totalen Propaganda-Krieg und mit Feigheit, Bequemlichkeit und Schwäche sichern wir den Erfolg dieses Propaganda-Krieges.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Klar ist jedenfalls dieses: Offensichtlich gibt es kein einziges Betrugs-, Unterdrückungs- und Vernichtungsszenario, das nicht gewaltsame Lösungen jetzt gerade betreibt, während wir hier auf die Fluten gucken und auf die Opfer. Klima-Lüge, Wetter-Waffe und schädliche Strahlungen, nicht nur im Mobilfunk, dazu Vergiftungen aus der Luft, Plandemie mit Impfmassenmord und massenhafter Körperverletzung, Kriegstreiberei. Das sind so die wichtigsten Themen. Ich hab das in den letzten Wochen alles abgegrast … kann man da nachhören.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Aber die Kernfrage lautet: Warum sollte denn ausgerechnet die Wetterwaffe ausgelassen werden, wenn alle anderen Waffen schon arbeiten oder werden gerade in Dienst geholt nach verschiedenen Szenarien. Dafür gibt es keinen erkennbaren Grund. Und darüber nachzudenken, da gibt es auch keinen Grund, ja?!
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Und wenn Sie das sacken lassen, dann wissen Sie: Wir sind für den Untergang vorgesehen! Das sind die Dinge!
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>So, jetzt gucken wir zurück zum Beginn. Sind Sie bereit für die Toten im englischen Örtchen Lynmouth in Devon? Denn deren Seelen kommen jetzt mit den Seelen unserer Toten zusammen. Die reden da oben miteinander, in der Welt, in die wir alle gehen, früher oder später. Die britische Königliche Luftwaffe hatte jedenfalls am 14. August 1952 nachts in der „Operation Cumulus&#x201C; die Wolken des Distrikts mit Trockeneis geimpft. Das hätten die auch über dem Meer machen können, wenn sie wissen wollen, wie das wirkt, nicht wahr?! Nein, sie mussten es aber über bewohntem Gebiet machen, über dem eigenen. 30 Minuten später begann dann der Regen, der sich zu einer tödlichen Flut ausweiten sollte. Die Luftwaffe hatte einfach ein Experiment zur Wetterbeeinflussung durchgeführt und dann hat sie sofort die Akten für 30 Jahre unter Verschluss gelegt, als nämlich die Katastrophe ihren Lauf nahm. Ich zitiere: „Das Flüsschen Exmoor trat über die Ufer – und der Tod hielt Einzug in Lynmouth in Devon.&#x201C; So ähnlich hat dann Terra X darüber berichtet, und zwar nicht in Verschwörungstheorie.TV – sondern im Zweiten Deutschen Fernsehen. Der Faktencheck ergab dann: Das Flüsschen Exmoor gibt es gar nicht. In Lynmouth mündet Ost-Lyn in West-Lyn. Und das ist ja auch der Name des Ortes, nämlich Lyn-Mündung. Exmoor heißt der nahe Nationalpark. So. Recherchieren war eben noch nie die Stärke unserer Gebührendiebe, klar, keine Frage! Und ne Kleinigkeit zum Schluss die einen auch erschüttert einfach. Kleinigkeiten können einen erschüttern: Diese ganze Affäre dieser Flut und die 34 Toten, das hat man dann „God&#x2019;s Hand&#x201C;, die „Hand Gottes&#x201C; genannt.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Es kommt noch dicker, es kommt noch dicker.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>So, für das, was ich jetzt sage, habe ich natürlich nur Faktenbelege, keine Beweise, dass hier Menschenhand drin war. Nehmens wir es einfach mal als Gottes Hand, ja. Aber das ist schon interessant, was da passiert.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">In den letzten 41 Jahren, gab es bei 10 Bundestagswahlen pünktlich Hochwasser, bei zweien gab es so in der Nähe Hochwasser.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>1980 Donau (ich habe jeweils die Links angegeben)
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>https://www.zobodat.at/pdf/Laufener-Spez-u-Seminarbeitr_2_1985_0031-0050.pdf
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>1983 Rhein und Mosel
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>https://www.chr-khr.org/de/veroffentlichung/die-hochwasser-rhein-und-mosel-im-april-und-mai-1983
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>1987 Rüthen, Westfalen bei Dortmund
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>https://www.wp.de/staedte/warstein-und-umland/vor-30-jahren-trifft-jahrhundert-flut-ruethener-orte-id211760941.html
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>1990 Donau und Neckar
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>https://www.nq-online.de/lokales/schwarzwald-baar/katastrophe-jahrhunderthochwasser-an-donau-und-neckar-im-februar-1990_54_111840909-16-.html
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">1994
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">1993
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>1995
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">1998
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>1999
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>2002 die Elbe
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>https://www.ndr.de/geschichte/chronologie/Hochwasser-Katastrophe-2002-Die-Jahrhundertflut-an-der-Elbe,elbehochwasser165.html
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>2005 in Bayern
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>https://www.br.de/nachricht/hochwasser-2005-bayern-100.html
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>2009 in Bayern
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>https://www.wikiwand.com/de/Hochwasser_in_Mitteleuropa_2009
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>2013 Südostdeutschland und Sachsen
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>https://de.wikipedia.org/wiki/Hochwasser_in_Mitteleuropa_2013
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>2017 Harz und Südosten Niedersachsens
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>http://www.wetter24.de/news/detail/2017-07-25-dauerregen-und-hochwasser/
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>und nun 2021.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Und meine Frage ist einfach: Kann das alles Zufall sein? Das kann ich gar nicht glauben. Zehn Jahrhundert-Hochwasser in 41 Jahren pünktlich. Und die anderen drei ein paar Monate vor - also im Vorjahr vor der Bundestagswahl oder im Jahr danach. Und als bekennender Verschwörungspraktiker kann ich nur sagen, ich glaub nicht an Zufall. Aber ich sag Ihnen auch ganz ehrlich und ganz offen, mir fehlen Belege, dass hier Wetterbeeinflussung stattgefunden hat. Die fehlen mir. Und deswegen habe ich klare politische Forderungen. Wir brauchen sofort einen Polizeieinsatz in Kanzleramt, Geheimdiensten, Bundeswehr. Weil wir sofort wissen müssen, was gibt es da für Akten zu diesem Thema. Und das muss das Volk wissen.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Und jede berechtigte Frage ist jetzt natürlich: Wozu sollte denn der »Deep State« so etwas veranlassen, nicht wahr? Warum sollten »Deep State«-Lakaien so etwas machen? Und ich kann Ihnen das klar begründen, denn das wurde eben wissenschaftlich untersucht, das ist allgemein zugänglich. Eine richtige Katastrophe, das ist messbar, mit wissenschaftlichem Nachweis, führt zu diesen Folgen:
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Eine politische Neubesinnung wird scharf eingebremst. Die Menschen rücken zusammen. Kritiker werden isoliert und zurückgedrängt, z.B. unsere Wenigkeiten. Und jetzt zitiere ich mal: »Verschwörungstheoretiker, Antisemiten, Verweigerer der Solidarität«. So wird man uns nennen, wenn man kritisiert, was wir jetzt angreifen hier. Und tatsächlich, wir verweigern Maske und Impfung, vollkommen richtig. Und die da reden, das sind die, die aus der Not der Menschen, jetzt auch wieder Kapital ziehen wollen. So sieht es doch tatsächlich aus. Und man wird uns sagen: Wir wollen daraus Kapital schlagen. Und man wird uns sagen: Wir wollten unser Süppchen darauf kochen. Und was haben wir da? Wir haben es wieder, dass jemand etwas begeht und klagt einen anderen an, der dessen völlig unschuldig ist und wirft dem vor, was er selber macht. Das ist die Art wie im Westen Politik gemacht wird. Ganz einfach. In der ganzen Restwelt und zuhause.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Und ich frag nochmal: Wer sind denn die fiesen Katastrophengewinner? Das sind doch die, die jetzt mit der Klimalüge kommen, oder? Wie kann man es wagen, auf dem Rücken der Not der Menschen mit Klimalügen zu kommen. Das machen nur Kriminelle. Und das wird ja getan, obwohl einige von denen sehr genau wissen, ob und was da manipuliert wurde und dass schon manipuliert wurde und wird und dass auch die Wetterwaffe ständig weiter erforscht wird, nicht wahr? So sieht es doch aus, oder?
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Und worum geht es? Wir haben darüber schon gesprochen. Das ist jetzt auch nicht neu, andere haben darüber gesprochen – neben der Corona-Plandemie, also eine Pandemielüge – wollen sie nun die Klimalüge auch zum weiteren Freiheitseinschränkungsinstrument gegen ihre Völker und Menschen umbauen. Und das ist sofort wirksam, so ist das. Eine riesen Wahlfälschung im Briefwahlbereich ist ja immerhin geplant. Vorbild USA. Und wenn USA – ich habe das mehrfach betont – da sind ja immer noch Gremien, die dabeisitzen müssen. Da gibt es Filmaufnahmen, wie die da ausgetrickst wurden. Da wurden plötzlich, während die nachts mal ein Äugelein zugetan haben, wurden da plötzlich zigtausend Stimmen rangeschafft. Und ratzfatz mehrfach durch die Zählmaschinen gejagt. Und, und, und … da hat man diese komischen Briefwahlstimmen mal angeguckt, die kamen alle druckfrisch aus dem Drucker. Da war nix von Hand ausgefüllt und hat sich ein ehrlicher Staatsbürger bemüht, nach bestem Wissen und Gewissen die Politik seiner Wahl da anzukreuzen.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Und das Wichtige ist eben: Wenn wir jetzt schweigen, wenn wir nicht sagen, was ich alles gesagt habe, wenn wir den Unwetterbetrug nicht aufdecken, oder zumindest angreifen – für die Vergangenheit nämlich, wenn wir es in der Gegenwart nicht beweisen können. Wenn wir also nicht mutig nach vorn gehen, dann werden die Deep-State-Lakaien ermutigt durch uns. Und mit all ihren miesen Machtmitteln, mit voller Kraft weitermachen, sie alle kennen das Zitat aus der EU-Politik. Sie werden Kinder impfen, Völker entrechten, Wahlen fälschen, frisch gewählt Kriege anzetteln, Völker verarmen und vergiften lassen. Das sind die Dinge um die es ganz praktisch geht. Und diese Dinge sind alle bewiesen. Nur eben dieser letzte Punkt, da arbeiten wir noch dran. Wir dürfen nicht vergessen, in dieser Sekunde: Die Regierungen führen weltweit Krieg gegen ihre eigenen Völker. Und jetzt haben sie gerade nur einfach mal die Wetterwaffe ausgepackt ist mein Verdacht. Diesmal ist es eben besonders hart ausgefallen, auch klar, weil ja so viel auf dem Spiel steht.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Die gute Nachricht für uns, die gibt es auch am Rande dieser ganzen Entsetzlichkeiten und der fürchterlichen Verdächtigung: Wer so handelt, wer jetzt die Wetterwaffe auspacken muss, fühlt sich ganz offensichtlich schwach. Halb Amerika hält sich nicht an die Coronaregeln und an das Unterdrückungsregime. Und wie lange wollen wir denn den kriminellen und mörderischen Unsinn noch dulden? Wann entdecken wir, dass 2/3 der Bevölkerung an der ganzen Politik handfest zweifeln? 2/3 zweifeln. Die wissen sich dann oft nicht anders zu helfen, dann wählen sie doch was sie bisher gewählt haben, oder was Ähnliches oder so was. Aber jedenfalls nicht gegen das System. Geht doch gar nicht bei diesen Wahlzetteln, da ist doch niemand gegen das System, wer immer da auf den Wahlzetteln steht.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Und Achtung eben: Das ist einfach eine Überlegung die man auch machen muss, gerade angesichts des Leidens in Rheinland-Pfalz und in Nordrhein-Westfalen und vielleicht demnächst in Baden-Württemberg. Wenn unser Widerstand stark ist, dann kippen die Zweifler zu uns. Wenn wir aber wieder fachlich, wie soll man sagen, fragwürdig bleiben – und gehen der Viruslüge nach usw. und schießen uns auch sonst gerne mal in den Fuß, dann gehen die zur anderen Seite. Und dann werden sie unserem System, unseren Regierungen helfen die Impfverweigerer zu finden, aufzuspüren und werden Klage führen, dass die ja nicht geimpft sind und gefährden den Rest der Bevölkerung und, und, und … was da kommt. Die werden dann sozusagen zu Hilfscapos, zu Hilfssheriffs auf der Jagd nach Nichtgeimpften. Aus Wut im Grunde natürlich – aus Wut über ihre eigene Dummheit und ihr Unvermögen, sich zu wehren. Und aus Wut über die Aussichtslosigkeit dieser Lage.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Die neue Mitte wird diesen Schurken, die nicht eine, sondern mindestens 13 Wetterkatastrophen in der Vergangenheit vermutlich mutwillig herbeigeführt haben und das in 40 Jahren 10x bei Wahlen und zusätzlich dann eben noch bei 2 Wahlterminen, keinen Meter nachgeben. Null Toleranz dafür, das ist das Thema.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Während unsere Menschen in den Fluten ersaufen und ihre Liebsten verlieren, ihr Lebenswerk verlieren, ihre Hoffnung verlieren und versinken sehen, stellt die neue Mitte die Schuldigen an den Pranger, so gut wir das können. Wir brauchen diese Razzien, ich habe das erwähnt. Wir brauchen sie dringend mit Kanzleramt, Bundeswehr und Geheimdiensten. Und wir brauchen natürlich Whistleblower. Davon hängt das Land allmählich entscheidend ab. Eben nicht nur im Coronasektor, sondern auch in diesem hier.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="00C534E6">
+        <w:br/>
+      </w:r>
+      <w:del w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Zu Corona und Impfung und so weiter gibt es wie immer am Schluss meines Textes auf meiner Website die Quellen.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="0983e904-571e-48d5-8b5e-99b0be9c8b6a" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:t>Our Outcomes
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="00F67ED1" w:rsidR="00F67ED1" w:rsidP="00F67ED1" w:rsidRPr="00C534E6">
+      <w:pPr>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:b/>
+          <w:color w:val="000000"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          <w:sz w:val="18"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="be05d9e2-3b00-4ecf-8233-a346da3a441f" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+            <w:sz w:val="18"/>
+          </w:rPr>
+          <w:delText>von is.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="be05d9e2-3b00-4ecf-8233-a346da3a441f" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+            <w:sz w:val="18"/>
+          </w:rPr>
+          <w:t>Everyone in Staffordshire will:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="00F202F1" w:rsidR="00F202F1" w:rsidP="00C534E6" w:rsidRPr="00C534E6">
+      <w:pPr>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:pBdr>
+          <w:top w:val="single" w:color="365F91" w:themeColor="accent1" w:themeShade="BF" w:sz="6" w:space="8"/>
+        </w:pBdr>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:b/>
+          <w:color w:val="000000"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="9d415ff5-b61a-4920-b7a1-5e376db098fe" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Quellen:
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="9d415ff5-b61a-4920-b7a1-5e376db098fe" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Have access to more good jobs and share the benefit of economic growth
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="00F202F1" w:rsidR="00F202F1" w:rsidP="00C534E6" w:rsidRPr="00C534E6">
+      <w:pPr>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+          <w:sz w:val="18"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="aefafbdf-51e4-44da-98ee-20550e5b73d7" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="002B28C8">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="18"/>
+          </w:rPr>
+          <w:delText>Wetterwaffe im Einsatz? – Eine Stellungnahme von Christoph Hörstel( 17.07.2021)
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidR="0026191C">
+        <w:br/>
+      </w:r>
+      <w:hyperlink w:history="1" r:id="rId21">
+        <w:del w:id="aefafbdf-51e4-44da-98ee-20550e5b73d7" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00F24C6F">
+          <w:r>
+            <w:rPr>
+              <w:rStyle w:val="Hyperlink"/>
+              <w:color w:val="0000FF"/>
+              <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+              <w:u w:val="single"/>
+            </w:rPr>
+            <w:delText>https://www.bitchute.com/video/5IjN52h7hf2A/
+            </w:delText>
+          </w:r>
+        </w:del>
+      </w:hyperlink>
+      <w:r w:rsidR="0026191C">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidR="0026191C">
+        <w:br/>
+      </w:r>
+      <w:del w:id="aefafbdf-51e4-44da-98ee-20550e5b73d7" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="002B28C8">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="18"/>
+          </w:rPr>
+          <w:delText>Terra X - Wetter als Waffe( 06.05.2020)
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidR="0026191C">
+        <w:br/>
+      </w:r>
+      <w:hyperlink w:history="1" r:id="rId22">
+        <w:del w:id="aefafbdf-51e4-44da-98ee-20550e5b73d7" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00F24C6F">
+          <w:r>
+            <w:rPr>
+              <w:rStyle w:val="Hyperlink"/>
+              <w:color w:val="0000FF"/>
+              <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+              <w:u w:val="single"/>
+            </w:rPr>
+            <w:delText>https://www.youtube.com/watch?v=ay31-KL87hc
+            </w:delText>
+          </w:r>
+        </w:del>
+        <w:ins w:id="aefafbdf-51e4-44da-98ee-20550e5b73d7" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00F24C6F">
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+              <w:sz w:val="18"/>
+            </w:rPr>
+            <w:t xml:space="preserve">Be healthier and more independent for longer
+            </w:t>
+          </w:r>
+        </w:ins>
+      </w:hyperlink>
+    </w:p>
+    <w:p w:rsidRDefault="00C534E6" w:rsidR="00C534E6" w:rsidP="00C534E6" w:rsidRPr="00C534E6">
+      <w:pPr>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:pBdr>
+          <w:top w:val="single" w:color="365F91" w:themeColor="accent1" w:themeShade="BF" w:sz="6" w:space="8"/>
+        </w:pBdr>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:b/>
+          <w:color w:val="000000"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="f7b689f8-0d14-4f0c-adda-1b96c6385db9" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Das könnte Sie auch interessieren:
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="f7b689f8-0d14-4f0c-adda-1b96c6385db9" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00C534E6">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:t>Feel safer, happier, and more supported in their community
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="00C534E6" w:rsidR="00C534E6" w:rsidP="00C534E6" w:rsidRPr="00C534E6">
+      <w:pPr>
+        <w:keepLines/>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="52c6cac6-e313-4abd-974e-e6043e9b9028" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="002B28C8">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">#ChristophHoerstel - Hörstel -
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:hyperlink w:history="1" r:id="rId23">
+        <w:del w:id="52c6cac6-e313-4abd-974e-e6043e9b9028" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00F24C6F">
+          <w:r>
+            <w:rPr>
+              <w:rStyle w:val="Hyperlink"/>
+              <w:color w:val="0000FF"/>
+              <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+              <w:u w:val="single"/>
+            </w:rPr>
+            <w:delText>www.kla.tv/ChristophHoerstel
+            </w:delText>
+          </w:r>
+        </w:del>
+      </w:hyperlink>
+      <w:r w:rsidR="0026191C">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidR="0026191C">
+        <w:br/>
+      </w:r>
+      <w:del w:id="52c6cac6-e313-4abd-974e-e6043e9b9028" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="002B28C8">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">#Medienkommentar -
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:hyperlink w:history="1" r:id="rId24">
+        <w:del w:id="52c6cac6-e313-4abd-974e-e6043e9b9028" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00F24C6F">
+          <w:r>
+            <w:rPr>
+              <w:rStyle w:val="Hyperlink"/>
+              <w:color w:val="0000FF"/>
+              <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+              <w:u w:val="single"/>
+            </w:rPr>
+            <w:delText>www.kla.tv/Medienkommentare
+            </w:delText>
+          </w:r>
+        </w:del>
+      </w:hyperlink>
+      <w:r w:rsidR="0026191C">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidR="0026191C">
+        <w:br/>
+      </w:r>
+      <w:del w:id="52c6cac6-e313-4abd-974e-e6043e9b9028" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="002B28C8">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">#Politik -
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:hyperlink w:history="1" r:id="rId25">
+        <w:del w:id="52c6cac6-e313-4abd-974e-e6043e9b9028" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00F24C6F">
+          <w:r>
+            <w:rPr>
+              <w:rStyle w:val="Hyperlink"/>
+              <w:color w:val="0000FF"/>
+              <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+              <w:u w:val="single"/>
+            </w:rPr>
+            <w:delText>www.kla.tv/Politik
+            </w:delText>
+          </w:r>
+        </w:del>
+        <w:ins w:id="52c6cac6-e313-4abd-974e-e6043e9b9028" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="00F24C6F">
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            </w:rPr>
+            <w:t>Our Values
+            </w:t>
+          </w:r>
+        </w:ins>
+      </w:hyperlink>
+    </w:p>
+    <w:p w:rsidRDefault="00FF4982" w:rsidR="00C534E6" w:rsidP="00C534E6" w:rsidRPr="00C534E6">
+      <w:pPr>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:pBdr>
+          <w:top w:val="single" w:color="365F91" w:themeColor="accent1" w:themeShade="BF" w:sz="6" w:space="8"/>
+        </w:pBdr>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:rStyle w:val="edit"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:b/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="18"/>
+          <w:lang w:val="fr-CH"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:noProof/>
+          <w:sz w:val="18"/>
+          <w:szCs w:val="18"/>
+          <w:lang w:eastAsia="de-CH"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251659264" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1" wp14:editId="698817D4" wp14:anchorId="179C7D85">
+            <wp:simplePos x="0" y="0"/>
+            <wp:positionH relativeFrom="column">
+              <wp:posOffset>14605
+              </wp:posOffset>
+            </wp:positionH>
+            <wp:positionV relativeFrom="paragraph">
+              <wp:posOffset>454025
+              </wp:posOffset>
+            </wp:positionV>
+            <wp:extent cx="990600" cy="723900"/>
+            <wp:effectExtent l="0" t="0" r="0" b="4445"/>
+            <wp:wrapTight wrapText="bothSides">
+              <wp:wrapPolygon edited="0">
+                <wp:start x="831" y="0"/>
+                <wp:lineTo x="0" y="1144"/>
+                <wp:lineTo x="0" y="19446"/>
+                <wp:lineTo x="415" y="21162"/>
+                <wp:lineTo x="831" y="21162"/>
+                <wp:lineTo x="20354" y="21162"/>
+                <wp:lineTo x="21185" y="20018"/>
+                <wp:lineTo x="21185" y="1144"/>
+                <wp:lineTo x="20354" y="0"/>
+                <wp:lineTo x="831" y="0"/>
+              </wp:wrapPolygon>
+            </wp:wrapTight>
+            <wp:docPr id="1" name="Grafik 1" descr="C:\Users\W\3WAR\2P\1IT\_git\SW\KlaTvVideoDocGen.git\KlaTvVideoDocGen\Material\klatv_logo_200dpi-forf2.75x1.99cm.png">
+              <a:hlinkClick xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" r:id="rId11"/>
+            </wp:docPr>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="Picture 1" descr="C:\Users\W\3WAR\2P\1IT\_git\SW\KlaTvVideoDocGen.git\KlaTvVideoDocGen\Material\klatv_logo_200dpi-forf2.75x1.99cm.png"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId12">
+                      <a:extLst>
+                        <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                          <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                        </a:ext>
+                      </a:extLst>
+                    </a:blip>
+                    <a:srcRect/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="990600" cy="719455"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                    <a:ln>
+                      <a:noFill/>
+                    </a:ln>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+            <wp14:sizeRelH relativeFrom="page">
+              <wp14:pctWidth>0
+              </wp14:pctWidth>
+            </wp14:sizeRelH>
+            <wp14:sizeRelV relativeFrom="page">
+              <wp14:pctHeight>0
+              </wp14:pctHeight>
+            </wp14:sizeRelV>
+          </wp:anchor>
+        </w:drawing>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="edit"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:b/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="18"/>
+          <w:lang w:val="fr-CH"/>
+        </w:rPr>
+        <w:t>Kla.TV – Die anderen Nachrichten ... frei – unabhängig – unzensiert ...
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidRDefault="00FF4982" w:rsidR="00FF4982" w:rsidP="00FF4982" w:rsidRPr="009779AD">
+      <w:pPr>
+        <w:pStyle w:val="Listenabsatz"/>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:ind w:hanging="357" w:start="714"/>
+        <w:rPr>
+          <w:lang w:val="fr-CH"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="fr-CH"/>
+        </w:rPr>
+        <w:t>was die Medien nicht verschweigen sollten ...
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidRDefault="00FF4982" w:rsidR="00FF4982" w:rsidP="00FF4982" w:rsidRPr="009779AD">
+      <w:pPr>
+        <w:pStyle w:val="Listenabsatz"/>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:ind w:hanging="357" w:start="714"/>
+        <w:rPr>
+          <w:lang w:val="fr-CH"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="fr-CH"/>
+        </w:rPr>
+        <w:t>wenig Gehörtes vom Volk, für das Volk ...
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidRDefault="00FF4982" w:rsidR="00FF4982" w:rsidP="001D6477" w:rsidRPr="001D6477">
+      <w:pPr>
+        <w:pStyle w:val="Listenabsatz"/>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:ind w:hanging="357" w:start="714"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="1fe59943-721d-4c9b-83a8-f40d5a70099c" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="001D6477">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">tägliche News ab 19:45 Uhr auf
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:hyperlink w:history="1" r:id="rId13">
+        <w:del w:id="1fe59943-721d-4c9b-83a8-f40d5a70099c" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidR="001D6477" w:rsidRPr="001D6477">
+          <w:r>
+            <w:rPr>
+              <w:rStyle w:val="Hyperlink"/>
+              <w:color w:val="0000FF"/>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+              <w:u w:val="single"/>
+            </w:rPr>
+            <w:delText>www.kla.tv
+            </w:delText>
+          </w:r>
+        </w:del>
+        <w:ins w:id="1fe59943-721d-4c9b-83a8-f40d5a70099c" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidR="001D6477" w:rsidRPr="001D6477">
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+            </w:rPr>
+            <w:t>Empowering – We empower and support our people by giving them the opportunity to do their jobs well.
+            </w:t>
+          </w:r>
+        </w:ins>
+      </w:hyperlink>
+    </w:p>
+    <w:p w:rsidRDefault="00FF4982" w:rsidR="00FF4982" w:rsidP="001D6477" w:rsidRPr="001D6477">
+      <w:pPr>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:ind w:firstLine="357"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="7b08e8e0-fe0e-40ba-8264-23612725566b" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="001D6477">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+          </w:rPr>
+          <w:delText>Dranbleiben lohnt sich!
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="7b08e8e0-fe0e-40ba-8264-23612725566b" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="001D6477">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+          </w:rPr>
+          <w:t>About the Service
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="001D6477" w:rsidR="00C534E6" w:rsidP="00C534E6" w:rsidRPr="006C4827">
+      <w:pPr>
+        <w:keepLines/>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:b/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          <w:sz w:val="18"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="7d36cd3f-c4d4-48de-9c51-9ad466922734" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="001D6477">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+            <w:sz w:val="18"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Kostenloses Abonnement mit wöchentlichen News per E-Mail erhalten Sie unter:
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:hyperlink w:history="1" r:id="rId14">
+        <w:del w:id="7d36cd3f-c4d4-48de-9c51-9ad466922734" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="001D6477">
+          <w:r>
+            <w:rPr>
+              <w:rStyle w:val="Hyperlink"/>
+              <w:b/>
+              <w:color w:val="0000FF"/>
+              <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+              <w:u w:val="single"/>
+            </w:rPr>
+            <w:delText>www.kla.tv/abo
+            </w:delText>
+          </w:r>
+        </w:del>
+        <w:ins w:id="7d36cd3f-c4d4-48de-9c51-9ad466922734" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="001D6477">
+          <w:r>
+            <w:rPr>
+              <w:b/>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+              <w:sz w:val="18"/>
+            </w:rPr>
+            <w:t>ASSIST (Autism and Sensory Support in Staffordshire) provides high quality, customer centred and value for money support.
+            </w:t>
+          </w:r>
+        </w:ins>
+      </w:hyperlink>
+    </w:p>
+    <w:p w:rsidRDefault="001D6477" w:rsidR="001D6477" w:rsidP="001D6477" w:rsidRPr="006C4827">
+      <w:pPr>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:pBdr>
+          <w:top w:val="single" w:color="365F91" w:themeColor="accent1" w:themeShade="BF" w:sz="6" w:space="8"/>
+        </w:pBdr>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:b/>
+          <w:color w:val="000000"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="811818ea-c760-4bfa-881a-79e21d52b1d7" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="006C4827">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Sicherheitshinweis:
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="811818ea-c760-4bfa-881a-79e21d52b1d7" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="006C4827">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:t>ASSIST is a post 16 support service that is centrally based, serving Staffordshire and surrounds.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="001D6477" w:rsidR="001D6477" w:rsidP="00C60E18" w:rsidRPr="006C4827">
+      <w:pPr>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="fce33d22-136e-4348-8831-ed4f211bed32" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="006C4827">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:delText>Gegenstimmen werden leider immer weiter zensiert und unterdrückt. Solange wir nicht gemäß den Interessen und Ideologien der Systempresse berichten, müssen wir jederzeit damit rechnen, dass Vorwände gesucht werden, um Kla.TV zu sperren oder zu schaden.
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="fce33d22-136e-4348-8831-ed4f211bed32" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="006C4827">
+        <w:r>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          </w:rPr>
+          <w:t>The aims of the post are:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="00C205D1" w:rsidR="001D6477" w:rsidP="00C534E6" w:rsidRPr="006C4827">
+      <w:pPr>
+        <w:keepLines/>
+        <w:spacing w:after="160"/>
+        <w:rPr>
+          <w:b/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+          <w:sz w:val="18"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="517e0f06-d198-42dc-b6f9-cc66f111852b" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="006C4827">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+            <w:sz w:val="18"/>
+          </w:rPr>
+          <w:delText>Vernetzen Sie sich darum heute noch internetunabhängig!
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r w:rsidRPr="006C4827">
+        <w:br/>
+      </w:r>
+      <w:del w:id="517e0f06-d198-42dc-b6f9-cc66f111852b" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="006C4827">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+            <w:sz w:val="18"/>
+          </w:rPr>
+          <w:delText>Klicken Sie hier:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+            <w:sz w:val="18"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:hyperlink w:history="1" r:id="rId15">
+        <w:del w:id="517e0f06-d198-42dc-b6f9-cc66f111852b" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidR="00C60E18" w:rsidRPr="006C4827">
+          <w:r>
+            <w:rPr>
+              <w:rStyle w:val="Hyperlink"/>
+              <w:b/>
+              <w:color w:val="0000FF"/>
+              <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+              <w:u w:val="single"/>
+            </w:rPr>
+            <w:delText>www.kla.tv/vernetzung
+            </w:delText>
+          </w:r>
+        </w:del>
+        <w:ins w:id="517e0f06-d198-42dc-b6f9-cc66f111852b" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidR="00C60E18" w:rsidRPr="006C4827">
+          <w:r>
+            <w:rPr>
+              <w:b/>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+              <w:sz w:val="18"/>
+            </w:rPr>
+            <w:t>To ensure that clients/students with a sensory impairment/ASD have the fullest possible access to information and the curriculum.
+            </w:t>
+          </w:r>
+        </w:ins>
+      </w:hyperlink>
+    </w:p>
+    <w:p w:rsidRDefault="00C60E18" w:rsidR="00C60E18" w:rsidP="00C60E18">
+      <w:pPr>
+        <w:keepNext/>
+        <w:keepLines/>
+        <w:pBdr>
+          <w:top w:val="single" w:color="365F91" w:themeColor="accent1" w:themeShade="BF" w:sz="6" w:space="8"/>
+        </w:pBdr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:i/>
+          <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="67136d87-5e63-4568-947b-1e701d62389d" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="0080337B">
+        <w:r>
+          <w:rPr>
+            <w:i/>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+          </w:rPr>
+          <w:delText>Lizenz:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:i/>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:bookmarkStart w:id="0" w:name="_GoBack"/>
+      <w:r w:rsidR="006C4827" w:rsidRPr="006C4827">
+        <w:drawing>
+          <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="3D79462B" wp14:editId="7085BF01">
+            <wp:extent cx="371475" cy="180975"/>
+            <wp:effectExtent l="0" t="0" r="6350" b="6350"/>
+            <wp:docPr id="16" name="Grafik 16" descr="C:\Users\W\Downloads\ccby_transparent.png"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="16" name="Grafik 16" descr="C:\Users\W\Downloads\ccby_transparent.png"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId16" cstate="print">
+                      <a:extLst>
+                        <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                          <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                        </a:ext>
+                      </a:extLst>
+                    </a:blip>
+                    <a:srcRect/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="374650" cy="184150"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                    <a:ln>
+                      <a:noFill/>
+                    </a:ln>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+      <w:bookmarkEnd w:id="0"/>
+      <w:del w:id="67136d87-5e63-4568-947b-1e701d62389d" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:i/>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:i/>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+          </w:rPr>
+          <w:delText>Creative Commons-Lizenz mit Namensnennung
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="67136d87-5e63-4568-947b-1e701d62389d" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z" w:rsidRPr="0080337B">
+        <w:r>
+          <w:rPr>
+            <w:i/>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+          </w:rPr>
+          <w:t>To enable clients/students to perform tasks for themselves.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w:rsidRDefault="00CB20A5" w:rsidR="00C60E18" w:rsidP="00CB20A5" w:rsidRPr="00C60E18">
+      <w:pPr>
+        <w:keepLines/>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+          <w:sz w:val="12"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:id="ed3bd8be-7f7c-481e-b613-692755d6ff2e" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:delText>Verbreitung und Wiederaufbereitung ist mit Namensnennung erwünscht! Das Material darf jedoch nicht aus dem Kontext gerissen präsentiert werden. Mit öffentlichen Geldern (GEZ, Serafe, GIS, ...) finanzierte Institutionen ist die Verwendung ohne Rückfrage untersagt. Verstöße können strafrechtlich verfolgt werden
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:ins w:id="ed3bd8be-7f7c-481e-b613-692755d6ff2e" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>To encourage awareness of sensory impairment/ASD with staff, students and the wider community when appropriate and under the direction of the ASSIST Manager
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+          <w:sz w:val="12"/>
+        </w:rPr>
+        <w:t>.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>We are proud to display the Disability Confidence Symbol, which is a recognition given by Job centre plus to employers who agree to meet specific requirements regarding the recruitment, employment, retention, and career development of disabled people.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t xml:space="preserve">If a disabled person meets the criteria indicated by the Disability Confident scheme symbol and provides evidence of this on their application form, they will be guaranteed an interview.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>I
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>I
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Current driving licence and access to transport. (Adjustments will be considered where necessary as required by the Equality Act.)
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Other
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>OtherCurrent driving licence and access to transport. (Adjustments will be considered where necessary as required by the Equality Act.)
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>OtherCurrent driving licence and access to transport. (Adjustments will be considered where necessary as required by the Equality Act.)I
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>A/I
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>A/I
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Proven organisational skills
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Commitment to customer focused solutions
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Excellent Communication (oral and written) with proven influencing ability.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>High levels of computer literacy to include MS Office, PowerPoint and Databases
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Skills
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>SkillsHigh levels of computer literacy to include MS Office, PowerPoint and DatabasesExcellent Communication (oral and written) with proven influencing ability. Commitment to customer focused solutionsProven organisational skills
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>SkillsHigh levels of computer literacy to include MS Office, PowerPoint and DatabasesExcellent Communication (oral and written) with proven influencing ability. Commitment to customer focused solutionsProven organisational skillsA/I
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>A/I
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>A/I
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>A/I
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>A/I
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>A/IA/IA/IA/I
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Knowledge of relevant legislation including the Equality Act and its implications for the Service&#x2019;s client base.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Experience and awareness in the use of specialist access technology.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Proven experience of working within an education environment.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Proven experience or working with or significant contact with people with sensory impairment/ASD.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Experience and Knowledge
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Experience and KnowledgeProven experience or working with or significant contact with people with sensory impairment/ASD.Proven experience of working within an education environment.Experience and awareness in the use of specialist access technology.Knowledge of relevant legislation including the Equality Act and its implications for the Service&#x2019;s client base.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Experience and KnowledgeProven experience or working with or significant contact with people with sensory impairment/ASD.Proven experience of working within an education environment.Experience and awareness in the use of specialist access technology.Knowledge of relevant legislation including the Equality Act and its implications for the Service&#x2019;s client base.A/IA/IA/IA/I
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>A
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>A
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>AA
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Willingness to work towards an accredited qualification in Notetaking
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>5 GCSEs (or recognised equivalent) at Grade C or above including English
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Qualifications/Professional membership
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Qualifications/Professional membership5 GCSEs (or recognised equivalent) at Grade C or above including EnglishWillingness to work towards an accredited qualification in Notetaking
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Qualifications/Professional membership5 GCSEs (or recognised equivalent) at Grade C or above including EnglishWillingness to work towards an accredited qualification in NotetakingAA
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Measured by
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Measured by
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Criteria
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Criteria
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Minimum Criteria for Disability Confident Scheme *
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Minimum Criteria for Disability Confident Scheme *
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Minimum Criteria for Disability Confident Scheme *CriteriaMeasured by
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Minimum Criteria for Disability Confident Scheme *CriteriaMeasured byQualifications/Professional membership5 GCSEs (or recognised equivalent) at Grade C or above including EnglishWillingness to work towards an accredited qualification in NotetakingAAExperience and KnowledgeProven experience or working with or significant contact with people with sensory impairment/ASD.Proven experience of working within an education environment.Experience and awareness in the use of specialist access technology.Knowledge of relevant legislation including the Equality Act and its implications for the Service&#x2019;s client base.A/IA/IA/IA/ISkillsHigh levels of computer literacy to include MS Office, PowerPoint and DatabasesExcellent Communication (oral and written) with proven influencing ability. Commitment to customer focused solutionsProven organisational skillsA/IOtherCurrent driving licence and access to transport. (Adjustments will be considered where necessary as required by the Equality Act.)I
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>T = Assessed through Test
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t xml:space="preserve">I = Assessed at Interview
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Person Specification A = Assessed at Application
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>The content of this Job Description and Person Specification will be reviewed on a regular basis.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Commitment to safeguarding and promoting the welfare of vulnerable groups.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Safeguarding
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Ensuring a work environment that protects people&#x2019;s health and safety and that promotes welfare, and which is in accordance with the Council&#x2019;s Health &amp; Safety policy.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Health and Safety
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Delivering energy conservation practices in line with the Council&#x2019;s climate change strategy.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Climate Change
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Ensuring that all work is completed with a commitment to equality and anti-discriminatory practice, as a minimum to standards required by legislation.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Equalities
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Engaging with People Management policies and processes
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>People Management
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Personal accountability for delivering services efficiently, effectively, within budget and to implement any approved savings and investment allocated to the service.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Financial Management
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>The post holder is required to contribute to the achievement of the Council objectives through:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Professional Accountabilities:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>You will be expected to practice within the spirit of the National Registers of Communication Professionals Working with Deaf and Deafblind People (NRCPD) Codes of Practice
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>To be responsible for administrative duties under the direction of the ASSIST Manager
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Ensure the maintenance of a safe environment by assisting in workrooms where there is a health and safety risk
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Maintain appropriate records as directed to enable the assessment of a student/client&#x2019;s ability and/or progress and for audit purposes
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Act as a point of contact using a high degree of discretion and diplomacy, dealing with issues where possible, or where appropriate, direct to other members of staff or agencies
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Produce manual notes in a format appropriate to the needs of the student/client
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Simplifying written information as needed
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Manual notetaking within sessions as needed
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>To assist at an appropriate level and be involved in all areas of the curriculum including:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Under the direction of the ASSIST Manager:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Key Accountabilities:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Responsible for:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Responsible to: ASSIST Manager
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:ins w:id="4a5f93fa-771a-4c38-9535-bd0192ec7fa3" w:author="Live Bench" w:authorEmail="ai@example.com" w:date="2026-10-13T20:00:00.000Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>Reporting Relationships
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:sectPr w:rsidRPr="00C60E18" w:rsidR="00C60E18">
+      <w:headerReference w:type="default" r:id="rId17"/>
+      <w:footerReference w:type="default" r:id="rId18"/>
+      <w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="1417" w:right="1417" w:bottom="1134" w:left="1417" w:header="708" w:footer="708" w:gutter="0"/>
+      <w:cols w:space="708"/>
+      <w:docGrid w:linePitch="360"/>
+    </w:sectPr>
+  </w:body>
+</w:document>

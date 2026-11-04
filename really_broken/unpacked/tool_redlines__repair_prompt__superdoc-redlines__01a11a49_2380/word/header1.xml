@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:hdr xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 wp14">
+  <w:tbl>
+    <w:tblPr>
+      <w:tblStyle w:val="Tabellenraster"/>
+      <w:tblpPr w:leftFromText="142" w:rightFromText="142" w:vertAnchor="text" w:tblpX="92" w:tblpY="1"/>
+      <w:tblOverlap w:val="never"/>
+      <w:tblW w:w="0" w:type="auto"/>
+      <w:tblBorders>
+        <w:top w:val="none" w:color="auto" w:sz="0" w:space="0"/>
+        <w:bottom w:val="single" w:color="365F91" w:themeColor="accent1" w:themeShade="BF" w:sz="8" w:space="0"/>
+        <w:right w:val="none" w:color="auto" w:sz="0" w:space="0"/>
+        <w:insideH w:val="none" w:color="auto" w:sz="0" w:space="0"/>
+        <w:insideV w:val="none" w:color="auto" w:sz="0" w:space="0"/>
+      </w:tblBorders>
+      <w:tblLook w:val="04A0"/>
+    </w:tblPr>
+    <w:tblGrid>
+      <w:gridCol w:w="7717"/>
+    </w:tblGrid>
+    <w:tr w:rsidRPr="006C4827" w:rsidR="00F33FD6" w:rsidTr="00FE2F5D">
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="7717" w:type="dxa"/>
+          <w:tcBorders>
+            <w:left w:val="nil"/>
+            <w:bottom w:val="single" w:color="365F91" w:themeColor="accent1" w:themeShade="BF" w:sz="8" w:space="0"/>
+          </w:tcBorders>
+        </w:tcPr>
+        <w:p w:rsidRPr="00B9284F" w:rsidR="00F33FD6" w:rsidP="00FE2F5D" w:rsidRDefault="00F67ED1">
+          <w:pPr>
+            <w:pStyle w:val="Kopfzeile"/>
+            <w:ind w:start="-57"/>
+            <w:rPr>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:sz w:val="18"/>
+              <w:lang w:val="en-US"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:b/>
+              <w:sz w:val="18"/>
+              <w:lang w:val="en-US"/>
+            </w:rPr>
+            <w:t>Online-Link:
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00B9284F" w:rsidR="00F33FD6">
+            <w:rPr>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:sz w:val="18"/>
+              <w:lang w:val="en-US"/>
+            </w:rPr>
+            <w:t xml:space="preserve">
+            </w:t>
+          </w:r>
+          <w:hyperlink w:history="true" r:id="rId1">
+            <w:r w:rsidRPr="00B9284F" w:rsidR="00F33FD6">
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+                <w:sz w:val="18"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+              <w:t>www.kla.tv/19345
+              </w:t>
+            </w:r>
+          </w:hyperlink>
+          <w:r w:rsidRPr="00B9284F" w:rsidR="00F33FD6">
+            <w:rPr>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:sz w:val="18"/>
+              <w:lang w:val="en-US"/>
+            </w:rPr>
+            <w:t xml:space="preserve">|
+            </w:t>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:b/>
+              <w:sz w:val="18"/>
+              <w:lang w:val="en-US"/>
+            </w:rPr>
+            <w:t xml:space="preserve">Veröffentlicht:
+            </w:t>
+          </w:r>
+          <w:r w:rsidRPr="00B9284F" w:rsidR="00F33FD6">
+            <w:rPr>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:sz w:val="18"/>
+              <w:lang w:val="en-US"/>
+            </w:rPr>
+            <w:t xml:space="preserve">22.07.2021
+            </w:t>
+          </w:r>
+        </w:p>
+        <w:p w:rsidRPr="00B9284F" w:rsidR="00F33FD6" w:rsidP="00FE2F5D" w:rsidRDefault="00F33FD6">
+          <w:pPr>
+            <w:pStyle w:val="Kopfzeile"/>
+            <w:rPr>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:sz w:val="18"/>
+              <w:lang w:val="en-US"/>
+            </w:rPr>
+          </w:pPr>
+        </w:p>
+      </w:tc>
+    </w:tr>
+  </w:tbl>
+  <w:p w:rsidRPr="00B9284F" w:rsidR="00F33FD6" w:rsidP="00FE2F5D" w:rsidRDefault="00CB20A5">
+    <w:pPr>
+      <w:pStyle w:val="Kopfzeile"/>
+      <w:tabs>
+        <w:tab w:val="clear" w:pos="4536"/>
+        <w:tab w:val="clear" w:pos="9072"/>
+        <w:tab w:val="left" w:pos="7995"/>
+      </w:tabs>
+      <w:rPr>
+        <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+        <w:sz w:val="18"/>
+        <w:lang w:val="en-US"/>
+      </w:rPr>
+    </w:pPr>
+    <w:r>
+      <w:rPr>
+        <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+        <w:noProof/>
+        <w:sz w:val="18"/>
+        <w:szCs w:val="18"/>
+        <w:lang w:eastAsia="de-CH"/>
+      </w:rPr>
+      <w:drawing>
+        <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251659264" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1" wp14:editId="609E0BF8" wp14:anchorId="44A748BB">
+          <wp:simplePos x="0" y="0"/>
+          <wp:positionH relativeFrom="column">
+            <wp:posOffset>5039995
+            </wp:posOffset>
+          </wp:positionH>
+          <wp:positionV relativeFrom="paragraph">
+            <wp:posOffset>-172720
+            </wp:posOffset>
+          </wp:positionV>
+          <wp:extent cx="741045" cy="539750"/>
+          <wp:effectExtent l="0" t="0" r="1905" b="0"/>
+          <wp:wrapTight wrapText="bothSides">
+            <wp:wrapPolygon edited="0">
+              <wp:start x="0" y="0"/>
+              <wp:lineTo x="0" y="20584"/>
+              <wp:lineTo x="21100" y="20584"/>
+              <wp:lineTo x="21100" y="0"/>
+              <wp:lineTo x="0" y="0"/>
+            </wp:wrapPolygon>
+          </wp:wrapTight>
+          <wp:docPr id="3" name="Grafik 3" descr="C:\Users\W\3WAR\2P\1IT\_git\SW\KlaTvVideoDocGen.git\KlaTvVideoDocGen\Material\klatv_logo_200dpi-forf2.75x1.99cm.png">
+            <a:hlinkClick xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" r:id="rId2"/>
+          </wp:docPr>
+          <wp:cNvGraphicFramePr>
+            <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+          </wp:cNvGraphicFramePr>
+          <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+            <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+              <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:nvPicPr>
+                  <pic:cNvPr id="0" name="Picture 1" descr="C:\Users\W\3WAR\2P\1IT\_git\SW\KlaTvVideoDocGen.git\KlaTvVideoDocGen\Material\klatv_logo_200dpi-forf2.75x1.99cm.png"/>
+                  <pic:cNvPicPr>
+                    <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                  </pic:cNvPicPr>
+                </pic:nvPicPr>
+                <pic:blipFill>
+                  <a:blip r:embed="rId3">
+                    <a:extLst>
+                      <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                        <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                      </a:ext>
+                    </a:extLst>
+                  </a:blip>
+                  <a:srcRect/>
+                  <a:stretch>
+                    <a:fillRect/>
+                  </a:stretch>
+                </pic:blipFill>
+                <pic:spPr bwMode="auto">
+                  <a:xfrm>
+                    <a:off x="0" y="0"/>
+                    <a:ext cx="741045" cy="539750"/>
+                  </a:xfrm>
+                  <a:prstGeom prst="rect">
+                    <a:avLst/>
+                  </a:prstGeom>
+                  <a:noFill/>
+                  <a:ln>
+                    <a:noFill/>
+                  </a:ln>
+                </pic:spPr>
+              </pic:pic>
+            </a:graphicData>
+          </a:graphic>
+          <wp14:sizeRelH relativeFrom="page">
+            <wp14:pctWidth>0
+            </wp14:pctWidth>
+          </wp14:sizeRelH>
+          <wp14:sizeRelV relativeFrom="page">
+            <wp14:pctHeight>0
+            </wp14:pctHeight>
+          </wp14:sizeRelV>
+        </wp:anchor>
+      </w:drawing>
+    </w:r>
+  </w:p>
+</w:hdr>

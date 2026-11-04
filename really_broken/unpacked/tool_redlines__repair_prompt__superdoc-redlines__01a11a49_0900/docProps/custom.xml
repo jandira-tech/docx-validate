@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
+  <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="ContentTypeId">
+    <vt:lpwstr>0x010100A8C866A144768C4DB15A415E83F77EC20800AF1AEF700E3FAC41AE2515086E5E81AF
+    </vt:lpwstr>
+  </property>
+  <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="3" name="MediaServiceImageTags">
+    <vt:lpwstr/>
+  </property>
+  <property name="SuperdocVersion" fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="4">
+    <vt:lpwstr>1.10.0
+    </vt:lpwstr>
+  </property>
+  <property name="DocumentGuid" fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="5">
+    <vt:lpwstr>265F4000-FF68-4429-AC80-E54ED90FEAC8
+    </vt:lpwstr>
+  </property>
+</Properties>

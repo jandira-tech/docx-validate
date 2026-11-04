@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate" Target="file:///E:\Documente%20Pensii\ANTET%20CNPP-DIESC\Antet%20Presedintie\CNPP_Directie_template_PRESRO2019.dot" TargetMode="External"/>
+</Relationships>

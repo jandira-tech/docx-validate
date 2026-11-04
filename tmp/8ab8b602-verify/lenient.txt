@@ -1,0 +1,6 @@
+ERROR [word/document.xml]: word/document.xml: 3 new error(s)
+ERROR [word/document.xml]:   - Element '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}bottom': This element is not expected.
+ERROR [word/document.xml]:   - Element '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}gridCol', attribute '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}type': The attribute '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}type' is not...
+ERROR [word/document.xml]:   - Element '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}shd', attribute '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}fill': '' is not a valid value of the union type '{http://schemas.openxmlformats.org/wordprocessingm...
+ERROR [word/settings.xml]: word/settings.xml: 1 new error(s)
+ERROR [word/settings.xml]:   - Element '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}compat': This element is not expected.

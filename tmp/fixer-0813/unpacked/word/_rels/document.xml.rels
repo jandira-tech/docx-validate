@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId13" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="mailto:loleta.sartin@mga.edu" TargetMode="External"/>
+  <Relationship Id="rId18" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://isminc.com/pdf/free/administrators-faculty/history_education.pdf" TargetMode="External"/>
+  <Relationship Id="rId26" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://search.ebscohost.com/login.aspx?direct=true" TargetMode="External"/>
+  <Relationship Id="rId39" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://www.gapsc.com/Ethics/EthicsQuestionaire/frmEthicsQuestionaire.aspx" TargetMode="External"/>
+  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>
+  <Relationship Id="rId21" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://www.ted.com/talks/ken_robinson_how_to_escape_education_s_death_valley?utm_source=tedcomshare&amp;amp;utm_medium=referral&amp;amp;utm_campaign=tedspread" TargetMode="External"/>
+  <Relationship Id="rId34" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://www.gapsc.com/Ethics/MoralTurpitude.aspx" TargetMode="External"/>
+  <Relationship Id="rId42" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://search.ebscohost.com/login.aspx?direct" TargetMode="External"/>
+  <Relationship Id="rId47" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://oregonstate.edu/instruct/ed416/Task4.html" TargetMode="External"/>
+  <Relationship Id="rId50" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>
+  <Relationship Id="rId7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image3.png"/>
+  <Relationship Id="rId12" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="mailto:barbara.ratzlaff@mga.edu" TargetMode="External"/>
+  <Relationship Id="rId17" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://eric.ed.gov/?id=EJ1045352" TargetMode="External"/>
+  <Relationship Id="rId25" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://iris.peabody.vanderbilt.edu/module/cnm/" TargetMode="External"/>
+  <Relationship Id="rId33" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.gapsc.com/Rules/Current/Ethics/505-6-.01.pdf" TargetMode="External"/>
+  <Relationship Id="rId38" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://view.earthchannel.com/PlayerHD.aspx?PGD=dekalbschga&amp;amp;eID=474" TargetMode="External"/>
+  <Relationship Id="rId46" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.ccsso.org/resource-library/intasc-model-core-teaching-standards" TargetMode="External"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+  <Relationship Id="rId16" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://guides.mga.edu/OERPortal" TargetMode="External"/>
+  <Relationship Id="rId20" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://www.ted.com/talks/ken_robinson_how_to_escape_education_s_death_valley?utm_source=tedcomshare&amp;amp;utm_medium=referral&amp;amp;utm_campaign=tedspread" TargetMode="External"/>
+  <Relationship Id="rId29" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://ed.ted.com/on/tOyP1gMy" TargetMode="External"/>
+  <Relationship Id="rId41" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://search.ebscohost.com/login.aspx?direct" TargetMode="External"/>
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/>
+  <Relationship Id="rId6" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image2.png"/>
+  <Relationship Id="rId11" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://creativecommons.org/licenses/by/4.0/" TargetMode="External"/>
+  <Relationship Id="rId24" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.eds-resources.com/educationhistorytimeline.html" TargetMode="External"/>
+  <Relationship Id="rId32" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www2.ed.gov/policy/landing.jhtm?src=ft" TargetMode="External"/>
+  <Relationship Id="rId37" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://www.youtube.com/watch?v=j15B2TdawZE" TargetMode="External"/>
+  <Relationship Id="rId40" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://search.ebscohost.com/login.aspx?direct" TargetMode="External"/>
+  <Relationship Id="rId45" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://www.youtube.com/watch?v=sgtinODaW78" TargetMode="External"/>
+  <Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.png"/>
+  <Relationship Id="rId15" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image8.jpeg"/>
+  <Relationship Id="rId23" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://fod.infobase.com/PortalPlaylists.aspx?wID=11" TargetMode="External"/>
+  <Relationship Id="rId28" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.pacer.org/parent/php/PHP-c128.pdf" TargetMode="External"/>
+  <Relationship Id="rId36" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://www.youtube.com/watch?v=_8juebyo_Z4" TargetMode="External"/>
+  <Relationship Id="rId49" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://www.valuescentre.com/our-products/products-individuals/personal-values-assessment-pva" TargetMode="External"/>
+  <Relationship Id="rId10" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image6.png"/>
+  <Relationship Id="rId19" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://fod.infobase.com/PortalPlaylists.aspx?wID=114464&amp;amp;xtid=115849" TargetMode="External"/>
+  <Relationship Id="rId31" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.literacynet.org/mi/assessment/findyourstrengths.html" TargetMode="External"/>
+  <Relationship Id="rId44" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://www.teachingchannel.org/videos/teaching-diverse-learners" TargetMode="External"/>
+  <Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings" Target="webSettings.xml"/>
+  <Relationship Id="rId9" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image5.jpeg"/>
+  <Relationship Id="rId14" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image7.jpeg"/>
+  <Relationship Id="rId22" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://fod.infobase.com/PortalPlaylists.aspx?wID=11" TargetMode="External"/>
+  <Relationship Id="rId27" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://search.ebscohost.com/login.aspx?direct=true" TargetMode="External"/>
+  <Relationship Id="rId30" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://www.ted.com/talks/chimamanda_adichie_the_danger_of_a_single_story" TargetMode="External"/>
+  <Relationship Id="rId35" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://www.gapsc.com/Ethics/DisciplinaryAction.aspx" TargetMode="External"/>
+  <Relationship Id="rId43" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://files.eric.ed.gov/fulltext/EJ1114663.pdf" TargetMode="External"/>
+  <Relationship Id="rId48" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://www.valuescentre.com/our-products/products-individuals/personal-values-assessment-pva" TargetMode="External"/>
+  <Relationship Id="rId8" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image4.png"/>
+  <Relationship Id="rId51" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml"/>
+</Relationships>

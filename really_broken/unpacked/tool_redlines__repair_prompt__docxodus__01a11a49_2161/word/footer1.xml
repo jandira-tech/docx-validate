@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:ftr xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" mc:Ignorable="w14">
+  <w:p>
+    <w:pPr>
+      <w:pPrChange w:author="Open-Xml-PowerTools" w:id="208" w:date="2000-01-01T00:00:00Z">
+        <w:pPr>
+          <w:pStyle w:val="footer"/>
+          <w:tabs>
+            <w:tab w:val="right" w:pos="8080"/>
+            <w:tab w:val="clear" w:pos="8838"/>
+          </w:tabs>
+        </w:pPr>
+      </w:pPrChange>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="209" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="Ninguno"/>
+        </w:rPr>
+        <w:drawing xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+          <wp:inline distT="0" distB="0" distL="0" distR="0">
+            <wp:extent cx="5612003" cy="761348"/>
+            <wp:effectExtent l="0" t="0" r="0" b="0"/>
+            <wp:docPr id="1073741826" name="officeArt object" descr="Imagen 58"/>
+            <wp:cNvGraphicFramePr/>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="1073741826" name="Imagen 58" descr="Imagen 58"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId1">
+                      <a:extLst/>
+                    </a:blip>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr>
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="5612003" cy="761348"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:ln w="12700" cap="flat">
+                      <a:noFill/>
+                      <a:miter lim="400000"/>
+                    </a:ln>
+                    <a:effectLst/>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+    </w:del>
+  </w:p>
+</w:ftr>

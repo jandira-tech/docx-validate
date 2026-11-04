@@ -1,0 +1,8 @@
+ERROR [word/document.xml]: An empty <w:drawing> has no child element. Microsoft Word does not open the file cleanly. Remove the drawing, or give it a wp:anchor or wp:inline child.
+  ↳ A w:drawing element has no child element. Word does not open the file cleanly. Remove the drawing, or give it a wp:anchor or wp:inline child.
+ERROR [word/document.xml]: An empty <w:drawing> has no child element. Microsoft Word does not open the file cleanly. Remove the drawing, or give it a wp:anchor or wp:inline child.
+  ↳ A w:drawing element has no child element. Word does not open the file cleanly. Remove the drawing, or give it a wp:anchor or wp:inline child.
+ERROR [word/document.xml]: An empty <w:drawing> has no child element. Microsoft Word does not open the file cleanly. Remove the drawing, or give it a wp:anchor or wp:inline child.
+  ↳ A w:drawing element has no child element. Word does not open the file cleanly. Remove the drawing, or give it a wp:anchor or wp:inline child.
+ERROR [word/document.xml]: An empty <w:drawing> has no child element. Microsoft Word does not open the file cleanly. Remove the drawing, or give it a wp:anchor or wp:inline child.
+  ↳ A w:drawing element has no child element. Word does not open the file cleanly. Remove the drawing, or give it a wp:anchor or wp:inline child.

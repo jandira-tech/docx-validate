@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:ftr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du wp14">
+  <w:p w14:paraId="2C8E88EF" w14:textId="15D658DE" w:rsidR="0077614D" w:rsidRPr="001E1668" w:rsidRDefault="0077614D" w:rsidP="00FB6061">
+    <w:pPr>
+      <w:pStyle w:val="Footer"/>
+      <w:ind w:right="567"/>
+      <w:jc w:val="right"/>
+    </w:pPr>
+    <w:r>
+      <w:rPr>
+        <w:lang w:val="hi"/>
+      </w:rPr>
+      <w:tab/>
+    </w:r>
+    <w:sdt>
+      <w:sdtPr>
+        <w:rPr>
+          <w:sz w:val="18"/>
+          <w:szCs w:val="14"/>
+        </w:rPr>
+        <w:alias w:val="TRIM number"/>
+        <w:tag w:val="TRIM number"/>
+        <w:id w:val="-312792894"/>
+        <w:placeholder>
+          <w:docPart w:val="B5B2470A45DB4F6C8CE206D2ED25B320"/>
+        </w:placeholder>
+        <w:dataBinding w:prefixMappings="xmlns:ns0='http://purl.org/dc/elements/1.1/' xmlns:ns1='http://schemas.openxmlformats.org/package/2006/metadata/core-properties' " w:xpath="/ns1:coreProperties[1]/ns1:contentStatus[1]" w:storeItemID="{6C3C8BC8-F283-45AE-878A-BAB7291924A1}"/>
+        <w:text/>
+      </w:sdtPr>
+      <w:sdtEndPr/>
+      <w:sdtContent>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="18"/>
+            <w:szCs w:val="14"/>
+            <w:lang w:val="hi"/>
+          </w:rPr>
+          <w:t>D24/0265614
+          </w:t>
+        </w:r>
+      </w:sdtContent>
+    </w:sdt>
+  </w:p>
+  <w:p w14:paraId="03E59852" w14:textId="0FF1302C" w:rsidR="00293D0A" w:rsidRDefault="0077614D" w:rsidP="00B25322">
+    <w:pPr>
+      <w:pStyle w:val="Footer"/>
+      <w:tabs>
+        <w:tab w:val="clear" w:pos="4536"/>
+        <w:tab w:val="center" w:pos="4535"/>
+      </w:tabs>
+    </w:pPr>
+    <w:r>
+      <w:rPr>
+        <w:lang w:val="hi"/>
+      </w:rPr>
+      <w:tab/>
+    </w:r>
+    <w:r>
+      <w:rPr>
+        <w:lang w:val="hi"/>
+      </w:rPr>
+      <w:tab/>
+    </w:r>
+    <w:r>
+      <w:rPr>
+        <w:sz w:val="18"/>
+        <w:szCs w:val="14"/>
+        <w:lang w:val="hi"/>
+      </w:rPr>
+      <w:t>February 2025
+      </w:t>
+    </w:r>
+  </w:p>
+  <w:p w14:paraId="23580A94" w14:textId="675EBB12" w:rsidR="00B461B9" w:rsidRDefault="00E14A06" w:rsidP="00E14A06">
+    <w:pPr>
+      <w:pStyle w:val="Footer"/>
+      <w:jc w:val="center"/>
+    </w:pPr>
+    <w:r>
+      <w:rPr>
+        <w:lang w:val="hi"/>
+      </w:rPr>
+      <w:t>2
+      </w:t>
+    </w:r>
+  </w:p>
+</w:ftr>

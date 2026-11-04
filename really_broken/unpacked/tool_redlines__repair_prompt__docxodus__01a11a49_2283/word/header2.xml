@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:hdr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du wp14">
+  <w:p w14:paraId="1842266D" w14:textId="57999EE7">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="1000" w:date="2000-01-01T00:00:00Z"/>
+      </w:rPr>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="998" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+        </w:rPr>
+        <mc:AlternateContent>
+          <mc:Choice Requires="wps">
+            <w:drawing>
+              <wp:anchor distT="45720" distB="45720" distL="114300" distR="114300" simplePos="0" relativeHeight="251664896" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="3B71DB0F" wp14:editId="01BA629D">
+                <wp:simplePos x="0" y="0"/>
+                <wp:positionH relativeFrom="rightMargin">
+                  <wp:align>left
+                  </wp:align>
+                </wp:positionH>
+                <wp:positionV relativeFrom="paragraph">
+                  <wp:posOffset>-154940
+                  </wp:posOffset>
+                </wp:positionV>
+                <wp:extent cx="476250" cy="1404620"/>
+                <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                <wp:wrapSquare wrapText="bothSides"/>
+                <wp:docPr id="217" name="Text Box 2"/>
+                <wp:cNvGraphicFramePr>
+                  <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+                </wp:cNvGraphicFramePr>
+                <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                  <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                    <wps:wsp>
+                      <wps:cNvSpPr txBox="1">
+                        <a:spLocks noChangeArrowheads="1"/>
+                      </wps:cNvSpPr>
+                      <wps:spPr bwMode="auto">
+                        <a:xfrm>
+                          <a:off x="0" y="0"/>
+                          <a:ext cx="476250" cy="1404620"/>
+                        </a:xfrm>
+                        <a:prstGeom prst="rect">
+                          <a:avLst/>
+                        </a:prstGeom>
+                        <a:noFill/>
+                        <a:ln w="9525">
+                          <a:noFill/>
+                          <a:miter lim="800000"/>
+                          <a:headEnd/>
+                          <a:tailEnd/>
+                        </a:ln>
+                      </wps:spPr>
+                      <wps:txbx>
+                        <w:txbxContent>
+                          <w:p w14:paraId="1EC0BB46" w14:textId="40D6E8EB">
+                            <w:pPr>
+                              <w:rPr>
+                                <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                                <w:sz w:val="18"/>
+                                <w:szCs w:val="16"/>
+                              </w:rPr>
+                            </w:pPr>
+                            <w:r>
+                              <w:rPr>
+                                <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                                <w:sz w:val="18"/>
+                                <w:szCs w:val="16"/>
+                              </w:rPr>
+                              <w:delText>Hindi
+                              </w:delText>
+                            </w:r>
+                          </w:p>
+                        </w:txbxContent>
+                      </wps:txbx>
+                      <wps:bodyPr rot="0" vert="horz" wrap="square" lIns="91440" tIns="45720" rIns="91440" bIns="45720" anchor="t" anchorCtr="0">
+                        <a:spAutoFit/>
+                      </wps:bodyPr>
+                    </wps:wsp>
+                  </a:graphicData>
+                </a:graphic>
+                <wp14:sizeRelH relativeFrom="margin">
+                  <wp14:pctWidth>0
+                  </wp14:pctWidth>
+                </wp14:sizeRelH>
+                <wp14:sizeRelV relativeFrom="margin">
+                  <wp14:pctHeight>20000
+                  </wp14:pctHeight>
+                </wp14:sizeRelV>
+              </wp:anchor>
+            </w:drawing>
+          </mc:Choice>
+          <mc:Fallback>
+            <w:pict>
+              <v:shapetype w14:anchorId="3B71DB0F" id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe">
+                <v:stroke joinstyle="miter"/>
+                <v:path gradientshapeok="t" o:connecttype="rect"/>
+              </v:shapetype>
+              <v:shape id="Text Box 2" o:spid="_x0000_s1026" type="#_x0000_t202" style="position:absolute;margin-left:0;margin-top:-12.2pt;width:37.5pt;height:110.6pt;z-index:251664896;visibility:visible;mso-wrap-style:square;mso-width-percent:0;mso-height-percent:200;mso-wrap-distance-left:9pt;mso-wrap-distance-top:3.6pt;mso-wrap-distance-right:9pt;mso-wrap-distance-bottom:3.6pt;mso-position-horizontal:left;mso-position-horizontal-relative:right-margin-area;mso-position-vertical:absolute;mso-position-vertical-relative:text;mso-width-percent:0;mso-height-percent:200;mso-width-relative:margin;mso-height-relative:margin;v-text-anchor:top" o:gfxdata="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&#10;" filled="f" stroked="f">
+                <v:textbox style="mso-fit-shape-to-text:t">
+                  <w:txbxContent>
+                    <w:p w14:paraId="1EC0BB46" w14:textId="40D6E8EB">
+                      <w:pPr>
+                        <w:rPr>
+                          <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="16"/>
+                        </w:rPr>
+                      </w:pPr>
+                      <w:r>
+                        <w:rPr>
+                          <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="16"/>
+                        </w:rPr>
+                        <w:delText>Hindi
+                        </w:delText>
+                      </w:r>
+                    </w:p>
+                  </w:txbxContent>
+                </v:textbox>
+                <w10:wrap type="square" anchorx="margin"/>
+              </v:shape>
+            </w:pict>
+          </mc:Fallback>
+        </mc:AlternateContent>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="999" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+          <w:lang w:val="hi"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251660800" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="3CC8F0B3" wp14:editId="195BD14A">
+            <wp:simplePos x="0" y="0"/>
+            <wp:positionH relativeFrom="page">
+              <wp:posOffset>7
+              </wp:posOffset>
+            </wp:positionH>
+            <wp:positionV relativeFrom="page">
+              <wp:posOffset>0
+              </wp:posOffset>
+            </wp:positionV>
+            <wp:extent cx="7559675" cy="10690225"/>
+            <wp:effectExtent l="0" t="0" r="3175" b="0"/>
+            <wp:wrapNone/>
+            <wp:docPr id="8" name="Picture 8"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="Picture 3" descr="DOE Fact Sheet-1 copy"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId1" cstate="print">
+                      <a:extLst>
+                        <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                          <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                        </a:ext>
+                      </a:extLst>
+                    </a:blip>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="7559675" cy="10690225"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+            <wp14:sizeRelH relativeFrom="page">
+              <wp14:pctWidth>0
+              </wp14:pctWidth>
+            </wp14:sizeRelH>
+            <wp14:sizeRelV relativeFrom="page">
+              <wp14:pctHeight>0
+              </wp14:pctHeight>
+            </wp14:sizeRelV>
+          </wp:anchor>
+        </w:drawing>
+      </w:r>
+    </w:del>
+  </w:p>
+</w:hdr>

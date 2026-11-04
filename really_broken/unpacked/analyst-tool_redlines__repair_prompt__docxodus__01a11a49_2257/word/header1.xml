@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:hdr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh wp14">
+  <w:p w14:paraId="01ABAB0F" w14:textId="77777777">
+    <w:pPr>
+      <w:spacing w:after="0"/>
+      <w:ind w:left="-1276"/>
+      <w:jc w:val="center"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="5359" w:date="2000-01-01T00:00:00Z"/>
+        <w:color w:val="000000" w:themeColor="text1"/>
+        <w:sz w:val="20"/>
+        <w:szCs w:val="20"/>
+        <w:u w:val="single"/>
+      </w:rPr>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="5358" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+          <w:lang w:eastAsia="nl-NL"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251658240" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="5DACF1C6" wp14:editId="4EC42679">
+            <wp:simplePos x="0" y="0"/>
+            <wp:positionH relativeFrom="column">
+              <wp:posOffset>-424180
+              </wp:posOffset>
+            </wp:positionH>
+            <wp:positionV relativeFrom="paragraph">
+              <wp:posOffset>-402590
+              </wp:posOffset>
+            </wp:positionV>
+            <wp:extent cx="4543425" cy="495300"/>
+            <wp:effectExtent l="19050" t="0" r="9525" b="0"/>
+            <wp:wrapSquare wrapText="bothSides"/>
+            <wp:docPr id="4" name="Afbeelding 3" descr="mainheader.jpg"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="mainheader.jpg"/>
+                    <pic:cNvPicPr/>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId1"/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr>
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="4543425" cy="495300"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:anchor>
+        </w:drawing>
+      </w:r>
+    </w:del>
+  </w:p>
+  <w:p w14:paraId="31CE166C" w14:textId="77777777">
+    <w:pPr>
+      <w:spacing w:after="0"/>
+      <w:ind w:left="-1276" w:firstLine="1276"/>
+      <w:jc w:val="center"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="5365" w:date="2000-01-01T00:00:00Z"/>
+        <w:lang w:val="en-US"/>
+      </w:rPr>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="5360" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:u w:val="single"/>
+          <w:lang w:val="en-US"/>
+        </w:rPr>
+        <w:delText xml:space="preserve">© Bridge Office -
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:hyperlink r:id="rId2" w:history="1">
+      <w:del w:author="Open-Xml-PowerTools" w:id="5361" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+            <w:color w:val="000000" w:themeColor="text1"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:lang w:val="en-US"/>
+          </w:rPr>
+          <w:delText>www.bridgeoffice.nl
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:hyperlink>
+    <w:del w:author="Open-Xml-PowerTools" w:id="5362" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:u w:val="single"/>
+          <w:lang w:val="en-US"/>
+        </w:rPr>
+        <w:delText xml:space="preserve">-
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:hyperlink r:id="rId3" w:history="1">
+      <w:del w:author="Open-Xml-PowerTools" w:id="5363" w:date="2000-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+            <w:color w:val="000000" w:themeColor="text1"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:lang w:val="en-US"/>
+          </w:rPr>
+          <w:delText>info@bridgeoffice.nl
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:hyperlink>
+    <w:del w:author="Open-Xml-PowerTools" w:id="5364" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="en-US"/>
+        </w:rPr>
+        <w:delText xml:space="preserve">
+        </w:delText>
+      </w:r>
+    </w:del>
+  </w:p>
+</w:hdr>

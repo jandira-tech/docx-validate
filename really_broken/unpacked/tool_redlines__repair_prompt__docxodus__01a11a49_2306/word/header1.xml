@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:hdr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh wp14">
+  <w:p w14:paraId="6A86AB6A" w14:textId="6C6E6AF6">
+    <w:pPr>
+      <w:pStyle w:val="Header"/>
+      <w:rPr>
+        <w:ins w:author="Open-Xml-PowerTools" w:id="1133" w:date="2000-01-01T00:00:00Z"/>
+      </w:rPr>
+    </w:pPr>
+    <w:ins w:author="Open-Xml-PowerTools" w:id="1132" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+        </w:rPr>
+        <w:drawing>
+          <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="044E5AC9" wp14:editId="5CACCE2D">
+            <wp:extent cx="6166485" cy="541020"/>
+            <wp:effectExtent l="0" t="0" r="5715" b="0"/>
+            <wp:docPr id="2018943267" name="Picture 1"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="Picture 1"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="R1">
+                      <a:extLst>
+                        <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                          <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                        </a:ext>
+                      </a:extLst>
+                    </a:blip>
+                    <a:srcRect/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="6166485" cy="541020"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                    <a:ln>
+                      <a:noFill/>
+                    </a:ln>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+    </w:ins>
+  </w:p>
+  <w:p w14:paraId="7FF1BF0D" w14:textId="140755A3">
+    <w:pPr>
+      <w:pStyle w:val="Nagwek1"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="1139" w:date="2000-01-01T00:00:00Z"/>
+        <w:rFonts w:ascii="Advent Sans Logo" w:hAnsi="Advent Sans Logo" w:cs="Advent Sans Logo"/>
+        <w:color w:val="005481"/>
+        <w:sz w:val="24"/>
+        <w:szCs w:val="24"/>
+        <w:lang w:val="pl-PL"/>
+      </w:rPr>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="1135" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Advent Sans Beta" w:hAnsi="Advent Sans Beta" w:cs="Advent Sans Beta"/>
+          <w:noProof/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="pl-PL"/>
+        </w:rPr>
+        <mc:AlternateContent>
+          <mc:Choice Requires="wps">
+            <w:drawing>
+              <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251672576" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="7B0FBF06" wp14:editId="7A321172">
+                <wp:simplePos x="0" y="0"/>
+                <wp:positionH relativeFrom="column">
+                  <wp:posOffset>5560540
+                  </wp:posOffset>
+                </wp:positionH>
+                <wp:positionV relativeFrom="paragraph">
+                  <wp:posOffset>63276
+                  </wp:posOffset>
+                </wp:positionV>
+                <wp:extent cx="1905" cy="9332595"/>
+                <wp:effectExtent l="0" t="0" r="23495" b="14605"/>
+                <wp:wrapNone/>
+                <wp:docPr id="4" name="Straight Connector 1"/>
+                <wp:cNvGraphicFramePr/>
+                <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                  <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                    <wps:wsp>
+                      <wps:cNvCnPr/>
+                      <wps:spPr>
+                        <a:xfrm>
+                          <a:off x="0" y="0"/>
+                          <a:ext cx="1905" cy="9332595"/>
+                        </a:xfrm>
+                        <a:prstGeom prst="line">
+                          <a:avLst/>
+                        </a:prstGeom>
+                        <a:ln w="0">
+                          <a:solidFill>
+                            <a:schemeClr val="tx1">
+                              <a:lumMod val="50000"/>
+                              <a:lumOff val="50000"/>
+                            </a:schemeClr>
+                          </a:solidFill>
+                        </a:ln>
+                      </wps:spPr>
+                      <wps:style>
+                        <a:lnRef idx="1">
+                          <a:schemeClr val="dk1"/>
+                        </a:lnRef>
+                        <a:fillRef idx="0">
+                          <a:schemeClr val="dk1"/>
+                        </a:fillRef>
+                        <a:effectRef idx="0">
+                          <a:schemeClr val="dk1"/>
+                        </a:effectRef>
+                        <a:fontRef idx="minor">
+                          <a:schemeClr val="tx1"/>
+                        </a:fontRef>
+                      </wps:style>
+                      <wps:bodyPr/>
+                    </wps:wsp>
+                  </a:graphicData>
+                </a:graphic>
+                <wp14:sizeRelH relativeFrom="margin">
+                  <wp14:pctWidth>0
+                  </wp14:pctWidth>
+                </wp14:sizeRelH>
+                <wp14:sizeRelV relativeFrom="margin">
+                  <wp14:pctHeight>0
+                  </wp14:pctHeight>
+                </wp14:sizeRelV>
+              </wp:anchor>
+            </w:drawing>
+          </mc:Choice>
+          <mc:Fallback>
+            <w:pict>
+              <v:line w14:anchorId="2DD30681" id="Straight Connector 1" o:spid="_x0000_s1026" style="position:absolute;z-index:251672576;visibility:visible;mso-wrap-style:square;mso-width-percent:0;mso-height-percent:0;mso-wrap-distance-left:9pt;mso-wrap-distance-top:0;mso-wrap-distance-right:9pt;mso-wrap-distance-bottom:0;mso-position-horizontal:absolute;mso-position-horizontal-relative:text;mso-position-vertical:absolute;mso-position-vertical-relative:text;mso-width-percent:0;mso-height-percent:0;mso-width-relative:margin;mso-height-relative:margin" from="437.85pt,5pt" to="438pt,739.85pt" o:gfxdata="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&#10;AAAA&#10;" strokecolor="gray [1629]" strokeweight="0">
+                <v:stroke joinstyle="miter"/>
+              </v:line>
+            </w:pict>
+          </mc:Fallback>
+        </mc:AlternateContent>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="1136" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Advent Sans Logo" w:hAnsi="Advent Sans Logo" w:cs="Advent Sans Logo"/>
+          <w:noProof/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="pl-PL" w:eastAsia="pl-PL"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251663360" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="0647807A" wp14:editId="719A0E94">
+            <wp:simplePos x="0" y="0"/>
+            <wp:positionH relativeFrom="column">
+              <wp:posOffset>5899150
+              </wp:posOffset>
+            </wp:positionH>
+            <wp:positionV relativeFrom="paragraph">
+              <wp:posOffset>62345
+              </wp:posOffset>
+            </wp:positionV>
+            <wp:extent cx="603250" cy="539115"/>
+            <wp:effectExtent l="0" t="0" r="6350" b="0"/>
+            <wp:wrapNone/>
+            <wp:docPr id="15" name="Picture 7" descr="/Users/hardingeb/Dropbox (SDA COM and OGSI)/ Brand Assets/Logos/PNG/Logo@2x.png"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="4" name="Logo@2x.png"/>
+                    <pic:cNvPicPr/>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId1">
+                      <a:extLst>
+                        <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                          <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                        </a:ext>
+                      </a:extLst>
+                    </a:blip>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr>
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="603250" cy="539115"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+            <wp14:sizeRelH relativeFrom="page">
+              <wp14:pctWidth>0
+              </wp14:pctWidth>
+            </wp14:sizeRelH>
+            <wp14:sizeRelV relativeFrom="page">
+              <wp14:pctHeight>0
+              </wp14:pctHeight>
+            </wp14:sizeRelV>
+          </wp:anchor>
+        </w:drawing>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="1137" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Advent Sans Logo" w:hAnsi="Advent Sans Logo" w:cs="Advent Sans Logo"/>
+          <w:noProof/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="pl-PL" w:eastAsia="pl-PL"/>
+        </w:rPr>
+        <mc:AlternateContent>
+          <mc:Choice Requires="wps">
+            <w:drawing>
+              <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251657216" behindDoc="0" locked="1" layoutInCell="1" allowOverlap="1" wp14:anchorId="1083143A" wp14:editId="5B3D97C2">
+                <wp:simplePos x="0" y="0"/>
+                <wp:positionH relativeFrom="column">
+                  <wp:posOffset>5443220
+                  </wp:posOffset>
+                </wp:positionH>
+                <wp:positionV relativeFrom="paragraph">
+                  <wp:posOffset>-782320
+                  </wp:posOffset>
+                </wp:positionV>
+                <wp:extent cx="1049020" cy="1202055"/>
+                <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                <wp:wrapThrough wrapText="bothSides">
+                  <wp:wrapPolygon edited="0">
+                    <wp:start x="1308" y="228"/>
+                    <wp:lineTo x="1308" y="21223"/>
+                    <wp:lineTo x="20136" y="21223"/>
+                    <wp:lineTo x="20136" y="228"/>
+                    <wp:lineTo x="1308" y="228"/>
+                  </wp:wrapPolygon>
+                </wp:wrapThrough>
+                <wp:docPr id="11" name="Text Box 2"/>
+                <wp:cNvGraphicFramePr>
+                  <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+                </wp:cNvGraphicFramePr>
+                <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                  <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                    <wps:wsp>
+                      <wps:cNvSpPr txBox="1">
+                        <a:spLocks/>
+                      </wps:cNvSpPr>
+                      <wps:spPr>
+                        <a:xfrm>
+                          <a:off x="0" y="0"/>
+                          <a:ext cx="1049020" cy="1202055"/>
+                        </a:xfrm>
+                        <a:prstGeom prst="rect">
+                          <a:avLst/>
+                        </a:prstGeom>
+                        <a:noFill/>
+                        <a:ln>
+                          <a:noFill/>
+                        </a:ln>
+                        <a:effectLst/>
+                        <a:extLst>
+                          <a:ext uri="{C572A759-6A51-4108-AA02-DFA0A04FC94B}">
+                            <ma14:wrappingTextBoxFlag xmlns:ma14="http://schemas.microsoft.com/office/mac/drawingml/2011/main" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:mv="urn:schemas-microsoft-com:mac:vml" xmlns:mo="http://schemas.microsoft.com/office/mac/office/2008/main" xmlns=""/>
+                          </a:ext>
+                        </a:extLst>
+                      </wps:spPr>
+                      <wps:txbx>
+                        <w:txbxContent>
+                          <w:p w14:paraId="327F664C" w14:textId="77777777">
+                            <w:pPr>
+                              <w:pStyle w:val="Logo-Mark"/>
+                            </w:pPr>
+                            <w:r>
+                              <w:delText xml:space="preserve">
+                              </w:delText>
+                            </w:r>
+                          </w:p>
+                        </w:txbxContent>
+                      </wps:txbx>
+                      <wps:bodyPr rot="0" spcFirstLastPara="0" vertOverflow="overflow" horzOverflow="overflow" vert="horz" wrap="square" lIns="91440" tIns="45720" rIns="91440" bIns="45720" numCol="1" spcCol="0" rtlCol="0" fromWordArt="0" anchor="t" anchorCtr="0" forceAA="0" compatLnSpc="1">
+                        <a:prstTxWarp prst="textNoShape">
+                          <a:avLst/>
+                        </a:prstTxWarp>
+                        <a:noAutofit/>
+                      </wps:bodyPr>
+                    </wps:wsp>
+                  </a:graphicData>
+                </a:graphic>
+                <wp14:sizeRelH relativeFrom="margin">
+                  <wp14:pctWidth>0
+                  </wp14:pctWidth>
+                </wp14:sizeRelH>
+                <wp14:sizeRelV relativeFrom="margin">
+                  <wp14:pctHeight>0
+                  </wp14:pctHeight>
+                </wp14:sizeRelV>
+              </wp:anchor>
+            </w:drawing>
+          </mc:Choice>
+          <mc:Fallback>
+            <w:pict>
+              <v:shapetype w14:anchorId="1083143A" id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe">
+                <v:stroke joinstyle="miter"/>
+                <v:path gradientshapeok="t" o:connecttype="rect"/>
+              </v:shapetype>
+              <v:shape id="Text Box 2" o:spid="_x0000_s1026" type="#_x0000_t202" style="position:absolute;margin-left:428.6pt;margin-top:-61.6pt;width:82.6pt;height:94.65pt;z-index:251657216;visibility:visible;mso-wrap-style:square;mso-width-percent:0;mso-height-percent:0;mso-wrap-distance-left:9pt;mso-wrap-distance-top:0;mso-wrap-distance-right:9pt;mso-wrap-distance-bottom:0;mso-position-horizontal:absolute;mso-position-horizontal-relative:text;mso-position-vertical:absolute;mso-position-vertical-relative:text;mso-width-percent:0;mso-height-percent:0;mso-width-relative:margin;mso-height-relative:margin;v-text-anchor:top" o:gfxdata="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&#10;eG1sUEsFBgAAAAAEAAQA8wAAAIUFAAAAAA==&#10;" filled="f" stroked="f">
+                <v:textbox>
+                  <w:txbxContent>
+                    <w:p w14:paraId="327F664C" w14:textId="77777777">
+                      <w:pPr>
+                        <w:pStyle w:val="Logo-Mark"/>
+                      </w:pPr>
+                      <w:r>
+                        <w:delText xml:space="preserve">
+                        </w:delText>
+                      </w:r>
+                    </w:p>
+                  </w:txbxContent>
+                </v:textbox>
+                <w10:wrap type="through"/>
+                <w10:anchorlock/>
+              </v:shape>
+            </w:pict>
+          </mc:Fallback>
+        </mc:AlternateContent>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="1138" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Advent Sans Logo" w:hAnsi="Advent Sans Logo" w:cs="Advent Sans Logo"/>
+          <w:color w:val="055B8A"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="pl-PL"/>
+        </w:rPr>
+        <w:delText xml:space="preserve">Kościół Adwentystów
+        </w:delText>
+      </w:r>
+    </w:del>
+  </w:p>
+  <w:p w14:paraId="783B5938" w14:textId="750302D0">
+    <w:pPr>
+      <w:pStyle w:val="Tekstpodstawowy"/>
+      <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+      <w:ind w:right="907"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="1141" w:date="2000-01-01T00:00:00Z"/>
+        <w:color w:val="055B8A"/>
+        <w:sz w:val="24"/>
+        <w:szCs w:val="24"/>
+        <w:lang w:val="pl-PL"/>
+      </w:rPr>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="1140" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:color w:val="055B8A"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="pl-PL"/>
+        </w:rPr>
+        <w:delText>Dnia Siódmego
+        </w:delText>
+      </w:r>
+    </w:del>
+  </w:p>
+  <w:p w14:paraId="17DAB128" w14:textId="0DBA5D85">
+    <w:pPr>
+      <w:pStyle w:val="Tekstpodstawowy"/>
+      <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+      <w:ind w:right="907"/>
+      <w:rPr>
+        <w:del w:author="Open-Xml-PowerTools" w:id="1143" w:date="2000-01-01T00:00:00Z"/>
+        <w:color w:val="055B8A"/>
+        <w:sz w:val="24"/>
+        <w:szCs w:val="24"/>
+        <w:lang w:val="pl-PL"/>
+      </w:rPr>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="1142" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:color w:val="055B8A"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="pl-PL"/>
+        </w:rPr>
+        <w:delText>w Rzeczypospolitej Polskiej
+        </w:delText>
+      </w:r>
+    </w:del>
+  </w:p>
+  <w:p w14:paraId="3BCB1017" w14:textId="24AC5A58">
+    <w:pPr>
+      <w:pPrChange w:author="Open-Xml-PowerTools" w:id="1148" w:date="2000-01-01T00:00:00Z">
+        <w:pPr>
+          <w:pStyle w:val="Tekstpodstawowy"/>
+        </w:pPr>
+      </w:pPrChange>
+    </w:pPr>
+    <w:del w:author="Open-Xml-PowerTools" w:id="1144" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="pl-PL"/>
+        </w:rPr>
+        <w:br/>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="1145" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="pl-PL"/>
+        </w:rPr>
+        <w:delText xml:space="preserve">ZARZĄD
+        </w:delText>
+      </w:r>
+    </w:del>
+    <w:del w:author="Open-Xml-PowerTools" w:id="1146" w:date="2000-01-01T00:00:00Z">
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="pl-PL"/>
+        </w:rPr>
+        <w:delText>KOŚCIOŁA
+        </w:delText>
+      </w:r>
+    </w:del>
+  </w:p>
+</w:hdr>

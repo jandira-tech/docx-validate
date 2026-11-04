@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image2.png" Id="rId8"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml" Id="rId3"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.wmf" Id="rId7"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml" Id="rId12"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml" Id="rId2"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/item1.xml" Id="rId1"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/endnotes" Target="endnotes.xml" Id="rId6"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml" Id="rId11"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes" Target="footnotes.xml" Id="rId5"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml" Id="rId10"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings" Target="webSettings.xml" Id="rId4"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml" Id="rId9"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicepenale.htm" TargetMode="External" Id="rIdRemap1"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicepenale.htm" TargetMode="External" Id="rIdRemap2"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2016_0050.htm" TargetMode="External" Id="rIdRemap3"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2016_0050.htm" TargetMode="External" Id="rIdRemap4"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2006_0152.htm" TargetMode="External" Id="rIdRemap5"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicepenale.htm" TargetMode="External" Id="rIdRemap6"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicepenale.htm" TargetMode="External" Id="rId13"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicepenale.htm" TargetMode="External" Id="rId14"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicecivile.htm" TargetMode="External" Id="rId15"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicepenale.htm" TargetMode="External" Id="rId16"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2016_0050.htm" TargetMode="External" Id="rId17"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2011_0159.htm" TargetMode="External" Id="rId18"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2011_0159.htm" TargetMode="External" Id="rId19"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2011_0159.htm" TargetMode="External" Id="rId20"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2011_0159.htm" TargetMode="External" Id="rId21"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2008_0040.htm" TargetMode="External" Id="rId22"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2016_0050.htm" TargetMode="External" Id="rId23"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2016_0050.htm" TargetMode="External" Id="rId24"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2016_0050.htm" TargetMode="External" Id="rId25"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2016_0050.htm" TargetMode="External" Id="rId26"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2001_0231.htm" TargetMode="External" Id="rId27"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2008_0081.htm" TargetMode="External" Id="rId28"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/1990_0055.htm" TargetMode="External" Id="rId29"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/1999_0068.htm" TargetMode="External" Id="rId30"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicepenale.htm" TargetMode="External" Id="rId31"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicepenale.htm" TargetMode="External" Id="rId32"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/1981_0689.htm" TargetMode="External" Id="rId33"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicecivile.htm" TargetMode="External" Id="rId34"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2016_0050.htm" TargetMode="External" Id="rId35"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicepenale.htm" TargetMode="External" Id="R1"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicepenale.htm" TargetMode="External" Id="R2"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicecivile.htm" TargetMode="External" Id="R3"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicepenale.htm" TargetMode="External" Id="R4"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2016_0050.htm" TargetMode="External" Id="R5"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2011_0159.htm" TargetMode="External" Id="R6"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2011_0159.htm" TargetMode="External" Id="R7"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2011_0159.htm" TargetMode="External" Id="R8"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2011_0159.htm" TargetMode="External" Id="R9"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2008_0040.htm" TargetMode="External" Id="R10"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2016_0050.htm" TargetMode="External" Id="R11"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2016_0050.htm" TargetMode="External" Id="R12"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2016_0050.htm" TargetMode="External" Id="R13"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2016_0050.htm" TargetMode="External" Id="R14"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2001_0231.htm" TargetMode="External" Id="R15"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2008_0081.htm" TargetMode="External" Id="R16"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/1990_0055.htm" TargetMode="External" Id="R17"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/1999_0068.htm" TargetMode="External" Id="R18"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicepenale.htm" TargetMode="External" Id="R19"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicepenale.htm" TargetMode="External" Id="R20"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/1981_0689.htm" TargetMode="External" Id="R21"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/codicecivile.htm" TargetMode="External" Id="R22"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.bosettiegatti.eu/info/norme/statali/2016_0050.htm" TargetMode="External" Id="R23"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="/word/numbering.xml" Id="rIdNumbering"/>
+</Relationships>

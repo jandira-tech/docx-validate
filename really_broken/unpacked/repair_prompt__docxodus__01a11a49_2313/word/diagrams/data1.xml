@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<dgm:dataModel xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <dgm:ptLst>
+    <dgm:pt modelId="{1E285AFB-F10C-4F18-B7DC-CADA3FF3CEA8}" type="doc">
+      <dgm:prSet loTypeId="urn:microsoft.com/office/officeart/2005/8/layout/chevronAccent+Icon" loCatId="process" qsTypeId="urn:microsoft.com/office/officeart/2005/8/quickstyle/simple1" qsCatId="simple" csTypeId="urn:microsoft.com/office/officeart/2005/8/colors/accent1_1" csCatId="accent1" phldr="1"/>
+      <dgm:spPr/>
+    </dgm:pt>
+    <dgm:pt modelId="{769027B9-7638-4A7B-ACD6-6B02AB3FB55B}">
+      <dgm:prSet phldrT="[Text]" custT="1"/>
+      <dgm:spPr>
+        <a:xfrm>
+          <a:off x="196693" y="146278"/>
+          <a:ext cx="802820" cy="366973"/>
+        </a:xfrm>
+        <a:prstGeom prst="roundRect">
+          <a:avLst>
+            <a:gd name="adj" fmla="val 10000"/>
+          </a:avLst>
+        </a:prstGeom>
+        <a:solidFill>
+          <a:srgbClr val="5B9BD5">
+            <a:alpha val="90000"/>
+            <a:tint val="40000"/>
+            <a:hueOff val="0"/>
+            <a:satOff val="0"/>
+            <a:lumOff val="0"/>
+            <a:alphaOff val="0"/>
+          </a:srgbClr>
+        </a:solidFill>
+        <a:ln w="12700" cap="flat" cmpd="sng" algn="ctr">
+          <a:solidFill>
+            <a:srgbClr val="5B9BD5">
+              <a:hueOff val="0"/>
+              <a:satOff val="0"/>
+              <a:lumOff val="0"/>
+              <a:alphaOff val="0"/>
+            </a:srgbClr>
+          </a:solidFill>
+          <a:prstDash val="solid"/>
+          <a:miter lim="800000"/>
+        </a:ln>
+        <a:effectLst/>
+      </dgm:spPr>
+      <dgm:t>
+        <a:bodyPr/>
+        <a:lstStyle/>
+        <a:p>
+          <a:r>
+            <a:rPr lang="en-US" sz="1000" dirty="0" smtClean="0">
+              <a:solidFill>
+                <a:sysClr val="windowText" lastClr="000000">
+                  <a:hueOff val="0"/>
+                  <a:satOff val="0"/>
+                  <a:lumOff val="0"/>
+                  <a:alphaOff val="0"/>
+                </a:sysClr>
+              </a:solidFill>
+              <a:latin typeface="Bodoni MT Condensed" panose="02070606080606020203" pitchFamily="18" charset="0"/>
+              <a:ea typeface="+mn-ea"/>
+              <a:cs typeface="+mn-cs"/>
+            </a:rPr>
+            <a:t>L6 academic Qualification
+            </a:t>
+          </a:r>
+          <a:endParaRPr lang="en-US" sz="1000" dirty="0">
+            <a:solidFill>
+              <a:sysClr val="windowText" lastClr="000000">
+                <a:hueOff val="0"/>
+                <a:satOff val="0"/>
+                <a:lumOff val="0"/>
+                <a:alphaOff val="0"/>
+              </a:sysClr>
+            </a:solidFill>
+            <a:latin typeface="Bodoni MT Condensed" panose="02070606080606020203" pitchFamily="18" charset="0"/>
+            <a:ea typeface="+mn-ea"/>
+            <a:cs typeface="+mn-cs"/>
+          </a:endParaRPr>
+        </a:p>
+      </dgm:t>
+    </dgm:pt>
+    <dgm:pt modelId="{DFFBC200-C5BA-420D-A83F-9A9D342A27D0}" type="parTrans" cxnId="{50B6D9ED-DBE0-46A2-89E9-79AA0431B610}">
+      <dgm:prSet/>
+      <dgm:spPr/>
+      <dgm:t>
+        <a:bodyPr/>
+        <a:lstStyle/>
+        <a:p>
+          <a:endParaRPr lang="en-US"/>
+        </a:p>
+      </dgm:t>
+    </dgm:pt>
+    <dgm:pt modelId="{A2802A29-D422-4066-B583-DFDBA6E22D9C}" type="sibTrans" cxnId="{50B6D9ED-DBE0-46A2-89E9-79AA0431B610}">
+      <dgm:prSet/>
+      <dgm:spPr/>
+      <dgm:t>
+        <a:bodyPr/>
+        <a:lstStyle/>
+        <a:p>
+          <a:endParaRPr lang="en-US"/>
+        </a:p>
+      </dgm:t>
+    </dgm:pt>
+    <dgm:pt modelId="{F1E32885-2BE6-43B1-9900-A4FDE4C9FED3}" type="pres">
+      <dgm:prSet presAssocID="{1E285AFB-F10C-4F18-B7DC-CADA3FF3CEA8}" presName="Name0" presStyleCnt="0">
+        <dgm:presLayoutVars>
+          <dgm:dir/>
+          <dgm:resizeHandles val="exact"/>
+        </dgm:presLayoutVars>
+      </dgm:prSet>
+      <dgm:spPr/>
+    </dgm:pt>
+    <dgm:pt modelId="{CF6B0E20-BB43-4B34-B489-4F86740D51DB}" type="pres">
+      <dgm:prSet presAssocID="{769027B9-7638-4A7B-ACD6-6B02AB3FB55B}" presName="composite" presStyleCnt="0"/>
+      <dgm:spPr/>
+    </dgm:pt>
+    <dgm:pt modelId="{665BB643-A3EE-40BA-B4D0-6FC19DC44EA4}" type="pres">
+      <dgm:prSet presAssocID="{769027B9-7638-4A7B-ACD6-6B02AB3FB55B}" presName="bgChev" presStyleLbl="node1" presStyleIdx="0" presStyleCnt="1" custLinFactY="-12626" custLinFactNeighborX="-31972" custLinFactNeighborY="-100000"/>
+      <dgm:spPr>
+        <a:xfrm>
+          <a:off x="0" y="0"/>
+          <a:ext cx="950708" cy="366973"/>
+        </a:xfrm>
+        <a:prstGeom prst="chevron">
+          <a:avLst>
+            <a:gd name="adj" fmla="val 40000"/>
+          </a:avLst>
+        </a:prstGeom>
+        <a:blipFill rotWithShape="0">
+          <a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="rId1"/>
+          <a:stretch>
+            <a:fillRect/>
+          </a:stretch>
+        </a:blipFill>
+        <a:ln w="12700" cap="flat" cmpd="sng" algn="ctr">
+          <a:solidFill>
+            <a:srgbClr val="5B9BD5">
+              <a:shade val="80000"/>
+              <a:hueOff val="0"/>
+              <a:satOff val="0"/>
+              <a:lumOff val="0"/>
+              <a:alphaOff val="0"/>
+            </a:srgbClr>
+          </a:solidFill>
+          <a:prstDash val="solid"/>
+          <a:miter lim="800000"/>
+        </a:ln>
+        <a:effectLst/>
+      </dgm:spPr>
+      <dgm:t>
+        <a:bodyPr/>
+        <a:lstStyle/>
+        <a:p>
+          <a:endParaRPr lang="en-US"/>
+        </a:p>
+      </dgm:t>
+    </dgm:pt>
+    <dgm:pt modelId="{0277ED22-5ABC-4B07-9E75-6A1B17D50E2C}" type="pres">
+      <dgm:prSet presAssocID="{769027B9-7638-4A7B-ACD6-6B02AB3FB55B}" presName="txNode" presStyleLbl="fgAcc1" presStyleIdx="0" presStyleCnt="1" custLinFactNeighborX="-7143" custLinFactNeighborY="100000">
+        <dgm:presLayoutVars>
+          <dgm:bulletEnabled val="1"/>
+        </dgm:presLayoutVars>
+      </dgm:prSet>
+      <dgm:spPr/>
+      <dgm:t>
+        <a:bodyPr/>
+        <a:lstStyle/>
+        <a:p>
+          <a:endParaRPr lang="en-US"/>
+        </a:p>
+      </dgm:t>
+    </dgm:pt>
+  </dgm:ptLst>
+  <dgm:cxnLst>
+    <dgm:cxn modelId="{50B6D9ED-DBE0-46A2-89E9-79AA0431B610}" srcId="{1E285AFB-F10C-4F18-B7DC-CADA3FF3CEA8}" destId="{769027B9-7638-4A7B-ACD6-6B02AB3FB55B}" srcOrd="0" destOrd="0" parTransId="{DFFBC200-C5BA-420D-A83F-9A9D342A27D0}" sibTransId="{A2802A29-D422-4066-B583-DFDBA6E22D9C}"/>
+    <dgm:cxn modelId="{84F0AE73-8B66-4150-BBC4-9A7C5DA4D156}" type="presOf" srcId="{1E285AFB-F10C-4F18-B7DC-CADA3FF3CEA8}" destId="{F1E32885-2BE6-43B1-9900-A4FDE4C9FED3}" srcOrd="0" destOrd="0" presId="urn:microsoft.com/office/officeart/2005/8/layout/chevronAccent+Icon"/>
+    <dgm:cxn modelId="{02E1B37E-B5ED-4D34-A8E0-BCA34555F1D9}" type="presOf" srcId="{769027B9-7638-4A7B-ACD6-6B02AB3FB55B}" destId="{0277ED22-5ABC-4B07-9E75-6A1B17D50E2C}" srcOrd="0" destOrd="0" presId="urn:microsoft.com/office/officeart/2005/8/layout/chevronAccent+Icon"/>
+    <dgm:cxn modelId="{86373A85-8D84-4662-A093-E1189CCBE662}" type="presParOf" srcId="{F1E32885-2BE6-43B1-9900-A4FDE4C9FED3}" destId="{CF6B0E20-BB43-4B34-B489-4F86740D51DB}" srcOrd="0" destOrd="0" presId="urn:microsoft.com/office/officeart/2005/8/layout/chevronAccent+Icon"/>
+    <dgm:cxn modelId="{F14D1ED9-8777-4213-8FE9-7D4FF1A4EE7E}" type="presParOf" srcId="{CF6B0E20-BB43-4B34-B489-4F86740D51DB}" destId="{665BB643-A3EE-40BA-B4D0-6FC19DC44EA4}" srcOrd="0" destOrd="0" presId="urn:microsoft.com/office/officeart/2005/8/layout/chevronAccent+Icon"/>
+    <dgm:cxn modelId="{3379B917-596C-49A3-BDF8-688CBB071642}" type="presParOf" srcId="{CF6B0E20-BB43-4B34-B489-4F86740D51DB}" destId="{0277ED22-5ABC-4B07-9E75-6A1B17D50E2C}" srcOrd="1" destOrd="0" presId="urn:microsoft.com/office/officeart/2005/8/layout/chevronAccent+Icon"/>
+  </dgm:cxnLst>
+  <dgm:bg/>
+  <dgm:whole/>
+  <dgm:extLst>
+    <a:ext uri="http://schemas.microsoft.com/office/drawing/2008/diagram">
+      <dsp:dataModelExt xmlns:dsp="http://schemas.microsoft.com/office/drawing/2008/diagram" relId="rId24" minVer="http://schemas.openxmlformats.org/drawingml/2006/diagram"/>
+    </a:ext>
+  </dgm:extLst>
+</dgm:dataModel>
