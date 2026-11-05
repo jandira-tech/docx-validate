@@ -28,7 +28,13 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import { canonicalPartName, findEquivalentPart, relationshipTargetFolder, relationshipTargetPartName } from "../../../lib/content-types";
+import {
+    canonicalPartName,
+    equivalentPartLookup,
+    findEquivalentPart,
+    relationshipTargetFolder,
+    relationshipTargetPartName,
+} from "../../../lib/content-types";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
 import { officeRelationshipTypeSegment, sidecarOf } from "../../../lib/word-read-parts";
@@ -566,11 +572,12 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             return [];
         }
         const parts: string[] = [];
+        const lookup = equivalentPartLookup(names);
         for (const rel of this.relationshipElements(dom, relsName)) {
             if (officeRelationshipTypeSegment(rel.getAttribute("Type") ?? "") !== segment) continue;
             if (rel.getAttribute("TargetMode") === "External") continue;
             const resolved = relationshipTargetPartName(folder, rel.getAttribute("Target") ?? "");
-            const part = resolved === undefined ? undefined : findEquivalentPart(names, resolved.replace(/^\//, ""));
+            const part = resolved === undefined ? undefined : lookup(resolved.replace(/^\//, ""));
             if (part !== undefined) parts.push(part);
         }
         return parts;
