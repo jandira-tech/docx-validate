@@ -154,6 +154,7 @@ function isAdjacent(elem1: Element, elem2: Element): boolean {
         }
         node = node.nextSibling;
     }
+    // Dead code; elem2 is guaranteed to be a sibling of elem1
     return false;
 }
 
@@ -166,9 +167,6 @@ function removeElements(root: Node, tag: string): void {
 function stripRunRsidAttrs(root: Node): void {
     for (const run of findElements(root, "r")) {
         const attrs = run.attributes;
-        if (!attrs) {
-            continue;
-        }
         const toRemove: string[] = [];
         for (let i = 0; i < attrs.length; i += 1) {
             const attr = attrs.item(i);
@@ -186,7 +184,7 @@ function firstChildRun(container: Element): Element | null {
     for (let child = container.firstChild; child; child = child.nextSibling) {
         if (child.nodeType === ELEMENT_NODE) {
             const el = child as Element;
-            const name = el.localName ?? el.tagName;
+            const name = localTagName(el);
             if (name === "r" || name.endsWith(":r")) {
                 return el;
             }
@@ -211,7 +209,7 @@ function nextSiblingRun(node: Node): Element | null {
     while (sibling) {
         if (sibling.nodeType === ELEMENT_NODE) {
             const el = sibling as Element;
-            const name = el.localName ?? el.tagName;
+            const name = localTagName(el);
             if (name === "r" || name.endsWith(":r")) {
                 return el;
             }
@@ -292,7 +290,7 @@ function mergeRunsIn(container: Element): number {
             const nextElem = nextElementSibling(run);
             let nextIsRun = false;
             if (nextElem) {
-                const name = nextElem.localName ?? nextElem.tagName;
+                const name = localTagName(nextElem);
                 nextIsRun = name === "r" || name.endsWith(":r");
             }
             if (nextElem && nextIsRun && canMerge(run, nextElem)) {
