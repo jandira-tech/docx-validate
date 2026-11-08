@@ -621,3 +621,20 @@ export const getLocalName = (elem: Element, lowercase = false): string => {
     const name = elem.localName ?? elem.nodeName ?? "";
     return lowercase ? name.toLowerCase() : name;
 };
+
+/**
+ * Returns all Element children of a node, avoiding Array.from on NodeList.
+ */
+export const getChildElements = (node: Node): Element[] => {
+    const children: Element[] = [];
+    const { childNodes } = node;
+    // oxlint doesn't realize this isn't an array
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    for (let i = 0; i < childNodes.length; i += 1) {
+        const child = childNodes[i];
+        if (child && child.nodeType === 1) {
+            children.push(child as Element);
+        }
+    }
+    return children;
+};

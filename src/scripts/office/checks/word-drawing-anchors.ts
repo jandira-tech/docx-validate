@@ -138,7 +138,10 @@ export const wordPositionOffsetAndAlignCheck: CheckDefinition = {
                 for (const position of positions) {
                     let hasOffset = false;
                     let hasAlign = false;
-                    for (const child of Array.from(position.childNodes)) {
+                    const childNodes = position.childNodes;
+                    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+                    for (let i = 0; i < childNodes.length; i += 1) {
+                        const child = childNodes[i];
                         if (!child || child.nodeType !== 1) {
                             continue;
                         }

@@ -37,7 +37,10 @@ export const wordCellEndsWithTableCheck: CheckDefinition = {
                 const cells = getElementsByTagNameNSAll(dom, ns, "tc");
                 for (const cell of cells) {
                     let last: Element | null = null;
-                    for (const child of Array.from(cell.childNodes)) {
+                    const childNodes = cell.childNodes;
+                    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+                    for (let i = 0; i < childNodes.length; i += 1) {
+                        const child = childNodes[i];
                         if (!child || child.nodeType !== 1) {
                             continue;
                         }

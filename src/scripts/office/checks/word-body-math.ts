@@ -72,7 +72,10 @@ export const wordMathSpreBodyCheck: CheckDefinition = {
         if (!body) {
             return issues;
         }
-        for (const node of Array.from(body.childNodes)) {
+        const childNodes = body.childNodes;
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of
+        for (let i = 0; i < childNodes.length; i += 1) {
+            const node = childNodes[i];
             if (!node || node.nodeType !== 1) {
                 continue;
             }
