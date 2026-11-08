@@ -182,17 +182,14 @@ function stripRunRsidAttrs(root: Node): void {
     }
 }
 
-function isRun(node: Node): boolean {
-    if (node.nodeType !== ELEMENT_NODE) {
-        return false;
-    }
-    return matchesTag(node as Element, "r");
-}
-
 function firstChildRun(container: Element): Element | null {
     for (let child = container.firstChild; child; child = child.nextSibling) {
-        if (isRun(child)) {
-            return child as Element;
+        if (child.nodeType === ELEMENT_NODE) {
+            const el = child as Element;
+            const name = el.localName ?? el.tagName;
+            if (name === "r" || name.endsWith(":r")) {
+                return el;
+            }
         }
     }
     return null;
@@ -213,8 +210,10 @@ function nextSiblingRun(node: Node): Element | null {
     let sibling = node.nextSibling;
     while (sibling) {
         if (sibling.nodeType === ELEMENT_NODE) {
-            if (isRun(sibling)) {
-                return sibling as Element;
+            const el = sibling as Element;
+            const name = el.localName ?? el.tagName;
+            if (name === "r" || name.endsWith(":r")) {
+                return el;
             }
         }
         sibling = sibling.nextSibling;
@@ -291,7 +290,12 @@ function mergeRunsIn(container: Element): number {
     while (run) {
         while (true) {
             const nextElem = nextElementSibling(run);
-            if (nextElem && isRun(nextElem) && canMerge(run, nextElem)) {
+            let nextIsRun = false;
+            if (nextElem) {
+                const name = nextElem.localName ?? nextElem.tagName;
+                nextIsRun = name === "r" || name.endsWith(":r");
+            }
+            if (nextElem && nextIsRun && canMerge(run, nextElem)) {
                 mergeRunContent(run, nextElem);
                 container.removeChild(nextElem);
                 mergeCount += 1;
