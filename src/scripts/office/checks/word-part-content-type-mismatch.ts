@@ -66,6 +66,7 @@ import type { ValidationContext, XmlPart } from "../../../lib/validation-context
 import { type WordTypedTarget, wordReadTypedTargets } from "../../../lib/word-read-parts";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 import { REPORTING_SEGMENT_ORDER } from "./word-part-content-type-generic";
+import { getChildElements } from "../../../lib/xml-helpers";
 import { xmlPartNames } from "./xml";
 import {
     expectedContentTypesFor,
@@ -279,8 +280,7 @@ export const wordPartContentTypeMismatchFindings = async (
             element?.localName === segment && WORD_PARAGRAPH_NAMESPACES.includes(element.namespaceURI ?? "");
         const rootIsOwn = (parsed: XmlPart | undefined, segment: string): boolean =>
             isOwnRoot(parsed?.ok === true ? parsed.document.documentElement : null, segment);
-        const childElements = (element: Element): Element[] =>
-            Array.from(element.childNodes).filter((child): child is Element => child.nodeType === 1);
+        const childElements = (element: Element): Element[] => getChildElements(element);
         // Every session behind a co-reach citation stored a Transitional
         // package, each main document's stored root a Transitional
         // w:document (#857, #861).
@@ -354,23 +354,51 @@ export const wordPartContentTypeMismatchFindings = async (
             }
             const [storyRoot, ...otherRoots] = childElements(choice);
             const isText = (node: Node): boolean => node.nodeType === 3 && /[^ \t\r\n]/.test(node.nodeValue ?? "");
-            if (Array.from(storedRoot.childNodes).some(isText)) return undefined;
-            if ([storedRoot, choice, fallback].some((element) => Array.from(element.childNodes).some((node) => node.nodeType === 4)))
-                return {};
+            const hasTextChild = (node: Element) => {
+                const childNodes = node.childNodes;
+                // eslint-disable-next-line @typescript-eslint/prefer-for-of
+                for (let i = 0; i < childNodes.length; i += 1) {
+                    if (isText(childNodes[i]!)) return true;
+                }
+                return false;
+            };
+            const hasCDataChild = (node: Element) => {
+                const childNodes = node.childNodes;
+                // eslint-disable-next-line @typescript-eslint/prefer-for-of
+                for (let i = 0; i < childNodes.length; i += 1) {
+                    if (childNodes[i]!.nodeType === 4) return true;
+                }
+                return false;
+            };
+
+            if (hasTextChild(storedRoot)) return undefined;
+            if ([storedRoot, choice, fallback].some(hasCDataChild)) return {};
             if (storyRoot === undefined || otherRoots.length !== 0) return {};
             const required = (choice.getAttribute("Requires") ?? "").trim().split(/[ \t\r\n]+/);
             if (required.length !== 1) return {};
             const requiredNamespace = choice.lookupNamespaceURI(required[0]!);
-            const choiceText = Array.from(choice.childNodes).some(isText);
-            const fallbackText = Array.from(fallback.childNodes).some(isText);
+            const choiceText = hasTextChild(choice);
+            const fallbackText = hasTextChild(fallback);
             const transitionalRoot = storyRoot?.namespaceURI === WORD_2006_NAMESPACE;
             if (requiredNamespace === NS.W14) {
                 if (!choiceText && !fallbackText) {
                     return { session: transitionalRoot ? "session 63" : "session 65" };
                 }
-                const trailingText = Array.from(choice.childNodes)
-                    .slice(Array.from(choice.childNodes).indexOf(storyRoot) + 1)
-                    .some(isText);
+
+                let trailingText = false;
+                const choiceNodes = choice.childNodes;
+                let foundStoryRoot = false;
+                // eslint-disable-next-line @typescript-eslint/prefer-for-of
+                for (let i = 0; i < choiceNodes.length; i += 1) {
+                    if (foundStoryRoot && isText(choiceNodes[i]!)) {
+                        trailingText = true;
+                        break;
+                    }
+                    if (choiceNodes[i] === storyRoot) {
+                        foundStoryRoot = true;
+                    }
+                }
+
                 return { session: transitionalRoot && !trailingText && choiceText !== fallbackText ? "session 65" : undefined };
             }
             return {

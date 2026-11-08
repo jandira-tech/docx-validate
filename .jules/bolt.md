@@ -52,3 +52,7 @@
 
 **Learning:** Every open bot PR was compared with main after #1172, file by file, against the closest version in main's history. #686's change is #1172. #936 adds only a comment and an `if (childNodes)` guard, and `childNodes` is never undefined on an xmldom node. #1168 splits the old `getElementsByTagNameNSAll` into four loops, a function `walkElements` and its element index have since replaced. #677 downgrades `actions/checkout` and `actions/setup-node`. After the rebase, #685, #686 and #1168 each received a commit that restored their pre-#1169 tree, about 151,000 deleted lines.
 **Action:** Rebase a bot PR before judging it, and judge its head again before merging, since the bot may push after the rebase.
+
+## 2026-10-31 - Replace Array.from(childNodes) with for loop
+**Learning:** `Array.from(node.childNodes)` forces an allocation of an intermediate array which, in hot code paths parsing deep XML structures via `@xmldom/xmldom`, creates substantial memory and iteration overhead.
+**Action:** Replace `Array.from(node.childNodes)` with standard index-based `for` loops (or a fast `getChildElements` helper) to drastically improve performance. Also, add `// eslint-disable-next-line @typescript-eslint/prefer-for-of` when looping manually to suppress linting warnings on non-iterable `NodeList`s.

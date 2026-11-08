@@ -69,7 +69,10 @@ export const schemaGlobals = (schemaFile: string): ReadonlySet<string> => {
         }
         if (schema.namespaceURI !== XSD_NAMESPACE || schema.localName !== "schema") continue;
         const targetNamespace = schema.getAttribute("targetNamespace") || namespace;
-        for (const child of Array.from(schema.childNodes)) {
+        const childNodes = schema.childNodes;
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of
+        for (let i = 0; i < childNodes.length; i += 1) {
+            const child = childNodes[i]!;
             if (child.nodeType !== 1) continue;
             const declaration = child as Element;
             if (declaration.namespaceURI !== XSD_NAMESPACE) continue;

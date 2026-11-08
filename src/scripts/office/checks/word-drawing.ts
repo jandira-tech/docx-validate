@@ -26,12 +26,20 @@ export const wordDrawingExtentMissingCheck: CheckDefinition = {
             }
             for (const local of ["inline", "anchor"]) {
                 for (const container of getElementsByTagNameNSAll(parsed.document, WP_NAMESPACE, local)) {
-                    const hasExtent = Array.from(container.childNodes).some(
-                        (child) =>
+                    let hasExtent = false;
+                    const childNodes = container.childNodes;
+                    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+                    for (let i = 0; i < childNodes.length; i += 1) {
+                        const child = childNodes[i]!;
+                        if (
                             child.nodeType === 1 &&
                             (child as Element).namespaceURI === WP_NAMESPACE &&
-                            (child as Element).localName === "extent",
-                    );
+                            (child as Element).localName === "extent"
+                        ) {
+                            hasExtent = true;
+                            break;
+                        }
+                    }
                     if (hasExtent) {
                         continue;
                     }

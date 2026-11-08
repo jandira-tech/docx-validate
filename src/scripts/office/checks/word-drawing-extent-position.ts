@@ -5,7 +5,7 @@
 
 import type { CheckDefinition } from "../../../lib/check-registry";
 import type { ValidationIssue } from "../../../lib/types";
-import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
+import { getElementsByTagNameNSAll, getChildElements } from "../../../lib/xml-helpers";
 import { wordReadStoryParts } from "../../../lib/word-read-parts";
 
 const WP_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
@@ -36,7 +36,7 @@ export const wordDrawingExtentMisplacedCheck: CheckDefinition = {
                 const predecessors =
                     container?.namespaceURI === WP_NAMESPACE ? DRAWING_EXTENT_PREDECESSORS.get(container.localName) : undefined;
                 if (container && predecessors) {
-                    const children = Array.from(container.childNodes).filter((child): child is Element => child.nodeType === 1);
+                    const children = getChildElements(container);
                     const index = children.indexOf(extent);
                     const isPredecessor = (child: Element) => child.namespaceURI === WP_NAMESPACE && predecessors.includes(child.localName);
                     // Missing positioning children are a different defect: this

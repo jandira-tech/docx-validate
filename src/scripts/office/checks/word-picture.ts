@@ -25,12 +25,20 @@ const missingPictureChildCheck = (id: string, childName: string, position: strin
                 continue;
             }
             for (const pic of getElementsByTagNameNSAll(parsed.document, PICTURE_NAMESPACE, "pic")) {
-                const hasProperties = Array.from(pic.childNodes).some(
-                    (child) =>
+                let hasProperties = false;
+                const childNodes = pic.childNodes;
+                // eslint-disable-next-line @typescript-eslint/prefer-for-of
+                for (let i = 0; i < childNodes.length; i += 1) {
+                    const child = childNodes[i]!;
+                    if (
                         child.nodeType === 1 &&
                         (child as Element).namespaceURI === PICTURE_NAMESPACE &&
-                        (child as Element).localName === childName,
-                );
+                        (child as Element).localName === childName
+                    ) {
+                        hasProperties = true;
+                        break;
+                    }
+                }
                 if (hasProperties) {
                     continue;
                 }
