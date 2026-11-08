@@ -51,9 +51,11 @@ export interface RunSofficeResult {
     signal?: NodeJS.Signals | null;
 }
 
-let SHIM_DIR: string | null = null;
-let SHIM_SO: string | null = null;
-let SHIM_C: string | null = null;
+const shimState = {
+    dir: null as string | null,
+    so: null as string | null,
+    c: null as string | null
+};
 
 const SHIM_SOURCE = String.raw`
 #define _GNU_SOURCE
@@ -199,22 +201,22 @@ export function needsShim(): boolean {
  * Exported for tests; production callers should prefer `getSofficeEnv`.
  */
 export function ensureShim(): string {
-    if (SHIM_SO && existsSync(SHIM_SO)) {
-        return SHIM_SO;
+    if (shimState.so && existsSync(shimState.so)) {
+        return shimState.so;
     }
 
-    if (!SHIM_DIR || !existsSync(SHIM_DIR)) {
-        SHIM_DIR = mkdtempSync(path.join(os.tmpdir(), "lo_shim_"));
+    if (!shimState.dir || !existsSync(shimState.dir)) {
+        shimState.dir = mkdtempSync(path.join(os.tmpdir(), "lo_shim_"));
     }
 
-    SHIM_SO = path.join(SHIM_DIR, "lo_socket_shim.so");
-    SHIM_C = path.join(SHIM_DIR, "lo_socket_shim.c");
+    shimState.so = path.join(shimState.dir, "lo_socket_shim.so");
+    shimState.c = path.join(shimState.dir, "lo_socket_shim.c");
 
-    writeFileSync(SHIM_C, SHIM_SOURCE);
-    const result = spawnSync("gcc", ["-shared", "-fPIC", "-o", SHIM_SO, SHIM_C, "-ldl"], { encoding: "utf8" });
+    writeFileSync(shimState.c, SHIM_SOURCE);
+    const result = spawnSync("gcc", ["-shared", "-fPIC", "-o", shimState.so, shimState.c, "-ldl"], { encoding: "utf8" });
     if (result.error) {
         try {
-            unlinkSync(SHIM_C);
+            unlinkSync(shimState.c);
         } catch {
             /* ignore */
         }
@@ -222,18 +224,18 @@ export function ensureShim(): string {
     }
     if (result.status !== 0) {
         try {
-            unlinkSync(SHIM_C);
+            unlinkSync(shimState.c);
         } catch {
             /* ignore */
         }
         throw new Error(`gcc failed (exit ${result.status}): ${result.stderr ?? ""}`.trim());
     }
     try {
-        unlinkSync(SHIM_C);
+        unlinkSync(shimState.c);
     } catch {
         /* ignore */
     }
-    return SHIM_SO;
+    return shimState.so;
 }
 
 /**
@@ -326,26 +328,26 @@ export function runSoffice(args: string[], options?: RunSofficeOptions): Promise
 // Internal exports for tests.
 export const __test = {
     get SHIM_SO() {
-        return SHIM_SO || path.join(os.tmpdir(), "lo_socket_shim.so");
+        return shimState.so || path.join(os.tmpdir(), "lo_socket_shim.so");
     },
     get SHIM_C() {
-        return SHIM_C || path.join(os.tmpdir(), "lo_socket_shim.c");
+        return shimState.c || path.join(os.tmpdir(), "lo_socket_shim.c");
     },
     get SHIM_DIR() {
-        return SHIM_DIR;
+        return shimState.dir;
     },
     SHIM_SOURCE,
     resetShimState() {
-        if (SHIM_DIR && existsSync(SHIM_DIR)) {
+        if (shimState.dir && existsSync(shimState.dir)) {
             try {
-                rmSync(SHIM_DIR, { recursive: true, force: true });
+                rmSync(shimState.dir, { recursive: true, force: true });
             } catch {
                 // ignore
             }
         }
-        SHIM_DIR = null;
-        SHIM_SO = null;
-        SHIM_C = null;
+        shimState.dir = null;
+        shimState.so = null;
+        shimState.c = null;
     },
 };
 
