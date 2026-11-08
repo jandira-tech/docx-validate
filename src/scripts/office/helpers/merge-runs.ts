@@ -154,6 +154,7 @@ function isAdjacent(elem1: Element, elem2: Element): boolean {
         }
         node = node.nextSibling;
     }
+    // Dead code; elem2 is guaranteed to be a sibling of elem1
     return false;
 }
 
@@ -166,9 +167,6 @@ function removeElements(root: Node, tag: string): void {
 function stripRunRsidAttrs(root: Node): void {
     for (const run of findElements(root, "r")) {
         const attrs = run.attributes;
-        if (!attrs) {
-            continue;
-        }
         const toRemove: string[] = [];
         for (let i = 0; i < attrs.length; i += 1) {
             const attr = attrs.item(i);
@@ -182,17 +180,14 @@ function stripRunRsidAttrs(root: Node): void {
     }
 }
 
-function isRun(node: Node): boolean {
-    if (node.nodeType !== ELEMENT_NODE) {
-        return false;
-    }
-    return matchesTag(node as Element, "r");
-}
-
 function firstChildRun(container: Element): Element | null {
     for (let child = container.firstChild; child; child = child.nextSibling) {
-        if (isRun(child)) {
-            return child as Element;
+        if (child.nodeType === ELEMENT_NODE) {
+            const el = child as Element;
+            const name = localTagName(el);
+            if (name === "r" || name.endsWith(":r")) {
+                return el;
+            }
         }
     }
     return null;
@@ -213,8 +208,10 @@ function nextSiblingRun(node: Node): Element | null {
     let sibling = node.nextSibling;
     while (sibling) {
         if (sibling.nodeType === ELEMENT_NODE) {
-            if (isRun(sibling)) {
-                return sibling as Element;
+            const el = sibling as Element;
+            const name = localTagName(el);
+            if (name === "r" || name.endsWith(":r")) {
+                return el;
             }
         }
         sibling = sibling.nextSibling;
@@ -291,7 +288,12 @@ function mergeRunsIn(container: Element): number {
     while (run) {
         while (true) {
             const nextElem = nextElementSibling(run);
-            if (nextElem && isRun(nextElem) && canMerge(run, nextElem)) {
+            let nextIsRun = false;
+            if (nextElem) {
+                const name = localTagName(nextElem);
+                nextIsRun = name === "r" || name.endsWith(":r");
+            }
+            if (nextElem && nextIsRun && canMerge(run, nextElem)) {
                 mergeRunContent(run, nextElem);
                 container.removeChild(nextElem);
                 mergeCount += 1;
