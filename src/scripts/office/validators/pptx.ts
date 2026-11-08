@@ -577,8 +577,9 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             if (officeRelationshipTypeSegment(rel.getAttribute("Type") ?? "") !== segment) continue;
             if (rel.getAttribute("TargetMode") === "External") continue;
             const resolved = relationshipTargetPartName(folder, rel.getAttribute("Target") ?? "");
-            const part = resolved === undefined ? undefined : lookup(resolved.replace(/^\//, ""));
-            if (part !== undefined) parts.push(part);
+            // use && instead of ternary
+            const part = resolved && lookup(resolved.replace(/^\//, ""));
+            if (part) parts.push(part);
         }
         return parts;
     }

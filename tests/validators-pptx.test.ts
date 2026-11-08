@@ -1608,3 +1608,34 @@ describe("a related master outside ppt/slideMasters/ hands its sldLayoutId copy 
         ]);
     });
 });
+
+describe("unresolved targets in pptx", () => {
+    it("handles an absolute URI target correctly in relatedParts", async () => {
+        await withTempDir(async (dir) => {
+            const parts = { ...MINIMAL_PPTX_PARTS };
+            const REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+            const PRES_RELS = "ppt/_rels/presentation.xml.rels";
+            parts[PRES_RELS] = MINIMAL_PPTX_PARTS[PRES_RELS]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdUri" Type="${REL}/slideLayout" Target="http://example.com/stray"/>\n</Relationships>`,
+            );
+            const file = path.join(dir, "deck_unresolved.pptx");
+            await fs.writeFile(file, await buildPptx(parts));
+            const result = await validate(file, { profile: "lenient" });
+            expect(result).toBeDefined();
+        });
+    });
+});
+
+describe("missing rels in pptx", () => {
+    it("handles missing _rels/.rels correctly in relatedParts", async () => {
+        await withTempDir(async (dir) => {
+            const parts = { ...MINIMAL_PPTX_PARTS };
+            delete parts["_rels/.rels"];
+            const file = path.join(dir, "deck_missing_rels.pptx");
+            await fs.writeFile(file, await buildPptx(parts));
+            const result = await validate(file, { profile: "lenient" });
+            expect(result).toBeDefined();
+        });
+    });
+});
