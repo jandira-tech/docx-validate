@@ -51,7 +51,7 @@ import {
     canonicalPartName,
     contentTypeMediaType,
     CONTENT_TYPES_NAMESPACE,
-    findEquivalentPart,
+    equivalentPartLookup,
     parseContentTypes,
     relationshipTargetPartName,
     resolveContentType,
@@ -450,16 +450,21 @@ type CommentWiring =
  * `storedNames` are the names `packageViewPartNames` reads, so a sidecar
  * that is a symbolic link inside the tree counts under its own name (#938).
  */
-function mainDocumentRelsPart(storedNames: readonly string[], mainDocument: string): string {
+function mainDocumentRelsPart(
+    _storedNames: readonly string[],
+    lookup: (partName: string) => string | undefined,
+    mainDocument: string,
+): string {
     const derived = path.posix.join(path.posix.dirname(mainDocument), "_rels", `${path.posix.basename(mainDocument)}.rels`);
-    return findEquivalentPart(storedNames, derived) ?? derived;
+    return lookup(derived) ?? derived;
 }
 
 async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring> {
     const packageRelsPath = path.join(unpackedDir, ...PACKAGE_RELS_PART.split("/"));
     if (!(await pathExists(packageRelsPath))) {
         const storedNames = packageViewPartNames(unpackedDir);
-        return { kind: "conventional", mainRelsPart: mainDocumentRelsPart(storedNames, CONVENTIONAL_MAIN_DOCUMENT) };
+        const lookup = equivalentPartLookup(storedNames);
+        return { kind: "conventional", mainRelsPart: mainDocumentRelsPart(storedNames, lookup, CONVENTIONAL_MAIN_DOCUMENT) };
     }
     const part = await readXmlPart(packageRelsPath);
     if (part === undefined) {
@@ -527,7 +532,8 @@ async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring>
     // named part that is not stored is refused before any write, the
     // conventional `word/document.xml` included (#919).
     const storedNames = packageViewPartNames(unpackedDir);
-    const storedName = findEquivalentPart(storedNames, reference);
+    const lookup = equivalentPartLookup(storedNames);
+    const storedName = lookup(reference);
     if (storedName === undefined) {
         return { kind: "refused", message: `Error: ${path.join(unpackedDir, ...reference.replace(/^\//, "").split("/"))} not found` };
     }
@@ -540,9 +546,9 @@ async function resolveCommentWiring(unpackedDir: string): Promise<CommentWiring>
     // `word/_rels/document.xml.rels`, so every other stored spelling is
     // wired through its own name (#946).
     if (storedName === CONVENTIONAL_MAIN_DOCUMENT) {
-        return { kind: "conventional", mainRelsPart: mainDocumentRelsPart(storedNames, CONVENTIONAL_MAIN_DOCUMENT) };
+        return { kind: "conventional", mainRelsPart: mainDocumentRelsPart(storedNames, lookup, CONVENTIONAL_MAIN_DOCUMENT) };
     }
-    return { kind: "wired", mainDocument: storedName, mainRelsPart: mainDocumentRelsPart(storedNames, storedName) };
+    return { kind: "wired", mainDocument: storedName, mainRelsPart: mainDocumentRelsPart(storedNames, lookup, storedName) };
 }
 
 /**
