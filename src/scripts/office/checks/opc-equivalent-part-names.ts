@@ -4,7 +4,7 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { canonicalPartName, findContentTypesStream, findEquivalentPart, isContentTypesStreamName } from "../../../lib/content-types";
+import { canonicalPartName, findContentTypesStream, equivalentPartLookup, isContentTypesStreamName } from "../../../lib/content-types";
 import type { ValidationIssue } from "../../../lib/types";
 import { indexByPartName, normalizePartName } from "../../../lib/validation-context";
 
@@ -42,7 +42,8 @@ export const opcEquivalentPartNamesCheck: CheckDefinition = {
             // Match the existing normalized index, then the canonical lookup.
             // An exact canonical spelling wins; otherwise code-unit order wins.
             const parts = [...indexByPartName(names.map((name) => [name, name] as const)).keys()].sort();
-            const kept = key === "stream" ? findContentTypesStream(parts) : findEquivalentPart(parts, key.slice("part:".length));
+            const lookup = equivalentPartLookup(parts);
+            const kept = key === "stream" ? findContentTypesStream(parts) : lookup(key.slice("part:".length));
             // Identical spellings name the spelling once per stored entry
             // and disclose which entry the package view reads: JSZip keeps
             // the last.

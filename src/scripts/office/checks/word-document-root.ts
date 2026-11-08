@@ -20,7 +20,7 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { findEquivalentPart, resolvePartName } from "../../../lib/content-types";
+import { equivalentPartLookup, resolvePartName } from "../../../lib/content-types";
 import type { ValidationIssue } from "../../../lib/types";
 import { getRelationshipChildren } from "../../../lib/xml-helpers";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
@@ -39,7 +39,8 @@ export const wordDocumentRootCheck: CheckDefinition = {
     run: (ctx): ValidationIssue[] => {
         // The package relationships part is found by OPC equivalence, so
         // `_RELS/.RELS` names it too, as the schema walk finds it (#364).
-        const relationships = ctx.effectiveXml(findEquivalentPart(ctx.partNames, "_rels/.rels") ?? "_rels/.rels");
+        const lookup = equivalentPartLookup(ctx.partNames);
+        const relationships = ctx.effectiveXml(lookup("_rels/.rels") ?? "_rels/.rels");
         if (!relationships?.ok) return [];
 
         const issues: ValidationIssue[] = [];
@@ -97,7 +98,8 @@ export const wordMainDocumentPartCheck: CheckDefinition = {
     formats: ["docx"],
     requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => {
-        const relationshipsPart = findEquivalentPart(ctx.partNames, "_rels/.rels");
+        const lookup = equivalentPartLookup(ctx.partNames);
+        const relationshipsPart = lookup("_rels/.rels");
         if (relationshipsPart === undefined) {
             return [
                 {

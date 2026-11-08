@@ -9,7 +9,6 @@ import {
     asciiLowercase,
     equivalentPartLookup,
     findContentTypesStream,
-    findEquivalentPart,
     parseContentTypes,
     resolveContentType,
     resolveTarget,
@@ -33,15 +32,15 @@ export const wordPackageThumbnailTypeCheck: CheckDefinition = {
     formats: ["docx"],
     requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => {
+        const lookup = equivalentPartLookup(ctx.partNames);
         const stream = findContentTypesStream(ctx.partNames);
-        const relsPart = findEquivalentPart(ctx.partNames, "_rels/.rels");
+        const relsPart = lookup("_rels/.rels");
         if (stream === undefined || relsPart === undefined) return [];
         const contentTypes = ctx.effectiveXml(stream);
         const relationships = ctx.effectiveXml(relsPart);
         if (!contentTypes?.ok || !relationships?.ok) return [];
 
         const table = parseContentTypes(contentTypes.document);
-        const lookup = equivalentPartLookup(ctx.partNames);
         const issues: ValidationIssue[] = [];
         for (const relationship of getRelationshipChildren(relationships.document)) {
             if (relationship.getAttribute("TargetMode") === "External" || relationship.getAttribute("Type") !== THUMBNAIL) continue;

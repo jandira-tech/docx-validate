@@ -6,7 +6,7 @@
 /** Legacy comment integrity rules shared by full and selected DOCX runs. */
 import path from "node:path";
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { findEquivalentPart } from "../../../lib/content-types";
+import { equivalentPartLookup } from "../../../lib/content-types";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { registerCommentReferenceMissing } from "../comment-finding-facts";
@@ -65,7 +65,8 @@ const mainDocumentPart = async (ctx: ValidationContext, profile?: Profile): Prom
     } catch {
         // An unreadable package view is reported by its own checks.
     }
-    return { part: inFolderByName(ctx, "word", "document.xml"), related: false };
+    const lookup = equivalentPartLookup(ctx.partNames);
+    return { part: inFolderByName(ctx, lookup, "word", "document.xml"), related: false };
 };
 
 /**
@@ -107,19 +108,25 @@ const mainCommentsPart = async (
     } catch {
         // An unreadable package view is reported by its own checks.
     }
-    const byName = inFolderByName(ctx, document.part === null ? "word" : path.posix.dirname(document.part), "comments.xml");
+    const lookup = equivalentPartLookup(ctx.partNames);
+    const byName = inFolderByName(ctx, lookup, document.part === null ? "word" : path.posix.dirname(document.part), "comments.xml");
     return byName === null ? { kind: "unjudged" } : { kind: "part", part: byName };
 };
 
 /** The last part named `name` in `folder`, else the OPC-equivalent spelling of `folder/name`. */
-const inFolderByName = (ctx: ValidationContext, folder: string, name: string): string | null => {
+const inFolderByName = (
+    ctx: ValidationContext,
+    lookup: (partName: string) => string | undefined,
+    folder: string,
+    name: string,
+): string | null => {
     let byName: string | null = null;
     for (const part of ctx.partNames) {
         if (path.posix.basename(part) === name && path.posix.dirname(part) === folder) {
             byName = part;
         }
     }
-    return byName ?? findEquivalentPart(ctx.partNames, folder === "." ? name : `${folder}/${name}`) ?? null;
+    return byName ?? lookup(folder === "." ? name : `${folder}/${name}`) ?? null;
 };
 
 /**
@@ -131,6 +138,7 @@ const inFolderByName = (ctx: ValidationContext, folder: string, name: string): s
  */
 const threadPart = async (
     ctx: ValidationContext,
+    lookup: (partName: string) => string | undefined,
     type: string,
     name: string,
     comments: string | null,
@@ -148,7 +156,7 @@ const threadPart = async (
     } catch {
         // An unreadable package view is reported by its own checks.
     }
-    return inFolderByName(ctx, path.posix.dirname(comments), name);
+    return inFolderByName(ctx, lookup, path.posix.dirname(comments), name);
 };
 
 // These checks deliberately have no xml-syntax prerequisite: they report
@@ -301,17 +309,28 @@ export const commentThreadingCheck: CheckDefinition = {
         const xmlParts = xmlPartNames(ctx.partNames, (part) => ctx.bytes(part));
         const comments = await mainCommentsPart(ctx, document, xmlParts, profile);
         const commentsXml = comments.kind === "part" ? comments.part : null;
+        const lookup = equivalentPartLookup(ctx.partNames);
         const commentsExtendedXml = await threadPart(
             ctx,
+            lookup,
             COMMENTS_EXTENDED_RELATIONSHIP_TYPE,
             "commentsExtended.xml",
             commentsXml,
             xmlParts,
             profile,
         );
-        const commentsIdsXml = await threadPart(ctx, COMMENTS_IDS_RELATIONSHIP_TYPE, "commentsIds.xml", commentsXml, xmlParts, profile);
+        const commentsIdsXml = await threadPart(
+            ctx,
+            lookup,
+            COMMENTS_IDS_RELATIONSHIP_TYPE,
+            "commentsIds.xml",
+            commentsXml,
+            xmlParts,
+            profile,
+        );
         const commentsExtensibleXml = await threadPart(
             ctx,
+            lookup,
             COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE,
             "commentsExtensible.xml",
             commentsXml,

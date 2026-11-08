@@ -49,7 +49,6 @@ import {
     duplicateContentTypeDeclarations,
     equivalentPartLookup,
     findContentTypesStream,
-    findEquivalentPart,
     hasUriScheme,
     isContentTypesStreamName,
     isRelationshipsFolderName,
@@ -2161,7 +2160,8 @@ export class BaseSchemaValidator {
             // part name under OPC equivalence, so `_rels\.rels` and
             // `_RELS/.RELS` count (#362, #364), and decoded by BOM or
             // declaration, so UTF-16 counts (#362).
-            const relsName = findEquivalentPart(names, "_rels/.rels");
+            const lookup = equivalentPartLookup(names);
+            const relsName = lookup("_rels/.rels");
             const relsFile = relsName === undefined ? undefined : kept.get(relsName);
             if (relsFile === undefined) {
                 return parts;
