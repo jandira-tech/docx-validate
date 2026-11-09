@@ -28,7 +28,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import { canonicalPartName, findEquivalentPart, relationshipTargetFolder, relationshipTargetPartName } from "../../../lib/content-types";
+import { canonicalPartName, equivalentPartLookup, relationshipTargetFolder, relationshipTargetPartName } from "../../../lib/content-types";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
 import { officeRelationshipTypeSegment, sidecarOf } from "../../../lib/word-read-parts";
@@ -556,7 +556,8 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
 
     /** The stored parts the relationships part `relsPart`, whose targets resolve against `folder`, names by internal `segment` relationships. */
     private async relatedParts(names: readonly string[], relsPart: string, folder: string, segment: string): Promise<string[]> {
-        const relsName = findEquivalentPart(names, relsPart);
+        const lookup = equivalentPartLookup(names);
+        const relsName = lookup(relsPart);
         if (relsName === undefined) return [];
         let dom: Document;
         try {
@@ -570,7 +571,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             if (officeRelationshipTypeSegment(rel.getAttribute("Type") ?? "") !== segment) continue;
             if (rel.getAttribute("TargetMode") === "External") continue;
             const resolved = relationshipTargetPartName(folder, rel.getAttribute("Target") ?? "");
-            const part = resolved === undefined ? undefined : findEquivalentPart(names, resolved.replace(/^\//, ""));
+            const part = resolved === undefined ? undefined : lookup(resolved.replace(/^\//, ""));
             if (part !== undefined) parts.push(part);
         }
         return parts;
