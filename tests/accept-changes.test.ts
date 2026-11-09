@@ -20,6 +20,7 @@ import path from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { withTempDir } from "../src/lib/run-cli";
 import {
     ACCEPT_CHANGES_MACRO,
     acceptChanges,
@@ -31,10 +32,6 @@ import {
 } from "../src/scripts/accept-changes";
 
 const hasSoffice = Boolean(process.env.SOFFICE_AVAILABLE);
-
-async function makeTmpDir(prefix: string): Promise<string> {
-    return fs.mkdtemp(path.join(os.tmpdir(), prefix));
-}
 
 describe("ACCEPT_CHANGES_MACRO constant", () => {
     it("declares the StarBasic Module1 with the AcceptAllTrackedChanges sub", () => {
@@ -63,16 +60,13 @@ describe("acceptChangesResult validation", () => {
     });
 
     it("returns Error when the input file is not .docx", async () => {
-        const dir = await makeTmpDir("accept-changes-test-");
-        try {
+        await withTempDir(async (dir) => {
             const wrong = path.join(dir, "input.txt");
             await fs.writeFile(wrong, "not a docx");
             const result = await acceptChangesResult(wrong, path.join(dir, "out.docx"));
             expect(result.ok).toBe(false);
             expect(result.message).toMatch(/not a DOCX file/);
-        } finally {
-            await fs.rm(dir, { recursive: true, force: true });
-        }
+        });
     });
 });
 
@@ -179,16 +173,13 @@ describe("acceptChanges (real soffice)", () => {
     it.skipIf(!FIXTURE_PRESENT)(
         "accepts tracked changes in a real DOCX",
         async () => {
-            const dir = await makeTmpDir("accept-changes-e2e-");
-            try {
+            await withTempDir(async (dir) => {
                 const out = path.join(dir, "out.docx");
                 await acceptChanges(FIXTURE, out);
                 expect(existsSync(out)).toBe(true);
                 const buf = await fs.readFile(out);
                 expect(buf.length).toBeGreaterThan(0);
-            } finally {
-                await fs.rm(dir, { recursive: true, force: true });
-            }
+            });
         },
         60000,
     );

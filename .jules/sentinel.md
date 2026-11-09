@@ -50,3 +50,9 @@
 **Vulnerability:** `extractZipEntries` checked each entry's `unsafeOriginalName`, but JSZip 3.10.2 records it only for file entries (`if (!input.dir)`, `lib/load.js:78`). A folder record stored as `../evil/` reached the check under its resolved name, and a traversal record that a later entry shadowed under the same resolved name was never checked at all.
 **Learning:** d59bc9a4 (#676's Codex review, released in 0.54.0-rc.1) reads the stored names from the archive's central directory (`zipCentralDirectoryEntries`) and checks every one with `resolveSafeZipEntry` before the first write, in `unpack` and in the redlining staging alike. #1034 had advised always checking `unsafeOriginalName`, which leaves both gaps open. #1167 repeated #685's substring test and dropped #675's control-character escaping.
 **Prevention:** Judge the names the archive stores, read from its central directory, not the view JSZip builds from them.
+
+## 2026-11-20 - Unsafe Synchronous Temporary Directory Creation in accept-changes Tests
+
+**Vulnerability:** Test suites in `accept-changes.test.ts` were using synchronous `fs.mkdtemp` combined with manual `try...finally` blocks and `fs.rm` to clean up temporary directories. When an error or unexpected exit occurred before the cleanup logic, orphaned temporary directories were left on the disk, potentially leading to resource exhaustion or shared environment contamination.
+**Learning:** Relying on manual cleanup for temporary directories is error-prone, especially in test environments where failures are frequent and execution flow can be abruptly halted. Safe test teardown requires managed abstractions that guarantee cleanup independently of the test flow.
+**Prevention:** Replace direct calls to `mkdtemp` and manual `rm` with a managed closure like `withTempDir` (which leverages `tmp.dirSync({ unsafeCleanup: true })`), ensuring that temporary directories are removed when the callback completes or throws.
