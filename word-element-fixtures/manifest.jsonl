@@ -314,3 +314,4 @@
 {"element":"lvlOverride","file":"lvlOverride.docx","sha256":"270649839bc72b9bd393f21e2f0baf5c4fcc53bf5ca9b23bbcd265fc447cc07d","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"lvlPicBulletId","file":"lvlPicBulletId.docx","sha256":"040111bdc4ebc74472a389886b061e4f5e1c9859fab6dd5e594c4c1db4e1e8c3","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"lvlRestart","file":"lvlRestart.docx","sha256":"f23ee9e150e65debba347b1cead5b54f356260314d515afdf6698405f7f6c187","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"lvlText","file":"lvlText.docx","sha256":"86b047d9b03c36b1675e073d969fbe41b0a7dc64a0615961d8802edaaa2dc251","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
