@@ -248,3 +248,4 @@
 {"element":"gridBefore","file":"gridBefore.docx","sha256":"91cf94e59e2cb39d3507d0e5fcac9a217478a01d6f6f41adb8a63be00fcf542d","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"gridCol","file":"gridCol.docx","sha256":"0602b36fdc851750bd6f2a8fcc24c04bc2127535a4b0d1c4b501ab29a9666294","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"gridSpan","file":"gridSpan.docx","sha256":"94f01662abbbd0b287e46367cf2961d5cbc9b730c5bbc1a8669233b403a95e2e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"group","file":"group.docx","sha256":"21f68eca1f1dd5af8ed902b30e16118efbd513a2475b173ceb75ea54f8290f09","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
