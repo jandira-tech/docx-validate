@@ -227,3 +227,4 @@
 {"element":"footerReference","file":"footerReference.docx","sha256":"9ea4e34e4213d10954090b2693d4b08835ad7b3289f08a9dbd4a52a3d30a3dba","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"footnote","file":"footnote.docx","sha256":"c2694a1cc7098e03918705231aec731531004f650fc8dd86ba08afe6d0c728fc","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"footnoteLayoutLikeWW8","file":"footnoteLayoutLikeWW8.docx","sha256":"3258a32d0d314ae96b5b1224064518aaa63b61dd35a535d4c6bb950f35ee9eac","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"footnotePr","file":"footnotePr.docx","sha256":"9619928f2490dd59b7370a80c98f0a76839bfd7bf172c365679177bdba774038","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
