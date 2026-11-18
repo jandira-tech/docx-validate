@@ -520,3 +520,4 @@
 {"element":"table","file":"table.docx","sha256":"9da78fd5e1a78630a48c9c6c4477859a55668be1d0a6cc9f540a24be88f06a05","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"tabs","file":"tabs.docx","sha256":"facf0d4dec0e0f43b38fdbbc84d96016a54d124277860bc7eb0ea0992bdee79b","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"tag","file":"tag.docx","sha256":"20c4e2d696fb7547268c1f5cc4c7df847f5ca97f1876952241d58962d4c5574b","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"targetScreenSz","file":"targetScreenSz.docx","sha256":"b2a7cbd0d03de3315a164e2b278b46e3e1d8797571c73c3091e8420dac8854c3","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
