@@ -384,3 +384,4 @@
 {"element":"panose1","file":"panose1.docx","sha256":"ba0f54ba37d9d30c8bea1aba3ca9992a93fbea49a89c9e8425eaacfe2be06db6","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"paperSrc","file":"paperSrc.docx","sha256":"93614d576393798a2415d12a4302318a62dd0852b94274279effee93ba2689a7","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"pBdr","file":"pBdr.docx","sha256":"dc87f9b77410a3069235ac613e9d88059261b74bae68c51952342fa7f461b384","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"permEnd","file":"permEnd.docx","sha256":"147725f9c2a7b981f68636d4af4ec626b047a2756543a0ffa803d245cd19d700","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
