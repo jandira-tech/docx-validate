@@ -64,3 +64,4 @@
 {"element":"caps","file":"caps.docx","sha256":"383afa36afebf00b96e1f5f05c0bbb30693b4e6f073f2deeffd02de5aef70d8d","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"caption","file":"caption.docx","sha256":"1cc290bf1cd6ced1a794bea6b0750d985fdf19ba1f9bbe5977feeae031f79d90","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"captions","file":"captions.docx","sha256":"f4f6205804b2bab5e200437142b1f23581c63665e14ba8c3219ed84f0317c95e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"category","file":"category.docx","sha256":"7e4d9c79bec942bd9fb1d3666e450f1bf49981b2fa1e9adb8b24830e98af312a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
