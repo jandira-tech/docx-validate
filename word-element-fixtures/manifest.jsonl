@@ -467,3 +467,4 @@
 {"element":"shd","file":"shd.docx","sha256":"97a448d23a436bdf4e6f0a352a3942a97004589a466507e8bb99a17ba5223aad","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"showBreaksInFrames","file":"showBreaksInFrames.docx","sha256":"5ed44282af6de8b604fcd7b2fd77b857c5dd4aa64771e4e4f2f92252002dcce2","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"showEnvelope","file":"showEnvelope.docx","sha256":"47ff003d18d0380e8ea546c1869741c338709457e14b9b4900da494a4e37021c","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"showingPlcHdr","file":"showingPlcHdr.docx","sha256":"911e240c105ab0e684562d42ecd2622dadd8fb40112051b207373025ad15676a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
