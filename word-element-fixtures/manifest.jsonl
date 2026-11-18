@@ -303,3 +303,4 @@
 {"element":"linkToQuery","file":"linkToQuery.docx","sha256":"2c378f29c1c77daa1b98e03bc954b579e830a4a3b6986eb8b0ff4719c4cfc101","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"listEntry","file":"listEntry.docx","sha256":"4a69c01152243ba03a5caa16767f3ab7529c9855d6b41103c60b6b68293966ad","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"listItem","file":"listItem.docx","sha256":"8d232fa882b3a23ee8f2cf450c4c446554f3e2bf6d95172639b148b9aa2bbfc0","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"listSeparator","file":"listSeparator.docx","sha256":"7fa6e4aa07b5b48df5a15d2cc8d2603ee1ce18d8cdfd7339a93139f7a7b87d9d","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
