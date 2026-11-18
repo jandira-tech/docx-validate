@@ -121,3 +121,4 @@
 {"element":"default","file":"default.docx","sha256":"c3e745dc67a7a33646775eebc0d09db172133375e41933ced256a37344ecf3b3","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"defaultTableStyle","file":"defaultTableStyle.docx","sha256":"fb2525db01a129029cbdec27eb267485f341302ad3566d039456a0b0aa56f7fc","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"defaultTabStop","file":"defaultTabStop.docx","sha256":"6796d48e17e4f776028fb832e53fde2840fde3faf8272115c54f40edb4110d8e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"del","file":"del.docx","sha256":"dba90da51260b93b7dad44114d65e792a102f4d6323bca0ae1176ab115074d94","profile":"lenient","valid":false,"issueCount":3,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
