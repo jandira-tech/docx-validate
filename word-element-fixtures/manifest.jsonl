@@ -501,3 +501,4 @@
 {"element":"subDoc","file":"subDoc.docx","sha256":"dbece1bef538a2e27d91fee1e150a3545c3c7a4c5b8881344814d99fdc3f8d71","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"subFontBySize","file":"subFontBySize.docx","sha256":"2cc9a26b7a32b18a9bafb3b62e78d502103f16e168f35ef3910cc9fbd7201a53","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"suff","file":"suff.docx","sha256":"adf776cace2963f18cb2c95b827b5fc0dc762d9478cd99208cde2a2a945cb55f","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"summaryLength","file":"summaryLength.docx","sha256":"209f4c9dd9f48388e5f108bf146054ab60157aeef81a645f2bda879f4190a2d4","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
