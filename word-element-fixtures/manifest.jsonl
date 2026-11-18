@@ -250,3 +250,4 @@
 {"element":"gridSpan","file":"gridSpan.docx","sha256":"94f01662abbbd0b287e46367cf2961d5cbc9b730c5bbc1a8669233b403a95e2e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"group","file":"group.docx","sha256":"21f68eca1f1dd5af8ed902b30e16118efbd513a2475b173ceb75ea54f8290f09","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"growAutofit","file":"growAutofit.docx","sha256":"aedf8f1bc5933421e48f13765feec7f298883319a9a6a8a0d4edd58227b75e10","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"guid","file":"guid.docx","sha256":"9b5d22d2f7216b7554ff943c4ac14333efc63513c293e4d7b6458799c293c6c5","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
