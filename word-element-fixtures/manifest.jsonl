@@ -344,3 +344,4 @@
 {"element":"name","file":"name.docx","sha256":"bf4861ae4a3ea86793d20ac360743e4411e5d493b72aaf875e181c6316ec5c04","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"next","file":"next.docx","sha256":"34ab28c3f89593c76ba051d1148ecef2ea45fb0752a36148ff7e70803d3268f7","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"noBorder","file":"noBorder.docx","sha256":"df4c7a3e10734f37dc345b7890cce13ac0fc0205a03168a93775ba170f2e391a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"noBreakHyphen","file":"noBreakHyphen.docx","sha256":"5cbcf05e876a6dcf6c186204b80d37bb52162f0df19702255bc313268b74217b","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
