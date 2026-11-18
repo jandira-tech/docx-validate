@@ -571,3 +571,4 @@
 {"element":"trPr","file":"trPr.docx","sha256":"50c2693f3b44d08d930c2e96ad6825734467b4ecc9855d9f3bc4b147d576ed50","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"trPrChange","file":"trPrChange.docx","sha256":"0d38dbf2804b5df212e0e7db2038f9ce41247f311faa988e129bca600efabb5e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"truncateFontHeightsLikeWP6","file":"truncateFontHeightsLikeWP6.docx","sha256":"dfe7a9aa4e983be785d178e4885a9fcf8f59888c01d22d0fa86dbe095f90b514","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"txbxContent","file":"txbxContent.docx","sha256":"8b3e752e50814583bbb91f204c7fc2df3906ad561d80d22c5af3bd1753dbccce","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
