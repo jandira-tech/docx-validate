@@ -604,3 +604,4 @@
 {"element":"webSettings","file":"webSettings.docx","sha256":"a7d6688e53d785a775826426b4ef035791a9aa98f23595d3ab705c942b1c3ca2","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"widowControl","file":"widowControl.docx","sha256":"436804730b394425489cd025300dece89f519a1e7e95a022efefdfae33e243f0","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"wordWrap","file":"wordWrap.docx","sha256":"d9e462c3e6cf3f1ac09471e5417af9ce6cc129196435f4e5fc7682285ef7ae4a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"wpJustification","file":"wpJustification.docx","sha256":"1a53a9697003b1bb297d4446e4623d73082b986d6a1f83c173eddc7476bad2b7","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
