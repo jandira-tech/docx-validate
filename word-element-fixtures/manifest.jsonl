@@ -45,3 +45,4 @@
 {"element":"bibliography","file":"bibliography.docx","sha256":"2dd625881915d2c488680f4a3ffca96f3f99fb2b0f91351ce2a9867c02ab4a4f","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"bidi","file":"bidi.docx","sha256":"4eb1373cd3b201a42737416093b55e43fc7241f20f504871a0a75fe3b7d23a31","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"bidiVisual","file":"bidiVisual.docx","sha256":"7909149fcbcdc1cac8557928e573e9d9365ecb339985e238242898c76eff817b","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"blockQuote","file":"blockQuote.docx","sha256":"d34765d987f44d9ebd5c1dd66f5912db609475186a2abf4f000ed3a5841d109c","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
