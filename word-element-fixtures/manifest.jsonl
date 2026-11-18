@@ -386,3 +386,4 @@
 {"element":"pBdr","file":"pBdr.docx","sha256":"dc87f9b77410a3069235ac613e9d88059261b74bae68c51952342fa7f461b384","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"permEnd","file":"permEnd.docx","sha256":"147725f9c2a7b981f68636d4af4ec626b047a2756543a0ffa803d245cd19d700","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"permStart","file":"permStart.docx","sha256":"0ff55886447a3a063108dd56334ac7fea1bac2320d859e21a512ac373216c31c","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"personal","file":"personal.docx","sha256":"a4c7bccb640b617563eb5035a460d3dce12dea2cf2986dd2b9c6b7be520c88db","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
