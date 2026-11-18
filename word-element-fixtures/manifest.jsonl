@@ -559,3 +559,4 @@
 {"element":"textInput","file":"textInput.docx","sha256":"2026d0d4107fe7c82b2bac51196759c40eede336e1b8e3c79936ad219ed96a26","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"themeFontLang","file":"themeFontLang.docx","sha256":"58bc06b98a8d600d94f17cf76e8d229538604b405e19b0e65cf88d2e057c100a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"title","file":"title.docx","sha256":"9b8212a55244175003b398f633ecc389747204a3a4f9c1fdd2c7e67bbcd59f49","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"titlePg","file":"titlePg.docx","sha256":"e771df5819c055ee5d950c59c2b1a395dbb8b36c214adee2005b84dcf3b1e4cb","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
