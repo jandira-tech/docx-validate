@@ -579,3 +579,4 @@
 {"element":"uiPriority","file":"uiPriority.docx","sha256":"2390f645a47f0fdf9ae264af332d57a5db7d72a46fc5ffa04c89a6c1adc01ee2","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"ulTrailSpace","file":"ulTrailSpace.docx","sha256":"202f4e17940a935bcf5d59eac9295d6dcf6d92f3469862e75d4e03fe932d3fbd","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"underlineTabInNumList","file":"underlineTabInNumList.docx","sha256":"25e7e843ef12f5da0d512fea3c12efa6dd56ee64f6e8076befa40cc45319a2c1","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"unhideWhenUsed","file":"unhideWhenUsed.docx","sha256":"9bab38bffb0411231cfc2c47245a35a682ac641f8e6db77a46d5a92a5e662a57","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
