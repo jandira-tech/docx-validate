@@ -322,3 +322,4 @@
 {"element":"mappedName","file":"mappedName.docx","sha256":"d12a21abe2890fb0601bee0f4c865554c9cac8dea7c8e3070ce82bba7f12062d","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"marBottom","file":"marBottom.docx","sha256":"b328ce090d2a2a87be8dd4bcb4c8a4180c90f2ad77bef7b4719f86abec936362","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"marH","file":"marH.docx","sha256":"c4c8b921527ddbeedaab9b967e2a85ee90bb32be5faef3c4f3cadcaf2819d6f7","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"marLeft","file":"marLeft.docx","sha256":"1d29b78bb3446de7af0a9292e05e053d2efa3b2b51b4be2b41c275dd08251e9a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
