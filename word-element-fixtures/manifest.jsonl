@@ -202,3 +202,4 @@
 {"element":"embedTrueTypeFonts","file":"embedTrueTypeFonts.docx","sha256":"d619e561f0064d641b95f28ed1785e5ac643429787f1d4918eda66dbbe581cef","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"emboss","file":"emboss.docx","sha256":"3a54612053de6e451e0fd7dcadddcd1c24c2b1a9e0604f2b6c920f57f36b3eb2","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"enabled","file":"enabled.docx","sha256":"20617ade3878eeaf16f92d04e7213cde5bb3e3b85251637c5b94e91cc7378b62","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"encoding","file":"encoding.docx","sha256":"a77332a6db8c609a84ee1084430e722c49fb950cacd2c234af40666450875169","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
