@@ -317,3 +317,4 @@
 {"element":"lvlText","file":"lvlText.docx","sha256":"86b047d9b03c36b1675e073d969fbe41b0a7dc64a0615961d8802edaaa2dc251","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"mailAsAttachment","file":"mailAsAttachment.docx","sha256":"8057b598b080dfc0371726497f74b90cec5658f1e54e2b8dc5436f3447d9fb07","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"mailMerge","file":"mailMerge.docx","sha256":"0f5a197cf7ea4054390a981ae05cd55c61f53284345ad6342da495fa370543c3","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"mailSubject","file":"mailSubject.docx","sha256":"0e3e734b77e0432fc061f4ef4d55787aa860808775788d03f74a412e0243a101","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
