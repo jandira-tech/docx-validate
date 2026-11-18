@@ -266,3 +266,4 @@
 {"element":"highlight","file":"highlight.docx","sha256":"b56d3fd39523f7049bb379457fe01b39b16d22c57dfa2a1f7091af6e679a2d54","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"hMerge","file":"hMerge.docx","sha256":"5ef401f51ea78f184332a41629564a4d9951cb9460bc21fe2a752924b5ebe3d4","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"hps","file":"hps.docx","sha256":"45455f248d1395689a1d297561ed258b328a914028aafa257791bbe90f89cd11","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"hpsBaseText","file":"hpsBaseText.docx","sha256":"b14a50bc7a43ee140e7517d43031b7bcbb81b42f30e7b17d876146b77caf211e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
