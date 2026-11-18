@@ -392,3 +392,4 @@
 {"element":"pgBorders","file":"pgBorders.docx","sha256":"047dccb2ee099e2c3434268e777f48fca01f3b18e88ec7a3b464fd88d521d942","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"pgMar","file":"pgMar.docx","sha256":"2fb6ebb23c6cdf81cc946abe05a3e0e573d9ecf7379fbe9d76b52dce1c65e1d3","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"pgNum","file":"pgNum.docx","sha256":"bb4da9e62112a74648ac1fa5a65cbbfcc13eba4dd986d0e2c28821e0392c82bd","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"pgNumType","file":"pgNumType.docx","sha256":"c6d45d90d091c7c76549a1ade87d4afc53be20f7e0a3561110dae6944af185d2","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
