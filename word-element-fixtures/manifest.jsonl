@@ -48,3 +48,4 @@
 {"element":"blockQuote","file":"blockQuote.docx","sha256":"d34765d987f44d9ebd5c1dd66f5912db609475186a2abf4f000ed3a5841d109c","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"body","file":"body.docx","sha256":"0772930cbf61ae62d22452ea1177e754d0af45bf2ee53abfceefc571032c249d","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"bodyDiv","file":"bodyDiv.docx","sha256":"7bef3ad330d9e79b999f48a5b52794faa01cca5c1cbc87cb1af3194856111430","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"bookFoldPrinting","file":"bookFoldPrinting.docx","sha256":"fe5c7f535fb149f39f3d9b9f4c342be6ec01fcb5ca1b70e79de11d6922415a31","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
