@@ -231,3 +231,4 @@
 {"element":"footnoteRef","file":"footnoteRef.docx","sha256":"b3c1fe68cad38b3dadf4dcf3715f0c4ce77a2f51b972fc3b687760b859d479ab","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"footnoteReference","file":"footnoteReference.docx","sha256":"631a1f7d41f820d530a6a4d7d7adbb3c86d1d58e4e7abf885f9aaf51af5be6d5","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"footnotes","file":"footnotes.docx","sha256":"7f739948f764d11919dada22a966676fd6fe30adc4f3d243d7253fc4d253c9f4","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"forceUpgrade","file":"forceUpgrade.docx","sha256":"2c1ca8602a022dd9c351268421f5e7393bc1d031e83f3d5d2851107f9485eefb","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
