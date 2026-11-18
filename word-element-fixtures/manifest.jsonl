@@ -413,3 +413,4 @@
 {"element":"printTwoOnOne","file":"printTwoOnOne.docx","sha256":"c9316e11d838fdbdd87a93b2d9425ec9745f680aa904b9947429a7704b490536","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"proofErr","file":"proofErr.docx","sha256":"8ca4e88ffff71e7af734f917ff5c58c61e530ac53b04643ab6dc87d736b12c56","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"proofState","file":"proofState.docx","sha256":"75e998a651a36426c75510ce3d2a97c8f26c0a7692ce412911d23c07af3a2b0a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"pStyle","file":"pStyle.docx","sha256":"f3724b5c74bcddada75ea0e480b4bb45b988f46bc1d94df430125cd7cb46693e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
