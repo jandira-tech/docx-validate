@@ -229,3 +229,4 @@
 {"element":"footnoteLayoutLikeWW8","file":"footnoteLayoutLikeWW8.docx","sha256":"3258a32d0d314ae96b5b1224064518aaa63b61dd35a535d4c6bb950f35ee9eac","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"footnotePr","file":"footnotePr.docx","sha256":"9619928f2490dd59b7370a80c98f0a76839bfd7bf172c365679177bdba774038","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"footnoteRef","file":"footnoteRef.docx","sha256":"b3c1fe68cad38b3dadf4dcf3715f0c4ce77a2f51b972fc3b687760b859d479ab","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"footnoteReference","file":"footnoteReference.docx","sha256":"631a1f7d41f820d530a6a4d7d7adbb3c86d1d58e4e7abf885f9aaf51af5be6d5","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
