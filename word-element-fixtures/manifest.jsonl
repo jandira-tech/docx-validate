@@ -592,3 +592,4 @@
 {"element":"useWord97LineBreakRules","file":"useWord97LineBreakRules.docx","sha256":"5adb710689cc3c26df0b562b680ffa5500476b6ab7d33de02e14c26919ebda24","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"useXSLTWhenSaving","file":"useXSLTWhenSaving.docx","sha256":"abb510ea7a846102cae968f45f25dd27b6e50654abbf851b8f373501b394d16e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"vAlign","file":"vAlign.docx","sha256":"b77acaf45a3eefee17893fe60dce39afe1e4120a9d7cf80dab55be97dbaa6113","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"vanish","file":"vanish.docx","sha256":"db0225bdf61cd81439dc89c85359e8e36f0cc0284265fa86fb2920637be25332","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
