@@ -512,3 +512,4 @@
 {"element":"suppressTopSpacingWP","file":"suppressTopSpacingWP.docx","sha256":"b36ebeb3e2243c466129f91bfb65eb53bd6b5800f8dac4df181245e0ec59a671","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"swapBordersFacingPages","file":"swapBordersFacingPages.docx","sha256":"8eb42ad13a59899be5434d7ea4c19678fc725fb2d33f7a53d289652e4d5ab099","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"sym","file":"sym.docx","sha256":"145586f512fddc197f7922836d9d140454e95487361350982506299483325405","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"sz","file":"sz.docx","sha256":"3fd0e2d2c7ab274684ab008b1e85270aa02c0be3f26fbc8a334123116845e28f","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
