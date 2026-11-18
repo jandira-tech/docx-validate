@@ -91,3 +91,4 @@
 {"element":"compat","file":"compat.docx","sha256":"9bb704dd5cd9c0f9e486c2b053beb580c7b4ffa0c1c86040c83a96fdc4204e36","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"compatSetting","file":"compatSetting.docx","sha256":"c0f4fc71448465f8d04161f416f1737679dc6c7e57515d5c65d00b5f041f8c03","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"connectString","file":"connectString.docx","sha256":"2371c27a5a1d707f9775a94ce654bc21ee1dd858cd30780b98a456842c39f5e0","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"consecutiveHyphenLimit","file":"consecutiveHyphenLimit.docx","sha256":"24a7376f382cf4ad98d255d799c0ee75afd2896999053f65c60a9ee2c5ead506","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
