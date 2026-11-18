@@ -308,3 +308,4 @@
 {"element":"lock","file":"lock.docx","sha256":"5ef35310a8d9e2d43a580060df9590e164dffdb7453f036baffd8d8cff862f94","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"locked","file":"locked.docx","sha256":"0541a1c2ada516f561460b38080e9d60a5e14a0c1128cedfcdbc09b137046bbd","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"longDesc","file":"longDesc.docx","sha256":"f4c931a531896bf672100697368469532b566a2ec00c5edecbc1e792a9f6d870","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"lsdException","file":"lsdException.docx","sha256":"93735a45a5a29fd3b5713a26d8b2e1ba0ecffc0173e27a26e0b7cf4856ba7145","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
