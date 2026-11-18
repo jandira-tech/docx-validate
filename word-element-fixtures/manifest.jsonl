@@ -190,3 +190,4 @@
 {"element":"drawingGridVerticalSpacing","file":"drawingGridVerticalSpacing.docx","sha256":"9c0785d3eaff036221006886cc5fa380bad1d538ecf6ef5e3e315bfd5abf9b4a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"dropDownList","file":"dropDownList.docx","sha256":"d7ce9c8c29b302b3e5b70360265266a087f608e81c2252933c7f5c3aaf4a3e6e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"dstrike","file":"dstrike.docx","sha256":"746f7fbff6b707ecfd805c1aa3380d4f1a5c0a71ef93e9e366656ccb104dd3fb","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"dynamicAddress","file":"dynamicAddress.docx","sha256":"f283364ca121e82afa44aa142121e36b84723fd3afddd102eb5595743214fa44","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
