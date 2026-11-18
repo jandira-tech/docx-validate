@@ -422,3 +422,4 @@
 {"element":"recipientData","file":"recipientData.docx","sha256":"b271115c820f72b31968935921ceba792fb64b6aa4e754a336750180c9088d01","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"recipients","file":"recipients.docx","sha256":"f57f0225080d7174d70b748d3759858992ae780bd26e892f1e6725afe9dd38c3","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"relyOnVML","file":"relyOnVML.docx","sha256":"f0996159d8e7a2740e4961294a4605422b02ae2770c4b3421598f57d9f916d52","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"removeDateAndTime","file":"removeDateAndTime.docx","sha256":"53525f00110d9d591705db25de097e577f9776c5804e42329cb8e83b5402b3d2","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
