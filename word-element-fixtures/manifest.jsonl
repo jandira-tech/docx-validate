@@ -370,3 +370,4 @@
 {"element":"numRestart","file":"numRestart.docx","sha256":"527b129eed54e2c114aa4e771d5c58d1afea6b6ae0b5c5ee74aa2ae574a23ead","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"numStart","file":"numStart.docx","sha256":"4a2797382c34ff34887ddc32c3d52998bf31555b2651ca335cfdc1a57a723eb4","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"numStyleLink","file":"numStyleLink.docx","sha256":"9e989592bf9e909efa989f4ca74774bc70f5be9e74185498ce07126368774e27","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"object","file":"object.docx","sha256":"119f7c97b76c5145d562dbb9d5e45c580902bd1570595b2b250188dfe6c9c0db","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
