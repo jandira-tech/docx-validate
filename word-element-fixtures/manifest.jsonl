@@ -483,3 +483,4 @@
 {"element":"spacing","file":"spacing.docx","sha256":"45d9eab3f4b6061ebee7995eb83ba7a0c171ee3eb62d6deadffb3dee855a8ac4","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"spacingInWholePoints","file":"spacingInWholePoints.docx","sha256":"95727341fd90388102d5a62e5c586fde6a21b05beafd6f36bf2a593013bcdec1","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"specVanish","file":"specVanish.docx","sha256":"91f297ac221c4ca59f023455137a3089857dc27a1c91c15b9f2c640edb698ca4","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"splitPgBreakAndParaMark","file":"splitPgBreakAndParaMark.docx","sha256":"6dde3adb626f31acc425fbc269d6f3850e327a373685ffeb3f8cd9df96b07c93","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
