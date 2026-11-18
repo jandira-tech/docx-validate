@@ -199,3 +199,4 @@
 {"element":"embedItalic","file":"embedItalic.docx","sha256":"45e86513521b58f0f753eead0811964bd3fa217cd3ef1830b488ce8f10a97f3f","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"embedRegular","file":"embedRegular.docx","sha256":"043f2377cf355be0ec0051088e56771f67bfa3049650788865c7f52f33b1db63","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"embedSystemFonts","file":"embedSystemFonts.docx","sha256":"a3670189c8f10ecd89ced1a9a4d8839bd3242a0901e3e32354729b512d74525a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"embedTrueTypeFonts","file":"embedTrueTypeFonts.docx","sha256":"d619e561f0064d641b95f28ed1785e5ac643429787f1d4918eda66dbbe581cef","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
