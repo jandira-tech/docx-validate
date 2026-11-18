@@ -365,3 +365,4 @@
 {"element":"numFmt","file":"numFmt.docx","sha256":"07c16f91df57d814bb4dfe347c0f23a7df48895455e034b6a4b424189e8cec4b","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"numId","file":"numId.docx","sha256":"284bd775a623f6f054ea6100069e737b9006fb0007a0b295e1f960ccd1a7b869","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"numIdMacAtCleanup","file":"numIdMacAtCleanup.docx","sha256":"ef374f8caf41821632f9bab52835b2fad8e6cebda9c8ff9637424732d86c7351","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"numPicBullet","file":"numPicBullet.docx","sha256":"9c98d3ad6f1587d32f5b7c4046fc9ee87a92a5919cb2a162048938bc635f98fe","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
