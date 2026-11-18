@@ -595,3 +595,4 @@
 {"element":"vanish","file":"vanish.docx","sha256":"db0225bdf61cd81439dc89c85359e8e36f0cc0284265fa86fb2920637be25332","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"vertAlign","file":"vertAlign.docx","sha256":"eabc049410bbb2105ab604dfa18e07baad65fd7f38dcc8c309793294c53629e0","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"view","file":"view.docx","sha256":"5ca8ba9d580986a2e2cb461fecbc035880a61ac0ca83b3042f9df66610e17bd9","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"viewMergedData","file":"viewMergedData.docx","sha256":"e4822128e189e374e8a4c4523157fe040497128e7edde9da5e329dcd1b9cd0cb","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
