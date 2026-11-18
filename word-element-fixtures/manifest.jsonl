@@ -439,3 +439,4 @@
 {"element":"rt","file":"rt.docx","sha256":"0b782a5223f524c13f85331b73ce4efdfc4e4e52b8c442eca479ce4a9412aa52","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"rtl","file":"rtl.docx","sha256":"1eeed40fcecfdb75f9a8bf0c0bd6ccf516f3de4318be1405649e23a8eea55a11","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"rtlGutter","file":"rtlGutter.docx","sha256":"ee9cb4d024a719d0dbec04376ff2711c0d1208ac6b75f5fe341bd93c5f3085f4","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"ruby","file":"ruby.docx","sha256":"648cd90123fc54118fb9e65e3c5334746466c425055cad8008056a9a284441e8","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
