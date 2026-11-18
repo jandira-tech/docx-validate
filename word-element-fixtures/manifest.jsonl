@@ -418,3 +418,4 @@
 {"element":"qFormat","file":"qFormat.docx","sha256":"c97668d28312c121f829c39b8c8b371943a9fc27614ec5082ec7cfb91c007308","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"query","file":"query.docx","sha256":"358a10650047c4c6fc6baef73c5a113cfea64f8bf1e28fd1b8d9a0bf4a62d301","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"r","file":"r.docx","sha256":"ee14f74ea761258651d44f86302b49613502b696e5509615aebe3f55e8c100b4","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"readModeInkLockDown","file":"readModeInkLockDown.docx","sha256":"67c797be68cedd135437553401ea036ceb2bb620f65be828d8fd014f28b9e98d","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
