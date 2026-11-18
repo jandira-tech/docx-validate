@@ -223,3 +223,4 @@
 {"element":"fldData","file":"fldData.docx","sha256":"cfe5efe77bd205aac340abd2a6036668cc1de81b39eadc1f8bc0d09250435eff","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"fldSimple","file":"fldSimple.docx","sha256":"0c201404f71fccf913728bcbf562f1d5efdcbf07bc137364eb4e5be397e450be","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"font","file":"font.docx","sha256":"e905a00e2e559f9be334baff33d227a6d3b2378ce2924dc03c9110514bab4800","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"fonts","file":"fonts.docx","sha256":"4b93a7f61b72e5f167b699dea9c081eda9ada8fc65e4272d6ac7b34d0a974164","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
