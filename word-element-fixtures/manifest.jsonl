@@ -573,3 +573,4 @@
 {"element":"truncateFontHeightsLikeWP6","file":"truncateFontHeightsLikeWP6.docx","sha256":"dfe7a9aa4e983be785d178e4885a9fcf8f59888c01d22d0fa86dbe095f90b514","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"txbxContent","file":"txbxContent.docx","sha256":"8b3e752e50814583bbb91f204c7fc2df3906ad561d80d22c5af3bd1753dbccce","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"type","file":"type.docx","sha256":"0e10b83a70002971f94b70c67d01341f6b770fcc736324af8f2dba4281130d55","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"types","file":"types.docx","sha256":"b741165a0a9347d231767596b3fac52e3a2c9e40925024101b2b0f33c7c20622","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
