@@ -538,3 +538,4 @@
 {"element":"tblPr","file":"tblPr.docx","sha256":"e5b24bffb0eb185a8403e7c3a54b2a224150275546de1bd93be8c202a0a555d1","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"tblPrChange","file":"tblPrChange.docx","sha256":"c9b7f056a46a475288d613990db298a210a6a9746991068168520347fab944d0","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"tblPrEx","file":"tblPrEx.docx","sha256":"ac1b62d717a3d6e6b980a08713b31fd59d0c1b8ec697316fc3fb6ce8892f4af5","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"tblPrExChange","file":"tblPrExChange.docx","sha256":"5eb32b0413d0114d1363793f035ac1bdb3faefd7a2397a37ed0795be76400926","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
