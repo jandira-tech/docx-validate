@@ -376,3 +376,4 @@
 {"element":"odso","file":"odso.docx","sha256":"a55c0a5bdc063df62ec2e103b3dd8421fb65ba10aa73e28355baca30e3cbc477","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"oMath","file":"oMath.docx","sha256":"501b29fd3ad09b210d3d04cf22e383078977f7545bc5f99933a092ab4efc6866","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"optimizeForBrowser","file":"optimizeForBrowser.docx","sha256":"ee108e32a3d416b0d6adbdab438ffc4cbe9fbfdd44f60693642a3699287ae550","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"outline","file":"outline.docx","sha256":"5f2c156ef2fa9a9933febcd03a54aa0d45a28f4fac13f60fd5323d28ed85ce4e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
