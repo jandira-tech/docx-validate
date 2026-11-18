@@ -367,3 +367,4 @@
 {"element":"numIdMacAtCleanup","file":"numIdMacAtCleanup.docx","sha256":"ef374f8caf41821632f9bab52835b2fad8e6cebda9c8ff9637424732d86c7351","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"numPicBullet","file":"numPicBullet.docx","sha256":"9c98d3ad6f1587d32f5b7c4046fc9ee87a92a5919cb2a162048938bc635f98fe","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"numPr","file":"numPr.docx","sha256":"a6e09f3d08df127d99403fff3e6cdfc873cb67c91b31a89c54746c48a8a6d21f","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"numRestart","file":"numRestart.docx","sha256":"527b129eed54e2c114aa4e771d5c58d1afea6b6ae0b5c5ee74aa2ae574a23ead","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
