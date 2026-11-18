@@ -96,3 +96,4 @@
 {"element":"contextualSpacing","file":"contextualSpacing.docx","sha256":"4c219d3510c6f2cd70e736dfd78748cb8ee4a48c6052f310336f8fa0a9957a70","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"continuationSeparator","file":"continuationSeparator.docx","sha256":"9e72210f4d3f1bc41a2e03852f6c9640b3839e6c9850da589add4131eaa19d0b","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"control","file":"control.docx","sha256":"440adb8eeda250aa3e2565217def447fff2323a50720b4d75ca729e643edf7ac","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"convMailMergeEsc","file":"convMailMergeEsc.docx","sha256":"08913e91f8b26cf246746d7486c552dbd625cfeeba3a64343f20ccd49a92e44b","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
