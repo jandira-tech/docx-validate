@@ -119,3 +119,4 @@
 {"element":"ddList","file":"ddList.docx","sha256":"efa860bd60518ae7fc357a7ece1b63fd12df935fa4a585557cd455cd1a210ae2","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"decimalSymbol","file":"decimalSymbol.docx","sha256":"ac889f96d01e51c5fbd95d8df3da757c857d6d5537959036a62397ca5684e238","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"default","file":"default.docx","sha256":"c3e745dc67a7a33646775eebc0d09db172133375e41933ced256a37344ecf3b3","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"defaultTableStyle","file":"defaultTableStyle.docx","sha256":"fb2525db01a129029cbdec27eb267485f341302ad3566d039456a0b0aa56f7fc","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
