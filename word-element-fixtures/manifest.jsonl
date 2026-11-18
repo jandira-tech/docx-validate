@@ -208,3 +208,4 @@
 {"element":"endnotePr","file":"endnotePr.docx","sha256":"eb7b4c4c25dfc2ca72b70f5c083a2b1de438d5e4c9c3225a763de9163186b2ea","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"endnoteRef","file":"endnoteRef.docx","sha256":"525430794d920d811762df790508c7c383213d85cde328980a6400ea508e93d6","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"endnoteReference","file":"endnoteReference.docx","sha256":"ab1846de3d75c8e3058719331457976e9c1e6513dab0ee79adce8a687d4f4355","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"endnotes","file":"endnotes.docx","sha256":"c3ee567c4b6cbaa11572df94256f7cd2e1b478d2098479f390f82bd651f49a3f","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
