@@ -39,3 +39,4 @@
 {"element":"bCs","file":"bCs.docx","sha256":"2e15c1e1a06d71b5e20aee6ab0f753ec64ba5bbc8e1210d4f44275c095e2c13f","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"bdo","file":"bdo.docx","sha256":"0371e9ba44c65ab3ad9969d25c66b9c9d718c23355533dd5af92e6a9f7ef63b0","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"bdr","file":"bdr.docx","sha256":"7e9357efc76226e047edc807bdd412414e111b56d861f828645fad5f313e9a56","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"behavior","file":"behavior.docx","sha256":"745cc0cecef558efade2da0c9b8a7d4f8f884a44ebfa43ee626eb887ade29344","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
