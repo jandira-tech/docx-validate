@@ -610,3 +610,4 @@
 {"element":"writeProtection","file":"writeProtection.docx","sha256":"0f252a665f0dc1be763995181fa83fd036e4f7d5fd8f1418a6803cd4917006ba","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"yearLong","file":"yearLong.docx","sha256":"2cac0b3cc52d361489f5b4939fa6924615728b9271f7db2224eb75d7a51d1728","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"yearShort","file":"yearShort.docx","sha256":"c73cf02800054cf7006d68bf3fcd678bb16279882261baccf3107b7aeb51bff2","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"zoom","file":"zoom.docx","sha256":"c3e47321f93a2f99a63729f68ef5e4b8bf8351689b6acfac2c43c472ddc6faae","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
