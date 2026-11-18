@@ -311,3 +311,4 @@
 {"element":"lsdException","file":"lsdException.docx","sha256":"93735a45a5a29fd3b5713a26d8b2e1ba0ecffc0173e27a26e0b7cf4856ba7145","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"lvl","file":"lvl.docx","sha256":"0a5598d1d320c0ece38a0d36cfcfacc2bedd5f720d9975422c9b75486d5ec203","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"lvlJc","file":"lvlJc.docx","sha256":"9e550da0e56b9011e2db1385f345a5765235c567eff3974f349fee703871c0bf","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"lvlOverride","file":"lvlOverride.docx","sha256":"270649839bc72b9bd393f21e2f0baf5c4fcc53bf5ca9b23bbcd265fc447cc07d","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
