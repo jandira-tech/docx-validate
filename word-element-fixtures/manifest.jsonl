@@ -552,3 +552,4 @@
 {"element":"tcPrChange","file":"tcPrChange.docx","sha256":"ace09007091dcb7817a940a97c983a8799334ac3d9632fe0be2aaed2466bc9b9","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"tcW","file":"tcW.docx","sha256":"f730dc17047481e9410de6e7a773b56b9b9bf2c739b5597f31716804dc5b95e7","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"temporary","file":"temporary.docx","sha256":"364f08580936fe6048ef5ca45cd88c374faa7167f525357da00d32df0f8e2ba4","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"text","file":"text.docx","sha256":"7548b40599f2f3522f15e91ab0297be9d6d427729456c5feb404cc5fc39f077a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
