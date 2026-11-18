@@ -145,3 +145,4 @@
 {"element":"docPartGallery","file":"docPartGallery.docx","sha256":"9488aec7c2c0fc91e8edd36f68c348547d5030ee98f620b1f8a5de902efd7297","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"docPartList","file":"docPartList.docx","sha256":"a107d948f43e54968ccffa166c87404ac81e2c862eacbef29f705c44716c2ff2","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"docPartObj","file":"docPartObj.docx","sha256":"7b5652dc16768920f51519e4ffa6b4ec54e839914801b08630794e7cab3e347b","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"docPartPr","file":"docPartPr.docx","sha256":"d7aa2977fc02617542e0e3e663452cde6ed66c3a94770835c48194f02b7da3c4","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
