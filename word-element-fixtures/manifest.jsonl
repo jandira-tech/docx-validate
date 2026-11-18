@@ -31,3 +31,4 @@
 {"element":"autoSpaceDE","file":"autoSpaceDE.docx","sha256":"308d0dfef52ff7ce8fc0e1eebd609935e310ecbb402a2a633af0fca7d7a7f1f6","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"autoSpaceDN","file":"autoSpaceDN.docx","sha256":"a5f39eaaa73edb75b2a4c19626bcd538f010cff11c0fd2251b63d3e0f95db502","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"autoSpaceLikeWord95","file":"autoSpaceLikeWord95.docx","sha256":"969fa324986a13a94d105e0106cec66e812da080bb2126a057f9d205bdcdb5c3","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"b","file":"b.docx","sha256":"cc898af4ef4f070fc22441ebec465bab7cafab51f6f8048ebe037a7d10666f50","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
