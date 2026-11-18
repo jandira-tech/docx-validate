@@ -288,3 +288,4 @@
 {"element":"kern","file":"kern.docx","sha256":"f7658400a698300d4376c7cffac50d2c49b3f65a3252595edc06e6077a458fac","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"kinsoku","file":"kinsoku.docx","sha256":"0a5306adcbbb266451ebdddd90b9d7df62255c250702ef8eac539eb1b2f77fa0","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"label","file":"label.docx","sha256":"06bc95b7510f6a77265fd497c3da066adb674afb3711c11e33f03fc0b9867202","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"lang","file":"lang.docx","sha256":"c1e8ec0596a68e0a29c3e8a090a08a6d8720a0f6d676dbe48e7fb387144d78c0","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
