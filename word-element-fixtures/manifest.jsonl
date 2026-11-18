@@ -429,3 +429,4 @@
 {"element":"rFonts","file":"rFonts.docx","sha256":"4b800f16cf77a8bf9ac82ce33bcbc7cd4314dd88879a6a07c898d64f917188d0","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"richText","file":"richText.docx","sha256":"d93b8cdc7209700376b1d45125eecf67bc1ec58e21aad57bfac3afca1dccc9aa","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"right","file":"right.docx","sha256":"21615ed0c2d21ba7f56de1a588eb265edb0bf7d0ed12641542655cb62d6b6e2e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"rPr","file":"rPr.docx","sha256":"290715f042f66c98dadde444659a4ee10e4c5199f0e8e14729b112370658f4e9","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
