@@ -454,3 +454,4 @@
 {"element":"sdt","file":"sdt.docx","sha256":"00c2fd385f5b7b28e20cf262a91d00be87120d9c7ca4bdec9dbe66189bc968bd","profile":"lenient","valid":true,"issueCount":0,"errorCodes":[],"warningCodes":[]}
 {"element":"sdtContent","file":"sdtContent.docx","sha256":"f98e899b2012077d7243504579ed322de41a0094b365db0ea02eda557e43ace4","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"sdtEndPr","file":"sdtEndPr.docx","sha256":"95721194f65942b9a2aa2c3583f1dcb735ec39e7bd69384a3eca20ecc705bb5f","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"sdtPr","file":"sdtPr.docx","sha256":"4d52579e84186839811d2dd71ee54827b8440669ffa76b0701ade7c002458ce8","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
