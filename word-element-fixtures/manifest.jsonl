@@ -84,3 +84,4 @@
 {"element":"column","file":"column.docx","sha256":"70489f895ac6902bc62e58cf3521d3e5ece8ca54a12639d5d7702086ab25365a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"comboBox","file":"comboBox.docx","sha256":"15b953de9bad5732d61d3d95645a59d7cb1d97193feefb51111ad528ee16fb83","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"comment","file":"comment.docx","sha256":"04f069a63c552d0acef71acd6223e88f49431ea32e0f57b3f1c12e848530e982","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"commentRangeEnd","file":"commentRangeEnd.docx","sha256":"7cace8be5474a3e0921a4cab77fe7937ca7d090d60c964afe655c5618a3094ef","profile":"lenient","valid":false,"issueCount":3,"errorCodes":["comment-orphan-end","xsd-error","xsd-summary"],"warningCodes":[]}
