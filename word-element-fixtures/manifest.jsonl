@@ -295,3 +295,4 @@
 {"element":"layoutTableRowsApart","file":"layoutTableRowsApart.docx","sha256":"2e8ddd18d07614f3988743f2096dd7f610f0efb6af3a610e0e025bdc26ff157f","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"left","file":"left.docx","sha256":"0ff286f64268e74aa16e35a2390041452e0458949af48ccdd42f0ef305de4807","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"legacy","file":"legacy.docx","sha256":"e127f379dd6bdf8ff54eced4b021f55e7f99bb5ef731137c43b950d77359587f","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"lid","file":"lid.docx","sha256":"f7a2fba495f222a4c9be705a91323a0158a3ae5c95ded738274cec2510953e1c","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
