@@ -49,3 +49,4 @@
 {"element":"body","file":"body.docx","sha256":"0772930cbf61ae62d22452ea1177e754d0af45bf2ee53abfceefc571032c249d","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"bodyDiv","file":"bodyDiv.docx","sha256":"7bef3ad330d9e79b999f48a5b52794faa01cca5c1cbc87cb1af3194856111430","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"bookFoldPrinting","file":"bookFoldPrinting.docx","sha256":"fe5c7f535fb149f39f3d9b9f4c342be6ec01fcb5ca1b70e79de11d6922415a31","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"bookFoldPrintingSheets","file":"bookFoldPrintingSheets.docx","sha256":"880a3193e48df72f2939cfce3a378bc1e7a9f54ed81d72ec5bebd1f882a25bc1","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
