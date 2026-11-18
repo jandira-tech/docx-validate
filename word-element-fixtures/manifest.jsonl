@@ -201,3 +201,4 @@
 {"element":"embedSystemFonts","file":"embedSystemFonts.docx","sha256":"a3670189c8f10ecd89ced1a9a4d8839bd3242a0901e3e32354729b512d74525a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"embedTrueTypeFonts","file":"embedTrueTypeFonts.docx","sha256":"d619e561f0064d641b95f28ed1785e5ac643429787f1d4918eda66dbbe581cef","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"emboss","file":"emboss.docx","sha256":"3a54612053de6e451e0fd7dcadddcd1c24c2b1a9e0604f2b6c920f57f36b3eb2","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"enabled","file":"enabled.docx","sha256":"20617ade3878eeaf16f92d04e7213cde5bb3e3b85251637c5b94e91cc7378b62","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
