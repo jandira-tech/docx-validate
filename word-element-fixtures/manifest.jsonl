@@ -243,3 +243,4 @@
 {"element":"framesetSplitbar","file":"framesetSplitbar.docx","sha256":"d9adce631fe11e687f882ba0337110d7a0bef511cda43e82c4d0904e56004772","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"ftr","file":"ftr.docx","sha256":"410922da224b22c43ea2d425bd5258ed042f1378fa82af82a095c68e2a82a9cd","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"gallery","file":"gallery.docx","sha256":"5190df4bda3abf3ef4094eece5e9bdb3d3ae1237bd988d78711ecb3c7b5b8cfc","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"glossaryDocument","file":"glossaryDocument.docx","sha256":"6b6e040f67bf97241b647414807f01585533240f1523b72211e6fa005cdcee10","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
