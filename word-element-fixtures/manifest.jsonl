@@ -553,3 +553,4 @@
 {"element":"tcW","file":"tcW.docx","sha256":"f730dc17047481e9410de6e7a773b56b9b9bf2c739b5597f31716804dc5b95e7","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"temporary","file":"temporary.docx","sha256":"364f08580936fe6048ef5ca45cd88c374faa7167f525357da00d32df0f8e2ba4","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"text","file":"text.docx","sha256":"7548b40599f2f3522f15e91ab0297be9d6d427729456c5feb404cc5fc39f077a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"textAlignment","file":"textAlignment.docx","sha256":"376c0fbd0dfe044f0e2aaa9ecc8b9c87a7af4cfc461f525e7ff21469f5512bb8","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
