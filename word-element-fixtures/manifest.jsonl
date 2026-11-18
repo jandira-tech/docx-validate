@@ -68,3 +68,4 @@
 {"element":"cellDel","file":"cellDel.docx","sha256":"a323016a5c03dfde7eef20ccd3b861f202a0fa80ec22a63103b4bac314685288","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"cellIns","file":"cellIns.docx","sha256":"3470acca4e1aef3df391560671305a1916200a79752dde7b14e6891948a193f6","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"cellMerge","file":"cellMerge.docx","sha256":"c569d24db955c62175626c61d76c5ff03dd37cc784be3c46bf656e7f51fe7036","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"characterSpacingControl","file":"characterSpacingControl.docx","sha256":"22c8bb79423f05b9100f4fdbf4f8fb1f86d6c3df79de8c4d9a953a4e79fffc04","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
