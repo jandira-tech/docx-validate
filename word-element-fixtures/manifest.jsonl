@@ -401,3 +401,4 @@
 {"element":"placeholder","file":"placeholder.docx","sha256":"98e78039c3c016675c7cc2d7a6877a7d4247714eb8db461de801209b5c5758d7","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"pos","file":"pos.docx","sha256":"7aeb9021375520d5cf8a4e46c8cf557665d957d1f620de6ebc0adecf5da7cb2b","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"position","file":"position.docx","sha256":"992b72b38ab2ed8f674f4c14efecbfbe0ca8cee10281d69ad635ef58664fa26f","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"pPr","file":"pPr.docx","sha256":"1d42d8489591aeea6c9fb174f605e44e7d1e93a1d4adb9579863f839afdce1de","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
