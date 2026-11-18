@@ -420,3 +420,4 @@
 {"element":"r","file":"r.docx","sha256":"ee14f74ea761258651d44f86302b49613502b696e5509615aebe3f55e8c100b4","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"readModeInkLockDown","file":"readModeInkLockDown.docx","sha256":"67c797be68cedd135437553401ea036ceb2bb620f65be828d8fd014f28b9e98d","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"recipientData","file":"recipientData.docx","sha256":"b271115c820f72b31968935921ceba792fb64b6aa4e754a336750180c9088d01","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"recipients","file":"recipients.docx","sha256":"f57f0225080d7174d70b748d3759858992ae780bd26e892f1e6725afe9dd38c3","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
