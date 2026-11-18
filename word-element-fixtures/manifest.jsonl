@@ -123,3 +123,4 @@
 {"element":"defaultTabStop","file":"defaultTabStop.docx","sha256":"6796d48e17e4f776028fb832e53fde2840fde3faf8272115c54f40edb4110d8e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"del","file":"del.docx","sha256":"dba90da51260b93b7dad44114d65e792a102f4d6323bca0ae1176ab115074d94","profile":"lenient","valid":false,"issueCount":3,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"delInstrText","file":"delInstrText.docx","sha256":"8f7921c08c28641b181e24db5a16cdcdc6c6448307007f7a85c99f40a53cade8","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"delText","file":"delText.docx","sha256":"e26904a5bb55e72cbcf18c3c357186a433b70c43438a9e9cc3f4791ba6d41cb4","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
