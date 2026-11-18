@@ -88,3 +88,4 @@
 {"element":"commentRangeStart","file":"commentRangeStart.docx","sha256":"2135b0815d3bc9cc95606feb9399bf4f7f5722e288a515ca1e0d9def30609bd9","profile":"lenient","valid":false,"issueCount":3,"errorCodes":["comment-orphan-start","xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"commentReference","file":"commentReference.docx","sha256":"780c75e4d0118ee75d31a4e47aadc80e38f599c0a09be67946c3e8b73b4eae72","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"comments","file":"comments.docx","sha256":"b3fdbe462f92e396af43ebc39c2d6669487af17925077c35ac6802721a449b5a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"compat","file":"compat.docx","sha256":"9bb704dd5cd9c0f9e486c2b053beb580c7b4ffa0c1c86040c83a96fdc4204e36","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
