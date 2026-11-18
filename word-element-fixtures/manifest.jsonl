@@ -494,3 +494,4 @@
 {"element":"style","file":"style.docx","sha256":"d93f7d1065515fd13b539315fddfc9a312e449f6a66c160365147eaec49c371a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"styleLink","file":"styleLink.docx","sha256":"17cfa71424080c403948b84010dd6b0ea393ba24c7647360ecd0fd79e670f2e3","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"styleLockQFSet","file":"styleLockQFSet.docx","sha256":"fdf132a1566bb17c174632a9bc9715000faf599bd84002e41c69238493c3dfe9","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"styleLockTheme","file":"styleLockTheme.docx","sha256":"d345af6ec78cf128199e0204c29549322bc9c9fb291aa48deda62297c1a8b4ed","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
