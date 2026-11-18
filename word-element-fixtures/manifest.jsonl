@@ -524,3 +524,4 @@
 {"element":"tbl","file":"tbl.docx","sha256":"f079759cd37f637321d925d8a76407bd85503243e31ce491308090ed78249710","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"tblBorders","file":"tblBorders.docx","sha256":"b9ad1e84d6e3a59b680ab5d98e70dbca6fa2ae221cfb1c4f513f24c3477f6f82","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"tblCaption","file":"tblCaption.docx","sha256":"7b4bee2f40cd9377719991be894089a4d83cc5635cf7548ac4ce399474459535","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"tblCellMar","file":"tblCellMar.docx","sha256":"53ac191c8b5e24bb3b435ba855683d585e9e2f20a8917a411291c1b474845de5","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
