@@ -89,3 +89,4 @@
 {"element":"commentReference","file":"commentReference.docx","sha256":"780c75e4d0118ee75d31a4e47aadc80e38f599c0a09be67946c3e8b73b4eae72","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"comments","file":"comments.docx","sha256":"b3fdbe462f92e396af43ebc39c2d6669487af17925077c35ac6802721a449b5a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"compat","file":"compat.docx","sha256":"9bb704dd5cd9c0f9e486c2b053beb580c7b4ffa0c1c86040c83a96fdc4204e36","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"compatSetting","file":"compatSetting.docx","sha256":"c0f4fc71448465f8d04161f416f1737679dc6c7e57515d5c65d00b5f041f8c03","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
