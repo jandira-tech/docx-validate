@@ -373,3 +373,4 @@
 {"element":"object","file":"object.docx","sha256":"119f7c97b76c5145d562dbb9d5e45c580902bd1570595b2b250188dfe6c9c0db","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"objectEmbed","file":"objectEmbed.docx","sha256":"a75cc287d1bfa24a4a42cb6b0a842f927c75fd8cb2aa1f52bb7bcb537c30b259","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"objectLink","file":"objectLink.docx","sha256":"b56f5c99a9e827bd8e26140318a13e1a17e239ca24eea41799fe39b83cf3da2e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"odso","file":"odso.docx","sha256":"a55c0a5bdc063df62ec2e103b3dd8421fb65ba10aa73e28355baca30e3cbc477","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
