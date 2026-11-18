@@ -212,3 +212,4 @@
 {"element":"entryMacro","file":"entryMacro.docx","sha256":"6249f7218c9a69f86bd1f824394d0b31b2e9697f26b7f859e56bd2b9c23274ae","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"equation","file":"equation.docx","sha256":"1520f30bd0deca310206e28795577751178f24aa6d07584a36b2244e30c1a9b4","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"evenAndOddHeaders","file":"evenAndOddHeaders.docx","sha256":"f30cf3b36ff9d1a74ed3fd0da84574738735c6bfdecd013596b74c53a57691b5","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"exitMacro","file":"exitMacro.docx","sha256":"b75907cc528378562808166e3439dd33751f145fc617cbe05bc42e0a5e49fdd4","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
