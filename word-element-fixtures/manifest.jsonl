@@ -361,3 +361,4 @@
 {"element":"nsid","file":"nsid.docx","sha256":"df17e1d7a29a2078219ae057962ccfc44849ba80d37ed7fb89d218d3915107de","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"num","file":"num.docx","sha256":"44d999948adc26474a92da02246cc69ab4c68f8331af5d043c1fdfd693ac05ba","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"numbering","file":"numbering.docx","sha256":"ba9fa2d9e8e17b5d720cbd1bb5c4c0fc89d305e69de560bfd6e2e29309c24d14","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"numberingChange","file":"numberingChange.docx","sha256":"48331209270eef4f9f5149b51564a8c17a3cd6b25ac0f6e4683f8274934d0814","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
