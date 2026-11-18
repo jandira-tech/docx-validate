@@ -377,3 +377,4 @@
 {"element":"oMath","file":"oMath.docx","sha256":"501b29fd3ad09b210d3d04cf22e383078977f7545bc5f99933a092ab4efc6866","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"optimizeForBrowser","file":"optimizeForBrowser.docx","sha256":"ee108e32a3d416b0d6adbdab438ffc4cbe9fbfdd44f60693642a3699287ae550","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"outline","file":"outline.docx","sha256":"5f2c156ef2fa9a9933febcd03a54aa0d45a28f4fac13f60fd5323d28ed85ce4e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"outlineLvl","file":"outlineLvl.docx","sha256":"2bda976c30e9f010b5751d8d4390a5b65ec45cfb301b8b174cc5edd4d6358692","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
