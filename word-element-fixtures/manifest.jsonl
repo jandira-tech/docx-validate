@@ -600,3 +600,4 @@
 {"element":"w","file":"w.docx","sha256":"4a10fc53a1fa8360a11ae8ef49e38e3f0845a398eefe893fd14f6b706f4270d3","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"wAfter","file":"wAfter.docx","sha256":"cfe9457bb95b9a518921a2fc57cfac33c48318f74ee0b5d71838b64ee87e917b","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"wBefore","file":"wBefore.docx","sha256":"850cfb85487a35378da3dd54833f23a6a7888264bc4fb393835dedddff244f2a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"webHidden","file":"webHidden.docx","sha256":"bfc3e1ec142a415a1684806446b816cbff9c2715ab15262612b3861869ea911c","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
