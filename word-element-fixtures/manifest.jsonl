@@ -79,3 +79,4 @@
 {"element":"cnfStyle","file":"cnfStyle.docx","sha256":"9fb955940e0ed507cbcdfafb660dca0911cc09efd991c54de4ad0512f710180d","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"col","file":"col.docx","sha256":"b64e10acafa22c5de1aadbb1266ccb5212748e90ac30fe85a04dc672cc923d31","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"colDelim","file":"colDelim.docx","sha256":"757197ea62b7d0fdc618cc5ecab3b6d077e8bb24a02707882efbd637a8fe0e6c","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"color","file":"color.docx","sha256":"6f4591d7bf500a7d2d4ede8fdb43de6bad8d821ff1d36c04c6d4b8eb37cbba66","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
