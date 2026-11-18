@@ -397,3 +397,4 @@
 {"element":"pict","file":"pict.docx","sha256":"4f92db021098c82913ca4a8526750d4f9e1547000606bebd6d2ba64486eb7bdc","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"picture","file":"picture.docx","sha256":"21a2c086af06e9f959a58724c855f2396418aa4fc42253757fcfc829f59a6729","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"pitch","file":"pitch.docx","sha256":"f4ee0d344ea503d53858cad9195a038510081703d2e5770feb4651f0f11fd008","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"pixelsPerInch","file":"pixelsPerInch.docx","sha256":"032338e8fbc6416485017bdbe69ad5d7c9441475f8d36a722af9e81f287a5971","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
