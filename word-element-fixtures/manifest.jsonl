@@ -598,3 +598,4 @@
 {"element":"viewMergedData","file":"viewMergedData.docx","sha256":"e4822128e189e374e8a4c4523157fe040497128e7edde9da5e329dcd1b9cd0cb","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"vMerge","file":"vMerge.docx","sha256":"c32f254658562eb87b376109f1bd76919b65507780defd63651ccb4a68a4833f","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"w","file":"w.docx","sha256":"4a10fc53a1fa8360a11ae8ef49e38e3f0845a398eefe893fd14f6b706f4270d3","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"wAfter","file":"wAfter.docx","sha256":"cfe9457bb95b9a518921a2fc57cfac33c48318f74ee0b5d71838b64ee87e917b","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
