@@ -271,3 +271,4 @@
 {"element":"hyperlink","file":"hyperlink.docx","sha256":"f17eeb305dc5eaa727ca65dbbf46c7d21be8c04b5ea2ee94b55f244b12385fe3","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"hyphenationZone","file":"hyphenationZone.docx","sha256":"fc02ac652fcaffad152dc7fd97fd4b138519b871d27a2031d29cbf468110d164","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"i","file":"i.docx","sha256":"83c5e5202db5d3e7f00c962de8138653edfb3a45b127e79a8b41375d86928791","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"iCs","file":"iCs.docx","sha256":"8d3446f7882db58a4cc28b3bcc81126e71a535f5d5ca55e32b089f1ef1ae017e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
