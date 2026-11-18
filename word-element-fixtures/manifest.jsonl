@@ -487,3 +487,4 @@
 {"element":"src","file":"src.docx","sha256":"7a67f9bc78ceef1d7ea210785674266ee4f14b96beadee5ca723dfb6d1b5bf13","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"start","file":"start.docx","sha256":"b183cb2a5a6b8ac41c6b9364d926b83b8ac355b1c615b9fc7eb2252ee3d00501","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"startOverride","file":"startOverride.docx","sha256":"fd34562843de17c24fe6cfe68c5acc75baeeb681ecda44d64de03a2a76b4f538","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"statusText","file":"statusText.docx","sha256":"f77bb0f45ac2497a91b386f0fe972fab5f74f9a8ea268638b1365f26d00dfa99","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
