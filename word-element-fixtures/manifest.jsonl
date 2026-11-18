@@ -435,3 +435,4 @@
 {"element":"rsid","file":"rsid.docx","sha256":"b3d358a0505df291d37dc951fac0434b2422ddfd026bba900d636671692bc702","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"rsidRoot","file":"rsidRoot.docx","sha256":"339d3f16f896880fb177e9f182e9ce8bcaaf2fdf9cf1463873136ae2c84e6956","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"rsids","file":"rsids.docx","sha256":"0dcbd9709d9691dc953e377ae33bf00a164f44346676b1bb3a9d694433e84d56","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"rStyle","file":"rStyle.docx","sha256":"29837a08df1409e5e76652351abe6bbd9ff13a5d7111d861ffa06661d0cfc735","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
