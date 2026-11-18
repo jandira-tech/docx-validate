@@ -387,3 +387,4 @@
 {"element":"permEnd","file":"permEnd.docx","sha256":"147725f9c2a7b981f68636d4af4ec626b047a2756543a0ffa803d245cd19d700","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"permStart","file":"permStart.docx","sha256":"0ff55886447a3a063108dd56334ac7fea1bac2320d859e21a512ac373216c31c","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"personal","file":"personal.docx","sha256":"a4c7bccb640b617563eb5035a460d3dce12dea2cf2986dd2b9c6b7be520c88db","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"personalCompose","file":"personalCompose.docx","sha256":"036a039d73022d2c63e0bb798ab5b5818edfaf39a816e99b7915d1572d1937ee","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
