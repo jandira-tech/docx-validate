@@ -515,3 +515,4 @@
 {"element":"sz","file":"sz.docx","sha256":"3fd0e2d2c7ab274684ab008b1e85270aa02c0be3f26fbc8a334123116845e28f","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"szCs","file":"szCs.docx","sha256":"24a926b33e1336d156af7848748f8217c92648bbf940f39f4aaffe71f9e050f3","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"t","file":"t.docx","sha256":"a31fcede46ba7459d9a747c18c49985ec3f0709f60b9cd09d1fb8d2ab164d143","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"tab","file":"tab.docx","sha256":"d99276a5c5ec9baf3f2c6ea2b92fbd07e428f3971dcceccc8da19c8d4ae53f5b","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
