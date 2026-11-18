@@ -399,3 +399,4 @@
 {"element":"pitch","file":"pitch.docx","sha256":"f4ee0d344ea503d53858cad9195a038510081703d2e5770feb4651f0f11fd008","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"pixelsPerInch","file":"pixelsPerInch.docx","sha256":"032338e8fbc6416485017bdbe69ad5d7c9441475f8d36a722af9e81f287a5971","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"placeholder","file":"placeholder.docx","sha256":"98e78039c3c016675c7cc2d7a6877a7d4247714eb8db461de801209b5c5758d7","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"pos","file":"pos.docx","sha256":"7aeb9021375520d5cf8a4e46c8cf557665d957d1f620de6ebc0adecf5da7cb2b","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
