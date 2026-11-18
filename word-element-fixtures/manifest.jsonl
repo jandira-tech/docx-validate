@@ -74,3 +74,4 @@
 {"element":"checked","file":"checked.docx","sha256":"b1a607017057c3e392ffe61490efa19a195942bce19d7d81b3a580f629f503b8","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"checkErrors","file":"checkErrors.docx","sha256":"5273d27dd1714bf10778d8651d06d365d31c3c486627199f51db14d78b1c22de","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"citation","file":"citation.docx","sha256":"ead926e8c4fd62d00139355e102f9c0a092a5f163290dca0b5ecc1a838202405","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"clickAndTypeStyle","file":"clickAndTypeStyle.docx","sha256":"432259aa85566d61855b136dc58d3b0d17f0db7d595dcb3b8b083d3634c68890","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
