@@ -478,3 +478,4 @@
 {"element":"smartTagType","file":"smartTagType.docx","sha256":"5af8b02350e49595d03f113961a1199951f6e6963d9a26334eae6433b4d5e9aa","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"snapToGrid","file":"snapToGrid.docx","sha256":"cd50609f25f844f1f90d8105311b580514f56452f81b577d4501f9c4aa060341","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"softHyphen","file":"softHyphen.docx","sha256":"594ab53a230b92a9f217c2894be3da8c1e2adecd611e1c0cef7380975388b3bb","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"sourceFileName","file":"sourceFileName.docx","sha256":"30bd3512e436e1471b8d8f9272340e15fc0291da3c6ce8394adaac7b643b24f2","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
