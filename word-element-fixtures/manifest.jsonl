@@ -331,3 +331,4 @@
 {"element":"mirrorIndents","file":"mirrorIndents.docx","sha256":"9fe594a750821d1c147a826a96315272792ab062dcc6618cdccf35b41ddd068e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"mirrorMargins","file":"mirrorMargins.docx","sha256":"e10b0f8a8ec3521b8616b3c6e1756784b315385a0adf96c00a3460c7f5fffe94","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"monthLong","file":"monthLong.docx","sha256":"fcf40df7c02c740f69d74b8aff0ae77971b624353403cddfd21b78f4b12de793","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"monthShort","file":"monthShort.docx","sha256":"7b74e4d0c7afd83eb5c22d085bb8bf8d045149a768b3c203f3c5d5585760684b","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
