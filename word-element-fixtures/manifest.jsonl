@@ -395,3 +395,4 @@
 {"element":"pgNumType","file":"pgNumType.docx","sha256":"c6d45d90d091c7c76549a1ade87d4afc53be20f7e0a3561110dae6944af185d2","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"pgSz","file":"pgSz.docx","sha256":"19d13acacfa537f699b96c7cbb7611ad4058fe5309fbd224ed4b43b308455071","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"pict","file":"pict.docx","sha256":"4f92db021098c82913ca4a8526750d4f9e1547000606bebd6d2ba64486eb7bdc","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"picture","file":"picture.docx","sha256":"21a2c086af06e9f959a58724c855f2396418aa4fc42253757fcfc829f59a6729","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
