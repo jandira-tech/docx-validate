@@ -42,3 +42,4 @@
 {"element":"behavior","file":"behavior.docx","sha256":"745cc0cecef558efade2da0c9b8a7d4f8f884a44ebfa43ee626eb887ade29344","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"behaviors","file":"behaviors.docx","sha256":"13045f0e66780b3044f105482340fc5a9c3c9ea2ea1ae4ac6f78b6e23eb9ce4d","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"between","file":"between.docx","sha256":"b4587636a4360d6ba2353c78262ec9350c4bae6b14446cf0dc83b0fe1342b317","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"bibliography","file":"bibliography.docx","sha256":"2dd625881915d2c488680f4a3ffca96f3f99fb2b0f91351ce2a9867c02ab4a4f","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
