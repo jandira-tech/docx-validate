@@ -218,3 +218,4 @@
 {"element":"fHdr","file":"fHdr.docx","sha256":"b5f4909a79c2003c6094544e44bebfeeef9ea4e59337ebc392624ae54fdcd9ad","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"fieldMapData","file":"fieldMapData.docx","sha256":"a25ee27f57a11951adb1b9aa98e1ad46521176aac25f8769d187b3bb2044a6be","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"fitText","file":"fitText.docx","sha256":"39530b686aa846374da59925fada759fc8bd49e776b1de75781508ae9ca765cd","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"flatBorders","file":"flatBorders.docx","sha256":"2768f403c8cbd24f727e513d4763bb0f54389f885cb18111869572c718130cea","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
