@@ -15,3 +15,4 @@
 {"element":"altChunk","file":"altChunk.docx","sha256":"7fb8f3e0a3eed05c5a9bd681726c8441896b993252d99bbab46be4ea5a83b0db","profile":"lenient","valid":true,"issueCount":0,"errorCodes":[],"warningCodes":[]}
 {"element":"altChunkPr","file":"altChunkPr.docx","sha256":"c19269883db5b0fdc151322a8416d749846c23643a97a02e8f4c07ef3e260940","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"altName","file":"altName.docx","sha256":"328f392b8e7b89645ec3c715eebfd3ebd770817230dc782bb4d8bdfd176acc57","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"alwaysMergeEmptyNamespace","file":"alwaysMergeEmptyNamespace.docx","sha256":"fb171f15c985c2a397c1b336063d2ff0751f5696fecaaf816ce1281406bb0bd7","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
