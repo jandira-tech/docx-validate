@@ -99,3 +99,4 @@
 {"element":"convMailMergeEsc","file":"convMailMergeEsc.docx","sha256":"08913e91f8b26cf246746d7486c552dbd625cfeeba3a64343f20ccd49a92e44b","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"cr","file":"cr.docx","sha256":"154749e893ae5e750440b1914c03411de1e80016429a6f365278d7e737c23275","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"cs","file":"cs.docx","sha256":"d1522822e2dd82fef9d12aecaafd0ab84e5999db01fbd6d1a2e27ca39e5d9c88","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"customXml","file":"customXml.docx","sha256":"874fd862ab105a9a12b6858f484deddb707b4353a501c92000f2be5f023a1383","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
