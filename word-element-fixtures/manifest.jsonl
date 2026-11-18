@@ -372,3 +372,4 @@
 {"element":"numStyleLink","file":"numStyleLink.docx","sha256":"9e989592bf9e909efa989f4ca74774bc70f5be9e74185498ce07126368774e27","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"object","file":"object.docx","sha256":"119f7c97b76c5145d562dbb9d5e45c580902bd1570595b2b250188dfe6c9c0db","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"objectEmbed","file":"objectEmbed.docx","sha256":"a75cc287d1bfa24a4a42cb6b0a842f927c75fd8cb2aa1f52bb7bcb537c30b259","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"objectLink","file":"objectLink.docx","sha256":"b56f5c99a9e827bd8e26140318a13e1a17e239ca24eea41799fe39b83cf3da2e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
