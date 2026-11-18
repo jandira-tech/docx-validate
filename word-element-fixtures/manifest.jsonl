@@ -116,3 +116,4 @@
 {"element":"dateFormat","file":"dateFormat.docx","sha256":"0ac473b062f7a487bbe5b19945c1474ec91accf0c92cea7f9cf1f8320b286e08","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"dayLong","file":"dayLong.docx","sha256":"35fd6310a6189c8fe69e41fbc1ff1c2c324286dedb82bbee530cc4e2e843c12e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"dayShort","file":"dayShort.docx","sha256":"951fbe2676cf8ab6f072e5f0f135a1ec6170d1754dc2348d6601ce51a2d07259","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"ddList","file":"ddList.docx","sha256":"efa860bd60518ae7fc357a7ece1b63fd12df935fa4a585557cd455cd1a210ae2","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
