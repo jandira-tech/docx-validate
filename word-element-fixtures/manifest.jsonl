@@ -456,3 +456,4 @@
 {"element":"sdtEndPr","file":"sdtEndPr.docx","sha256":"95721194f65942b9a2aa2c3583f1dcb735ec39e7bd69384a3eca20ecc705bb5f","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"sdtPr","file":"sdtPr.docx","sha256":"4d52579e84186839811d2dd71ee54827b8440669ffa76b0701ade7c002458ce8","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"sectPr","file":"sectPr.docx","sha256":"bcf178c22ae6904564669826c27ed4e087fbfc44ff4d3a016903d19f6fdce40a","profile":"lenient","valid":true,"issueCount":0,"errorCodes":[],"warningCodes":[]}
+{"element":"sectPrChange","file":"sectPrChange.docx","sha256":"b9708d64d1333645923fcb9941b31b6705f2affa8ca6601336bdb5b9f52fab6a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
