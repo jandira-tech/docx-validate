@@ -379,3 +379,4 @@
 {"element":"outline","file":"outline.docx","sha256":"5f2c156ef2fa9a9933febcd03a54aa0d45a28f4fac13f60fd5323d28ed85ce4e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"outlineLvl","file":"outlineLvl.docx","sha256":"2bda976c30e9f010b5751d8d4390a5b65ec45cfb301b8b174cc5edd4d6358692","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"overflowPunct","file":"overflowPunct.docx","sha256":"fc8ad292c6702d98e2ebf783525ad263e3a5a3680f21577d2940394d960c8e24","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"p","file":"p.docx","sha256":"da614a42cb11cc25cdc8fc51bc47784e4c51be4aba4e7e1fc06a95d336733d45","profile":"lenient","valid":true,"issueCount":1,"errorCodes":[],"warningCodes":["paraid-missing-element"]}
