@@ -66,3 +66,4 @@
 {"element":"captions","file":"captions.docx","sha256":"f4f6205804b2bab5e200437142b1f23581c63665e14ba8c3219ed84f0317c95e","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"category","file":"category.docx","sha256":"7e4d9c79bec942bd9fb1d3666e450f1bf49981b2fa1e9adb8b24830e98af312a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"cellDel","file":"cellDel.docx","sha256":"a323016a5c03dfde7eef20ccd3b861f202a0fa80ec22a63103b4bac314685288","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"cellIns","file":"cellIns.docx","sha256":"3470acca4e1aef3df391560671305a1916200a79752dde7b14e6891948a193f6","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
