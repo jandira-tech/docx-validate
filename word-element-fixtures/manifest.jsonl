@@ -194,3 +194,4 @@
 {"element":"eastAsianLayout","file":"eastAsianLayout.docx","sha256":"cd3b67b5edef8a5ba145c801bfc7bcdfaa244d528b5543f1cd91b3638c197882","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"effect","file":"effect.docx","sha256":"20aae268b8acbaf2b606f5707fa071105873b2dbbdd8969af2b482dd0ca4d24a","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"em","file":"em.docx","sha256":"6535542218f293e892b38232f5a31b872564a515f93f697ec60570bde403fa04","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"embedBold","file":"embedBold.docx","sha256":"4e22fe1d408607380b53e4c1528e968b18ffd725a87f4e044c5e9a7f85e248b5","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
