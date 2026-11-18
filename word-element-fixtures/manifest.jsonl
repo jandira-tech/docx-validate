@@ -127,3 +127,4 @@
 {"element":"description","file":"description.docx","sha256":"3ed579f361c561477940e7c322ea1183beef52fded66a832c0f7b354d418d723","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"destination","file":"destination.docx","sha256":"e194db2a815de8fe33b58da09ed30c2a5e85468ad0be3592b6c46e2b72c4ac5c","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"dir","file":"dir.docx","sha256":"7b220ecb2ba6c90b4dd080c3d251ab735b3c9aa7b02998922d5eb4177816de0d","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"dirty","file":"dirty.docx","sha256":"b1bf872943ca5a382c6329970d98ef499e6754d8988044043e8e0f5901727e02","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
