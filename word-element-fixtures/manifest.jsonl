@@ -528,3 +528,4 @@
 {"element":"tblCellSpacing","file":"tblCellSpacing.docx","sha256":"768bcc440d2c2599fd07b247613185359fa4b04ffc39f847a07631da1aa17288","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"tblDescription","file":"tblDescription.docx","sha256":"682c24016520e42b3c9cc3667b33bd7eff2b6b681dee00ffa755894d734771b5","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
 {"element":"tblGrid","file":"tblGrid.docx","sha256":"a363292c590414f4fe4fcbc9b577e007f75345304b9fca7740921f3f655d8453","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
+{"element":"tblGridChange","file":"tblGridChange.docx","sha256":"decd313860e9524229a5df2734b412412d4cb0eba02a6d0a1ab9b69ed2c5b47c","profile":"lenient","valid":false,"issueCount":2,"errorCodes":["xsd-error","xsd-summary"],"warningCodes":[]}
