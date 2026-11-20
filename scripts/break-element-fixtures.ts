@@ -21,7 +21,7 @@
  */
 
 import { createHash } from "node:crypto";
-import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -29,6 +29,7 @@ import { Command } from "commander";
 import JSZip from "jszip";
 
 import { runCli } from "../src/lib/run-cli";
+import { fixtureMatchesRow, loadManifestRows, parseLimitOption, persistManifestRows } from "./element-fixture-cli";
 import { parseXml, serializeXml } from "../src/lib/xml-helpers";
 import type { Profile } from "../src/lib/types";
 import { Validate } from "../src/validate";
@@ -135,20 +136,33 @@ runCli(import.meta.url, async () => {
         only: string;
         resume: boolean;
     }>();
+    // Validate --limit before any output file is created or cleared.
+    let limit: number | null;
+    try {
+        limit = parseLimitOption(opts.limit);
+    } catch (err) {
+        console.error((err as Error).message);
+        return 1;
+    }
     const srcDir = path.resolve(opts.src);
     const outDir = path.resolve(opts.out);
     const resultsPath = path.resolve(opts.results || path.join(outDir, "manifest.jsonl"));
     mkdirSync(outDir, { recursive: true });
 
     const all = readdirSorted(srcDir);
+    // A partial (--only) or resuming run updates only the selected rows and
+    // preserves rows for every other fixture; a full non-resume run replaces
+    // the manifest wholesale.
+    const rowsByElement = loadManifestRows<ElementResult>(resultsPath);
+    const keepExisting = opts.resume || Boolean(opts.only);
+    if (!keepExisting) writeFileSync(resultsPath, "");
+    // Resume skips a fixture only when its row records a successful break for
+    // the requested profile and the fixture on disk still matches the hash.
     const done = new Set<string>();
-    if (opts.resume && existsSync(resultsPath)) {
-        for (const line of readFileSync(resultsPath, "utf8").split("\n")) {
-            if (!line.trim()) continue;
-            done.add((JSON.parse(line) as ElementResult).element);
+    if (opts.resume) {
+        for (const row of rowsByElement.values()) {
+            if (row.profile === opts.profile && !row.valid && row.sha256 && fixtureMatchesRow(outDir, row)) done.add(row.element);
         }
-    } else {
-        writeFileSync(resultsPath, "");
     }
     let todo = all.filter((name) => !done.has(name));
     if (opts.only) {
@@ -160,7 +174,7 @@ runCli(import.meta.url, async () => {
         );
         todo = todo.filter((name) => wanted.has(name));
     }
-    const elements = opts.limit ? todo.slice(0, Number(opts.limit)) : todo;
+    const elements = limit === null ? todo : todo.slice(0, limit);
     console.log(`breaking ${elements.length} of ${all.length} fixtures (${done.size} done)`);
 
     const validator = new Validate({ profile: opts.profile, suffix: ".docx" });
@@ -214,14 +228,15 @@ runCli(import.meta.url, async () => {
                 errorMessages: ["no accepted mutation"],
             };
         }
-        appendFileSync(resultsPath, JSON.stringify(row) + "\n");
+        rowsByElement.set(element, row);
+        persistManifestRows(resultsPath, rowsByElement);
         if ((index + 1) % 25 === 0)
             console.log(`  ${index + 1}/${elements.length} (${broken} broken, ${noMutation} without accepted mutation so far)`);
     }
     console.log(
         `done: ${elements.length} processed, ${broken} broken with own-rule failure, ${noMutation} unresolved; results: ${resultsPath}`,
     );
-    return 0;
+    return noMutation > 0 ? 1 : 0;
 });
 
 const readdirSorted = (dir: string): string[] =>
