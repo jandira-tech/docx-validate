@@ -7,7 +7,10 @@ directory holds one `.docx`, named `<element>.docx`.
 
 Each fixture is the **absolute minimal** package that still passes validation
 while remaining representative of the element's XML rule: the element is kept
-and placed at the schema-correct position — the shortest path from a part root
+and placed at the schema-correct position — across same-name schema
+declarations the shortest path wins, and within one declaration the earliest
+part root in the list below wins (`w:document` first, so primary-document
+paths are preferred over equally long header/footer ones). Part roots:
 (`w:document`, `w:styles`, `w:settings`, `w:numbering`, `w:fonts`,
 `w:webSettings`, `w:comments`, `w:footnotes`, `w:endnotes`, `w:hdr`, `w:ftr`,
 `w:glossaryDocument`, `w:recipients`) through the bundled XSD content-model

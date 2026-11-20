@@ -82,12 +82,24 @@ describe("generate-element-fixtures --limit validation", () => {
         expect(existsSync(results)).toBe(false);
     });
 
-    it("accepts --limit 0 as a no-op success", { timeout: 120_000 }, async () => {
+    it("accepts --limit 0 as a full no-op that touches no outputs", { timeout: 120_000 }, async () => {
         const dir = tmp();
         const results = path.join(dir, "manifest.jsonl");
-        const out = await tsx(GENERATE, ["--out", path.join(dir, "out"), "--results", results, "--limit", "0"]);
+        writeFileSync(results, SENTINEL + "\n");
+        const outDir = path.join(dir, "out");
+        const out = await tsx(GENERATE, ["--out", outDir, "--results", results, "--limit", "0"]);
         expect(out.code, `stderr: ${out.stderr.slice(0, 300)}`).toBe(0);
-        expect(readFileSync(results, "utf8")).toBe("");
+        expect(readFileSync(results, "utf8")).toContain("sentinel");
+        expect(existsSync(outDir)).toBe(false);
+    });
+
+    it("rejects an explicitly empty --limit= before touching outputs", { timeout: 120_000 }, async () => {
+        const dir = tmp();
+        const results = path.join(dir, "manifest.jsonl");
+        writeFileSync(results, SENTINEL + "\n");
+        const out = await tsx(GENERATE, ["--out", path.join(dir, "out"), "--results", results, "--limit="]);
+        expect(out.code, `expected nonzero exit, stderr: ${out.stderr.slice(0, 300)}`).not.toBe(0);
+        expect(readFileSync(results, "utf8")).toContain("sentinel");
     });
 });
 
@@ -156,6 +168,61 @@ describe("repair-element-fixtures CLI contract", () => {
         expect(onDisk.toString("utf8")).not.toBe("tampered");
         // The manifest row must describe the fixture that is actually on disk.
         expect(String(rows[0].sha256)).toBe(createHash("sha256").update(onDisk).digest("hex"));
+    });
+
+    it("rejects an explicitly empty --limit= before touching the manifest", { timeout: 120_000 }, async () => {
+        const dir = tmp();
+        const results = path.join(dir, "manifest.jsonl");
+        writeFileSync(results, SENTINEL + "\n");
+        const out = await tsx(REPAIR, ["--out", path.join(dir, "out"), "--results", results, "--only", "zoom", "--limit="]);
+        expect(out.code, `expected nonzero exit, stderr: ${out.stderr.slice(0, 300)}`).not.toBe(0);
+        expect(readFileSync(results, "utf8")).toContain("sentinel");
+    });
+
+    it("a limited run without --only/--resume preserves existing manifest rows", { timeout: 180_000 }, async () => {
+        const dir = tmp();
+        const results = path.join(dir, "manifest.jsonl");
+        writeFileSync(results, SENTINEL + "\n");
+        const out = await tsx(REPAIR, ["--out", path.join(dir, "out"), "--results", results, "--limit", "1"]);
+        expect(out.code, `stderr: ${out.stderr.slice(0, 300)}`).toBe(0);
+        const rows = readRows(results);
+        expect(rows.some((r) => r.element === "other" && r.sha256 === "sentinel")).toBe(true);
+        expect(rows.length).toBe(2);
+    });
+
+    it("--resume does not trust generator rows (no repaired flag)", { timeout: 240_000 }, async () => {
+        const dir = tmp();
+        const outDir = path.join(dir, "out");
+        const results = path.join(dir, "manifest.jsonl");
+        const first = await tsx(REPAIR, ["--out", outDir, "--results", results, "--only", "zoom"]);
+        expect(first.code, `stderr: ${first.stderr.slice(0, 300)}`).toBe(0);
+        // Simulate a generator-written row: same shape, but no repaired flag.
+        const rows = readRows(results).map((r) => {
+            const { repaired: _repaired, ...rest } = r as Record<string, unknown> & { repaired?: boolean };
+            return rest;
+        });
+        writeFileSync(results, rows.map((r) => JSON.stringify(r)).join("\n") + "\n");
+        const second = await tsx(REPAIR, ["--out", outDir, "--results", results, "--resume", "--only", "zoom"]);
+        expect(second.code, `stderr: ${second.stderr.slice(0, 300)}`).toBe(0);
+        expect(second.stdout).toContain("repairing 1 of");
+        const zoomRows = readRows(results).filter((r) => r.element === "zoom");
+        expect(zoomRows.length).toBe(1);
+        expect(zoomRows[0].repaired).toBe(true);
+    });
+
+    it("attachedTemplate gets a typed internal relationship, not a hyperlink", { timeout: 180_000 }, async () => {
+        const dir = tmp();
+        const outDir = path.join(dir, "out");
+        const results = path.join(dir, "manifest.jsonl");
+        const out = await tsx(REPAIR, ["--out", outDir, "--results", results, "--only", "attachedTemplate"]);
+        expect(out.code, `stderr: ${out.stderr.slice(0, 300)}`).toBe(0);
+        const JSZip = (await import("jszip")).default;
+        const zip = await JSZip.loadAsync(readFileSync(path.join(outDir, "attachedTemplate.docx")));
+        const relsName = Object.keys(zip.files).find((n) => n.endsWith("settings.xml.rels"));
+        expect(relsName, "expected a settings sidecar").toBeTruthy();
+        const rels = await zip.files[relsName!].async("string");
+        expect(rels).toContain("/attachedTemplate");
+        expect(rels).not.toContain('TargetMode="External"');
     });
 
     it("returns nonzero when a selected fixture cannot be written", { timeout: 180_000 }, async () => {

@@ -18,7 +18,7 @@
  */
 
 import { createHash } from "node:crypto";
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -26,6 +26,7 @@ import { Command } from "commander";
 import JSZip from "jszip";
 
 import { runCli } from "../src/lib/run-cli";
+import { fixtureMatchesRow, limitFlagPassed, loadManifestRows, parseLimitOption, persistManifestRows } from "./element-fixture-cli";
 import { parseXmlBytes } from "../src/lib/xml-helpers";
 import type { Profile } from "../src/lib/types";
 import { Validate } from "../src/validate";
@@ -95,34 +96,32 @@ runCli(import.meta.url, async () => {
         .option("--resume", "skip elements already recorded in the results file", false);
     program.parse(process.argv);
     const opts = program.opts<{ out: string; results: string; profile: Profile; limit: string; resume: boolean }>();
-    // Validate --limit before any output file is created or cleared.
-    let limit: number | null = null;
-    if (opts.limit !== "") {
-        const n = Number(opts.limit);
-        if (!Number.isSafeInteger(n) || n < 0) {
-            console.error(`invalid --limit "${opts.limit}": expected a nonnegative integer`);
-            return 1;
-        }
-        limit = n;
+    // Validate --limit before any output file is created or cleared; an
+    // explicit --limit 0 is a full no-op that touches nothing.
+    let limit: number | null;
+    try {
+        limit = parseLimitOption(opts.limit, limitFlagPassed(process.argv));
+    } catch (err) {
+        console.error((err as Error).message);
+        return 1;
+    }
+    if (limit === 0) {
+        console.log("--limit 0: nothing to do; outputs left untouched");
+        return 0;
     }
     const outDir = path.resolve(opts.out);
     const resultsPath = path.resolve(opts.results || path.join(outDir, "manifest.jsonl"));
     mkdirSync(outDir, { recursive: true });
 
     const all = collectElementNames(WML_XSD);
+    const rowsByElement = loadManifestRows<ElementResult>(resultsPath);
+    const keepExisting = opts.resume || limit !== null;
+    if (!keepExisting) writeFileSync(resultsPath, "");
     const done = new Set<string>();
-    if (opts.resume && existsSync(resultsPath)) {
-        for (const line of readFileSync(resultsPath, "utf8").split("\n")) {
-            if (!line.trim()) continue;
-            const row = JSON.parse(line) as ElementResult;
-            if (row.profile !== opts.profile || !row.valid || !row.sha256) continue;
-            const fixturePath = path.join(outDir, row.file);
-            if (existsSync(fixturePath) && createHash("sha256").update(readFileSync(fixturePath)).digest("hex") === row.sha256) {
-                done.add(row.element);
-            }
+    if (opts.resume) {
+        for (const row of rowsByElement.values()) {
+            if (row.profile === opts.profile && row.valid && fixtureMatchesRow(outDir, row)) done.add(row.element);
         }
-    } else {
-        writeFileSync(resultsPath, "");
     }
     const todo = all.filter((name) => !done.has(name));
     const elements = limit === null ? todo : todo.slice(0, limit);
@@ -149,7 +148,8 @@ runCli(import.meta.url, async () => {
             warningCodes: codes("warning"),
         };
         results.push(row);
-        appendFileSync(resultsPath, JSON.stringify(row) + "\n");
+        rowsByElement.set(element, row);
+        persistManifestRows(resultsPath, rowsByElement);
         if ((index + 1) % 50 === 0) console.log(`  ${index + 1}/${elements.length} (${validCount} valid so far)`);
     }
     console.log(

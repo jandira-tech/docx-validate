@@ -7,8 +7,9 @@
  * Repair every `word-element-fixtures/<element>.docx` to the absolute minimal
  * form that still passes validation while remaining representative of the
  * element's XML rule: the element is kept, placed at the schema-correct
- * position reachable from `w:document` (shortest path through the bundled
- * XSD content-model graph), with exactly the required children and required
+ * position: shortest path across same-name declarations, earliest part root
+ * (document first) within one declaration, through the bundled XSD
+ * content-model graph; with exactly the required children and required
  * attributes the schema demands — nothing more.
  *
  * Elements that are roots of their own Word part (styles, settings, …) get
@@ -29,6 +30,7 @@ import JSZip from "jszip";
 
 import { runCli } from "../src/lib/run-cli";
 import { parseXmlBytes } from "../src/lib/xml-helpers";
+import { fixtureMatchesRow, limitFlagPassed, loadManifestRows, parseLimitOption, persistManifestRows } from "./element-fixture-cli";
 import type { Profile } from "../src/lib/types";
 import { Validate } from "../src/validate";
 
@@ -734,7 +736,7 @@ interface FixtureParts {
 const MAIN_DOC_CT = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
 
 /** Part root elements and the package part each one roots. `document` roots the main part. */
-/** One multi-source BFS from every part root; resolves every element name to a shortest path. */
+/** BFS per part root in ROOT_PARTS order (document first); across same-name declarations find() returns the shortest path. */
 class PathIndex {
     private readonly parents = new Map<Element, { node: PathNode; root: string; parent: Element | null }>();
 
@@ -864,6 +866,8 @@ interface RelSpec {
     part?: string;
     contentType?: string;
     binary?: boolean;
+    /** Exact XML content for the target part (used when the part has an +xml content type). */
+    content?: string;
 }
 
 const FONT_REL: RelSpec = {
@@ -896,6 +900,32 @@ const REL_FOR_ELEMENT: Record<string, RelSpec> = {
         part: "word/printerSettings.bin",
         binary: true,
         contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.printerSettings",
+    },
+    attachedTemplate: {
+        type: `${R}/attachedTemplate`,
+        part: "word/attachedTemplate.dotx",
+        content: XML_DECL + `<w:document xmlns:w="${W}"><w:body/></w:document>\n`,
+        contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml",
+    },
+    contentPart: { type: `${R}/contentPart`, part: "word/contentPart.bin", binary: true, contentType: "application/octet-stream" },
+    dataSource: { type: `${R}/mailMergeDataSource`, part: "word/dataSource.bin", binary: true, contentType: "application/octet-stream" },
+    headerSource: {
+        type: `${R}/mailMergeHeaderSource`,
+        part: "word/headerSource.bin",
+        binary: true,
+        contentType: "application/octet-stream",
+    },
+    longDesc: { type: `${R}/longDesc`, part: "word/longDesc.bin", binary: true, contentType: "application/octet-stream" },
+    sourceFileName: { type: `${R}/sourceFileName`, part: "word/sourceFileName.html", binary: true, contentType: "text/html" },
+    movie: { type: `${R}/video`, part: "word/movie.bin", binary: true, contentType: "video/mp4" },
+    objectEmbed: { type: `${R}/oleObject`, part: "word/oleObject1.bin", binary: true, contentType: "application/octet-stream" },
+    objectLink: { type: `${R}/oleObjectLink`, part: "word/oleObjectLink.bin", binary: true, contentType: "application/octet-stream" },
+    src: { type: `${R}/image`, part: "word/image1.png", binary: true, contentType: "image/png" },
+    subDoc: {
+        type: `${R}/subDocument`,
+        part: "word/subDoc.docx",
+        content: XML_DECL + `<w:document xmlns:w="${W}"><w:body/></w:document>\n`,
+        contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
     },
 };
 
@@ -978,7 +1008,10 @@ const fixupRelationshipRefs = (fx: FixtureParts): void => {
             if (spec?.part) {
                 const target = path.posix.relative(path.posix.dirname(partPath), spec.part);
                 if (!fx.files[spec.part]) {
-                    if (spec.binary) {
+                    if (spec.content) {
+                        fx.files[spec.part] = spec.content;
+                        fx.overrides.push({ part: "/" + spec.part, contentType: spec.contentType! });
+                    } else if (spec.binary) {
                         fx.files[spec.part] = new Uint8Array([0x00, 0x01, 0x00, 0x00]);
                         fx.defaults.push({ ext: path.posix.extname(spec.part).slice(1), contentType: spec.contentType! });
                     } else {
@@ -988,8 +1021,18 @@ const fixupRelationshipRefs = (fx: FixtureParts): void => {
                     }
                 }
                 rels.push({ id: refId, type: spec.type, target });
-            } else {
+            } else if (elName === "hyperlink") {
+                // Only w:hyperlink expects an external hyperlink relationship.
                 rels.push({ id: refId, type: `${R}/hyperlink`, target: "https://example.com/", external: true });
+            } else {
+                // Any other r:id/r:embed/r:link reference gets a typed internal
+                // relationship to a placeholder part — never a hyperlink.
+                const part = `word/${elName}.bin`;
+                if (!fx.files[part]) {
+                    fx.files[part] = new Uint8Array([0x00, 0x01, 0x00, 0x00]);
+                    fx.defaults.push({ ext: "bin", contentType: "application/octet-stream" });
+                }
+                rels.push({ id: refId, type: `${R}/${elName}`, target: path.posix.relative(path.posix.dirname(partPath), part) });
             }
         }
     }
@@ -1096,6 +1139,8 @@ interface ElementResult {
     errorCodes: string[];
     warningCodes: string[];
     errorMessages?: string[];
+    /** True when the row was written by the repair script (not the bare generator). */
+    repaired?: boolean;
 }
 
 runCli(import.meta.url, async () => {
@@ -1109,15 +1154,18 @@ runCli(import.meta.url, async () => {
         .option("--resume", "skip elements already recorded in the results file", false);
     program.parse(process.argv);
     const opts = program.opts<{ out: string; results: string; profile: Profile; limit: string; only: string; resume: boolean }>();
-    // Validate --limit before any output file is created or cleared.
-    let limit: number | null = null;
-    if (opts.limit !== "") {
-        const n = Number(opts.limit);
-        if (!Number.isSafeInteger(n) || n < 0) {
-            console.error(`invalid --limit "${opts.limit}": expected a nonnegative integer`);
-            return 1;
-        }
-        limit = n;
+    // Validate --limit before any output file is created or cleared; an
+    // explicit --limit 0 is a full no-op that touches nothing.
+    let limit: number | null;
+    try {
+        limit = parseLimitOption(opts.limit, limitFlagPassed(process.argv));
+    } catch (err) {
+        console.error((err as Error).message);
+        return 1;
+    }
+    if (limit === 0) {
+        console.log("--limit 0: nothing to do; outputs left untouched");
+        return 0;
     }
     const outDir = path.resolve(opts.out);
     const resultsPath = path.resolve(opts.results || path.join(outDir, "manifest.jsonl"));
@@ -1133,29 +1181,18 @@ runCli(import.meta.url, async () => {
     // A partial (--only) or resuming run updates only the selected rows and
     // preserves rows for every other fixture; a full non-resume run replaces
     // the manifest wholesale.
-    const rowsByElement = new Map<string, ElementResult>();
-    const keepExisting = opts.resume || Boolean(opts.only);
-    if (keepExisting && existsSync(resultsPath)) {
-        for (const line of readFileSync(resultsPath, "utf8").split("\n")) {
-            if (!line.trim()) continue;
-            const row = JSON.parse(line) as ElementResult;
-            rowsByElement.set(row.element, row);
-        }
-    }
+    const rowsByElement = loadManifestRows<ElementResult>(resultsPath);
+    const keepExisting = opts.resume || Boolean(opts.only) || limit !== null;
     if (!keepExisting) writeFileSync(resultsPath, "");
-    const persistResults = (): void =>
-        writeFileSync(resultsPath, [...rowsByElement.values()].map((r) => JSON.stringify(r) + "\n").join(""));
-    // Resume skips a fixture only when its row records a successful repair for
-    // the requested profile and the fixture on disk still matches the recorded
-    // hash; build-failed or stale rows are reprocessed and replaced on success.
+    const persistResults = (): void => persistManifestRows(resultsPath, rowsByElement);
+    // Resume skips a fixture only when its row is marked as a successful repair
+    // for the requested profile and the fixture on disk still matches the
+    // recorded hash; generator rows, build-failed rows, and stale rows are
+    // reprocessed and replaced on success.
     const done = new Set<string>();
     if (opts.resume) {
         for (const row of rowsByElement.values()) {
-            if (row.profile !== opts.profile || !row.valid || !row.sha256) continue;
-            const fixturePath = path.join(outDir, row.file);
-            if (existsSync(fixturePath) && createHash("sha256").update(readFileSync(fixturePath)).digest("hex") === row.sha256) {
-                done.add(row.element);
-            }
+            if (row.repaired === true && row.profile === opts.profile && row.valid && fixtureMatchesRow(outDir, row)) done.add(row.element);
         }
     }
     let todo = all.filter((name) => !done.has(name));
@@ -1175,6 +1212,7 @@ runCli(import.meta.url, async () => {
     let buildFailures = 0;
     for (const [index, element] of elements.entries()) {
         let row: ElementResult;
+        let wasValid = false;
         try {
             const fx = buildFixture(model, paths, element);
             const bytes = await packFixture(fx);
@@ -1183,7 +1221,7 @@ runCli(import.meta.url, async () => {
                 [...new Set(result.issues.filter((issue) => issue.severity === severity).map((issue) => issue.code ?? "unknown"))].sort();
             const file = `${element}.docx`;
             writeFileSync(path.join(outDir, file), bytes);
-            if (result.valid) validCount++;
+            wasValid = result.valid;
             row = {
                 element,
                 file,
@@ -1193,6 +1231,7 @@ runCli(import.meta.url, async () => {
                 issueCount: result.issues.length,
                 errorCodes: codes("error"),
                 warningCodes: codes("warning"),
+                repaired: true,
                 ...(result.valid
                     ? {}
                     : { errorMessages: result.issues.filter((i) => i.severity === "error").map((i) => i.message.slice(0, 300)) }),
@@ -1213,6 +1252,9 @@ runCli(import.meta.url, async () => {
         }
         rowsByElement.set(element, row);
         persistResults();
+        // Count as valid only after both the fixture file and the manifest row
+        // have been written successfully.
+        if (wasValid) validCount++;
         if ((index + 1) % 25 === 0)
             console.log(`  ${index + 1}/${elements.length} (${validCount} valid, ${buildFailures} build failures so far)`);
     }
