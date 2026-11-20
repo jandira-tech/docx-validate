@@ -86,8 +86,6 @@
         "@vitest/coverage-v8": "5.0.5",
         "bumpp": "^12.3.0",
         "cspell": "^10.4.0",
-        "eslint-plugin-jsdoc": "^65.4.2",
-        "eslint-plugin-prefer-arrow": "^1.2.3",
         "oxfmt": "^0.75.0",
         "oxlint": "^1.90.0",
         "oxlint-tsgolint": "7.0.2005",
