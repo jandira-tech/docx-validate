@@ -114,8 +114,10 @@ runCli(import.meta.url, async () => {
     mkdirSync(outDir, { recursive: true });
 
     const all = collectElementNames(WML_XSD);
-    const rowsByElement = loadManifestRows<ElementResult>(resultsPath);
     const keepExisting = opts.resume || limit !== null;
+    // A full run (no --resume/--limit) starts from an empty map so stale rows
+    // cannot be restored.
+    const rowsByElement = keepExisting ? loadManifestRows<ElementResult>(resultsPath) : new Map<string, ElementResult>();
     if (!keepExisting) writeFileSync(resultsPath, "");
     const done = new Set<string>();
     if (opts.resume) {

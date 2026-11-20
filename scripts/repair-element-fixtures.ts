@@ -907,7 +907,16 @@ const REL_FOR_ELEMENT: Record<string, RelSpec> = {
         content: XML_DECL + `<w:document xmlns:w="${W}"><w:body/></w:document>\n`,
         contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml",
     },
-    contentPart: { type: `${R}/contentPart`, part: "word/contentPart.bin", binary: true, contentType: "application/octet-stream" },
+    // ISO/IEC 29500: contentPart references its part via the customXml
+    // relationship type; longDesc via hyperlink.
+    contentPart: {
+        type: `${R}/customXml`,
+        part: "word/customXml/item1.xml",
+        content:
+            XML_DECL +
+            `<ds:item xmlns:ds="http://schemas.openxmlformats.org/officeDocument/2006/customXml" ds:itemID="{12345678-1234-1234-1234-123456789012}"/>\n`,
+        contentType: "application/vnd.openxmlformats-officedocument.customXml+xml",
+    },
     dataSource: { type: `${R}/mailMergeDataSource`, part: "word/dataSource.bin", binary: true, contentType: "application/octet-stream" },
     headerSource: {
         type: `${R}/mailMergeHeaderSource`,
@@ -915,7 +924,7 @@ const REL_FOR_ELEMENT: Record<string, RelSpec> = {
         binary: true,
         contentType: "application/octet-stream",
     },
-    longDesc: { type: `${R}/longDesc`, part: "word/longDesc.bin", binary: true, contentType: "application/octet-stream" },
+    longDesc: { type: `${R}/hyperlink` },
     sourceFileName: { type: `${R}/sourceFileName`, part: "word/sourceFileName.html", binary: true, contentType: "text/html" },
     movie: { type: `${R}/video`, part: "word/movie.bin", binary: true, contentType: "video/mp4" },
     objectEmbed: { type: `${R}/oleObject`, part: "word/oleObject1.bin", binary: true, contentType: "application/octet-stream" },
@@ -1021,8 +1030,8 @@ const fixupRelationshipRefs = (fx: FixtureParts): void => {
                     }
                 }
                 rels.push({ id: refId, type: spec.type, target });
-            } else if (elName === "hyperlink") {
-                // Only w:hyperlink expects an external hyperlink relationship.
+            } else if (elName === "hyperlink" || elName === "longDesc") {
+                // Only w:hyperlink and w:longDesc use the hyperlink relationship type.
                 rels.push({ id: refId, type: `${R}/hyperlink`, target: "https://example.com/", external: true });
             } else {
                 // Any other r:id/r:embed/r:link reference gets a typed internal
@@ -1181,8 +1190,10 @@ runCli(import.meta.url, async () => {
     // A partial (--only) or resuming run updates only the selected rows and
     // preserves rows for every other fixture; a full non-resume run replaces
     // the manifest wholesale.
-    const rowsByElement = loadManifestRows<ElementResult>(resultsPath);
     const keepExisting = opts.resume || Boolean(opts.only) || limit !== null;
+    // A full run (no --resume/--only/--limit) starts from an empty map so stale
+    // rows for elements no longer in the schema cannot be restored.
+    const rowsByElement = keepExisting ? loadManifestRows<ElementResult>(resultsPath) : new Map<string, ElementResult>();
     if (!keepExisting) writeFileSync(resultsPath, "");
     const persistResults = (): void => persistManifestRows(resultsPath, rowsByElement);
     // Resume skips a fixture only when its row is marked as a successful repair

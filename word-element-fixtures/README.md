@@ -10,10 +10,11 @@ while remaining representative of the element's XML rule: the element is kept
 and placed at the schema-correct position — across same-name schema
 declarations the shortest path wins, and within one declaration the earliest
 part root in the list below wins (`w:document` first, so primary-document
-paths are preferred over equally long header/footer ones). Part roots:
-(`w:document`, `w:styles`, `w:settings`, `w:numbering`, `w:fonts`,
-`w:webSettings`, `w:comments`, `w:footnotes`, `w:endnotes`, `w:hdr`, `w:ftr`,
-`w:glossaryDocument`, `w:recipients`) through the bundled XSD content-model
+paths are preferred over equally long header/footer ones). Part roots, in
+priority order (mirrors `ROOT_PARTS` in `scripts/repair-element-fixtures.ts`):
+`w:document`, `w:glossaryDocument`, `w:styles`, `w:settings`, `w:numbering`,
+`w:fonts`, `w:webSettings`, `w:comments`, `w:footnotes`, `w:endnotes`, `w:hdr`,
+`w:ftr`, `w:recipients` — through the bundled XSD content-model
 graph — with exactly the required child elements and required attributes the
 schema demands, plus the smallest extras the semantic checks ask for (a
 comments part for comment markers, a footnotes part for a footnote reference,
