@@ -24,13 +24,12 @@
 
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync, existsSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const run = promisify(execFile);
@@ -54,7 +53,17 @@ const tsx = async (script: string, args: string[]): Promise<RunOutcome> => {
 const GENERATE = "scripts/generate-element-fixtures.ts";
 const REPAIR = "scripts/repair-element-fixtures.ts";
 
-const tmp = (): string => mkdtempSync(path.join(tmpdir(), "element-fixture-scripts-"));
+// The fixture scripts confine --out/--results to the repository, so tests
+// must use a temp dir inside the repo (not os.tmpdir()).
+const createdTmpDirs: string[] = [];
+const tmp = (): string => {
+    const dir = mkdtempSync(path.join(REPO, ".tmp-element-fixture-scripts-"));
+    createdTmpDirs.push(dir);
+    return dir;
+};
+afterEach(() => {
+    while (createdTmpDirs.length > 0) rmSync(createdTmpDirs.pop()!, { recursive: true, force: true });
+});
 
 const readRows = (file: string): Record<string, unknown>[] =>
     readFileSync(file, "utf8")

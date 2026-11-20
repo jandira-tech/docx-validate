@@ -1244,7 +1244,9 @@ runCli(import.meta.url, async () => {
             const bytes = await packFixture(fx);
             const result = await validator.run(bytes);
             const codes = (severity: "error" | "warning"): string[] =>
-                [...new Set(result.issues.filter((issue) => issue.severity === severity).map((issue) => issue.code ?? "unknown"))].sort(compareCodeUnits);
+                [...new Set(result.issues.filter((issue) => issue.severity === severity).map((issue) => issue.code ?? "unknown"))].sort(
+                    compareCodeUnits,
+                );
             const file = `${element}.docx`;
             writeFileSync(path.join(outDir, file), bytes);
             wasValid = result.valid;
