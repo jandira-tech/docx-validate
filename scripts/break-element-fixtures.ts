@@ -29,7 +29,7 @@ import { Command } from "commander";
 import JSZip from "jszip";
 
 import { runCli } from "../src/lib/run-cli";
-import { fixtureMatchesRow, loadManifestRows, parseLimitOption, persistManifestRows } from "./element-fixture-cli";
+import { fixtureMatchesRow, limitFlagPassed, loadManifestRows, parseLimitOption, persistManifestRows } from "./element-fixture-cli";
 import { parseXml, serializeXml } from "../src/lib/xml-helpers";
 import type { Profile } from "../src/lib/types";
 import { Validate } from "../src/validate";
@@ -136,13 +136,18 @@ runCli(import.meta.url, async () => {
         only: string;
         resume: boolean;
     }>();
-    // Validate --limit before any output file is created or cleared.
+    // Validate --limit before any output file is created or cleared; an
+    // explicit --limit 0 is a full no-op that touches nothing.
     let limit: number | null;
     try {
-        limit = parseLimitOption(opts.limit);
+        limit = parseLimitOption(opts.limit, limitFlagPassed(process.argv));
     } catch (err) {
         console.error((err as Error).message);
         return 1;
+    }
+    if (limit === 0) {
+        console.log("--limit 0: nothing to do; outputs left untouched");
+        return 0;
     }
     const srcDir = path.resolve(opts.src);
     const outDir = path.resolve(opts.out);
@@ -154,14 +159,17 @@ runCli(import.meta.url, async () => {
     // preserves rows for every other fixture; a full non-resume run replaces
     // the manifest wholesale.
     const rowsByElement = loadManifestRows<ElementResult>(resultsPath);
-    const keepExisting = opts.resume || Boolean(opts.only);
+    const keepExisting = opts.resume || Boolean(opts.only) || limit !== null;
     if (!keepExisting) writeFileSync(resultsPath, "");
-    // Resume skips a fixture only when its row records a successful break for
-    // the requested profile and the fixture on disk still matches the hash.
+    // Resume skips a fixture only when its row records a successful break (a
+    // real mutation, invalid under the requested profile) and the fixture on
+    // disk still matches the recorded hash.
     const done = new Set<string>();
     if (opts.resume) {
         for (const row of rowsByElement.values()) {
-            if (row.profile === opts.profile && !row.valid && row.sha256 && fixtureMatchesRow(outDir, row)) done.add(row.element);
+            if (row.profile === opts.profile && !row.valid && row.mutation && row.mutation !== "none" && fixtureMatchesRow(outDir, row)) {
+                done.add(row.element);
+            }
         }
     }
     let todo = all.filter((name) => !done.has(name));
