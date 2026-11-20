@@ -26,7 +26,15 @@ import { Command } from "commander";
 import JSZip from "jszip";
 
 import { runCli } from "../src/lib/run-cli";
-import { fixtureMatchesRow, limitFlagPassed, loadManifestRows, parseLimitOption, persistManifestRows } from "./element-fixture-cli";
+import {
+    compareCodeUnits,
+    fixtureMatchesRow,
+    limitFlagPassed,
+    loadManifestRows,
+    parseLimitOption,
+    persistManifestRows,
+    resolveInside,
+} from "./element-fixture-cli";
 import { parseXmlBytes } from "../src/lib/xml-helpers";
 import type { Profile } from "../src/lib/types";
 import { Validate } from "../src/validate";
@@ -51,7 +59,7 @@ const collectElementNames = (xsdPath: string): string[] => {
         }
     };
     walk(root);
-    return [...names].sort((a, b) => a.localeCompare(b));
+    return [...names].sort(compareCodeUnits);
 };
 
 const CONTENT_TYPES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -109,8 +117,15 @@ runCli(import.meta.url, async () => {
         console.log("--limit 0: nothing to do; outputs left untouched");
         return 0;
     }
-    const outDir = path.resolve(opts.out);
-    const resultsPath = path.resolve(opts.results || path.join(outDir, "manifest.jsonl"));
+    let outDir: string;
+    let resultsPath: string;
+    try {
+        outDir = resolveInside(REPO, opts.out, "--out");
+        resultsPath = opts.results ? resolveInside(REPO, opts.results, "--results") : path.join(outDir, "manifest.jsonl");
+    } catch (err) {
+        console.error((err as Error).message);
+        return 1;
+    }
     mkdirSync(outDir, { recursive: true });
 
     const all = collectElementNames(WML_XSD);
@@ -135,7 +150,7 @@ runCli(import.meta.url, async () => {
         const bytes = await buildDocx(element);
         const result = await validator.run(bytes);
         const codes = (severity: "error" | "warning"): string[] =>
-            [...new Set(result.issues.filter((issue) => issue.severity === severity).map((issue) => issue.code ?? "unknown"))].sort();
+            [...new Set(result.issues.filter((issue) => issue.severity === severity).map((issue) => issue.code ?? "unknown"))].sort(compareCodeUnits);
         if (result.valid) validCount++;
         const file = `${element}.docx`;
         writeFileSync(path.join(outDir, file), bytes);

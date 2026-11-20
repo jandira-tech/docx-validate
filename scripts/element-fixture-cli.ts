@@ -36,6 +36,24 @@ export const parseLimitOption = (raw: string, explicit: boolean): number | null 
 /** True when --limit was passed on the command line (either form). */
 export const limitFlagPassed = (argv: string[]): boolean => argv.some((a) => a === "--limit" || a.startsWith("--limit="));
 
+/** Deterministic code-unit ordering, independent of locale. */
+export const compareCodeUnits = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+
+/**
+ * Resolve a user-supplied path and require it to stay inside `root`
+ * (the repository). Rejects `..` escapes and absolute paths elsewhere so
+ * CLI arguments cannot direct writes outside the repo.
+ */
+export const resolveInside = (root: string, candidate: string, label: string): string => {
+    const resolvedRoot = path.resolve(root);
+    const resolved = path.resolve(resolvedRoot, candidate);
+    const rel = path.relative(resolvedRoot, resolved);
+    if (rel === ".." || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel)) {
+        throw new Error(`invalid ${label} "${candidate}": must be inside ${resolvedRoot}`);
+    }
+    return resolved;
+};
+
 export interface ManifestRow {
     element: string;
     file: string;
