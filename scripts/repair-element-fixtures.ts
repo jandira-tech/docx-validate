@@ -20,7 +20,7 @@
  */
 
 import { createHash } from "node:crypto";
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -1073,6 +1073,16 @@ runCli(import.meta.url, async () => {
         .option("--resume", "skip elements already recorded in the results file", false);
     program.parse(process.argv);
     const opts = program.opts<{ out: string; results: string; profile: Profile; limit: string; only: string; resume: boolean }>();
+    // Validate --limit before any output file is created or cleared.
+    let limit: number | null = null;
+    if (opts.limit !== "") {
+        const n = Number(opts.limit);
+        if (!Number.isSafeInteger(n) || n < 0) {
+            console.error(`invalid --limit "${opts.limit}": expected a nonnegative integer`);
+            return 1;
+        }
+        limit = n;
+    }
     const outDir = path.resolve(opts.out);
     const resultsPath = path.resolve(opts.results || path.join(outDir, "manifest.jsonl"));
     mkdirSync(outDir, { recursive: true });
@@ -1084,14 +1094,33 @@ runCli(import.meta.url, async () => {
         console.log("files:", model.files.length, "elements:", model.elements.size, "adj:", adj.size);
     }
     const all = collectElementNames(WML_XSD);
-    const done = new Set<string>();
-    if (opts.resume && existsSync(resultsPath)) {
+    // A partial (--only) or resuming run updates only the selected rows and
+    // preserves rows for every other fixture; a full non-resume run replaces
+    // the manifest wholesale.
+    const rowsByElement = new Map<string, ElementResult>();
+    const keepExisting = opts.resume || Boolean(opts.only);
+    if (keepExisting && existsSync(resultsPath)) {
         for (const line of readFileSync(resultsPath, "utf8").split("\n")) {
             if (!line.trim()) continue;
-            done.add((JSON.parse(line) as ElementResult).element);
+            const row = JSON.parse(line) as ElementResult;
+            rowsByElement.set(row.element, row);
         }
-    } else {
-        writeFileSync(resultsPath, "");
+    }
+    if (!keepExisting) writeFileSync(resultsPath, "");
+    const persistResults = (): void =>
+        writeFileSync(resultsPath, [...rowsByElement.values()].map((r) => JSON.stringify(r) + "\n").join(""));
+    // Resume skips a fixture only when its row records a successful repair for
+    // the requested profile and the fixture on disk still matches the recorded
+    // hash; build-failed or stale rows are reprocessed and replaced on success.
+    const done = new Set<string>();
+    if (opts.resume) {
+        for (const row of rowsByElement.values()) {
+            if (row.profile !== opts.profile || !row.valid || !row.sha256) continue;
+            const fixturePath = path.join(outDir, row.file);
+            if (existsSync(fixturePath) && createHash("sha256").update(readFileSync(fixturePath)).digest("hex") === row.sha256) {
+                done.add(row.element);
+            }
+        }
     }
     let todo = all.filter((name) => !done.has(name));
     if (opts.only) {
@@ -1103,7 +1132,7 @@ runCli(import.meta.url, async () => {
         );
         todo = todo.filter((name) => wanted.has(name));
     }
-    const elements = opts.limit ? todo.slice(0, Number(opts.limit)) : todo;
+    const elements = limit === null ? todo : todo.slice(0, limit);
     console.log(`repairing ${elements.length} of ${all.length} elements (${done.size} done)`);
     const validator = new Validate({ profile: opts.profile, suffix: ".docx" });
     let validCount = 0;
@@ -1116,9 +1145,9 @@ runCli(import.meta.url, async () => {
             const result = await validator.run(bytes);
             const codes = (severity: "error" | "warning"): string[] =>
                 [...new Set(result.issues.filter((issue) => issue.severity === severity).map((issue) => issue.code ?? "unknown"))].sort();
-            if (result.valid) validCount++;
             const file = `${element}.docx`;
             writeFileSync(path.join(outDir, file), bytes);
+            if (result.valid) validCount++;
             row = {
                 element,
                 file,
@@ -1146,10 +1175,11 @@ runCli(import.meta.url, async () => {
                 errorMessages: [err instanceof Error ? err.message : String(err)],
             };
         }
-        appendFileSync(resultsPath, JSON.stringify(row) + "\n");
+        rowsByElement.set(element, row);
+        persistResults();
         if ((index + 1) % 25 === 0)
             console.log(`  ${index + 1}/${elements.length} (${validCount} valid, ${buildFailures} build failures so far)`);
     }
     console.log(`done: ${elements.length} processed, ${validCount} valid, ${buildFailures} build failures; results: ${resultsPath}`);
-    return 0;
+    return buildFailures > 0 ? 1 : 0;
 });

@@ -95,6 +95,16 @@ runCli(import.meta.url, async () => {
         .option("--resume", "skip elements already recorded in the results file", false);
     program.parse(process.argv);
     const opts = program.opts<{ out: string; results: string; profile: Profile; limit: string; resume: boolean }>();
+    // Validate --limit before any output file is created or cleared.
+    let limit: number | null = null;
+    if (opts.limit !== "") {
+        const n = Number(opts.limit);
+        if (!Number.isSafeInteger(n) || n < 0) {
+            console.error(`invalid --limit "${opts.limit}": expected a nonnegative integer`);
+            return 1;
+        }
+        limit = n;
+    }
     const outDir = path.resolve(opts.out);
     const resultsPath = path.resolve(opts.results || path.join(outDir, "manifest.jsonl"));
     mkdirSync(outDir, { recursive: true });
@@ -104,13 +114,18 @@ runCli(import.meta.url, async () => {
     if (opts.resume && existsSync(resultsPath)) {
         for (const line of readFileSync(resultsPath, "utf8").split("\n")) {
             if (!line.trim()) continue;
-            done.add((JSON.parse(line) as ElementResult).element);
+            const row = JSON.parse(line) as ElementResult;
+            if (row.profile !== opts.profile || !row.valid || !row.sha256) continue;
+            const fixturePath = path.join(outDir, row.file);
+            if (existsSync(fixturePath) && createHash("sha256").update(readFileSync(fixturePath)).digest("hex") === row.sha256) {
+                done.add(row.element);
+            }
         }
     } else {
         writeFileSync(resultsPath, "");
     }
     const todo = all.filter((name) => !done.has(name));
-    const elements = opts.limit ? todo.slice(0, Number(opts.limit)) : todo;
+    const elements = limit === null ? todo : todo.slice(0, limit);
     console.log(`wml.xsd declares ${all.length} unique element names; ${done.size} already done; generating ${elements.length}`);
     const validator = new Validate({ profile: opts.profile, suffix: ".docx" });
     const results: ElementResult[] = [];
