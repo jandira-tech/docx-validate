@@ -158,8 +158,10 @@ runCli(import.meta.url, async () => {
     // A partial (--only) or resuming run updates only the selected rows and
     // preserves rows for every other fixture; a full non-resume run replaces
     // the manifest wholesale.
-    const rowsByElement = loadManifestRows<ElementResult>(resultsPath);
     const keepExisting = opts.resume || Boolean(opts.only) || limit !== null;
+    // A full run (no --resume/--only/--limit) starts from an empty map so stale
+    // rows cannot be restored.
+    const rowsByElement = keepExisting ? loadManifestRows<ElementResult>(resultsPath) : new Map<string, ElementResult>();
     if (!keepExisting) writeFileSync(resultsPath, "");
     // Resume skips a fixture only when its row records a successful break (a
     // real mutation, invalid under the requested profile) and the fixture on
