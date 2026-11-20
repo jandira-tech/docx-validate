@@ -244,7 +244,12 @@ const particlesOf = (model: SchemaModel, complex: Element, seen = new Set<Elemen
                     );
                     if (modelChild) {
                         const [min, max] = occurs(modelChild);
-                        result.push({ kind: "model", el: modelChild, min, max });
+                        const ref = modelChild.getAttribute("ref");
+                        if (modelChild.localName === "group" && ref) {
+                            result.push({ kind: "group", id: qname(modelChild, ref), min, max });
+                        } else {
+                            result.push({ kind: "model", el: modelChild, min, max });
+                        }
                     }
                 }
             }
@@ -255,7 +260,12 @@ const particlesOf = (model: SchemaModel, complex: Element, seen = new Set<Elemen
             child.localName === "group"
         ) {
             const [min, max] = occurs(child);
-            result.push({ kind: "model", el: child, min, max });
+            const ref = child.getAttribute("ref");
+            if (child.localName === "group" && ref) {
+                result.push({ kind: "group", id: qname(child, ref), min, max });
+            } else {
+                result.push({ kind: "model", el: child, min, max });
+            }
         }
     }
     return result;
@@ -729,26 +739,30 @@ class PathIndex {
     private readonly parents = new Map<Element, { node: PathNode; root: string; parent: Element | null }>();
 
     public constructor(model: SchemaModel, adj: Map<Element, Set<PathNode>>) {
-        const queue: { node: PathNode; root: string; parent: Element | null }[] = [];
+        // Breadth-first per part root, in ROOT_PARTS order with document first,
+        // so primary-document paths win over equally short header/footer ones.
         for (const rootName of Object.keys(ROOT_PARTS)) {
             const decl = model.resolve("element", key(W, rootName));
-            if (!decl) continue;
-            const node = { id: key(W, rootName), decl };
-            this.parents.set(decl, { node, root: rootName, parent: null });
-            queue.push({ node, root: rootName, parent: null });
-        }
-        while (queue.length) {
-            const { node, root } = queue.shift()!;
-            for (const child of adj.get(node.decl) ?? []) {
-                if (!this.parents.has(child.decl)) {
-                    this.parents.set(child.decl, { node: child, root, parent: node.decl });
-                    queue.push({ node: child, root, parent: node.decl });
+            if (!decl || this.parents.has(decl)) continue;
+            const rootNode = { id: key(W, rootName), decl };
+            this.parents.set(decl, { node: rootNode, root: rootName, parent: null });
+            const queue: { node: PathNode; root: string; parent: Element | null }[] = [{ node: rootNode, root: rootName, parent: null }];
+            while (queue.length) {
+                const { node, root, parent } = queue.shift()!;
+                for (const child of adj.get(node.decl) ?? []) {
+                    if (!this.parents.has(child.decl)) {
+                        this.parents.set(child.decl, { node: child, root, parent: node.decl });
+                        queue.push({ node: child, root, parent });
+                    }
                 }
             }
         }
     }
 
     public find(model: SchemaModel, targetId: string): { root: string; path: PathNode[] } | null {
+        // Several declarations can share one qualified name (e.g. w:footnote
+        // under both settings and footnotes); return the shortest path.
+        let best: { root: string; path: PathNode[] } | null = null;
         for (const decl of model.elements.get(targetId) ?? []) {
             const entry = this.parents.get(decl);
             if (!entry) continue;
@@ -759,15 +773,19 @@ class PathIndex {
                 path.unshift(pe.node);
                 p = pe.parent;
             }
-            return { root: entry.root, path };
+            if (!best || path.length < best.path.length) best = { root: entry.root, path };
         }
-        return null;
+        return best;
     }
 }
 
 const ROOT_PARTS: Record<string, { part: string; contentType: string; relType: string } | null> = {
     document: null,
-    glossaryDocument: { part: "word/glossary/document.xml", contentType: MAIN_DOC_CT, relType: `${R}/glossaryDocument` },
+    glossaryDocument: {
+        part: "word/glossary/document.xml",
+        contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml",
+        relType: `${R}/glossaryDocument`,
+    },
     styles: {
         part: "word/styles.xml",
         contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml",
@@ -820,8 +838,8 @@ const ROOT_PARTS: Record<string, { part: string; contentType: string; relType: s
     },
     recipients: {
         part: "word/recipients.xml",
-        contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.recipients+xml",
-        relType: `${R}/recipients`,
+        contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.mailMergeRecipientData+xml",
+        relType: `${R}/recipientData`,
     },
 };
 
@@ -873,6 +891,12 @@ const REL_FOR_ELEMENT: Record<string, RelSpec> = {
     embedRegular: FONT_REL,
     embedSystemFonts: FONT_REL,
     embedTrueTypeFonts: FONT_REL,
+    printerSettings: {
+        type: `${R}/printerSettings`,
+        part: "word/printerSettings.bin",
+        binary: true,
+        contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.printerSettings",
+    },
 };
 
 const COMMENT_MARKERS = `<w:p><w:commentRangeStart w:id="0"/><w:commentRangeEnd w:id="0"/><w:r><w:commentReference w:id="0"/></w:r></w:p>`;
@@ -995,7 +1019,19 @@ const buildFixture = (model: SchemaModel, paths: PathIndex, elementName: string)
         fx.files["word/document.xml"] = minimalDocument(body);
         fx.files[rootInfo.part] = XML_DECL + xml + "\n";
         fx.overrides.push({ part: "/" + rootInfo.part, contentType: rootInfo.contentType });
-        fx.partRels["word/document.xml"] = [{ id: "rId1", type: rootInfo.relType, target: path.posix.relative("word", rootInfo.part) }];
+        if (root === "recipients") {
+            // Mail Merge Recipient Data is linked from the settings part's
+            // sidecar (…/relationships/recipientData), not from document.xml.
+            fx.files["word/settings.xml"] = XML_DECL + `<w:settings xmlns:w="${W}"/>` + "\n";
+            fx.overrides.push({
+                part: "/word/settings.xml",
+                contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml",
+            });
+            fx.partRels["word/settings.xml"] = [{ id: "rId1", type: rootInfo.relType, target: path.posix.relative("word", rootInfo.part) }];
+            fx.partRels["word/document.xml"] = [{ id: "rId2", type: `${R}/settings`, target: "settings.xml" }];
+        } else {
+            fx.partRels["word/document.xml"] = [{ id: "rId1", type: rootInfo.relType, target: path.posix.relative("word", rootInfo.part) }];
+        }
     }
     fixupRelationshipRefs(fx);
     return fx;
