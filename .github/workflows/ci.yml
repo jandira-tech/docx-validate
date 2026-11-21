@@ -4,7 +4,9 @@ on:
     push:
         branches: [main]
     pull_request:
-        branches: [main]
+        # main plus the stacked element-fixture PR branch, so the stacked PR's
+        # word-element-invalid-fixtures suite runs in CI before it merges.
+        branches: [main, vibe/wml-element-fixtures-c7b006]
 
 permissions:
     contents: read
