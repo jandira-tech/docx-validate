@@ -12,7 +12,13 @@ import type { PackageFormat, Profile, ValidationIssue } from "../../lib/types";
 import { runChecks } from "../../lib/check-scheduler";
 import type { RunDeadline } from "../../lib/run-deadline";
 import { opcNameIssueSeverity, wordObservedIssueSeverity } from "../../lib/mode-policy";
-import { assertPlaceableNames, ValidationContext, PackageViewError, PackageOpenError } from "../../lib/validation-context";
+import {
+    assertPlaceableNames,
+    ValidationContext,
+    PackageViewError,
+    PackageOpenError,
+    type ValidationContextOptions,
+} from "../../lib/validation-context";
 import { createDefaultCheckRegistry } from "./checks";
 import { OPC_PART_NAME_WORD_REFUSED } from "./checks/opc-part-name-word-refused";
 import { OPC_ITEM_NAME_REFUSED } from "./checks/opc-item-name-refused";
@@ -76,7 +82,11 @@ export function packageExtractFailedIssue(target: string, detail: string): Valid
  * directory is no stored file entry (#573): it contributes no name to the
  * context, so the stored-name checks never judge a name no package holds.
  */
-export function contextFromDirectory(dir: string, unreadableStoredEntries: readonly UnreadableEntry[] = []): ValidationContext {
+export function contextFromDirectory(
+    dir: string,
+    unreadableStoredEntries: readonly UnreadableEntry[] = [],
+    opts: ValidationContextOptions = {},
+): ValidationContext {
     const entries = walkFiles(dir).map((file) => [path.relative(dir, file).split(path.sep).join("/"), () => readFileSync(file)] as const);
     const unreadable = unreadableStoredEntries.flatMap((entry) => {
         // An unreadable directory names every stored file under it, but the
@@ -94,7 +104,7 @@ export function contextFromDirectory(dir: string, unreadableStoredEntries: reado
     } catch (err) {
         throw new PackageViewError(err instanceof Error ? err.message : String(err), { cause: err, storedNames });
     }
-    return ValidationContext.fromEntries([...entries, ...unreadable], { source: "directory" });
+    return ValidationContext.fromEntries([...entries, ...unreadable], { source: "directory", ...opts });
 }
 
 /**
@@ -107,19 +117,20 @@ export function contextFromDirectory(dir: string, unreadableStoredEntries: reado
 export function openDirectoryContext(
     dir: string,
     unreadableStoredEntries: readonly UnreadableEntry[] = walkDirectory(dir).unreadable,
+    opts: ValidationContextOptions = {},
 ): {
     context: ValidationContext;
     openError?: string;
     extractFailed?: boolean;
 } {
     try {
-        const context = contextFromDirectory(dir, unreadableStoredEntries);
+        const context = contextFromDirectory(dir, unreadableStoredEntries, opts);
         if (unreadableStoredEntries.length === 0) return { context };
         return { context, openError: unreadableStoredDetail(dir, unreadableStoredEntries), extractFailed: true };
     } catch (err) {
         if (!(err instanceof PackageViewError)) throw err;
         return {
-            context: ValidationContext.fromStoredNames(err.storedNames, { source: "directory" }),
+            context: ValidationContext.fromStoredNames(err.storedNames, { source: "directory", ...opts }),
             openError: err.message,
             extractFailed: true,
         };
@@ -155,9 +166,10 @@ function unreadableStoredDetail(dir: string, unreadable: readonly UnreadableEntr
  */
 export async function contextFromArchive(
     bytes: Uint8Array,
+    opts: ValidationContextOptions = {},
 ): Promise<{ context: ValidationContext; openError?: string; extractFailed?: boolean }> {
     try {
-        return { context: await ValidationContext.fromArchive(bytes) };
+        return { context: await ValidationContext.fromArchive(bytes, opts) };
     } catch (err) {
         // Only the two classified failures are the input's: the archive that
         // did not open and the package view extraction refuses. Anything
@@ -172,6 +184,7 @@ export async function contextFromArchive(
             context: ValidationContext.fromStoredNames(err instanceof PackageViewError ? err.storedNames : [], {
                 source: "archive",
                 archiveBytes: bytes,
+                ...opts,
             }),
             openError: err.message,
             extractFailed: err instanceof PackageViewError || undefined,

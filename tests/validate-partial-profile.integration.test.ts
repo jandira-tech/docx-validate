@@ -489,6 +489,7 @@ describe("a partial run applies its profile's policy (#381)", { timeout: 120_000
             "opc-part-name-escaped-slash",
             "opc-part-name-word-refused",
             "opc-item-name-refused",
+            "word-macro-project",
             "xml-syntax",
             "ct-duplicate-declaration",
             // The content-types group's Override PartName grammar (#414).

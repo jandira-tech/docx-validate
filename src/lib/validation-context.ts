@@ -30,9 +30,11 @@
 import type JSZip from "jszip";
 
 import { applyMarkupCompatibility, relocateCompatibilityIssue, understoodNamespacesForPart } from "./markup-compatibility";
-import { zipCentralDirectoryEntries } from "./zip-central-directory";
+import { readCentralDirectoryView, zipCentralDirectoryEntries } from "./zip-central-directory";
+import { resolveResourceCeilings, zipCeilingIssues, type ResourceCeilings, type ResourceCeilingsInput } from "./resource-ceilings";
 import type { ValidationIssue } from "./types";
 import { decodeXmlBytes, parseXml } from "./xml-helpers";
+import { scanXmlCeilings } from "./xml-syntax";
 import { loadCentralNamedArchive } from "./zip-central-names";
 
 /** Where the package came from. Archive-only checks need `"archive"`. */
@@ -81,6 +83,12 @@ export type ValidationContextOptions = {
     readonly source?: PackageSource;
     /** The packed file's bytes; present only when `source` is `"archive"`. */
     readonly archiveBytes?: Uint8Array;
+    /**
+     * The run's resource ceilings, resolved over the defaults: the ZIP
+     * ceilings are enforced before any entry is inflated, and the XML
+     * ceilings in one linear pre-scan before a part's DOM is built.
+     */
+    readonly ceilings?: ResourceCeilingsInput;
 };
 
 // Matches by base name in any folder, like DOCXSchemaValidator.userTextXmlFiles.
@@ -201,6 +209,8 @@ export const indexByPartName = <T>(entries: Iterable<readonly [string, T]>): Map
 export class ValidationContext {
     public readonly source: PackageSource;
     public readonly archiveBytes: Uint8Array | undefined;
+    /** The resource ceilings of the run this context belongs to. */
+    public readonly ceilings: ResourceCeilings;
     /**
      * Original file item names before normalized indexing drops aliases — for
      * an archive, the central directory's stored names, including entries the
@@ -234,6 +244,7 @@ export class ValidationContext {
         this.names = [...parts.keys()].sort();
         this.source = opts.source ?? "memory";
         this.archiveBytes = opts.archiveBytes;
+        this.ceilings = resolveResourceCeilings(opts.ceilings);
         this.byteCache = base?.byteCache ?? new Map();
         this.textCache = base?.textCache ?? new Map();
         this.xmlCache = base?.xmlCache ?? new Map();
@@ -283,7 +294,8 @@ export class ValidationContext {
      * report the same failure. Any other throw is an internal error and
      * propagates unwrapped rather than wearing a file-defect code (#427).
      */
-    public static async fromArchive(bytes: Uint8Array): Promise<ValidationContext> {
+    public static async fromArchive(bytes: Uint8Array, opts: ValidationContextOptions = {}): Promise<ValidationContext> {
+        const options: ValidationContextOptions = { source: "archive", archiveBytes: bytes, ...opts };
         let zip: JSZip;
         try {
             zip = await loadCentralNamedArchive(bytes);
@@ -299,6 +311,13 @@ export class ValidationContext {
             assertPlaceableNames(stored);
         } catch (err) {
             throw new PackageViewError(err instanceof Error ? err.message : String(err), { cause: err, storedNames: stored });
+        }
+        // The ZIP ceilings are judged from the central directory's declared
+        // sizes before any entry is inflated: a decompression bomb or entry
+        // flood is refused here, naming the ceiling it broke.
+        const ceilingIssues = zipCeilingIssues(readCentralDirectoryView(bytes)?.records, resolveResourceCeilings(options.ceilings));
+        if (ceilingIssues.length > 0) {
+            throw new PackageViewError(ceilingIssues.map((issue) => issue.message).join("; "), { storedNames: stored });
         }
         const kept = indexByPartName(files.map((entry) => [entry.name, entry] as const));
         const parts = new Map<string, PartContent>();
@@ -320,7 +339,7 @@ export class ValidationContext {
         } catch (err) {
             throw new PackageViewError(err instanceof Error ? err.message : String(err), { cause: err, storedNames: stored });
         }
-        return new ValidationContext(parts, { source: "archive", archiveBytes: bytes }, stored);
+        return new ValidationContext(parts, options, stored);
     }
 
     /** Part names in sorted order, without a leading `/`. */
@@ -380,12 +399,23 @@ export class ValidationContext {
         if (text === undefined) {
             return undefined;
         }
-        this.parses.set(name, (this.parses.get(name) ?? 0) + 1);
+        // One linear pre-scan before the DOM parse: a part that crosses a
+        // depth, attribute or entity-declaration ceiling is never parsed into
+        // a DOM, so a bomb cannot reach the parser through this context.
+        const breaches = scanXmlCeilings(text, this.ceilings);
         let parsed: XmlPart;
-        try {
-            parsed = { ok: true, document: parseXml(text) };
-        } catch (err) {
-            parsed = { ok: false, message: err instanceof Error ? err.message : String(err) };
+        if (breaches.length > 0) {
+            parsed = {
+                ok: false,
+                message: `Resource ceiling refused the part before parsing: ${breaches.map((b) => `${b.kind} ${b.observed} > ${b.limit}`).join("; ")}`,
+            };
+        } else {
+            this.parses.set(name, (this.parses.get(name) ?? 0) + 1);
+            try {
+                parsed = { ok: true, document: parseXml(text) };
+            } catch (err) {
+                parsed = { ok: false, message: err instanceof Error ? err.message : String(err) };
+            }
         }
         this.xmlCache.set(name, parsed);
         return parsed;
@@ -416,7 +446,7 @@ export class ValidationContext {
         }
         return new ValidationContext(
             this.parts,
-            { source: this.source, archiveBytes: this.archiveBytes },
+            { source: this.source, archiveBytes: this.archiveBytes, ceilings: this.ceilings },
             this.storedNames,
             this,
             unparseable,

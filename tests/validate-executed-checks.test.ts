@@ -163,6 +163,7 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                     "opc-part-name-escaped-slash",
                     "opc-part-name-word-refused",
                     "opc-item-name-refused",
+                    "word-macro-project",
                     "xml-syntax",
                     "ct-duplicate-declaration",
                     "ct-override-partname-invalid",

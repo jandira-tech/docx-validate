@@ -14,6 +14,7 @@ export * from "./lib/run-cli";
 export * from "./lib/types";
 export * from "./lib/mode-policy";
 export * from "./lib/run-deadline";
+export * from "./lib/resource-ceilings";
 export * from "./lib/content-types";
 export * from "./lib/xml-helpers";
 export * from "./scripts/comment";

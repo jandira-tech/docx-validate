@@ -88,7 +88,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
 
     private async runEveryCheck(): Promise<ValidationResult> {
         this.resetExecutedChecks();
-        const opened = openDirectoryContext(this.unpackedDir);
+        const opened = openDirectoryContext(this.unpackedDir, undefined, { ceilings: this.ceilings });
         if (opened.openError !== undefined) {
             const diagnostic = await storedNamesRun(opened.context, "pptx", this.profile, this.deadline);
             this.recordExecutedChecks(diagnostic.executed);

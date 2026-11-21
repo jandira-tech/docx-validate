@@ -460,8 +460,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     private inRun = false;
 
     private context(): ValidationContext {
-        if (!this.inRun) return contextFromDirectory(this.unpackedDir);
-        this.runContext ??= contextFromDirectory(this.unpackedDir);
+        if (!this.inRun) return contextFromDirectory(this.unpackedDir, [], { ceilings: this.ceilings });
+        this.runContext ??= contextFromDirectory(this.unpackedDir, [], { ceilings: this.ceilings });
         return this.runContext;
     }
 
@@ -638,7 +638,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         this.xsdWalk = { started: false, parts: [], eligible: 0 };
         this.malformedParts = new Set();
         this.resetExecutedChecks();
-        const opened = openDirectoryContext(this.unpackedDir);
+        const opened = openDirectoryContext(this.unpackedDir, undefined, { ceilings: this.ceilings });
         if (opened.openError !== undefined) {
             const diagnostic = await storedNamesRun(opened.context, "docx", this.profile, this.deadline);
             this.recordExecutedChecks(diagnostic.executed);
