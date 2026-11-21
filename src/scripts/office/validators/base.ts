@@ -75,6 +75,7 @@ import { STRICT_OOXML_NS_PREFIX } from "../../../lib/conformance-class";
 import { opcNameIssueSeverity, wordObservedIssueSeverity } from "../../../lib/mode-policy";
 import { withTempDir } from "../../../lib/run-cli";
 import { VALIDATION_DEADLINE, type RunDeadline } from "../../../lib/run-deadline";
+import { resolveResourceCeilings, type ResourceCeilings, type ResourceCeilingsInput } from "../../../lib/resource-ceilings";
 import { indexByPartName, normalizePartName, type ValidationContext } from "../../../lib/validation-context";
 import type { PackageFormat, Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
 import { DEFAULT_PROFILE, NS, OK_RESULT } from "../../../lib/types";
@@ -310,6 +311,12 @@ export interface BaseSchemaValidatorOptions {
      * error-severity `validation-deadline` finding. Repairs never consult it.
      */
     deadline?: RunDeadline;
+    /**
+     * The run's resource ceilings, resolved over the defaults. They reach
+     * every {@link ValidationContext} this validator builds, so the XML
+     * pre-scan and the ZIP pre-inflate gate judge with the run's limits.
+     */
+    ceilings?: ResourceCeilingsInput;
 }
 
 /**
@@ -489,6 +496,8 @@ export class BaseSchemaValidator {
     readonly profile: Profile;
     /** The run's wall-clock budget, when it has one (#630). */
     readonly deadline: RunDeadline | undefined;
+    /** The run's resource ceilings, resolved over {@link DEFAULT_RESOURCE_CEILINGS}. */
+    protected readonly ceilings: ResourceCeilings;
     /**
      * Engine trace owned by one `validateAgainstXsd` walk on this instance.
      * Published at entry so a lone walk is observable while running; the
@@ -570,6 +579,7 @@ export class BaseSchemaValidator {
         this.profile = opts.profile ?? DEFAULT_PROFILE;
         this.xsdValidatorRef = opts.xsdValidator;
         this.deadline = opts.deadline;
+        this.ceilings = resolveResourceCeilings(opts.ceilings);
     }
 
     /**

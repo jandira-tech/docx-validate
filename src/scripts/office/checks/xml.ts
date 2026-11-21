@@ -97,7 +97,7 @@ export const xmlSyntaxCheck: CheckDefinition = {
         for (const part of ctx.partNames) {
             const bytes = xmlParts.has(part) ? ctx.bytes(part) : undefined;
             if (bytes !== undefined) {
-                issues.push(...(await checkXmlSyntax(bytes, part)));
+                issues.push(...(await checkXmlSyntax(bytes, part, ctx.ceilings)));
             }
         }
         return issues;

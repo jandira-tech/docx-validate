@@ -46,10 +46,15 @@
  * Parsing never writes: bytes go in, issues come out.
  */
 
+import { DEFAULT_RESOURCE_CEILINGS, type ResourceCeilings } from "./resource-ceilings";
 import type { Severity, ValidationIssue } from "./types";
+import { decodeXmlBytes } from "./xml-helpers";
 
 /** Stable codes emitted by the built-in XML syntax checker. */
 export type XmlSyntaxCode = "xml-syntax" | "xml-undeclared-prefix" | "xml-encoding";
+
+/** Stable codes emitted when a resource ceiling refuses a part before a DOM is built. */
+export type XmlCeilingCode = "xml-attribute-ceiling" | "xml-entity-declaration-ceiling";
 
 /**
  * Structural view of one libxml2 diagnostic (`ErrorDetail` in
@@ -131,7 +136,16 @@ export const mapXmlDiagnostics = (details: readonly XmlParseDiagnostic[], partNa
  * `XML_PARSE_NOENT` nor `XML_PARSE_DTDLOAD` is, so a `<!ENTITY e SYSTEM
  * "file:///…">` stays an unresolved entity reference node.
  */
-export const checkXmlSyntax = async (bytes: Uint8Array, partName: string): Promise<ValidationIssue[]> => {
+export const checkXmlSyntax = async (
+    bytes: Uint8Array,
+    partName: string,
+    ceilings: ResourceCeilings = DEFAULT_RESOURCE_CEILINGS,
+): Promise<ValidationIssue[]> => {
+    // One linear pre-scan before the engine parse: an attribute or entity
+    // bomb is refused with its named ceiling instead of paying for a parse.
+    // A depth breach is left to libxml2, whose own "Excessive depth" refusal
+    // carries the position (#1159).
+    const ceilingIssues = xmlCeilingIssues(decodeXmlBytes(bytes), partName, ceilings);
     const { XmlDocument, XmlParseError, ParseOption } = await import("libxml2-wasm");
     // No XML_PARSE_RECOVER: malformed content must not be silently accepted.
     // NONET + NO_XXE, and deliberately no NOENT/DTDLOAD so external entities
@@ -144,16 +158,16 @@ export const checkXmlSyntax = async (bytes: Uint8Array, partName: string): Promi
         doc = XmlDocument.fromBuffer(bytes, { option, url: partName });
     } catch (err) {
         if (err instanceof XmlParseError && err.details.length > 0) {
-            return mapXmlDiagnostics(err.details, partName);
+            return [...ceilingIssues, ...mapXmlDiagnostics(err.details, partName)];
         }
         // No structured detail (e.g. a non-Error throw): still a hard failure,
         // still attributed to the original part.
         const message = err instanceof Error ? err.message : String(err);
-        return [{ severity: "error", code: "xml-syntax", message, path: partName }];
+        return [...ceilingIssues, { severity: "error", code: "xml-syntax", message, path: partName }];
     }
     const warnings = mapXmlDiagnostics(doc.warnings, partName);
     doc.dispose();
-    return warnings;
+    return [...ceilingIssues, ...warnings];
 };
 
 /**
@@ -240,3 +254,145 @@ export const exceedsXmlElementDepth = (text: string, limit: number = XML_MAX_ELE
     }
     return false;
 };
+
+/** Which resource ceiling a pre-scan breach names. */
+export type XmlCeilingKind = "depth" | "attributes" | "entity-declarations";
+
+/** One pre-scan breach: the ceiling it broke, the observed count, and where in the text. */
+export type XmlCeilingBreach = {
+    readonly kind: XmlCeilingKind;
+    readonly observed: number;
+    readonly limit: number;
+    /** Index in `text` of the tag or declaration that crossed the ceiling. */
+    readonly index: number;
+};
+
+/**
+ * One linear pass over `text` that reads element depth, attributes per start
+ * tag, and `<!ENTITY` declarations against the ceilings — the
+ * {@link exceedsXmlElementDepth} scan generalized — so a hostile part is
+ * refused before a DOM is built over it. Comments, CDATA sections, processing
+ * instructions, declarations and quoted attribute values are skipped, an
+ * empty-element tag counts at the depth it would open, and attributes are
+ * counted as quoted values inside the start tag (one per attribute in
+ * well-formed markup). Malformed markup ends the scan: `checkXmlSyntax`
+ * reports it, and this reading only keeps hostile shapes away from parsers.
+ * At most one breach per kind is reported.
+ */
+export const scanXmlCeilings = (
+    text: string,
+    ceilings: Pick<ResourceCeilings, "maxDepth" | "maxAttributes" | "maxEntityDeclarations">,
+): XmlCeilingBreach[] => {
+    const breaches: XmlCeilingBreach[] = [];
+    const found = new Set<XmlCeilingKind>();
+    let depth = 0;
+    let entityDeclarations = 0;
+    let i = text.indexOf("<");
+    while (i !== -1 && found.size < 3) {
+        let next: number;
+        if (text.startsWith("<!--", i)) {
+            next = indexPast(text, "-->", i + 4);
+        } else if (text.startsWith("<![CDATA[", i)) {
+            next = indexPast(text, "]]>", i + 9);
+        } else if (text.startsWith("<?", i)) {
+            next = indexPast(text, "?>", i + 2);
+        } else if (text.startsWith("<!ENTITY", i)) {
+            entityDeclarations += 1;
+            if (entityDeclarations > ceilings.maxEntityDeclarations && !found.has("entity-declarations")) {
+                breaches.push({
+                    kind: "entity-declarations",
+                    observed: entityDeclarations,
+                    limit: ceilings.maxEntityDeclarations,
+                    index: i,
+                });
+                found.add("entity-declarations");
+            }
+            next = indexPastTag(text, i + 2);
+        } else if (text.startsWith("<!DOCTYPE", i)) {
+            next = indexPastTag(text, i + 2);
+            // The declaration's internal subset `[...]` is where the ENTITY
+            // declarations live; indexPastTag skips it opaquely, so count
+            // them inside the span here.
+            if (next !== -1) {
+                const open = text.indexOf("[", i);
+                if (open !== -1 && open < next) {
+                    let j = text.indexOf("<!ENTITY", open);
+                    while (j !== -1 && j < next) {
+                        entityDeclarations += 1;
+                        if (entityDeclarations > ceilings.maxEntityDeclarations && !found.has("entity-declarations")) {
+                            breaches.push({
+                                kind: "entity-declarations",
+                                observed: entityDeclarations,
+                                limit: ceilings.maxEntityDeclarations,
+                                index: j,
+                            });
+                            found.add("entity-declarations");
+                        }
+                        j = text.indexOf("<!ENTITY", j + 8);
+                    }
+                }
+            }
+        } else if (text.startsWith("<!", i)) {
+            next = indexPastTag(text, i + 2);
+        } else if (text.startsWith("</", i)) {
+            depth -= 1;
+            next = indexPast(text, ">", i + 2);
+        } else {
+            next = indexPastTag(text, i + 1);
+            if (next === -1) {
+                break;
+            }
+            depth += 1;
+            if (depth > ceilings.maxDepth && !found.has("depth")) {
+                breaches.push({ kind: "depth", observed: depth, limit: ceilings.maxDepth, index: i });
+                found.add("depth");
+            }
+            let attributes = 0;
+            let quote = "";
+            for (let j = i + 1; j < next; j += 1) {
+                const c = text[j]!;
+                if (quote !== "") {
+                    if (c === quote) {
+                        quote = "";
+                        attributes += 1;
+                    }
+                } else if (c === '"' || c === "'") {
+                    quote = c;
+                }
+            }
+            if (attributes > ceilings.maxAttributes && !found.has("attributes")) {
+                breaches.push({ kind: "attributes", observed: attributes, limit: ceilings.maxAttributes, index: i });
+                found.add("attributes");
+            }
+            if (text[next - 2] === "/") {
+                depth -= 1;
+            }
+        }
+        if (next === -1) {
+            break;
+        }
+        i = text.indexOf("<", next);
+    }
+    return breaches;
+};
+
+const CEILING_CODES: Record<Exclude<XmlCeilingKind, "depth">, XmlCeilingCode> = {
+    attributes: "xml-attribute-ceiling",
+    "entity-declarations": "xml-entity-declaration-ceiling",
+};
+
+/**
+ * The error findings for the pre-scan breaches a part's own engine parse does
+ * not already report: libxml2 refuses excessive depth on its own (#1159), so
+ * only attribute and entity-declaration ceilings become findings here. Each
+ * names the ceiling it enforced.
+ */
+export const xmlCeilingIssues = (text: string, partName: string, ceilings: ResourceCeilings): ValidationIssue[] =>
+    scanXmlCeilings(text, ceilings)
+        .filter((breach): breach is XmlCeilingBreach & { kind: Exclude<XmlCeilingKind, "depth"> } => breach.kind !== "depth")
+        .map((breach) => ({
+            severity: "error" as const,
+            code: CEILING_CODES[breach.kind],
+            message: `Part ${JSON.stringify(partName)} crosses the ${breach.kind === "attributes" ? "attribute" : "entity-declaration"} ceiling: ${breach.observed} > ${breach.limit} (max${breach.kind === "attributes" ? "Attributes" : "EntityDeclarations"}). Refused before a DOM is built over it.`,
+            path: partName,
+        }));

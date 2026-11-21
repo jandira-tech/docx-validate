@@ -100,6 +100,7 @@ describe("default check registry", () => {
             "opc-part-name-escaped-slash",
             "opc-part-name-word-refused",
             "opc-item-name-refused",
+            "word-macro-project",
         ]);
         expect(run.issues.map((i) => i.code)).toEqual(["zip-bytes-after-eocd"]);
     });

@@ -39,6 +39,7 @@
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { assertDeadlineMs } from "./lib/run-deadline";
+import type { ResourceCeilingsInput } from "./lib/resource-ceilings";
 import type { Profile, ValidationResult } from "./lib/types";
 import type { XsdValidator } from "./lib/xsd-validator";
 import { validate as runValidate, type ValidateOptions as PathValidateOptions, type WordVerifier } from "./scripts/office/validate";
@@ -85,6 +86,12 @@ export type ValidateOptions = {
      * See the path entrypoint's `deadlineMs`.
      */
     deadlineMs?: number;
+    /**
+     * Resource ceilings for hostile packages, resolved over
+     * `DEFAULT_RESOURCE_CEILINGS` and forwarded to the path entrypoint's
+     * `ceilings` (see `src/lib/resource-ceilings.ts`).
+     */
+    ceilings?: ResourceCeilingsInput;
 };
 
 /** The subset of {@link ValidateOptions} the path entrypoint consumes. */
@@ -97,6 +104,7 @@ const forwardable = (opts: ValidateOptions): PathValidateOptions => ({
     checks: opts.checks,
     verifyWord: opts.verifyWord,
     wordVerifier: opts.wordVerifier,
+    ceilings: opts.ceilings,
 });
 
 export class Validate {

@@ -509,6 +509,23 @@ formats other than their default `.docx` (for example, `.pptx` or `.docm`).
   `unavailable`. The budget is a finite number of milliseconds, 0 or more
   (`RangeError` otherwise; the CLI exits 1). It cannot be combined with
   `--auto-repair`: a repair writes, and a deadline could stop it part-way.
+- Resource ceilings guard against hostile packages and are enforced by default,
+  overridable per run with `ceilings` / `--max-*` flags (see
+  `src/lib/resource-ceilings.ts` for the defaults). The ZIP ceilings
+  (`maxEntries`, `maxPartBytes`, `maxCompressionRatio`, `maxTotalUncompressedBytes`)
+  are judged from the central directory's declared sizes **before any entry is
+  inflated**, so a decompression bomb or an entry flood is refused with an error
+  finding naming the ceiling (`zip-entry-count-ceiling`, `zip-part-size-ceiling`,
+  `zip-compression-ratio-ceiling`, `zip-total-uncompressed-ceiling`) and Word is
+  never asked to open the refused bytes. The XML ceilings (`maxDepth`,
+  `maxAttributes`, `maxEntityDeclarations`) are read in one linear pre-scan
+  before any part's DOM is built (`xml-attribute-ceiling`,
+  `xml-entity-declaration-ceiling`; depth over 256 is refused by the parser
+  engine itself). The layout ceilings (`maxGridSpan`, default 63; `maxFieldMarkers`)
+  cap the layout-bomb shapes in Word story parts (`word-grid-span-ceiling`,
+  `word-field-count-ceiling`). A VBA macro project is named, never executed, as a
+  `word-macro-project` warning. Each ceiling value must be a finite number
+  greater than 0 (whole where it counts things; `RangeError` otherwise, CLI exits 1).
 
 ```bash
 docx-validate --list-checks
@@ -516,6 +533,7 @@ docx-validate --quick contract.docx
 docx-validate --checks tables,word-run-misplaced --json contract.docx
 docx-validate --strict contract.docx
 docx-validate --deadline-ms 30000 --json contract.docx
+docx-validate --max-entries 10000 --max-part-bytes 268435456 --max-depth 256 contract.docx
 ```
 
 Full lenient and strict CLI runs first compile a small startup probe schema to
