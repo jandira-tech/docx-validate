@@ -27,6 +27,9 @@ import { describe, expect, it } from "vitest";
 import { resolveResourceCeilings } from "../src/lib/resource-ceilings";
 import { checkXmlSyntax, scanXmlCeilings, xmlCeilingIssues } from "../src/lib/xml-syntax";
 import { ValidationContext } from "../src/lib/validation-context";
+import { validate } from "../src/scripts/office/validate";
+import { contentTypeTableOf, xmlPartNames } from "../src/scripts/office/checks/xml";
+import path from "node:path";
 
 const encode = (text: string): Uint8Array => new TextEncoder().encode(text);
 
@@ -125,5 +128,73 @@ describe("ValidationContext.xml() pre-DOM guard", () => {
         const ctx = ValidationContext.fromEntries({ "word/document.xml": `<a x="1"/>` }, { ceilings: { maxAttributes: 5 } });
         expect(ctx.xml("word/document.xml")?.ok).toBe(true);
         expect(ctx.parseCount("word/document.xml")).toBe(1);
+    });
+});
+
+describe("review fixes (PR #1281)", () => {
+    it("returns a ceiling breach without parsing, so no engine diagnostics follow it (r4651164150)", async () => {
+        // Unclosed on purpose: a parse would add an xml-syntax finding.
+        const issues = await checkXmlSyntax(
+            encode(`<a x="1" y="2" z="3">`),
+            "word/document.xml",
+            resolveResourceCeilings({ maxAttributes: 2 }),
+        );
+        expect(issues.map((issue) => issue.code)).toEqual(["xml-attribute-ceiling"]);
+    });
+
+    it("reports a caller-lowered depth ceiling the engine would accept (r4651164161, r4649504945)", async () => {
+        const issues = await checkXmlSyntax(encode(nest(5)), "word/document.xml", resolveResourceCeilings({ maxDepth: 4 }));
+        expect(issues).toHaveLength(1);
+        expect(issues[0]).toMatchObject({ severity: "error", code: "xml-depth-ceiling", path: "word/document.xml" });
+        expect(issues[0]!.message).toContain("maxDepth");
+        // At or under the ceiling: nothing.
+        expect(await checkXmlSyntax(encode(nest(4)), "word/document.xml", resolveResourceCeilings({ maxDepth: 4 }))).toEqual([]);
+    });
+
+    it("reads a comment in the internal subset as opaque when finding the DOCTYPE end (r4651164153)", () => {
+        const breaches = scanXmlCeilings(`<!DOCTYPE a [<!-- [ -->]><a x="1" y="2"/>`, {
+            maxDepth: 256,
+            maxAttributes: 1,
+            maxEntityDeclarations: 64,
+        });
+        expect(breaches.map((b) => b.kind)).toEqual(["attributes"]);
+    });
+
+    it("keeps the DOCTYPE entity search inside the declaration's span (r4651164156)", () => {
+        // Entities after the DOCTYPE closes are not in its internal subset;
+        // a search past the span would count them (and go quadratic on a run
+        // of declarations).
+        const text = `<!DOCTYPE a [<!ENTITY e "x">]><a/><!ENTITY f "y">`;
+        const ceilings = { maxDepth: 256, maxAttributes: 1024, maxEntityDeclarations: 1 };
+        const breaches = scanXmlCeilings(text, ceilings);
+        expect(breaches.filter((b) => b.kind === "entity-declarations").map((b) => b.index)).toEqual([text.indexOf("<!ENTITY f")]);
+        const many = "<!DOCTYPE a>".repeat(200_000) + "<a/>";
+        const started = performance.now();
+        scanXmlCeilings(many, ceilings);
+        expect(performance.now() - started).toBeLessThan(1_000);
+    });
+
+    it("does not count a stray '<' as an element (r4649504999)", () => {
+        expect(scanXmlCeilings(`<a>< < < <</a>`, { maxDepth: 1, maxAttributes: 1024, maxEntityDeclarations: 64 })).toEqual([]);
+    });
+
+    it("enforces caller ceilings in the lenient validator's XML pass (r4651164145)", async () => {
+        const fixture = path.join(import.meta.dirname, "fixtures/working/package.drawing-arc-radius-integer.docx");
+        const result = await validate(fixture, { profile: "lenient", ceilings: { maxAttributes: 1 } });
+        expect(result.valid).toBe(false);
+        expect(result.issues.some((issue) => issue.code === "xml-attribute-ceiling")).toBe(true);
+    });
+
+    it("never parses an over-ceiling content-types stream for XML-part discovery (PR #1281 review, xml.ts)", () => {
+        const stream = encode(
+            `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Override PartName="/word/document.bin" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml" Extension="x"/></Types>`,
+        );
+        expect(contentTypeTableOf(stream)).toBeDefined();
+        const ceilings = resolveResourceCeilings({ maxAttributes: 2 });
+        expect(contentTypeTableOf(stream, ceilings)).toBeUndefined();
+        const names = ["[Content_Types].xml", "word/document.bin"];
+        expect(xmlPartNames(names, () => stream).has("word/document.bin")).toBe(true);
+        // Names alone decide, so the .bin part is not judged as XML.
+        expect(xmlPartNames(names, () => stream, ceilings).has("word/document.bin")).toBe(false);
     });
 });

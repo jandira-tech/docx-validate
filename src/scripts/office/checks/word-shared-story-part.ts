@@ -125,7 +125,7 @@ export const wordSharedStoryPartCheck: CheckDefinition = {
             // sentence that cites them (#1016).
             const recovery = citesWordSession(
                 ctx,
-                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name)),
+                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name), ctx.ceilings),
             )
                 ? `Microsoft Word offers to recover the file (${entry.session}). `
                 : "";

@@ -22,6 +22,16 @@ import {
 const issue = (code: string, rest: Partial<ValidationIssue> = {}): ValidationIssue => ({ severity: "error", code, message: "", ...rest });
 
 describe("isWordBlockingIssue", () => {
+    it.each([
+        "xml-attribute-ceiling",
+        "xml-entity-declaration-ceiling",
+        "xml-depth-ceiling",
+        "word-grid-span-ceiling",
+        "word-field-count-ceiling",
+    ])("blocks the resource-ceiling finding %s, the caller's refusal (PR #1281 review)", (code) => {
+        expect(isWordBlockingIssue(issue(code, { path: "word/document.xml" }))).toBe(true);
+    });
+
     it.each(["_rels/.rels", "word/_rels/document.xml.rels"])("allows markup removed from relationships at %s (#632)", (path) => {
         expect(isWordBlockingIssue(issue("opc-relationships-markup-compatibility", { path }))).toBe(false);
     });

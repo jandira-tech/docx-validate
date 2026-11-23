@@ -185,11 +185,17 @@ export type ZipCentralRecord = {
     /** The compressed size the record stores. */
     readonly compressedSize: number;
     /**
-     * The uncompressed size the record declares, resolved through its ZIP64
-     * extra field when the 32-bit field saturates — what a ceiling check
-     * compares against `maxPartBytes` before the entry is inflated.
+     * The uncompressed size the record declares, read unsigned and full width:
+     * the 32-bit field, or — when it saturates to 0xFFFFFFFF — the whole
+     * 8-byte value its ZIP64 extra field stores. What a ceiling check compares
+     * against `maxPartBytes` before the entry is inflated; never the signed,
+     * low-32-bit reading JSZip uses for offsets. A saturated field with no
+     * ZIP64 value to resolve it reads as `Infinity`, so it breaches every
+     * ceiling rather than slipping under one.
      */
     readonly uncompressedSize: number;
+    /** The compressed size the record declares, resolved as {@link uncompressedSize} is. */
+    readonly declaredCompressedSize: number;
     /** The disk the record says the entry starts on: 0 for a one-file archive. */
     readonly diskNumberStart: number;
     /** A folder entry: a trailing `/` or the MS-DOS directory attribute, as JSZip marks `dir`. */
@@ -365,10 +371,7 @@ export const readCentralDirectoryView = (buf: Uint8Array): CentralDirectoryView 
             recordOffset: offset,
             localHeaderOffset: readU32(buf, offset + 42),
             compressedSize: readU32(buf, offset + 20),
-            // Resolved like `localHeaderOffsetOf` resolves it; when the
-            // resolution fails the view's own `readLocalFiles` pass below
-            // refuses the whole directory, so the raw field never survives.
-            uncompressedSize: resolveRecordSizes(buf, offset, nameBytes, extraBytes)?.uncompressed ?? readJszipInt(buf, offset + 24),
+            ...declaredSizes(buf, offset, nameEnd, extraLength),
             diskNumberStart: readU16(buf, offset + 34),
             // A folder entry ends in `/` or sets the MS-DOS directory bit, as
             // JSZip marks `dir`.
@@ -399,6 +402,60 @@ export const readCentralDirectoryView = (buf: Uint8Array): CentralDirectoryView 
         zero,
         zip64,
     };
+};
+
+/** An 8-byte little-endian unsigned field as a Number (exact below 2^53, monotone above). */
+const readU64 = (buf: Uint8Array, offset: number): number => readU32(buf, offset) + readU32(buf, offset + 4) * 0x100000000;
+
+/**
+ * The record's declared uncompressed and compressed sizes, unsigned and full
+ * width, for the resource ceilings: the 32-bit field, or — when it is
+ * 0xFFFFFFFF — the 8-byte value the ZIP64 extra field (0x0001) stores for
+ * it, uncompressed first, as APPNOTE §4.5.3 orders the slots. A saturated
+ * field with no value to resolve it is `Infinity`. Separate from
+ * {@link resolveRecordSizes}, which mirrors JSZip's signed low-32-bit reads.
+ */
+const declaredSizes = (
+    buf: Uint8Array,
+    recordOffset: number,
+    nameEnd: number,
+    extraLength: number,
+): { uncompressedSize: number; declaredCompressedSize: number } => {
+    let uncompressedSize = readU32(buf, recordOffset + 24);
+    let declaredCompressedSize = readU32(buf, recordOffset + 20);
+    if (uncompressedSize !== 0xffffffff && declaredCompressedSize !== 0xffffffff) {
+        return { uncompressedSize, declaredCompressedSize };
+    }
+    const extraEnd = Math.min(nameEnd + extraLength, buf.length);
+    let field: { start: number; end: number } | undefined;
+    for (let cursor = nameEnd; cursor + 4 <= extraEnd;) {
+        const id = readU16(buf, cursor);
+        const length = readU16(buf, cursor + 2);
+        if (cursor + 4 + length > extraEnd) {
+            break;
+        }
+        if (id === ZIP64_EXTRA_FIELD) {
+            field = { start: cursor + 4, end: cursor + 4 + length };
+            break;
+        }
+        cursor += 4 + length;
+    }
+    let slot = field?.start ?? 0;
+    const take = (): number => {
+        if (field === undefined || slot + 8 > field.end) {
+            return Number.POSITIVE_INFINITY;
+        }
+        const value = readU64(buf, slot);
+        slot += 8;
+        return value;
+    };
+    if (uncompressedSize === 0xffffffff) {
+        uncompressedSize = take();
+    }
+    if (declaredCompressedSize === 0xffffffff) {
+        declaredCompressedSize = take();
+    }
+    return { uncompressedSize, declaredCompressedSize };
 };
 
 /**

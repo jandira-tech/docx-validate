@@ -90,7 +90,7 @@ import {
     serializeXml,
 } from "../../../lib/xml-helpers";
 import { writeXmlPart } from "../../../lib/xml-part-io";
-import { checkXmlSyntax } from "../../../lib/xml-syntax";
+import { checkXmlSyntax, scanXmlCeilings } from "../../../lib/xml-syntax";
 import { resolveSafeZipEntry } from "../../../lib/zip-path";
 import { XML_SYNTAX_CHECK_ID, xmlPartNames } from "../checks/xml";
 import { CT_OVERRIDE_PARTNAME_WORD_REFUSED, ctOverridePartnameWordRefusedCheck } from "../checks/ct-override-partname-word-refused";
@@ -575,11 +575,11 @@ export class BaseSchemaValidator {
         this.originalFile = opts.originalFile ? path.resolve(opts.originalFile) : null;
         this.verbose = opts.verbose ?? false;
         this.schemasDir = opts.schemasDir ?? defaultSchemasDir();
-        this.xmlFiles = xmlPackageEntries(this.unpackedDir).map(([, file]) => file);
+        this.ceilings = resolveResourceCeilings(opts.ceilings);
+        this.xmlFiles = xmlPackageEntries(this.unpackedDir, this.ceilings).map(([, file]) => file);
         this.profile = opts.profile ?? DEFAULT_PROFILE;
         this.xsdValidatorRef = opts.xsdValidator;
         this.deadline = opts.deadline;
-        this.ceilings = resolveResourceCeilings(opts.ceilings);
     }
 
     /**
@@ -877,14 +877,14 @@ export class BaseSchemaValidator {
         // their extension: `word/COMMENTS.XML` is no less an XML part (#390).
         // Findings name the part, as that check's do, so a file stored as
         // `word\\foo.xml` is judged as the `word/` part it is (review Q).
-        for (const [part, xmlFile] of xmlPackageEntries(this.unpackedDir)) {
+        for (const [part, xmlFile] of xmlPackageEntries(this.unpackedDir, this.ceilings)) {
             let raw: Buffer;
             try {
                 raw = await fs.readFile(xmlFile);
             } catch {
                 continue;
             }
-            issues.push(...(await checkXmlSyntax(raw, part)));
+            issues.push(...(await checkXmlSyntax(raw, part, this.ceilings)));
         }
         // This pass is the `xml-syntax` check: the same bytes, the same
         // diagnostics, under the check id callers select it by.
@@ -935,7 +935,11 @@ export class BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                const raw = await fs.readFile(xmlFile);
+                // An over-ceiling part is never parsed into a DOM: the XML
+                // pass already reports its ceiling finding.
+                if (scanXmlCeilings(decodeXmlBytes(raw), this.ceilings).length > 0) continue;
+                dom = parseXmlBytes(raw);
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -1833,7 +1837,7 @@ export class BaseSchemaValidator {
                     // Direct walks have no recorded XML pass. Audit only bytes
                     // that parse, without reparsing parts in the full run (#867).
                     if (baselineRunStore.getStore() === undefined) {
-                        const syntax = await checkXmlSyntax(await fs.readFile(xmlFile), this.relPath(xmlFile));
+                        const syntax = await checkXmlSyntax(await fs.readFile(xmlFile), this.relPath(xmlFile), this.ceilings);
                         if (syntax.some((issue) => issue.severity === "error")) return false;
                     }
                     issues.push({
@@ -2625,15 +2629,19 @@ export function packageEntries(dir: string, extensions?: ReadonlyArray<string>):
  * parts (`xmlPartNames`): by name, or by an XML content type whatever the
  * name (#620).
  */
-function xmlPackageEntries(dir: string): [string, string][] {
+function xmlPackageEntries(dir: string, ceilings: ResourceCeilings): [string, string][] {
     const entries = packageEntries(dir);
-    const xmlParts = xmlPartNames([...entries.keys()], (part) => {
-        try {
-            return readFileSync(entries.get(part)!);
-        } catch {
-            return undefined;
-        }
-    });
+    const xmlParts = xmlPartNames(
+        [...entries.keys()],
+        (part) => {
+            try {
+                return readFileSync(entries.get(part)!);
+            } catch {
+                return undefined;
+            }
+        },
+        ceilings,
+    );
     return [...entries].filter(([part]) => xmlParts.has(part));
 }
 

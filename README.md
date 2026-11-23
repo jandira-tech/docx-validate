@@ -513,19 +513,25 @@ formats other than their default `.docx` (for example, `.pptx` or `.docm`).
   overridable per run with `ceilings` / `--max-*` flags (see
   `src/lib/resource-ceilings.ts` for the defaults). The ZIP ceilings
   (`maxEntries`, `maxPartBytes`, `maxCompressionRatio`, `maxTotalUncompressedBytes`)
-  are judged from the central directory's declared sizes **before any entry is
+  are judged from the central directory's declared sizes, read unsigned and
+  full width (a saturated field through its ZIP64 value), **before any entry is
   inflated**, so a decompression bomb or an entry flood is refused with an error
   finding naming the ceiling (`zip-entry-count-ceiling`, `zip-part-size-ceiling`,
   `zip-compression-ratio-ceiling`, `zip-total-uncompressed-ceiling`) and Word is
   never asked to open the refused bytes. The XML ceilings (`maxDepth`,
   `maxAttributes`, `maxEntityDeclarations`) are read in one linear pre-scan
-  before any part's DOM is built (`xml-attribute-ceiling`,
-  `xml-entity-declaration-ceiling`; depth over 256 is refused by the parser
-  engine itself). The layout ceilings (`maxGridSpan`, default 63; `maxFieldMarkers`)
-  cap the layout-bomb shapes in Word story parts (`word-grid-span-ceiling`,
-  `word-field-count-ceiling`). A VBA macro project is named, never executed, as a
-  `word-macro-project` warning. Each ceiling value must be a finite number
-  greater than 0 (whole where it counts things; `RangeError` otherwise, CLI exits 1).
+  before any part's DOM is built, and a part over one is never handed to the
+  parser (`xml-attribute-ceiling`, `xml-entity-declaration-ceiling`, and
+  `xml-depth-ceiling` when `maxDepth` is set below 256; depth over 256 is
+  refused by the parser engine itself). The layout ceilings (`maxGridSpan`,
+  default 63; `maxFieldMarkers`) cap the layout-bomb shapes in Word story parts
+  (`word-grid-span-ceiling`, `word-field-count-ceiling`); they are Word rules, so
+  they run under `word-valid` and `strict` and not under `lenient`. Every
+  ceiling finding is an error that blocks `word-valid` too: it is the caller's
+  refusal, not a Word observation. A VBA macro project is named, never
+  executed, as a `word-macro-project` warning. Each ceiling value must be a
+  finite number greater than 0 (whole where it counts things; `RangeError`
+  otherwise, and an empty CLI operand is rejected too; CLI exits 1).
 
 ```bash
 docx-validate --list-checks

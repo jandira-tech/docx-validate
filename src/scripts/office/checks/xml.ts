@@ -18,8 +18,9 @@ import {
     parseContentTypes,
     resolveContentType,
 } from "../../../lib/content-types";
-import { parseXmlBytes } from "../../../lib/xml-helpers";
-import { checkXmlSyntax } from "../../../lib/xml-syntax";
+import { DEFAULT_RESOURCE_CEILINGS, type ResourceCeilings } from "../../../lib/resource-ceilings";
+import { decodeXmlBytes, parseXmlBytes } from "../../../lib/xml-helpers";
+import { checkXmlSyntax, scanXmlCeilings } from "../../../lib/xml-syntax";
 import type { ValidationIssue } from "../../../lib/types";
 
 const XML_PART = /\.(?:xml|rels)$/i;
@@ -46,9 +47,16 @@ export const isXmlContentType = (contentType: string): boolean => {
 };
 
 /** The content-types table of a package from its stream's bytes, or `undefined` when the stream is absent or does not parse. */
-export const contentTypeTableOf = (bytes: Uint8Array | undefined): ContentTypeTable | undefined => {
+export const contentTypeTableOf = (
+    bytes: Uint8Array | undefined,
+    ceilings: ResourceCeilings = DEFAULT_RESOURCE_CEILINGS,
+): ContentTypeTable | undefined => {
     if (bytes === undefined) return undefined;
     try {
+        // The same linear ceiling pre-scan ValidationContext.xml() runs: an
+        // over-ceiling stream never reaches the DOM parser here. Names then
+        // decide, and checkXmlSyntax reports the refusal for the stream.
+        if (scanXmlCeilings(decodeXmlBytes(bytes), ceilings).length > 0) return undefined;
         return parseContentTypes(parseXmlBytes(bytes));
     } catch {
         return undefined;
@@ -64,9 +72,13 @@ export const contentTypeTableOf = (bytes: Uint8Array | undefined): ContentTypeTa
  * 32). `bytesOf` reads the content-types stream; with none that parses, only
  * names decide.
  */
-export const xmlPartNames = (partNames: readonly string[], bytesOf: (part: string) => Uint8Array | undefined): Set<string> => {
+export const xmlPartNames = (
+    partNames: readonly string[],
+    bytesOf: (part: string) => Uint8Array | undefined,
+    ceilings: ResourceCeilings = DEFAULT_RESOURCE_CEILINGS,
+): Set<string> => {
     const stream = findContentTypesStream(partNames);
-    const table = stream === undefined ? undefined : contentTypeTableOf(bytesOf(stream));
+    const table = stream === undefined ? undefined : contentTypeTableOf(bytesOf(stream), ceilings);
     return new Set(
         partNames.filter((part) => {
             if (isXmlPartName(part)) return true;
@@ -93,7 +105,7 @@ export const xmlSyntaxCheck: CheckDefinition = {
     gatesByPart: true,
     run: async (ctx): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
-        const xmlParts = xmlPartNames(ctx.partNames, (part) => ctx.bytes(part));
+        const xmlParts = xmlPartNames(ctx.partNames, (part) => ctx.bytes(part), ctx.ceilings);
         for (const part of ctx.partNames) {
             const bytes = xmlParts.has(part) ? ctx.bytes(part) : undefined;
             if (bytes !== undefined) {

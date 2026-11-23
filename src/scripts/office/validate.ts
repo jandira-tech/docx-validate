@@ -1766,8 +1766,10 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
     } as const;
     const ceilings: ResourceCeilingsInput = {};
     for (const [name, raw] of Object.entries(ceilingFlags)) {
-        if (raw === undefined || raw.trim() === "") continue;
-        const value = Number(raw);
+        // An empty or blank operand is a typo, not "use the default": it is
+        // rejected below as the non-number it is (PR #1281 review).
+        if (raw === undefined) continue;
+        const value = raw.trim() === "" ? Number.NaN : Number(raw);
         const key = name as keyof ResourceCeilingsInput;
         if (!Number.isFinite(value) || value <= 0 || (key !== "maxCompressionRatio" && !Number.isInteger(value))) {
             process.stderr.write(

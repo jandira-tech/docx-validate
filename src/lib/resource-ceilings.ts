@@ -160,15 +160,21 @@ export const zipCeilingIssues = (records: readonly ZipCentralRecord[] | undefine
             message: `${oversized.length} ${oversized.length === 1 ? "entry declares" : "entries declare"} an uncompressed size over the per-part ceiling of ${ceilings.maxPartBytes} bytes (maxPartBytes): ${nameEntries(oversized)}. Refused before any entry is inflated.`,
         });
     }
+    // The ZIP64-resolved compressed size: a raw 0xFFFFFFFF field would make
+    // any declared ratio look tiny.
+    const ratio = (record: ZipCentralRecord): number => record.uncompressedSize / record.declaredCompressedSize;
     const inflated = files.filter(
-        (record) => record.compressedSize > 0 && record.uncompressedSize / record.compressedSize > ceilings.maxCompressionRatio,
+        (record) =>
+            record.declaredCompressedSize > 0 &&
+            Number.isFinite(record.declaredCompressedSize) &&
+            ratio(record) > ceilings.maxCompressionRatio,
     );
     if (inflated.length > 0) {
-        const worst = inflated.reduce((a, b) => (a.uncompressedSize / a.compressedSize > b.uncompressedSize / b.compressedSize ? a : b));
+        const worst = inflated.reduce((a, b) => (ratio(a) > ratio(b) ? a : b));
         issues.push({
             severity: "error",
             code: ZIP_COMPRESSION_RATIO_CEILING,
-            message: `${inflated.length} ${inflated.length === 1 ? "entry declares" : "entries declare"} a compression ratio over the ceiling of ${ceilings.maxCompressionRatio}:1 (maxCompressionRatio), worst ${Math.floor(worst.uncompressedSize / Math.max(1, worst.compressedSize))}:1: ${nameEntries(inflated)}. A real deflate stream tops out near 1032:1, so the declared sizes lie. Refused before any entry is inflated.`,
+            message: `${inflated.length} ${inflated.length === 1 ? "entry declares" : "entries declare"} a compression ratio over the ceiling of ${ceilings.maxCompressionRatio}:1 (maxCompressionRatio), worst ${Math.floor(ratio(worst))}:1: ${nameEntries(inflated)}. A real deflate stream tops out near 1032:1, so the declared sizes lie. Refused before any entry is inflated.`,
         });
     }
     const total = files.reduce((sum, record) => sum + record.uncompressedSize, 0);

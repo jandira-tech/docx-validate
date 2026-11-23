@@ -578,7 +578,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             const context = this.context();
             return citesWordSession(
                 context,
-                xmlPartNames(context.partNames, (name) => context.bytes(name)),
+                xmlPartNames(context.partNames, (name) => context.bytes(name), context.ceilings),
             );
         } catch {
             return false;

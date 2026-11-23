@@ -54,7 +54,7 @@ export const isMarkupCompatibilityJudgedPart = (partName: string): boolean =>
 export const markupCompatibilityJudgedParts = async (ctx: ValidationContext, profile?: Profile): Promise<ReadonlySet<string>> => {
     const judged = new Set(ctx.partNames.filter(isMarkupCompatibilityJudgedPart).map(canonicalPartName));
     let read: ReadonlySet<string> | undefined;
-    for (const name of xmlPartNames(ctx.partNames, (part) => ctx.bytes(part))) {
+    for (const name of xmlPartNames(ctx.partNames, (part) => ctx.bytes(part), ctx.ceilings)) {
         const canonical = canonicalPartName(name);
         if (judged.has(canonical) || !ctx.compatibilityIssues(name).some((issue) => issue.severity === "error")) continue;
         read ??= new Set((await wordReadStoryParts(ctx, profile)).map(canonicalPartName));
@@ -78,7 +78,7 @@ export const wordMarkupCompatibilityCheck: CheckDefinition = {
         return issues.some(isAlternateContentCharacterData) &&
             citesWordSession(
                 ctx,
-                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name)),
+                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name), ctx.ceilings),
             )
             ? issues.map(withWordSessionCitation)
             : issues;

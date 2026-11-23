@@ -165,7 +165,7 @@ export const commentMarkersCheck: CheckDefinition = {
 
         const document = await mainDocumentPart(ctx, profile);
         const documentXml = document.part;
-        const xmlParts = xmlPartNames(ctx.partNames, (part) => ctx.bytes(part));
+        const xmlParts = xmlPartNames(ctx.partNames, (part) => ctx.bytes(part), ctx.ceilings);
         const comments = await mainCommentsPart(ctx, document, xmlParts, profile);
 
         if (!documentXml) {
@@ -298,7 +298,7 @@ export const commentThreadingCheck: CheckDefinition = {
 
         const document = await mainDocumentPart(ctx, profile);
         const documentXml = document.part;
-        const xmlParts = xmlPartNames(ctx.partNames, (part) => ctx.bytes(part));
+        const xmlParts = xmlPartNames(ctx.partNames, (part) => ctx.bytes(part), ctx.ceilings);
         const comments = await mainCommentsPart(ctx, document, xmlParts, profile);
         const commentsXml = comments.kind === "part" ? comments.part : null;
         const commentsExtendedXml = await threadPart(

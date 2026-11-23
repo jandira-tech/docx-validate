@@ -242,6 +242,23 @@ describe("BaseSchemaValidator", () => {
             });
         });
 
+        it("builds no DOM for a part over a resource ceiling (PR #1281 review)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS}>
+            <w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A"/>
+            <w:comment w:id="0" w:author="B" w:date="2026-01-02T00:00:00Z" w:initials="B"/>
+          </w:comments>`,
+                );
+                // Each w:comment carries four attributes: over a ceiling of 2,
+                // the part is skipped, so its duplicate id is never read.
+                const v = new HarnessValidator({ unpackedDir: dir, ceilings: { maxAttributes: 2 } });
+                const result = await v.validateUniqueIds();
+                expect(result.issues).toEqual([]);
+            });
+        });
+
         it("passes when all IDs are unique", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(

@@ -38,7 +38,7 @@ import {
     zipCeilingIssues,
 } from "../src/lib/resource-ceilings";
 import { withTempDir } from "../src/lib/run-cli";
-import { validate } from "../src/scripts/office/validate";
+import { runValidateFromArgv, validate } from "../src/scripts/office/validate";
 import { readCentralDirectoryView, type ZipCentralRecord } from "../src/lib/zip-central-directory";
 import { ValidationContext, PackageViewError } from "../src/lib/validation-context";
 
@@ -51,6 +51,7 @@ const record = (name: string, compressedSize: number, uncompressedSize: number, 
     localHeaderOffset: 0,
     compressedSize,
     uncompressedSize,
+    declaredCompressedSize: compressedSize,
     diskNumberStart: 0,
     directory,
 });
@@ -203,5 +204,105 @@ describe("ValidationContext.fromArchive pre-inflate gate", () => {
         // Under the default the same archive loads.
         const ctx = await ValidationContext.fromArchive(bytes);
         expect(ctx.partNames.length).toBeGreaterThan(0);
+    });
+});
+
+/**
+ * One stored entry, hand-built so the central record's size fields (and an
+ * optional ZIP64 extra field) can declare anything. The local header stays
+ * honest, so JSZip-style resolution (signed low 32 bits) still opens it.
+ */
+const storedArchive = (data: Uint8Array, central: { uncompressed: number; compressed: number; zip64?: bigint[] }): Uint8Array => {
+    const name = new TextEncoder().encode("a.xml");
+    const u16 = (v: number) => [v & 0xff, (v >>> 8) & 0xff];
+    const u32 = (v: number) => [v & 0xff, (v >>> 8) & 0xff, (v >>> 16) & 0xff, (v >>> 24) & 0xff];
+    const u64 = (v: bigint) => [...u32(Number(v & 0xffffffffn)), ...u32(Number(v >> 32n))];
+    const local = [
+        ...u32(0x04034b50),
+        ...u16(20),
+        ...u16(0),
+        ...u16(0),
+        ...u16(0),
+        ...u16(0),
+        ...u32(0),
+        ...u32(data.length),
+        ...u32(data.length),
+        ...u16(name.length),
+        ...u16(0),
+        ...name,
+        ...data,
+    ];
+    const extra = central.zip64 ? [...u16(1), ...u16(central.zip64.length * 8), ...central.zip64.flatMap(u64)] : [];
+    const cd = [
+        ...u32(0x02014b50),
+        ...u16(45),
+        ...u16(45),
+        ...u16(0),
+        ...u16(0),
+        ...u16(0),
+        ...u16(0),
+        ...u32(0),
+        ...u32(central.compressed),
+        ...u32(central.uncompressed),
+        ...u16(name.length),
+        ...u16(extra.length),
+        ...u16(0),
+        ...u16(0),
+        ...u16(0),
+        ...u32(0),
+        ...u32(0),
+        ...name,
+        ...extra,
+    ];
+    const eocd = [...u32(0x06054b50), ...u16(0), ...u16(0), ...u16(1), ...u16(1), ...u32(cd.length), ...u32(local.length), ...u16(0)];
+    return new Uint8Array([...local, ...cd, ...eocd]);
+};
+
+describe("declared sizes are read unsigned and full width (r4651164162, r4651164138)", () => {
+    const data = new TextEncoder().encode("<a/>");
+
+    it("a 32-bit uncompressed size of 0x80000000 breaches maxPartBytes instead of reading negative", () => {
+        const view = readCentralDirectoryView(storedArchive(data, { uncompressed: 0x80000000, compressed: data.length }));
+        expect(view?.records[0]?.uncompressedSize).toBe(0x80000000);
+        const codes = zipCeilingIssues(view?.records, { ...DEFAULT_RESOURCE_CEILINGS, maxPartBytes: 1_000_000 }).map((i) => i.code);
+        expect(codes).toContain(ZIP_PART_SIZE_CEILING);
+    });
+
+    it("a ZIP64 uncompressed size of 2^32 + 1 keeps its high bits", () => {
+        const view = readCentralDirectoryView(
+            storedArchive(data, { uncompressed: 0xffffffff, compressed: data.length, zip64: [0x100000001n] }),
+        );
+        expect(view?.records[0]?.uncompressedSize).toBe(0x100000001);
+        const codes = zipCeilingIssues(view?.records, DEFAULT_RESOURCE_CEILINGS).map((i) => i.code);
+        expect(codes).toContain(ZIP_PART_SIZE_CEILING);
+        expect(codes).toContain(ZIP_TOTAL_UNCOMPRESSED_CEILING);
+    });
+
+    it("the compression ratio uses the ZIP64-resolved compressed size", () => {
+        const view = readCentralDirectoryView(
+            storedArchive(data, { uncompressed: 0xffffffff, compressed: 0xffffffff, zip64: [5000n, BigInt(data.length)] }),
+        );
+        expect(view?.records[0]?.declaredCompressedSize).toBe(data.length);
+        const codes = zipCeilingIssues(view?.records, { ...DEFAULT_RESOURCE_CEILINGS, maxCompressionRatio: 100 }).map((i) => i.code);
+        expect(codes).toContain(ZIP_COMPRESSION_RATIO_CEILING);
+    });
+});
+
+describe("CLI --max-* operands (r4651164168)", () => {
+    it.each(["", "   "])("rejects the empty operand %j instead of falling back to the default", async (operand) => {
+        const err: string[] = [];
+        const stderrWrite = process.stderr.write.bind(process.stderr);
+        process.stderr.write = ((chunk: string | Uint8Array): boolean => {
+            err.push(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf-8"));
+            return true;
+        }) as typeof process.stderr.write;
+        let code: number;
+        try {
+            code = await runValidateFromArgv(["does-not-exist.docx", "--max-entries", operand]);
+        } finally {
+            process.stderr.write = stderrWrite;
+        }
+        expect(code).toBe(1);
+        expect(err.join("")).toContain("Invalid --max-entries");
     });
 });
