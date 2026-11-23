@@ -37,13 +37,15 @@ import { runSoffice } from "./office/soffice";
 // path would allow local privilege escalation via malicious StarBasic macro injection if pre-created
 // by another user. Using mkdtempSync ensures a unique, unpredictable directory with strict
 // permissions for the current user. Lazily evaluated to prevent side effects on module import.
-let _libreofficeProfile: string | null = null;
-export function getLibreOfficeProfile(): string {
-    if (!_libreofficeProfile) {
-        _libreofficeProfile = mkdtempSync(path.join(os.tmpdir(), "libreoffice_docx_profile_"));
-    }
-    return _libreofficeProfile;
-}
+export const getLibreOfficeProfile = (() => {
+    let profile: string | null = null;
+    return (): string => {
+        if (!profile) {
+            profile = mkdtempSync(path.join(os.tmpdir(), "libreoffice_docx_profile_"));
+        }
+        return profile;
+    };
+})();
 
 export function getMacroDir(): string {
     return `${getLibreOfficeProfile()}/user/basic/Standard`;
