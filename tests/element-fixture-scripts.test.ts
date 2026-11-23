@@ -36,6 +36,8 @@ const run = promisify(execFile);
 
 const GENERATE = "scripts/generate-element-fixtures.ts";
 const REPAIR = "scripts/repair-element-fixtures.ts";
+const BREAK = "scripts/break-element-fixtures.ts";
+const VALID_CORPUS = path.join(REPO, "word-element-fixtures");
 
 interface RunOutcome {
     code: number;
@@ -231,6 +233,31 @@ describe("repair-element-fixtures CLI contract", () => {
         expectNonzero(out);
         const rows = readRows(ctx.results);
         expect(rows.some((r) => r.element === "zoom" && r.errorCodes && (r.errorCodes as string[]).includes("build-failed"))).toBe(true);
+    });
+});
+
+describe("break-element-fixtures CLI contract", () => {
+    it("rejects an invalid --limit before touching the manifest", { timeout: 120_000 }, async () => {
+        const ctx = setup();
+        expectNonzero(await runScript(BREAK, ctx, ["--src", VALID_CORPUS, "--limit", "-1"]));
+        sentinelKept(ctx);
+    });
+
+    it("accepts --limit 0 as a full no-op that touches no outputs", { timeout: 120_000 }, async () => {
+        const ctx = setup();
+        expectOk(await runScript(BREAK, ctx, ["--src", VALID_CORPUS, "--limit", "0"]));
+        sentinelKept(ctx);
+    });
+
+    it("--only preserves manifest rows for unselected fixtures and breaks the selected one", { timeout: 180_000 }, async () => {
+        const ctx = setup();
+        expectOk(await runScript(BREAK, ctx, ["--src", VALID_CORPUS, "--only", "zoom"]));
+        const rows = readRows(ctx.results);
+        expect(rows.some((r) => r.element === "other" && r.sha256 === "sentinel")).toBe(true);
+        const zoom = rows.find((r) => r.element === "zoom");
+        expect(zoom, "expected a fresh row for zoom").toBeTruthy();
+        expect(zoom?.valid).toBe(false);
+        expect(String(zoom?.sha256)).not.toBe("");
     });
 });
 
