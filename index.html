@@ -423,8 +423,34 @@ most its own 45 seconds; once the budget is spent it does not run and is
 <code>unavailable</code>. The budget is a finite number of milliseconds, 0 or more
 (<code>RangeError</code> otherwise; the CLI exits 1). It cannot be combined with
 <code>--auto-repair</code>: a repair writes, and a deadline could stop it part-way.</li>
+<li>Resource ceilings guard against hostile packages and are enforced by default,
+overridable per run with <code>ceilings</code> / <code>--max-*</code> flags (see
+<code>src/lib/resource-ceilings.ts</code> for the defaults). The ZIP ceilings
+(<code>maxEntries</code>, <code>maxPartBytes</code>, <code>maxCompressionRatio</code>, <code>maxTotalUncompressedBytes</code>)
+are judged from the central directory's declared sizes, read unsigned and
+full width (a saturated field through its ZIP64 value), <strong>before any entry is
+inflated</strong>, so a decompression bomb or an entry flood is refused with an error
+finding naming the ceiling (<code>zip-entry-count-ceiling</code>, <code>zip-part-size-ceiling</code>,
+<code>zip-compression-ratio-ceiling</code>, <code>zip-total-uncompressed-ceiling</code>) and Word is
+never asked to open the refused bytes. The XML ceilings (<code>maxDepth</code>,
+<code>maxAttributes</code>, <code>maxEntityDeclarations</code>) are read in one linear pre-scan
+before any part's DOM is built, and a part over one is never handed to the
+parser (<code>xml-attribute-ceiling</code>, <code>xml-entity-declaration-ceiling</code>, and
+<code>xml-depth-ceiling</code> when <code>maxDepth</code> is set below 256; depth over 256 is
+refused by the parser engine itself). The layout ceilings (<code>maxGridSpan</code>,
+default 63; <code>maxFieldMarkers</code>) cap the layout-bomb shapes in Word story parts
+(<code>word-grid-span-ceiling</code>, <code>word-field-count-ceiling</code>); they are Word rules, so
+they run under <code>word-valid</code> and <code>strict</code> and not under <code>lenient</code>. Every
+ceiling finding is an error that blocks <code>word-valid</code> too, as the caller's
+refusal rather than a Word observation, except <code>word-field-count-ceiling</code>,
+which <code>word-valid</code> reports as a warning: a long document with many fields
+(a table of contents, cross-references) can pass the default 10,000 markers
+while Word opens it clean. A VBA macro project is named, never
+executed, as a <code>word-macro-project</code> warning. Each ceiling value must be a
+finite number greater than 0 (whole where it counts things; <code>RangeError</code>
+otherwise, and an empty CLI operand is rejected too; CLI exits 1).</li>
 </ul>
-<pre><code class="bash"><span class="hl-0">docx-validate</span><span class="hl-1"> </span><span class="hl-6">--list-checks</span><br/><span class="hl-0">docx-validate</span><span class="hl-1"> </span><span class="hl-6">--quick</span><span class="hl-1"> </span><span class="hl-2">contract.docx</span><br/><span class="hl-0">docx-validate</span><span class="hl-1"> </span><span class="hl-6">--checks</span><span class="hl-1"> </span><span class="hl-2">tables,word-run-misplaced</span><span class="hl-1"> </span><span class="hl-6">--json</span><span class="hl-1"> </span><span class="hl-2">contract.docx</span><br/><span class="hl-0">docx-validate</span><span class="hl-1"> </span><span class="hl-6">--strict</span><span class="hl-1"> </span><span class="hl-2">contract.docx</span><br/><span class="hl-0">docx-validate</span><span class="hl-1"> </span><span class="hl-6">--deadline-ms</span><span class="hl-1"> </span><span class="hl-8">30000</span><span class="hl-1"> </span><span class="hl-6">--json</span><span class="hl-1"> </span><span class="hl-2">contract.docx</span>
+<pre><code class="bash"><span class="hl-0">docx-validate</span><span class="hl-1"> </span><span class="hl-6">--list-checks</span><br/><span class="hl-0">docx-validate</span><span class="hl-1"> </span><span class="hl-6">--quick</span><span class="hl-1"> </span><span class="hl-2">contract.docx</span><br/><span class="hl-0">docx-validate</span><span class="hl-1"> </span><span class="hl-6">--checks</span><span class="hl-1"> </span><span class="hl-2">tables,word-run-misplaced</span><span class="hl-1"> </span><span class="hl-6">--json</span><span class="hl-1"> </span><span class="hl-2">contract.docx</span><br/><span class="hl-0">docx-validate</span><span class="hl-1"> </span><span class="hl-6">--strict</span><span class="hl-1"> </span><span class="hl-2">contract.docx</span><br/><span class="hl-0">docx-validate</span><span class="hl-1"> </span><span class="hl-6">--deadline-ms</span><span class="hl-1"> </span><span class="hl-8">30000</span><span class="hl-1"> </span><span class="hl-6">--json</span><span class="hl-1"> </span><span class="hl-2">contract.docx</span><br/><span class="hl-0">docx-validate</span><span class="hl-1"> </span><span class="hl-6">--max-entries</span><span class="hl-1"> </span><span class="hl-8">10000</span><span class="hl-1"> </span><span class="hl-6">--max-part-bytes</span><span class="hl-1"> </span><span class="hl-8">268435456</span><span class="hl-1"> </span><span class="hl-6">--max-depth</span><span class="hl-1"> </span><span class="hl-8">256</span><span class="hl-1"> </span><span class="hl-2">contract.docx</span>
 </code><button type="button">Copy</button></pre>
 
 <p>Full lenient and strict CLI runs first compile a small startup probe schema to
