@@ -53,4 +53,12 @@ describe("word-macro-project check", () => {
         });
         expect(issues).toEqual([]);
     });
+
+    it("matches only declared ContentType values, not part names or comments (r4651164167)", async () => {
+        const decoy = `<?xml version="1.0"?><!-- macroEnabled --><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Override PartName="/word/vbaProject-notes.xml" ContentType="application/xml"/></Types>`;
+        expect(await findings({ "[Content_Types].xml": decoy, "word/document.xml": "<w:document/>" })).toEqual([]);
+        const macro = `<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Override PartName="/word/document.xml" ContentType='application/vnd.ms-word.document.macroEnabled.main+xml'/></Types>`;
+        const issues = await findings({ "[Content_Types].xml": macro, "word/document.xml": "<w:document/>" });
+        expect(issues.map((issue) => issue.code)).toEqual([WORD_MACRO_PROJECT]);
+    });
 });

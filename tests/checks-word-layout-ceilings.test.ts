@@ -77,4 +77,24 @@ describe("word-layout-ceilings check", () => {
         });
         expect(issues).toEqual([]);
     });
+
+    it.each(["1e999", "64.5", "00000000000000000000000000000000000064", "1" + "0".repeat(400)])(
+        "reads w:gridSpan %s against the ceiling instead of letting it slip under (r4649505071)",
+        async (val) => {
+            const issues = await findings({
+                "word/document.xml": documentXml(`<w:tbl><w:tc><w:tcPr><w:gridSpan w:val="${val}"/></w:tcPr></w:tc></w:tbl>`),
+            });
+            expect(issues.map((issue) => issue.code)).toEqual([WORD_GRID_SPAN_CEILING]);
+            expect(issues[0]!.message).toContain(`worst is ${val}`);
+        },
+    );
+
+    it("ignores a w:gridSpan spelling that names no number", async () => {
+        const issues = await findings({
+            "word/document.xml": documentXml(
+                `<w:tbl><w:tc><w:tcPr><w:gridSpan w:val="wide"/><w:gridSpan w:val=""/></w:tcPr></w:tc></w:tbl>`,
+            ),
+        });
+        expect(issues).toEqual([]);
+    });
 });

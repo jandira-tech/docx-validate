@@ -37,6 +37,9 @@ const VBA_PROJECT_PART = /(?:^|\/)vbaProject\.bin$/i;
 /** Content-type spellings that mark a macro-enabled package. */
 const MACRO_CONTENT_TYPES = [/vbaProject/i, /macroEnabled/i];
 
+/** A `ContentType` attribute of a `Default` or `Override`, its value in group 2. */
+const CONTENT_TYPE_ATTRIBUTE = /\bContentType\s*=\s*(["'])(.*?)\1/g;
+
 export const wordMacroProjectCheck: CheckDefinition = {
     id: "word-macro-project",
     description: "Names embedded active content: a vbaProject.bin part or a macro-enabled content type is reported, never executed.",
@@ -56,7 +59,11 @@ export const wordMacroProjectCheck: CheckDefinition = {
         const stream = findContentTypesStream(ctx.partNames);
         const text = stream === undefined ? undefined : ctx.text(stream);
         if (text !== undefined) {
-            const hit = MACRO_CONTENT_TYPES.find((pattern) => pattern.test(text));
+            // Only the declared media types count: a PartName, an Extension
+            // or a comment that merely spells "macroEnabled" is no macro
+            // content type (PR #1281 review).
+            const declared = [...text.matchAll(CONTENT_TYPE_ATTRIBUTE)].map((match) => match[2]!);
+            const hit = MACRO_CONTENT_TYPES.find((pattern) => declared.some((contentType) => pattern.test(contentType)));
             if (hit !== undefined) {
                 issues.push({
                     severity: "warning",

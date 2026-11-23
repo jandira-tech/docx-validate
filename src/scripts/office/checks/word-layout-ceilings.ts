@@ -34,6 +34,18 @@ export const WORD_FIELD_COUNT_CEILING = "word-field-count-ceiling";
 
 const FIELD_MARKER_ELEMENTS = ["fldChar", "instrText", "fldSimple"] as const;
 
+/**
+ * A `w:gridSpan` value as the ceiling compares it: `Number()` of the
+ * spelling, kept when it overflows to `Infinity` (a run of 400 digits,
+ * `1e999`), so a span too large for a double is over every ceiling rather
+ * than skipped as non-finite. A spelling that names no number reads as 0 and
+ * is left to the schema.
+ */
+const gridSpanValue = (spelling: string): number => {
+    const value = spelling === "" ? Number.NaN : Number(spelling);
+    return Number.isNaN(value) ? 0 : value;
+};
+
 export const wordLayoutCeilingsCheck: CheckDefinition = {
     id: "word-layout-ceilings",
     description:
@@ -49,13 +61,18 @@ export const wordLayoutCeilingsCheck: CheckDefinition = {
             const document = parsed.document;
             let overSpan = 0;
             let worstSpan = 0;
+            let worstSpelling = "";
             let fieldMarkers = 0;
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
                 for (const gridSpan of getElementsByTagNameNSAll(document, ns, "gridSpan")) {
-                    const value = Number(gridSpan.getAttributeNS(ns, "val"));
-                    if (Number.isFinite(value) && value > ctx.ceilings.maxGridSpan) {
+                    const spelling = (gridSpan.getAttributeNS(ns, "val") ?? "").trim();
+                    const value = gridSpanValue(spelling);
+                    if (value > ctx.ceilings.maxGridSpan) {
                         overSpan += 1;
-                        worstSpan = Math.max(worstSpan, value);
+                        if (value > worstSpan || worstSpelling === "") {
+                            worstSpan = value;
+                            worstSpelling = spelling;
+                        }
                     }
                 }
                 for (const element of FIELD_MARKER_ELEMENTS) {
@@ -67,7 +84,7 @@ export const wordLayoutCeilingsCheck: CheckDefinition = {
                     severity: "error",
                     code: WORD_GRID_SPAN_CEILING,
                     path: part,
-                    message: `${overSpan} w:gridSpan value(s) in this part exceed the grid-span ceiling of ${ctx.ceilings.maxGridSpan} (maxGridSpan, Word's table column limit); worst is ${worstSpan}.`,
+                    message: `${overSpan} w:gridSpan value(s) in this part exceed the grid-span ceiling of ${ctx.ceilings.maxGridSpan} (maxGridSpan, Word's table column limit); worst is ${worstSpelling}.`,
                 });
             }
             if (fieldMarkers > ctx.ceilings.maxFieldMarkers) {
