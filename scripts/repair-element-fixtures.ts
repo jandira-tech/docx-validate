@@ -1012,16 +1012,17 @@ const SPECIAL: Record<string, () => FixtureParts> = {
 };
 
 /** Add relationship sidecars for every r:id/r:embed/r:link reference found in the built XML parts. */
-const fixupRelationshipRefs = (fx: FixtureParts): void => {
-    const refRe = /<w:(\w+)[^>]*?\sr:(?:id|embed|link)="([^"]+)"/g;
+export const fixupRelationshipRefs = (fx: FixtureParts): void => {
+    // Any prefix: an r: reference on a non-w element must also be mapped, not missed.
+    const refRe = /<(\w+):(\w+)[^>]*?\sr:(?:id|embed|link)="([^"]+)"/g;
     for (const [partPath, content] of Object.entries(fx.files)) {
         if (typeof content !== "string") continue;
         let m: RegExpExecArray | null;
         while ((m = refRe.exec(content)) !== null) {
-            const [, elName, refId] = m;
+            const [, prefix, elName, refId] = m;
             const rels = (fx.partRels[partPath] ??= []);
             if (rels.some((r) => r.id === refId)) continue;
-            const spec = REL_FOR_ELEMENT[elName];
+            const spec = prefix === "w" ? REL_FOR_ELEMENT[elName] : undefined;
             if (spec?.part) {
                 const target = path.posix.relative(path.posix.dirname(partPath), spec.part);
                 if (!fx.files[spec.part]) {
@@ -1038,18 +1039,15 @@ const fixupRelationshipRefs = (fx: FixtureParts): void => {
                     }
                 }
                 rels.push({ id: refId, type: spec.type, target });
-            } else if (elName === "hyperlink" || elName === "longDesc") {
+            } else if (prefix === "w" && (elName === "hyperlink" || elName === "longDesc")) {
                 // Only w:hyperlink and w:longDesc use the hyperlink relationship type.
                 rels.push({ id: refId, type: `${R}/hyperlink`, target: "https://example.com/", external: true });
             } else {
-                // Any other r:id/r:embed/r:link reference gets a typed internal
-                // relationship to a placeholder part — never a hyperlink.
-                const part = `word/${elName}.bin`;
-                if (!fx.files[part]) {
-                    fx.files[part] = new Uint8Array([0x00, 0x01, 0x00, 0x00]);
-                    fx.defaults.push({ ext: "bin", contentType: "application/octet-stream" });
-                }
-                rels.push({ id: refId, type: `${R}/${elName}`, target: path.posix.relative(path.posix.dirname(partPath), part) });
+                // No invented relationship types: an element carrying an r: reference
+                // needs an explicit REL_FOR_ELEMENT entry naming its real OPC type.
+                throw new Error(
+                    `${partPath}: <${prefix}:${elName}> carries r:${refId} but REL_FOR_ELEMENT has no relationship type for it`,
+                );
             }
         }
     }

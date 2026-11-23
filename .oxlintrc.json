@@ -188,13 +188,11 @@
                 "no-useless-constructor": "error",
                 "no-var": "error",
                 "object-shorthand": "off",
-                "prefer-arrow/prefer-arrow-functions": "error",
                 "prefer-const": "error",
                 "prefer-object-spread": "error",
                 "radix": "error",
                 "unicorn/filename-case": "error",
                 "unicorn/prefer-ternary": "error",
-                "jsdoc-js/check-alignment": "error",
                 "typescript/method-signature-style": ["error", "property"],
                 "valid-typeof": "off",
                 "no-unused-vars": [
@@ -291,13 +289,6 @@
                 "typescript/unified-signatures": "error",
                 "typescript/consistent-return": "error"
             },
-            "jsPlugins": [
-                "eslint-plugin-prefer-arrow",
-                {
-                    "name": "jsdoc-js",
-                    "specifier": "eslint-plugin-jsdoc"
-                }
-            ],
             "plugins": ["unicorn"]
         },
         {
