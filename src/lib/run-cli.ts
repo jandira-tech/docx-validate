@@ -94,7 +94,7 @@ export const runCli = (metaUrl: string, fn: () => number | Promise<number>): voi
             process.exit(typeof code === "number" ? code : 0);
         })
         .catch((err: unknown) => {
-            const message = err instanceof Error ? (err.stack ?? err.message) : String(err);
+            const message = err instanceof Error ? err.message : String(err);
             process.stderr.write(`${message}\n`);
             process.exit(1);
         });

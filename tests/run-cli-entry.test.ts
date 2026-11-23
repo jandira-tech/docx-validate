@@ -129,7 +129,7 @@ describe("runCli — entry-point dispatch", () => {
         });
     });
 
-    it("logs an Error's stack and exits 1 when fn throws", async () => {
+    it("logs an Error's message and exits 1 when fn throws", async () => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "entry.ts");
             await fs.writeFile(file, "// entry\n", "utf-8");
@@ -148,7 +148,7 @@ describe("runCli — entry-point dispatch", () => {
                     throw error;
                 });
                 await vi.waitFor(() => expect(exit).toHaveBeenCalledWith(1));
-                expect(written.join("")).toBe(`${error.stack}\n`);
+                expect(written.join("")).toBe(`${error.message}\n`);
             } finally {
                 process.argv[1] = argv1;
                 exit.mockRestore();
