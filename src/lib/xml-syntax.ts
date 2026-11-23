@@ -46,10 +46,15 @@
  * Parsing never writes: bytes go in, issues come out.
  */
 
+import { DEFAULT_RESOURCE_CEILINGS, type ResourceCeilings } from "./resource-ceilings";
 import type { Severity, ValidationIssue } from "./types";
+import { decodeXmlBytes } from "./xml-helpers";
 
 /** Stable codes emitted by the built-in XML syntax checker. */
 export type XmlSyntaxCode = "xml-syntax" | "xml-undeclared-prefix" | "xml-encoding";
+
+/** Stable codes emitted when a resource ceiling refuses a part before a DOM is built. */
+export type XmlCeilingCode = "xml-attribute-ceiling" | "xml-entity-declaration-ceiling" | "xml-depth-ceiling";
 
 /**
  * Structural view of one libxml2 diagnostic (`ErrorDetail` in
@@ -131,7 +136,20 @@ export const mapXmlDiagnostics = (details: readonly XmlParseDiagnostic[], partNa
  * `XML_PARSE_NOENT` nor `XML_PARSE_DTDLOAD` is, so a `<!ENTITY e SYSTEM
  * "file:///…">` stays an unresolved entity reference node.
  */
-export const checkXmlSyntax = async (bytes: Uint8Array, partName: string): Promise<ValidationIssue[]> => {
+export const checkXmlSyntax = async (
+    bytes: Uint8Array,
+    partName: string,
+    ceilings: ResourceCeilings = DEFAULT_RESOURCE_CEILINGS,
+): Promise<ValidationIssue[]> => {
+    // One linear pre-scan before the engine parse: an attribute, entity or
+    // (caller-lowered) depth bomb is refused with its named ceiling and the
+    // engine never parses the bytes. A depth breach at libxml2's own limit is
+    // left to libxml2, whose "Excessive depth" refusal carries the position
+    // (#1159).
+    const ceilingIssues = xmlCeilingIssues(decodeXmlBytes(bytes), partName, ceilings);
+    if (ceilingIssues.length > 0) {
+        return ceilingIssues;
+    }
     const { XmlDocument, XmlParseError, ParseOption } = await import("libxml2-wasm");
     // No XML_PARSE_RECOVER: malformed content must not be silently accepted.
     // NONET + NO_XXE, and deliberately no NOENT/DTDLOAD so external entities
@@ -183,6 +201,14 @@ const indexPastTag = (text: string, from: number): number => {
             if (c === quote) {
                 quote = "";
             }
+        } else if (brackets > 0 && text.startsWith("<!--", i)) {
+            // A comment in the internal subset is opaque: its brackets and
+            // quotes do not nest the declaration.
+            const end = text.indexOf("-->", i + 4);
+            if (end === -1) {
+                return -1;
+            }
+            i = end + 2;
         } else if (c === '"' || c === "'") {
             quote = c;
         } else if (c === "[") {
@@ -240,3 +266,163 @@ export const exceedsXmlElementDepth = (text: string, limit: number = XML_MAX_ELE
     }
     return false;
 };
+
+/** Which resource ceiling a pre-scan breach names. */
+export type XmlCeilingKind = "depth" | "attributes" | "entity-declarations";
+
+/** One pre-scan breach: the ceiling it broke, the observed count, and where in the text. */
+export type XmlCeilingBreach = {
+    readonly kind: XmlCeilingKind;
+    readonly observed: number;
+    readonly limit: number;
+    /** Index in `text` of the tag or declaration that crossed the ceiling. */
+    readonly index: number;
+};
+
+/**
+ * One linear pass over `text` that reads element depth, attributes per start
+ * tag, and `<!ENTITY` declarations against the ceilings — the
+ * {@link exceedsXmlElementDepth} scan generalized — so a hostile part is
+ * refused before a DOM is built over it. Comments, CDATA sections, processing
+ * instructions, declarations and quoted attribute values are skipped, an
+ * empty-element tag counts at the depth it would open, and attributes are
+ * counted as quoted values inside the start tag (one per attribute in
+ * well-formed markup). Malformed markup ends the scan: `checkXmlSyntax`
+ * reports it, and this reading only keeps hostile shapes away from parsers.
+ * At most one breach per kind is reported.
+ */
+export const scanXmlCeilings = (
+    text: string,
+    ceilings: Pick<ResourceCeilings, "maxDepth" | "maxAttributes" | "maxEntityDeclarations">,
+): XmlCeilingBreach[] => {
+    const breaches: XmlCeilingBreach[] = [];
+    const found = new Set<XmlCeilingKind>();
+    let depth = 0;
+    let entityDeclarations = 0;
+    let i = text.indexOf("<");
+    while (i !== -1 && found.size < 3) {
+        let next: number;
+        if (text.startsWith("<!--", i)) {
+            next = indexPast(text, "-->", i + 4);
+        } else if (text.startsWith("<![CDATA[", i)) {
+            next = indexPast(text, "]]>", i + 9);
+        } else if (text.startsWith("<?", i)) {
+            next = indexPast(text, "?>", i + 2);
+        } else if (text.startsWith("<!ENTITY", i)) {
+            entityDeclarations += 1;
+            if (entityDeclarations > ceilings.maxEntityDeclarations && !found.has("entity-declarations")) {
+                breaches.push({
+                    kind: "entity-declarations",
+                    observed: entityDeclarations,
+                    limit: ceilings.maxEntityDeclarations,
+                    index: i,
+                });
+                found.add("entity-declarations");
+            }
+            next = indexPastTag(text, i + 2);
+        } else if (text.startsWith("<!DOCTYPE", i)) {
+            next = indexPastTag(text, i + 2);
+            // The declaration's internal subset `[...]` is where the ENTITY
+            // declarations live; indexPastTag skips it opaquely, so count
+            // them inside the span here.
+            if (next !== -1) {
+                // Searched within the declaration's own span only, so a run
+                // of declarations stays linear (r4651164156).
+                const span = text.slice(i, next);
+                const open = span.indexOf("[");
+                if (open !== -1) {
+                    let at = span.indexOf("<!ENTITY", open);
+                    while (at !== -1) {
+                        const j = i + at;
+                        entityDeclarations += 1;
+                        if (entityDeclarations > ceilings.maxEntityDeclarations && !found.has("entity-declarations")) {
+                            breaches.push({
+                                kind: "entity-declarations",
+                                observed: entityDeclarations,
+                                limit: ceilings.maxEntityDeclarations,
+                                index: j,
+                            });
+                            found.add("entity-declarations");
+                        }
+                        at = span.indexOf("<!ENTITY", at + 8);
+                    }
+                }
+            }
+        } else if (text.startsWith("<!", i)) {
+            next = indexPastTag(text, i + 2);
+        } else if (text.startsWith("</", i)) {
+            depth -= 1;
+            next = indexPast(text, ">", i + 2);
+        } else {
+            // A `<` that opens no name is malformed text, not a tag: end the
+            // scan (checkXmlSyntax reports it) rather than count it as depth.
+            if (!/[A-Za-z_:\u00C0-\uFFFF]/.test(text[i + 1] ?? "")) {
+                break;
+            }
+            next = indexPastTag(text, i + 1);
+            if (next === -1) {
+                break;
+            }
+            depth += 1;
+            if (depth > ceilings.maxDepth && !found.has("depth")) {
+                breaches.push({ kind: "depth", observed: depth, limit: ceilings.maxDepth, index: i });
+                found.add("depth");
+            }
+            let attributes = 0;
+            let quote = "";
+            for (let j = i + 1; j < next; j += 1) {
+                const c = text[j]!;
+                if (quote !== "") {
+                    if (c === quote) {
+                        quote = "";
+                        attributes += 1;
+                    }
+                } else if (c === '"' || c === "'") {
+                    quote = c;
+                }
+            }
+            if (attributes > ceilings.maxAttributes && !found.has("attributes")) {
+                breaches.push({ kind: "attributes", observed: attributes, limit: ceilings.maxAttributes, index: i });
+                found.add("attributes");
+            }
+            if (text[next - 2] === "/") {
+                depth -= 1;
+            }
+        }
+        if (next === -1) {
+            break;
+        }
+        i = text.indexOf("<", next);
+    }
+    return breaches;
+};
+
+const CEILING_CODES: Record<XmlCeilingKind, XmlCeilingCode> = {
+    attributes: "xml-attribute-ceiling",
+    "entity-declarations": "xml-entity-declaration-ceiling",
+    depth: "xml-depth-ceiling",
+};
+
+const CEILING_LABELS: Record<XmlCeilingKind, { noun: string; option: string }> = {
+    attributes: { noun: "attribute", option: "maxAttributes" },
+    "entity-declarations": { noun: "entity-declaration", option: "maxEntityDeclarations" },
+    depth: { noun: "element-depth", option: "maxDepth" },
+};
+
+/**
+ * The error findings for the pre-scan breaches a part's own engine parse does
+ * not already report. Attribute and entity-declaration breaches always
+ * become findings; a depth breach does only when the caller set `maxDepth`
+ * below libxml2's own limit of {@link XML_MAX_ELEMENT_DEPTH}, since the
+ * engine refuses deeper input on its own (#1159) and would otherwise accept
+ * what the lowered ceiling refuses. Each names the ceiling it enforced.
+ */
+export const xmlCeilingIssues = (text: string, partName: string, ceilings: ResourceCeilings): ValidationIssue[] =>
+    scanXmlCeilings(text, ceilings)
+        .filter((breach) => breach.kind !== "depth" || ceilings.maxDepth < XML_MAX_ELEMENT_DEPTH)
+        .map((breach) => ({
+            severity: "error" as const,
+            code: CEILING_CODES[breach.kind],
+            message: `Part ${JSON.stringify(partName)} crosses the ${CEILING_LABELS[breach.kind].noun} ceiling: ${breach.observed} > ${breach.limit} (${CEILING_LABELS[breach.kind].option}). Refused before a DOM is built over it.`,
+            path: partName,
+        }));

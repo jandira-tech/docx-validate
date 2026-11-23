@@ -223,6 +223,18 @@ export const isWordBlockingIssue = (
         case "word-math-parse":
         case "word-math-spre-body":
         case "word-content-type-invalid":
+        // Resource ceilings are the caller's policy, not a Word observation:
+        // a part over a ceiling is refused so a bomb never reaches Word or a
+        // renderer (PR #1281), as the ZIP ceilings refuse the archive under
+        // every profile. Lowering or raising the ceiling is how a caller
+        // changes the verdict. The field-marker ceiling is the exception: a
+        // long document with many fields (TOC, cross-references) can pass the
+        // default 10,000 markers while Word opens it clean, so under word-valid
+        // it stays a warning (Arthur, 2026-11-22).
+        case "xml-attribute-ceiling":
+        case "xml-entity-declaration-ceiling":
+        case "xml-depth-ceiling":
+        case "word-grid-span-ceiling":
         // #317, Word 16.115: a foreign main root prevents opening; an ignored main root silently drops all content.
         case "word-document-root":
         // Word 16.115 offers recovery for a package without

@@ -395,7 +395,7 @@ export const wordPartContentTypeMismatchFindings = async (
             return transitionalMain() &&
                 citesWordSession(
                     ctx,
-                    xmlPartNames(ctx.partNames, (name) => ctx.bytes(name)),
+                    xmlPartNames(ctx.partNames, (name) => ctx.bytes(name), ctx.ceilings),
                     shapeParts,
                 )
                 ? coreach
@@ -447,7 +447,7 @@ export const wordPartContentTypeMismatchFindings = async (
         const cited = (key: string): string | undefined =>
             citesWordSession(
                 ctx,
-                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name)),
+                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name), ctx.ceilings),
             )
                 ? OBSERVED_SESSIONS.get(key)
                 : undefined;

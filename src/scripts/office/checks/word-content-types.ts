@@ -101,7 +101,7 @@ const emptyContentTypeFindings = async (ctx: ValidationContext, profile?: Profil
             session !== undefined &&
             citesWordSession(
                 ctx,
-                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name)),
+                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name), ctx.ceilings),
             );
         issues.push({
             severity: "error",

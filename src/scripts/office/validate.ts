@@ -64,6 +64,8 @@ import {
 } from "../../lib/types";
 import type { XsdValidator } from "../../lib/xsd-validator";
 import { RunDeadline, VALIDATION_DEADLINE } from "../../lib/run-deadline";
+import { readCentralDirectoryView } from "../../lib/zip-central-directory";
+import { resolveResourceCeilings, zipCeilingIssues, type ResourceCeilings, type ResourceCeilingsInput } from "../../lib/resource-ceilings";
 import { verifyInWord, WORD_VERIFY_TIMEOUT_MS, type WordVerification } from "../../lib/word-verifier";
 import {
     archiveStoredNames,
@@ -205,6 +207,20 @@ export interface ValidateOptions {
      * `autoRepair`. Default: no deadline.
      */
     deadlineMs?: number;
+    /**
+     * Resource ceilings for hostile packages, resolved over
+     * `DEFAULT_RESOURCE_CEILINGS` (`src/lib/resource-ceilings.ts`):
+     * `maxEntries`, `maxPartBytes`, `maxCompressionRatio`,
+     * `maxTotalUncompressedBytes` are judged from the ZIP central directory's
+     * declared sizes before any entry is inflated, and `maxDepth`,
+     * `maxAttributes`, `maxEntityDeclarations` in one linear pre-scan before
+     * any part's DOM is built; `maxGridSpan` and `maxFieldMarkers` cap the
+     * layout-bomb shapes in Word story parts. A package over a ceiling is
+     * refused with an error finding naming the ceiling. Each value must be a
+     * finite number greater than 0 (whole numbers where the ceiling counts
+     * things); invalid values throw `RangeError` before anything is read.
+     */
+    ceilings?: ResourceCeilingsInput;
 }
 
 /**
@@ -260,6 +276,9 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     // #630: the budget starts before the first read; an invalid one is a
     // configuration error, raised before anything is touched.
     const deadline = opts.deadlineMs === undefined ? undefined : new RunDeadline(opts.deadlineMs);
+    // Like the deadline, an invalid ceilings object is a configuration error,
+    // raised before anything is touched.
+    const ceilings = resolveResourceCeilings(opts.ceilings);
     const registry = createDefaultCheckRegistry();
     const selected = mode.select === undefined ? undefined : selectionUnderProfile(registry, mode.select, format, profile);
 
@@ -347,8 +366,27 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         });
     }
 
+    // Resource ceilings are judged from the central directory's declared
+    // sizes before anything is inflated: a decompression bomb or an entry
+    // flood is a bounded refusal naming the ceiling, under every mode and
+    // profile, and Word is never asked to open the refused bytes.
+    if (packedBytes !== undefined) {
+        const ceilingIssues = zipCeilingIssues(readCentralDirectoryView(packedBytes)?.records, ceilings);
+        if (ceilingIssues.length > 0) {
+            const refused: ValidateRunResult = {
+                valid: false,
+                issues: [...ceilingIssues],
+                repairs: 0,
+                suffix: dispatchSuffix,
+                xsdWalk: xsdWalkNotStarted(),
+                metadata: { profile, executedChecks: [], omittedChecks: [], schemaCompleted: false },
+            };
+            return deadline === undefined ? refused : withDeadline(refused, deadline);
+        }
+    }
+
     if (selected !== undefined) {
-        return finish(await runSelectedChecks(target, packedBytes, dispatchSuffix, format, mode, registry, selected, deadline));
+        return finish(await runSelectedChecks(target, packedBytes, dispatchSuffix, format, mode, registry, selected, deadline, ceilings));
     }
 
     const runWithUnpacked = async (unpackedDir: string, extra = EMPTY_ENVELOPE_RUN): Promise<ValidateRunResult> => {
@@ -362,6 +400,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
             xsdValidator: opts.xsdValidator,
             profile,
             deadline,
+            ceilings,
         });
         return {
             ...subclassResult,
@@ -654,7 +693,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                     // `assertPlaceableNames` does not (APFS folds `Å` and `å`).
                     const subsetUnstaged: { findings?: { issues: readonly ValidationIssue[]; executed: readonly string[] } } = {};
                     const run = await runStaged(subset, named, undefined, async () => {
-                        subsetUnstaged.findings = await archiveFindings(rest, format, profile, registry, deadline);
+                        subsetUnstaged.findings = await archiveFindings(rest, format, profile, registry, deadline, undefined, ceilings);
                         return subsetUnstaged.findings;
                     });
                     if (subsetUnstaged.findings !== undefined) {
@@ -687,7 +726,9 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
             // honor), does not load, or is refused for staging itself (#413):
             // the failure keeps what the archive still offers, as after a
             // failed extraction (#454).
-            return finish(stagingFailed(named, err, await placeableEntryFindings(buf, format, profile, registry, deadline)));
+            return finish(
+                stagingFailed(named, err, await placeableEntryFindings(buf, format, profile, registry, deadline, undefined, ceilings)),
+            );
         }
         // The extraction can fail after the archive opened: the host
         // filesystem cannot hold two parts under one name (#373). The archive
@@ -703,7 +744,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         let repairRan = autoRepair && format !== "xlsx";
         const staged = await runStaged(zip, named, undefined, () => {
             repairRan = false;
-            return archiveFindings(buf, format, profile, registry, deadline);
+            return archiveFindings(buf, format, profile, registry, deadline, undefined, ceilings);
         });
         return finish(repairRan ? { ...staged, issues: [...staged.issues, PACKED_REPAIR_DISCLOSURE] } : staged);
     }
@@ -711,7 +752,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     const dir = path.resolve(target);
     if (deadline?.reached("reading the directory and every later step")) return finish(stopped());
     const walked = walkDirectory(dir);
-    const opened = openDirectoryContext(dir, walked.unreadable);
+    const opened = openDirectoryContext(dir, walked.unreadable, { ceilings });
     if (opened.openError !== undefined) {
         // Refused stored names (#424) and unreadable walk entries (#557)
         // fail before any part is read. The stored-names diagnosis still
@@ -986,9 +1027,10 @@ async function archiveFindings(
     registry: CheckRegistry,
     deadline?: RunDeadline,
     select: readonly string[] = stagingFallbackSelection(registry, format, profile),
+    ceilings: ResourceCeilings = resolveResourceCeilings(undefined),
 ): Promise<{ issues: readonly ValidationIssue[]; executed: readonly string[] }> {
     if (deadline?.reached("the checks a failed staging still runs")) return EMPTY_FINDINGS;
-    const opened = await contextFromArchive(bytes);
+    const opened = await contextFromArchive(bytes, { ceilings });
     // An archive that does not open, or whose package view is refused, holds
     // no part: the full run reports that failure alone (#413).
     if (opened.openError !== undefined) return EMPTY_FINDINGS;
@@ -1069,9 +1111,12 @@ async function placeableEntryFindings(
     registry: CheckRegistry,
     deadline?: RunDeadline,
     select?: readonly string[],
+    ceilings: ResourceCeilings = resolveResourceCeilings(undefined),
 ): Promise<{ issues: readonly ValidationIssue[]; executed: readonly string[] }> {
     const rest = archiveWithoutEntries(bytes, (record) => !record.directory && entryNameRefusal(record.name) !== undefined);
-    return rest === undefined || rest === bytes ? EMPTY_FINDINGS : archiveFindings(rest, format, profile, registry, deadline, select);
+    return rest === undefined || rest === bytes
+        ? EMPTY_FINDINGS
+        : archiveFindings(rest, format, profile, registry, deadline, select, ceilings);
 }
 
 /**
@@ -1105,6 +1150,7 @@ async function runSelectedChecks(
     registry: CheckRegistry,
     selected: readonly string[],
     deadline?: RunDeadline,
+    ceilings: ResourceCeilings = resolveResourceCeilings(undefined),
 ): Promise<ValidateRunResult> {
     if (deadline?.reached("opening the package and every later step")) {
         const resolved = registry.resolve(selected, format);
@@ -1129,7 +1175,10 @@ async function runSelectedChecks(
     // A companion, not a prerequisite: these checks still read every part
     // with their own parser, even when xml-syntax rejects it (#385).
     const select = reportsParseFailures ? [...selected, XML_SYNTAX_CHECK_ID] : selected;
-    const opened = packedBytes !== undefined ? await contextFromArchive(packedBytes) : openDirectoryContext(path.resolve(target));
+    const opened =
+        packedBytes !== undefined
+            ? await contextFromArchive(packedBytes, { ceilings })
+            : openDirectoryContext(path.resolve(target), undefined, { ceilings });
     if (opened.openError !== undefined) {
         // An archive that does not open has no parts: only the selected
         // envelope checks can read its bytes, and nothing else ran (#332).
@@ -1161,7 +1210,7 @@ async function runSelectedChecks(
         const partSelect = resolved.filter((id) => !runnable.has(id));
         const rest =
             opened.extractFailed === true && packedBytes !== undefined && partSelect.length > 0
-                ? await placeableEntryFindings(packedBytes, format, mode.profile, registry, deadline, partSelect)
+                ? await placeableEntryFindings(packedBytes, format, mode.profile, registry, deadline, partSelect, ceilings)
                 : EMPTY_FINDINGS;
         const executed = orderedExecutedChecks(format, [...(run?.executed ?? []), ...rest.executed]);
         return {
@@ -1429,6 +1478,8 @@ interface RunValidatorsOptions {
     profile: Profile;
     /** The run's wall-clock budget (#630). `validate()` refuses it with `autoRepair`. */
     deadline?: RunDeadline;
+    /** The run's resource ceilings, already resolved over the defaults. */
+    ceilings: ResourceCeilings;
 }
 
 async function runValidators(
@@ -1447,6 +1498,7 @@ async function runValidators(
             xsdValidator: opts.xsdValidator,
             profile: opts.profile,
             deadline: opts.deadline,
+            ceilings: opts.ceilings,
         });
         schemaValidator = docx;
         validators.push(docx);
@@ -1482,6 +1534,7 @@ async function runValidators(
             xsdValidator: opts.xsdValidator,
             profile: opts.profile,
             deadline: opts.deadline,
+            ceilings: opts.ceilings,
         });
         schemaValidator = pptx;
         validators.push(pptx);
@@ -1582,6 +1635,16 @@ interface CliOptions {
     listChecks?: boolean;
     /** `--deadline-ms`, unparsed. */
     deadlineMs?: string;
+    /** Resource-ceiling overrides, unparsed. */
+    maxEntries?: string;
+    maxPartBytes?: string;
+    maxCompressionRatio?: string;
+    maxTotalUncompressedBytes?: string;
+    maxDepth?: string;
+    maxAttributes?: string;
+    maxEntityDeclarations?: string;
+    maxGridSpan?: string;
+    maxFieldMarkers?: string;
 }
 
 export function buildValidateCommand(): Command {
@@ -1613,6 +1676,15 @@ export function buildValidateCommand(): Command {
             "--deadline-ms <ms>",
             "Wall-clock budget for the whole run; steps it stops are reported as a validation-deadline error (not with --auto-repair)",
         )
+        .option("--max-entries <n>", "Ceiling on the archive's declared file-entry count, judged before any entry is inflated")
+        .option("--max-part-bytes <bytes>", "Ceiling on one part's declared uncompressed size, judged before inflation")
+        .option("--max-compression-ratio <ratio>", "Ceiling on one entry's declared uncompressed/compressed ratio")
+        .option("--max-total-uncompressed-bytes <bytes>", "Ceiling on the archive's cumulative declared uncompressed size")
+        .option("--max-depth <n>", "Ceiling on XML element nesting depth in one part (default 256, libxml2's own limit)")
+        .option("--max-attributes <n>", "Ceiling on attributes of one XML element, refused before a DOM is built")
+        .option("--max-entity-declarations <n>", "Ceiling on <!ENTITY declarations in one part")
+        .option("--max-grid-span <n>", "Ceiling on w:gridSpan values in Word story parts (default 63)")
+        .option("--max-field-markers <n>", "Ceiling on field markers (fldChar/instrText/fldSimple) in one story part")
         .option("--json", "Print one JSON document (every issue plus execution metadata) on stdout, with no human text", false);
     return cmd;
 }
@@ -1678,6 +1750,36 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
         return 1;
     }
 
+    // Resource-ceiling overrides: each must be a finite number greater than 0
+    // (a whole number where the ceiling counts things); anything else is a
+    // configuration error, reported before anything runs.
+    const ceilingFlags = {
+        maxEntries: opts.maxEntries,
+        maxPartBytes: opts.maxPartBytes,
+        maxCompressionRatio: opts.maxCompressionRatio,
+        maxTotalUncompressedBytes: opts.maxTotalUncompressedBytes,
+        maxDepth: opts.maxDepth,
+        maxAttributes: opts.maxAttributes,
+        maxEntityDeclarations: opts.maxEntityDeclarations,
+        maxGridSpan: opts.maxGridSpan,
+        maxFieldMarkers: opts.maxFieldMarkers,
+    } as const;
+    const ceilings: ResourceCeilingsInput = {};
+    for (const [name, raw] of Object.entries(ceilingFlags)) {
+        // An empty or blank operand is a typo, not "use the default": it is
+        // rejected below as the non-number it is (PR #1281 review).
+        if (raw === undefined) continue;
+        const value = raw.trim() === "" ? Number.NaN : Number(raw);
+        const key = name as keyof ResourceCeilingsInput;
+        if (!Number.isFinite(value) || value <= 0 || (key !== "maxCompressionRatio" && !Number.isInteger(value))) {
+            process.stderr.write(
+                `Invalid --${name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}: ${raw}. Must be a finite number greater than 0${key === "maxCompressionRatio" ? "" : ", whole"}.\n`,
+            );
+            return 1;
+        }
+        ceilings[key] = value;
+    }
+
     // Reject contradictory selectors before any validation work, so the caller
     // gets one clear line instead of a verdict on a run they did not ask for.
     try {
@@ -1737,6 +1839,7 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
             checks,
             verifyWord: opts.verifyWord,
             deadlineMs: opts.deadlineMs === undefined ? undefined : deadlineMs,
+            ceilings: Object.keys(ceilings).length === 0 ? undefined : ceilings,
         });
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);

@@ -22,6 +22,8 @@ import { opcItemNameRefusedCheck } from "./opc-item-name-refused";
 import { ctOverridePartnameWordRefusedCheck } from "./ct-override-partname-word-refused";
 import { opcPartNameEscapedSlashCheck } from "./opc-part-name-escaped-slash";
 import { opcPartNameEscapedUnreservedCheck } from "./opc-part-name-escaped-unreserved";
+import { wordMacroProjectCheck } from "./word-macro-project";
+import { wordLayoutCeilingsCheck } from "./word-layout-ceilings";
 import { pageMarginAttributesCheck } from "./page-margin-attributes";
 import { wordShadingColorCheck } from "./shading-color";
 import { wordTablePropertiesRequiredCheck } from "./table-properties-required";
@@ -93,6 +95,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     mathRunDeletionCheck,
     wordShadingColorCheck,
     wordGridColumnAttributesCheck,
+    wordLayoutCeilingsCheck,
     wordCellMarginOrderCheck,
     wordTablePropertiesRequiredCheck,
     pageMarginAttributesCheck,
@@ -161,6 +164,7 @@ export function createDefaultCheckRegistry(): CheckRegistry {
         opcPartNameEscapedSlashCheck,
         opcPartNameWordRefusedCheck,
         opcItemNameRefusedCheck,
+        wordMacroProjectCheck,
         xmlSyntaxCheck,
         ctDuplicateDeclarationCheck,
         ctOverridePartnameInvalidCheck,

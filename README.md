@@ -509,6 +509,32 @@ formats other than their default `.docx` (for example, `.pptx` or `.docm`).
   `unavailable`. The budget is a finite number of milliseconds, 0 or more
   (`RangeError` otherwise; the CLI exits 1). It cannot be combined with
   `--auto-repair`: a repair writes, and a deadline could stop it part-way.
+- Resource ceilings guard against hostile packages and are enforced by default,
+  overridable per run with `ceilings` / `--max-*` flags (see
+  `src/lib/resource-ceilings.ts` for the defaults). The ZIP ceilings
+  (`maxEntries`, `maxPartBytes`, `maxCompressionRatio`, `maxTotalUncompressedBytes`)
+  are judged from the central directory's declared sizes, read unsigned and
+  full width (a saturated field through its ZIP64 value), **before any entry is
+  inflated**, so a decompression bomb or an entry flood is refused with an error
+  finding naming the ceiling (`zip-entry-count-ceiling`, `zip-part-size-ceiling`,
+  `zip-compression-ratio-ceiling`, `zip-total-uncompressed-ceiling`) and Word is
+  never asked to open the refused bytes. The XML ceilings (`maxDepth`,
+  `maxAttributes`, `maxEntityDeclarations`) are read in one linear pre-scan
+  before any part's DOM is built, and a part over one is never handed to the
+  parser (`xml-attribute-ceiling`, `xml-entity-declaration-ceiling`, and
+  `xml-depth-ceiling` when `maxDepth` is set below 256; depth over 256 is
+  refused by the parser engine itself). The layout ceilings (`maxGridSpan`,
+  default 63; `maxFieldMarkers`) cap the layout-bomb shapes in Word story parts
+  (`word-grid-span-ceiling`, `word-field-count-ceiling`); they are Word rules, so
+  they run under `word-valid` and `strict` and not under `lenient`. Every
+  ceiling finding is an error that blocks `word-valid` too, as the caller's
+  refusal rather than a Word observation, except `word-field-count-ceiling`,
+  which `word-valid` reports as a warning: a long document with many fields
+  (a table of contents, cross-references) can pass the default 10,000 markers
+  while Word opens it clean. A VBA macro project is named, never
+  executed, as a `word-macro-project` warning. Each ceiling value must be a
+  finite number greater than 0 (whole where it counts things; `RangeError`
+  otherwise, and an empty CLI operand is rejected too; CLI exits 1).
 
 ```bash
 docx-validate --list-checks
@@ -516,6 +542,7 @@ docx-validate --quick contract.docx
 docx-validate --checks tables,word-run-misplaced --json contract.docx
 docx-validate --strict contract.docx
 docx-validate --deadline-ms 30000 --json contract.docx
+docx-validate --max-entries 10000 --max-part-bytes 268435456 --max-depth 256 contract.docx
 ```
 
 Full lenient and strict CLI runs first compile a small startup probe schema to

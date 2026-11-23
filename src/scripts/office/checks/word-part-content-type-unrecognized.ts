@@ -211,7 +211,7 @@ export const wordPartContentTypeUnrecognizedFindings = async (
             observed === undefined ||
             !citesWordSession(
                 ctx,
-                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name)),
+                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name), ctx.ceilings),
             )
                 ? ""
                 : ` Word 16.115 offers to recover the package (${RECOVERY_SESSIONS.get(observed.segment)!}).`;

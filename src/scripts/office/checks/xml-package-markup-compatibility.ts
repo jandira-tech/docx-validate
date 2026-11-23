@@ -33,7 +33,7 @@ export const xmlPackageMarkupCompatibilityCheck: CheckDefinition = {
     requires: ["xml-syntax"],
     run: async (ctx, profile) => {
         const judged = await markupCompatibilityJudgedParts(ctx, profile);
-        return [...xmlPartNames(ctx.partNames, (part) => ctx.bytes(part))]
+        return [...xmlPartNames(ctx.partNames, (part) => ctx.bytes(part), ctx.ceilings)]
             .filter((part) => !judged.has(canonicalPartName(part)) && !isContentTypesStreamName(part))
             .flatMap((part) =>
                 ctx

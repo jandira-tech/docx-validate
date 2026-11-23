@@ -53,7 +53,7 @@ export const wordPackageThumbnailTypeCheck: CheckDefinition = {
             if (resolved === null || asciiLowercase(resolved.contentType) !== "image/png") continue;
             const recovery = citesWordSession(
                 ctx,
-                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name)),
+                xmlPartNames(ctx.partNames, (name) => ctx.bytes(name), ctx.ceilings),
             )
                 ? " Word 16.115 offered recovery for a PNG package thumbnail and opened a JPEG one clean (Word probes sessions 89 and 90, #1186)."
                 : "";
