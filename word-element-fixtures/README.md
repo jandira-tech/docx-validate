@@ -26,6 +26,26 @@ Example — `t.docx` is just:
 <w:document xmlns:w="…"><w:body><w:p><w:r><w:t>x</w:t></w:r></w:p></w:body></w:document>
 ```
 
+## Fixtures that share bytes
+
+The minimal path for some elements already carries another element, because
+the schema requires that child (or sibling) to make the parent valid. Those
+fixtures are the same package under different names; the file name says which
+element the fixture was built for, not that the package holds only that
+element. Ten groups, 27 fixtures (`tests/element-fixture-scripts.test.ts`
+pins this list, so a new collision fails the suite):
+
+- `autoCaption` = `autoCaptions`
+- `behavior` = `behaviors`
+- `caption` = `captions`
+- `commentRangeEnd` = `commentRangeStart` = `commentReference`
+- `div` = `divs`
+- `docPart` = `docParts`
+- `hps` = `hpsBaseText` = `hpsRaise`
+- `marBottom` = `marLeft` = `marRight` = `marTop`
+- `recipientData` = `recipients`
+- `rt` = `ruby` = `rubyAlign` = `rubyBase` = `rubyPr`
+
 ## Manifest
 
 `manifest.jsonl` — one row per fixture:

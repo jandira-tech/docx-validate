@@ -91,8 +91,7 @@ const readRows = (file: string): Record<string, unknown>[] =>
 
 const SENTINEL = JSON.stringify({ element: "other", file: "other.docx", sha256: "sentinel", profile: "lenient", valid: true });
 
-const expectNonzero = (out: RunOutcome): void =>
-    expect(out.code, `expected nonzero exit, stderr: ${out.stderr.slice(0, 300)}`).not.toBe(0);
+const expectNonzero = (out: RunOutcome): void => expect(out.code, `expected nonzero exit, stderr: ${out.stderr.slice(0, 300)}`).not.toBe(0);
 const expectOk = (out: RunOutcome): void => expect(out.code, `stderr: ${out.stderr.slice(0, 300)}`).toBe(0);
 const sentinelKept = (ctx: Ctx): void => expect(readFileSync(ctx.results, "utf8")).toContain("sentinel");
 
@@ -232,5 +231,73 @@ describe("repair-element-fixtures CLI contract", () => {
         expectNonzero(out);
         const rows = readRows(ctx.results);
         expect(rows.some((r) => r.element === "zoom" && r.errorCodes && (r.errorCodes as string[]).includes("build-failed"))).toBe(true);
+    });
+});
+
+describe("fixupRelationshipRefs (gitar #4646619520)", () => {
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const fixture = (body: string) => ({
+        files: { "word/document.xml": `<w:document xmlns:w="${W}"><w:body>${body}</w:body></w:document>` } as Record<
+            string,
+            string | Uint8Array
+        >,
+        overrides: [] as { part: string; contentType: string }[],
+        defaults: [] as { ext: string; contentType: string }[],
+        partRels: {} as Record<string, { id: string; type: string; target: string; external?: boolean }[]>,
+    });
+
+    it("refuses an unmapped w: element carrying r:id instead of inventing a relationship type", async () => {
+        const { fixupRelationshipRefs } = await import("../scripts/repair-element-fixtures");
+        expect(() => fixupRelationshipRefs(fixture(`<w:madeUp r:id="rId9"/>`) as never)).toThrow(
+            /REL_FOR_ELEMENT has no relationship type/,
+        );
+    });
+
+    it("refuses an r: reference on a non-w element rather than missing it", async () => {
+        const { fixupRelationshipRefs } = await import("../scripts/repair-element-fixtures");
+        expect(() => fixupRelationshipRefs(fixture(`<w:r><w:object><o:OLEObject r:id="rId7"/></w:object></w:r>`) as never)).toThrow(
+            /<o:OLEObject>/,
+        );
+    });
+
+    it("still maps a known element to its real relationship type", async () => {
+        const { fixupRelationshipRefs } = await import("../scripts/repair-element-fixtures");
+        const fx = fixture(`<w:p><w:hyperlink r:id="rId3"/></w:p>`);
+        fixupRelationshipRefs(fx as never);
+        expect(fx.partRels["word/document.xml"]).toEqual([
+            {
+                id: "rId3",
+                type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+                target: "https://example.com/",
+                external: true,
+            },
+        ]);
+    });
+});
+
+describe("word-element-fixtures shared-byte groups (gitar #4646619705)", () => {
+    it("only the documented element groups share one package", () => {
+        const rows = readFileSync(path.join(REPO, "word-element-fixtures/manifest.jsonl"), "utf8")
+            .trim()
+            .split("\n")
+            .map((l) => JSON.parse(l) as { element: string; sha256: string });
+        const bySha = new Map<string, string[]>();
+        for (const r of rows) bySha.set(r.sha256, [...(bySha.get(r.sha256) ?? []), r.element]);
+        const groups = [...bySha.values()]
+            .filter((g) => g.length > 1)
+            .map((g) => g.sort().join("="))
+            .sort();
+        expect(groups).toEqual([
+            "autoCaption=autoCaptions",
+            "behavior=behaviors",
+            "caption=captions",
+            "commentRangeEnd=commentRangeStart=commentReference",
+            "div=divs",
+            "docPart=docParts",
+            "hps=hpsBaseText=hpsRaise",
+            "marBottom=marLeft=marRight=marTop",
+            "recipientData=recipients",
+            "rt=ruby=rubyAlign=rubyBase=rubyPr",
+        ]);
     });
 });
