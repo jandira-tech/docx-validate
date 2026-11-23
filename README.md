@@ -527,8 +527,11 @@ formats other than their default `.docx` (for example, `.pptx` or `.docm`).
   default 63; `maxFieldMarkers`) cap the layout-bomb shapes in Word story parts
   (`word-grid-span-ceiling`, `word-field-count-ceiling`); they are Word rules, so
   they run under `word-valid` and `strict` and not under `lenient`. Every
-  ceiling finding is an error that blocks `word-valid` too: it is the caller's
-  refusal, not a Word observation. A VBA macro project is named, never
+  ceiling finding is an error that blocks `word-valid` too, as the caller's
+  refusal rather than a Word observation, except `word-field-count-ceiling`,
+  which `word-valid` reports as a warning: a long document with many fields
+  (a table of contents, cross-references) can pass the default 10,000 markers
+  while Word opens it clean. A VBA macro project is named, never
   executed, as a `word-macro-project` warning. Each ceiling value must be a
   finite number greater than 0 (whole where it counts things; `RangeError`
   otherwise, and an empty CLI operand is rejected too; CLI exits 1).
